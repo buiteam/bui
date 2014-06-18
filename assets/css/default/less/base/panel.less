@@ -1,0 +1,35 @@
+.panel{
+  border:1px solid @borderColor;
+  .border-radius(@radius);
+
+  .panel-header{
+    padding: @baseLineHeight/2;
+    line-height: @baseLineHeight;
+    #gradient > .vertical(@panelHeaderBackground,@panelHeaderBackgroundHighlight);
+  }
+  .panel-body{
+    padding: @baseLineHeight/2;
+  }
+}
+
+.panel-small{
+  .panel-header{
+    padding: 2px;
+  }
+
+  .panel-body{
+    padding: 0;
+  }
+}
+
+.panel-head-borded{
+  border:none;
+  .panel-header{
+    .border-radius(@radius,@radius,0,0);
+    border:1px solid @borderColor;
+	border-bottom:none;
+  }
+  .panel-body{
+    padding: 0;
+  }
+}

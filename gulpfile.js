@@ -32,7 +32,7 @@ function subTask(isAnt) {
         process.stdout.write(data);
       });
       task.on('close', function (code) {
-        process.stdout.write('child process exited with code ' + code);
+        //process.stdout.write('child process exited with code ' + code);
         callback();
       });
     }
@@ -127,7 +127,11 @@ gulp.task('bui.js', ['sub'], function(){
 
 //压缩js
 gulp.task('compress.js', ['seed.js', 'bui.js'], function(){
-  gulp.src(dist + '/**/*.js')
+  gulp.src([
+      dist + '/**/*.js'
+    ])
+    .pipe(rename({suffix: '-debug'}))
+    .pipe(gulp.dest(dist))
     .pipe(uglify({
       output: {
         ascii_only: true
@@ -137,7 +141,10 @@ gulp.task('compress.js', ['seed.js', 'bui.js'], function(){
       }
       })
     )
-    .pipe(rename({suffix: '-min'}))
+    .pipe(rename(function(path){
+        path.basename = path.basename.replace(/-debug$/, '');
+      })
+    )
     .pipe(gulp.dest(dist));
 });
 
@@ -147,9 +154,13 @@ gulp.task('minify-css', ['sub'], function() {
   return gulp.src([
       './assets/css/**/*.css'
     ])
+    .pipe(rename({suffix: '-debug'}))
     .pipe(gulp.dest(dist + '/css'))
     .pipe(minifyCSS())
-    .pipe(rename({suffix: '-min'}))
+    .pipe(rename(function(path){
+        path.basename = path.basename.replace(/-debug$/, '');
+      })
+    )
     .pipe(gulp.dest(dist + '/css'));
 });
 
@@ -170,13 +181,13 @@ function runTest() {
     if (file.isNull()) {
       var task = spawn('totoro', ['--runner', file.path]);
       task.stdout.on('data', function (data) {
-        process.stdout.write(data)
+        process.stdout.write(data);
       });
       task.stderr.on('data', function (data) {
-        process.stdout.write(data)
+        process.stdout.write(data);
       });
       task.on('close', function (code) {
-        process.stdout.write('child process exited with code ' + code);
+        //process.stdout.write('child process exited with code ' + code);
         callback();
       });
     }

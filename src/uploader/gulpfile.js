@@ -1,15 +1,26 @@
 'use strict';
 
 var gulp = require('gulp');
+var clean = require('gulp-clean');
 var concat = require('gulp-concat');
+var rename = require('gulp-rename');
+var uglify = require('gulp-uglify');
 var less = require('gulp-less');
 var minifyCSS = require('gulp-minify-css');
+var n2a = require('gulp-native2ascii');
+var chug = require( 'gulp-chug' );
 
+// gulp.task('prepare', function() {
+//   gulp.src('./build/uploader.js')
+//     .pipe(clean());
+// });
+
+//合并js 
 gulp.task('copy', function(){
   gulp.src([
-      './plugins/ajbridge/uploader.swf'
+      './plugins/ajbridge/*.*'
     ])
-    .pipe(gulp.dest('../../build/uploader'))
+    .pipe(gulp.dest('../../build/uploader/'));
 });
 
 //合并js 
@@ -24,6 +35,7 @@ gulp.task('uploader.js', function(){
       './type/ajax.js',
       './type/flash.js',
       './type/iframe.js',
+      './file.js',
       './queue.js',
       './theme.js',
       './validator.js',
@@ -37,5 +49,5 @@ gulp.task('uploader.js', function(){
 
 // 默认任务
 gulp.task('default', function() {
-  gulp.start('copy', 'uploader.js');
+  gulp.start('uploader.js', 'copy');
 });

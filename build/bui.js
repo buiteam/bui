@@ -1108,7 +1108,8 @@ define('bui/util',function(require){
              * 子版本号
              * @type {Number}
              */
-            subVersion : 89,
+            subVersion : 96,
+
 
             /**
              * 是否为函数
@@ -2294,7 +2295,12 @@ define('bui/observable',['bui/util'],function (r) {
       var _self = this,
         callbacks = _self._getCallbacks(eventType);
       if(callbacks){
-        callbacks.remove(fn);
+        if(fn){
+          callbacks.remove(fn);
+        }else{
+          callbacks.empty();
+        }
+        
       }
       return _self;
     },
@@ -4933,7 +4939,24 @@ define('bui/component/uibase/align',['bui/ua'],function (require) {
                 /**/
             }
         },
+        __bindUI : function(){
+            var _self = this;
+            
+            _self.on('show',function(){
+                $(window).on('resize',BUI.wrapBehavior(_self,'handleWindowResize'));
+            });
 
+            _self.on('hide',function(){
+                $(window).off('resize',BUI.getWrapBehavior(_self,'handleWindowResize'));
+            });
+        },
+        //处理window resize事件
+        handleWindowResize : function(){
+            var _self = this,
+                align = _self.get('align');
+
+            _self.set('align',align);
+        },
         /*
          对齐 Overlay 到 node 的 points 点, 偏移 offset 处
          @method
@@ -14975,10 +14998,13 @@ define('bui/overlay/dialog',['bui/overlay/overlay'],function (require) {
     
     show:function(){
       var _self = this;
-
+      align = _self.get('align');
+      
       dialog.superclass.show.call(this);
-      _self.center();
-    },
+      _self.set('align',align);
+      
+      
+    },/**/
     //绑定事件
     bindUI : function(){
       var _self = this;
@@ -15173,6 +15199,12 @@ define('bui/overlay/dialog',['bui/overlay/overlay'],function (require) {
       title : {
         view:true,
         value : ''
+      },
+      align : {
+        value : {
+          node : window,
+          points : ['cc','cc']
+        }
       },
       mask : {
         value:true
@@ -15377,6 +15409,7 @@ define('bui/overlay/message',['bui/overlay/dialog'],function (require) {
         'msg':msg,
         'success' : callback
       });
+      return singlelon;
     };
   }
 
@@ -17464,7 +17497,7 @@ define('bui/picker/mixin', function (require) {
           }
         }
         
-        if(valueField){
+        if(valueField && _self.get('autoSetValue')){
           var preValue = $(valueField).val();  
           if(valueField != preValue){
             $(valueField).val(selValue);
@@ -17544,7 +17577,7 @@ define('bui/picker/mixin', function (require) {
     },
     _uiSetValueField : function(v){
       var _self = this;
-      if(v != null && v !== ''){ //if(v)问题太多
+      if(v != null && v !== '' && _self.get('autoSetValue')){ //if(v)问题太多
         _self.setSelectedValue($(v).val());
       }
     },
@@ -18023,6 +18056,7 @@ define('bui/form/basefield',['bui/common','bui/form/tips','bui/form/valid','bui/
     Valid = require('bui/form/valid'),
     Remote = require('bui/form/remote'),
     CLS_FIELD_ERROR = BUI.prefix + 'form-field-error',
+    CLS_TIP_CONTAINER = 'bui-form-tip-container',
     DATA_ERROR = 'data-error';
 
   /**
@@ -18131,7 +18165,9 @@ define('bui/form/basefield',['bui/common','bui/form/tips','bui/form/valid','bui/
       _self.on('afterRenderUI',function(){
         var tip = _self.get('tip');
         if(tip){
-          tip.trigger = _self.getTipTigger();
+          var trigger = _self.getTipTigger();
+          trigger && trigger.parent().addClass(CLS_TIP_CONTAINER);
+          tip.trigger = trigger;
           tip.autoRender = true;
           tip = new TipItem(tip);
           _self.set('tip',tip);
@@ -18906,8 +18942,13 @@ define('bui/form/selectfield',['bui/common','bui/form/basefield'],function (requ
   }
 
   function appendItem(value,text,select){
-     var str = '<option value="' + value +'">'+text+'</option>'
-    $(str).appendTo(select);
+    // var str = '<option value="' + value +'">'+text+'</option>'
+    // $(str).appendTo(select);
+    
+    // 上面那种写法在ie6下会报一个奇怪的错误，使用new Option则不会有这个问题
+    var option = new Option(text, value),
+      options = select[0].options;
+    options[options.length] = option;
   }
   /**
    * 表单选择域
@@ -19104,7 +19145,8 @@ define('bui/form/selectfield',['bui/common','bui/form/basefield'],function (requ
   });
 
   return selectField;
-});/**
+});
+/**
  * @fileOverview 表单日历域
  * @author dxq613@gmail.com
  * @ignore
@@ -21192,8 +21234,8 @@ define('bui/form/group/select',['bui/form/group/base','bui/data'],function (requ
           store.url = url;
         }
         store = new Data.TreeStore(store);
-        _self.set('store',store);
       }
+      _self.set('store',store);
     },
     bindUI : function  () {
       var _self = this;
@@ -22939,9 +22981,8 @@ define('bui/select/select',['bui/common','bui/picker'],function (require) {
       renderUI : function(){
         var _self = this,
           picker = _self.get('picker'),
-          el = _self.get('el'),
-          textEl = el.find('.' + _self.get('inputCls'));
-        picker.set('trigger',el);
+          textEl = _self._getTextEl();
+        picker.set('trigger',_self.getTrigger());
         picker.set('triggerEvent', _self.get('triggerEvent'));
         picker.set('autoSetValue', _self.get('autoSetValue'));
         picker.set('textField',textEl);
@@ -22979,7 +23020,13 @@ define('bui/select/select',['bui/common','bui/picker'],function (require) {
 
         return Component.Controller.prototype.containsElement.call(this,elem) || picker.containsElement(elem);
       },
-
+      /**
+       * @protected
+       * 获取触发点
+       */
+      getTrigger : function(){
+        return this.get('el');
+      },
       //设置子项
       _uiSetItems : function(items){
         if(!items){
@@ -23010,13 +23057,17 @@ define('bui/select/select',['bui/common','bui/picker'],function (require) {
       _uiSetWidth : function(v){
         var _self = this;
         if(v != null){
-          var textEl = _self._getTextEl(),
+          if(_self.get('inputForceFit')){
+            var textEl = _self._getTextEl(),
             iconEl = _self.get('el').find('.x-icon'),
             appendWidth = textEl.outerWidth() - textEl.width(),
-            picker = _self.get('picker'),
+            
             width = v - iconEl.outerWidth() - appendWidth;
-          textEl.width(width);
+            textEl.width(width);
+          }
+          
           if(_self.get('forceFit')){
+            var picker = _self.get('picker');
             picker.set('width',v);
           }
           
@@ -23033,7 +23084,7 @@ define('bui/select/select',['bui/common','bui/picker'],function (require) {
       _getTextEl : function(){
          var _self = this,
           el = _self.get('el');
-        return el.find('.' + _self.get('inputCls'));
+        return el.is('input') ? el : el.find('input');
       },
       /**
        * 析构函数
@@ -23171,6 +23222,13 @@ define('bui/select/select',['bui/common','bui/picker'],function (require) {
           value:true
         },
         /**
+         * 是否跟valueField自动同步
+         * @type {Boolean}
+         */
+        autoSetValue : {
+          value : true
+        },
+        /**
          * 是否可以多选
          * @cfg {Boolean} [multipleSelect=false]
          */
@@ -23181,6 +23239,13 @@ define('bui/select/select',['bui/common','bui/picker'],function (require) {
         multipleSelect:{
           value:false
         },
+        /**
+         * 内部的input是否跟随宽度的变化而变化
+         * @type {Object}
+         */
+        inputForceFit : {
+          value : true
+        },  
         /**
          * 控件的name，用于存放选中的文本，便于表单提交
          * @cfg {Object} name
@@ -23290,6 +23355,220 @@ define('bui/select/select',['bui/common','bui/picker'],function (require) {
   return select;
 
 });/**
+ * @fileOverview 输入、选择完毕后显示tag
+ * @ignore
+ */
+
+define('bui/select/tag',['bui/common','bui/list'],function (require) {
+  var BUI = require('bui/common'),
+    List = require('bui/list'),
+    KeyCode = BUI.KeyCode,
+    WARN = 'warn';
+
+  /**
+   * @class BUI.Select.Tag
+   * 显示tag的扩展
+   */
+  var Tag = function(){
+
+  };
+
+  Tag.ATTRS = {
+    /**
+     * 显示tag
+     * @type {Boolean}
+     */
+    showTag : {
+      value : false
+    },
+    /**
+     * tag的模板
+     * @type {String}
+     */
+    tagItemTpl : {
+      value : '<li>{value}<button>×</button></li>'
+    },
+    /**
+     * @private
+     * tag 的列表
+     * @type {Object}
+     */
+    tagList : {
+      value : null
+    },
+    tagPlaceholder : {
+      value : '输入标签'
+    },
+    /**
+     * 默认的value分隔符，将值分割显示成tag
+     * @type {String}
+     */
+    separator : {
+      value : ';'
+    }
+  };
+
+  BUI.augment(Tag,{
+
+    __renderUI : function(){
+      var _self = this,
+        showTag = _self.get('showTag'),
+        tagPlaceholder = _self.get('tagPlaceholder'),
+        tagInput = _self.getTagInput();
+      if(showTag && !tagInput.attr('placeholder')){
+        tagInput.attr('placeholder',tagPlaceholder);
+        _self.set('inputForceFit',false);
+      }
+    },
+    __bindUI : function(){
+      var _self = this,
+        showTag = _self.get('showTag'),
+        tagInput = _self.getTagInput();
+      if(showTag){
+        tagInput.on('keydown',function(ev){
+          if(!tagInput.val()){
+            var tagList =  _self.get('tagList'),
+              last = tagList.getLastItem(),
+              picker = _self.get('picker');
+            if(ev.which == KeyCode.DELETE || ev.which == KeyCode.BACKSPACE){
+              if(tagList.hasStatus(last,WARN)){
+                _self._delTag(last);
+              }else{
+                tagList.setItemStatus(last,WARN,true);
+              }
+              picker.hide();
+            }else{
+              tagList.setItemStatus(last,WARN,false);
+            }
+          }
+        });
+
+        tagInput.on('change',function(ev){
+          setTimeout(function(){
+            var val = tagInput.val();
+            if(val){
+              _self._addTag(val);
+            }
+          });
+          
+        });
+      }
+    },
+    __syncUI : function(){
+      var _self = this,
+        showTag = _self.get('showTag'),
+        valueField = _self.get('valueField');
+      if(showTag && valueField){
+        _self._setTags($(valueField).val());
+      }
+    },
+    //设置tags，初始化时处理
+    _setTags : function(value){
+      var _self = this,
+        tagList = _self.get('tagList'),
+        separator = _self.get('separator'),
+        values = value.split(separator);
+      if(!tagList){
+        tagList = _self._initTagList();
+      }
+      if(value){
+        BUI.each(values,function(val){
+          tagList.addItem({value : val});
+        });
+      }
+      
+
+    },
+    //添加tag
+    _addTag : function(value){
+      var _self = this,
+        tagList = _self.get('tagList'),
+        tagInput = _self.getTagInput(),
+        preItem = tagList.getItem(value);
+      if(!preItem){
+        tagList.addItem({value : value});
+        _self._synTagsValue();
+      }else{
+        _self._blurItem(tagList,preItem);
+      }
+      tagInput.val('');
+
+    },
+    //提示用户选项已经存在
+    _blurItem : function(list,item){
+      list.setItemStatus(item,'active',true);
+      setTimeout(function(){
+        list.setItemStatus(item,'active',false);
+      },400);
+    },
+    //删除tag
+    _delTag : function(item){
+      var _self = this,
+        tagList = _self.get('tagList');
+
+      tagList.removeItem(item);
+      _self._synTagsValue();
+    },
+
+    /**
+     * 获取tag 列表的值
+     * @return {String} 列表对应的值
+     */
+    getTagsValue : function(){
+      var _self = this,
+        tagList = _self.get('tagList'),
+        items = tagList.getItems(),
+        vals = [];
+
+      BUI.each(items,function(item){
+        vals.push(item.value);
+      });
+      return vals.join(_self.get('separator'));
+    },
+    //初始化tagList
+    _initTagList : function(){
+      var _self = this,
+        tagInput = _self.getTagInput(),
+        tagList = new List.SimpleList({
+          elBefore : tagInput,
+          itemTpl : _self.get('tagItemTpl'),
+          idField : 'value'
+        });
+      tagList.render();
+      _self._initTagEvent(tagList);
+      _self.set('tagList',tagList);
+      return tagList;
+    },
+    //初始化tag删除事件
+    _initTagEvent : function(list){
+      var _self = this;
+      list.on('itemclick',function(ev){
+        var sender = $(ev.domTarget);
+        if(sender.is('button')){
+          _self._delTag(ev.item);
+        }
+      });
+    },
+    /**
+     * 获取输入的文本框
+     * @protected
+     * @return {jQuery} 输入框
+     */
+    getTagInput : function(){
+      var _self = this,
+          el = _self.get('el');
+      return el.is('input') ? el : el.find('input');
+    },
+    _synTagsValue : function(){
+      var _self = this,
+        valueEl = _self.get('valueField');
+       valueEl && $(valueEl).val(_self.getTagsValue());
+    }
+  });
+
+  return Tag;
+});
+/**
  * @fileOverview 组合框可用于选择输入文本
  * @ignore
  */
@@ -23298,6 +23577,7 @@ define('bui/select/combox',['bui/common','bui/select/select'],function (require)
 
   var BUI = require('bui/common'),
     Select = require('bui/select/select'),
+    Tag = require('bui/select/tag'),
     CLS_INPUT = BUI.prefix + 'combox-input';
 
   /**
@@ -23317,12 +23597,13 @@ define('bui/select/combox',['bui/common','bui/select/select'],function (require)
    * @class BUI.Select.Combox
    * @extends BUI.Select.Select
    */
-  var combox = Select.extend({
+  var combox = Select.extend([Tag],{
 
     renderUI : function(){
       var _self = this,
         picker = _self.get('picker');
       picker.set('autoFocused',false);
+
     },
     _uiSetItems : function(v){
       var _self = this;
@@ -23348,6 +23629,17 @@ define('bui/select/combox',['bui/common','bui/select/select'],function (require)
           list.clearItemStatus(item);
         }
       });
+    },
+    //覆写此方法
+    _uiSetValueField : function(){
+
+    },
+    /**
+     * @protected
+     * 获取触发点
+     */
+    getTrigger : function(){
+      return this._getTextEl();
     }
   },{
     ATTRS : 
@@ -23373,6 +23665,9 @@ define('bui/select/combox',['bui/common','bui/select/select'],function (require)
        */
       inputCls:{
         value:CLS_INPUT
+      },
+      autoSetValue : {
+        value : false
       }
     }
   },{
@@ -23768,12 +24063,12 @@ define('bui/mask/mask',['bui/common'],function (require) {
          * @param {String} [msgCls] 显示文本应用的样式
          * <pre><code>
          *   BUI.Mask.maskElement('#domId');
-         *   
+         *   BUI.Mask.maskElement('body'); //屏蔽整个窗口
          * </code></pre>
          */
         maskElement:function (element, msg, msgCls) {
             var maskedEl = $(element),
-                maskDiv = $('.' + CLS_MASK, maskedEl),
+                maskDiv = maskedEl.children('.' + CLS_MASK),
                 tpl = null,
                 msgDiv = null,
                 top = null,
@@ -23781,23 +24076,42 @@ define('bui/mask/mask',['bui/common'],function (require) {
             if (!maskDiv.length) {
                 maskDiv = $('<div class="' + CLS_MASK + '"></div>').appendTo(maskedEl);
                 maskedEl.addClass('x-masked-relative x-masked');
-                if (UA.ie === 6) {
-                    maskDiv.height(maskedEl.height());
+                //屏蔽整个窗口
+                if(element == 'body'){
+                  if(UA.ie == 6){
+                    maskDiv.height(BUI.docHeight());
+                  }else{
+                    maskDiv.css('position','fixed');
+                  }
+                }else{
+                  if (UA.ie === 6) {
+                      maskDiv.height(maskedEl.height());
+                  }
                 }
+               
                 if (msg) {
                     tpl = ['<div class="' + CLS_MASK_MSG + '"><div>', msg, '</div></div>'].join('');
                     msgDiv = $(tpl).appendTo(maskedEl);
                     if (msgCls) {
                         msgDiv.addClass(msgCls);
                     }
-                    try {
-                        top = (maskedEl.height() - msgDiv.height()) / 2;
-                        left = (maskedEl.width() - msgDiv.width()) / 2;
 
-                        msgDiv.css({ left:left, top:top });
-                    } catch (ex) {
-                        BUI.log('mask error occurred');
+                  try {
+                    //屏蔽整个窗口
+                    if(element == 'body' && UA.ie != 6){
+                      top = '50%',
+                      left = '50%';
+                      msgDiv.css('position','fixed');
+                    }else{
+                      top = (maskDiv.height() - msgDiv.height()) / 2;
+                      left = (maskDiv.width() - msgDiv.width()) / 2;                      
                     }
+                    msgDiv.css({ left:left, top:top });
+
+                  } catch (ex) {
+                    BUI.log('mask error occurred');
+                  }
+                    
                 }
             }
             return maskDiv;
@@ -23825,7 +24139,8 @@ define('bui/mask/mask',['bui/common'],function (require) {
     });
     
     return Mask;
-});/**
+});
+/**
  * @fileOverview 加载数据时屏蔽层
  * @ignore
  */
@@ -27732,7 +28047,7 @@ define('bui/calendar/monthpicker',['bui/common','bui/overlay','bui/list','bui/to
       _self.get('el').delegate('a','click',function(ev){
         ev.preventDefault();
       }).delegate('.' + CLS_MONTH,'dblclick',function(){
-        _self.fire('dblclick');
+        _self.fire('monthdblclick');
       });
     }
   },{
@@ -27769,7 +28084,7 @@ define('bui/calendar/monthpicker',['bui/common','bui/overlay','bui/list','bui/to
       });
 
       el.delegate('.' + CLS_YEAR,'dblclick',function(){
-        _self.fire('dblclick');
+        _self.fire('yeardblclick');
       });
 
       el.delegate('.x-icon','click',function(ev){
@@ -27909,7 +28224,7 @@ define('bui/calendar/monthpicker',['bui/common','bui/overlay','bui/list','bui/to
         if(ev.item){
           _self.setInternal('month',ev.item.value);
         }
-      }).on('dblclick',function(){
+      }).on('monthdblclick',function(){
         _self._successCall();
       });
 
@@ -27917,7 +28232,7 @@ define('bui/calendar/monthpicker',['bui/common','bui/overlay','bui/list','bui/to
         if(ev.item){
           _self.setInternal('year',ev.item.value);
         }
-      }).on('dblclick',function(){
+      }).on('yeardblclick',function(){
         _self._successCall();
       });
 
@@ -28721,7 +29036,9 @@ define('bui/calendar/calendar',['bui/picker','bui/calendar/monthpicker','bui/cal
           for(var key in lockTime){
               var noCls = _timePickerEnum[key.toLowerCase()];
               _self.set(key,lockTime[key]);
-              _self.get('el').find("."+noCls).attr("disabled","");
+              if(!lockTime.editable){
+                _self.get('el').find("."+noCls).attr("disabled","");
+              }
           }
       }
       var  picker = new Picker({
@@ -28779,7 +29096,11 @@ define('bui/calendar/calendar',['bui/picker','bui/calendar/monthpicker','bui/cal
         selectedDate = _self.get('selectedDate'),
         date = selectedDate.getDate();
       if(year !== selectedDate.getFullYear() || month !== selectedDate.getMonth()){
-        _self.set('selectedDate',new Date(year,month,date));
+        var newDate = new Date(year,month,date);
+        if(newDate.getMonth() != month){ //下一个月没有对应的日期,定位到下一个月最后一天
+          newDate = DateUtil.addDay(-1,new Date(year,month + 1));
+        }
+        _self.set('selectedDate',newDate);
       }
     },
     //创建选择月的控件
@@ -28837,6 +29158,17 @@ define('bui/calendar/calendar',['bui/picker','bui/calendar/monthpicker','bui/cal
               var day = today();
               _self.set('selectedDate',day);
               _self.fire('accept');
+            }
+          }
+        });
+        items.push({
+          xclass:'bar-item-button',
+          text:'清除',
+          btnCls: 'button button-small',
+          id:'clsBtn',
+          listeners:{
+            click:function(){
+              _self.fire('clear');
             }
           }
         });
@@ -29105,6 +29437,16 @@ define('bui/calendar/datepicker',['bui/common','bui/picker','bui/calendar/calend
           autoRender : true
         });
 
+      calendar.on('clear', function(){
+        var curTrigger = _self.get('curTrigger'),
+          oldValue = curTrigger.val();
+
+        if(oldValue){
+          curTrigger.val('');
+          curTrigger.trigger('change');
+        }
+      });
+
       if (!_self.get('dateMask')) {
         if (_self.get('showTime')) {
             _self.set('dateMask', 'yyyy-mm-dd HH:MM:ss');
@@ -29131,13 +29473,24 @@ define('bui/calendar/datepicker',['bui/common','bui/picker','bui/calendar/calend
       var _self = this,
         calendar = this.get('calendar'),
         date = DateUtil.parse(val,_self.get("dateMask"));
-      date = date || new Date(new Date().setSeconds(0));
+      date = date || _self.get('selectedDate');
       calendar.set('selectedDate',DateUtil.getDate(date));
+
       if(_self.get('showTime')){
+
           var lockTime = this.get("lockTime"),
-              hour = lockTime&&lockTime['hour']?lockTime['hour']:date.getHours(),
-              minute = lockTime&&lockTime['minute']?lockTime['minute']:date.getMinutes(),
-              second = lockTime&&lockTime['second']?lockTime['second']:date.getSeconds();
+            hour = date.getHours(),
+            minute = date.getMinutes(),
+            second = date.getSeconds();
+
+          if(lockTime){
+            if(!val || !lockTime.editable){
+              hour = lockTime['hour'] != null ?lockTime['hour']:hour;
+              minute = lockTime['minute'] != null ?lockTime['minute']:minute;
+              second = lockTime['second'] != null ?lockTime['second']:second;
+            }
+          }
+
         calendar.set('hour',hour);
         calendar.set('minute',minute);
         calendar.set('second',second);
@@ -29211,7 +29564,7 @@ define('bui/calendar/datepicker',['bui/common','bui/picker','bui/calendar/calend
         value:false
       },
        /**
-       * 锁定时间选择
+       * 锁定时间选择，默认锁定的时间不能修改可以通过 editable : true 来允许修改锁定的时间
        *<pre><code>
        *  var calendar = new Calendar.Calendar({
        *  render:'#calendar',
@@ -29222,6 +29575,7 @@ define('bui/calendar/datepicker',['bui/common','bui/picker','bui/calendar/calend
        * @type {Object}
        */
       lockTime :{
+
       },
       /**
        * 最大日期
@@ -29267,7 +29621,7 @@ define('bui/calendar/datepicker',['bui/common','bui/picker','bui/calendar/calend
         value:'accept'
       },
       hideEvent:{
-        value:'accept'
+        value:'accept clear'
       },
       /**
        * 日历对象,可以进行更多的操作，参看{@link BUI.Calendar.Calendar}
@@ -29275,6 +29629,13 @@ define('bui/calendar/datepicker',['bui/common','bui/picker','bui/calendar/calend
        */
       calendar:{
 
+      },
+      /**
+       * 默认选中的日期
+       * @type {Date}
+       */
+      selectedDate: {
+      	value: new Date(new Date().setSeconds(0))
       }
     }
   },{
@@ -29284,6 +29645,7 @@ define('bui/calendar/datepicker',['bui/common','bui/picker','bui/calendar/calend
   return datepicker;
   
 });
+
 /**
  * @fileOverview 编辑器命名空间入口
  * @ignore
@@ -33026,7 +33388,7 @@ define('bui/grid/format',function (require) {
 ;(function(){
 var BASE = 'bui/grid/plugins/';
 define('bui/grid/plugins',['bui/common',BASE + 'selection',BASE + 'cascade',BASE + 'cellediting',BASE + 'rowediting',BASE + 'autofit',
-	BASE + 'dialogediting',BASE + 'menu',BASE + 'summary',BASE + 'rownumber',BASE + 'columngroup'],function (r) {
+	BASE + 'dialogediting',BASE + 'menu',BASE + 'summary',BASE + 'rownumber',BASE + 'columngroup',BASE + 'rowgroup',BASE + 'columnresize'],function (r) {
 	var BUI = r('bui/common'),
 		Selection = r(BASE + 'selection'),
 
@@ -33043,7 +33405,9 @@ define('bui/grid/plugins',['bui/common',BASE + 'selection',BASE + 'cascade',BASE
 			GridMenu : r(BASE + 'menu'),
 			Summary : r(BASE + 'summary'),
 			RowNumber : r(BASE + 'rownumber'),
-			ColumnGroup : r(BASE + 'columngroup')
+			ColumnGroup : r(BASE + 'columngroup'),
+			RowGroup : r(BASE + 'rowgroup'),
+			ColumnResize : r(BASE + 'columnresize')
 		});
 		
 	return Plugins;
@@ -34386,6 +34750,13 @@ define('bui/grid/plugins/editing',function (require) {
      * editor 创建完成，因为editor延迟创建，所以创建完成grid，等待editor创建成功
      */
     
+    /**
+     * @event beforeeditorshow
+     * editor显示前，可以更改editor的一些属性
+     * @param {Object} ev 事件对象
+     * @param {Object} ev.record 编辑的数据
+     * @param {BUI.Editor.Editor} ev.editor 编辑器
+     */
 
   };
 
@@ -34642,6 +35013,8 @@ define('bui/grid/plugins/editing',function (require) {
 
       _self.beforeShowEditor(editor,options);
       _self.set('record',options.record);
+      _self.fire('beforeeditorshow',{editor : editor,record : options.record});
+
       editor.setValue(value);
       if(alignNode){
         var align = _self.get('align');
@@ -34652,7 +35025,7 @@ define('bui/grid/plugins/editing',function (require) {
       editor.show();
       _self.focusEditor(editor,options.field);
       _self.set('curEditor',editor);
-      _self.fire('editorshow',{editor : editor});
+      _self.fire('editorshow',{editor : editor,record : options.record});
     },
     /**
      * @protected
@@ -34811,7 +35184,7 @@ define('bui/grid/plugins/editing',function (require) {
         editors = _self.get('editors');
       
       BUI.each(editors,function(editor){
-        editor.destroy || editor.destroy();
+        editor.destroy && editor.destroy();
       });
       _self.off();
       _self.clearAttrVals();
@@ -35647,6 +36020,386 @@ define('bui/grid/plugins/dialogediting',['bui/common'],function (require) {
 
   return Group;
 
+});define('bui/grid/plugins/rowgroup',['bui/common'],function(require){
+
+  var BUI = require('bui/common'),
+    DATA_GROUP = 'data-group',
+    PREFIX = BUI.prefix,
+    CLS_GROUP = PREFIX + 'grid-row-group',
+    CLS_TRIGGER = PREFIX + 'grid-cascade',
+    CLS_EXPAND = PREFIX + 'grid-cascade-expand';
+
+  //新的分组
+  function newGroup (value,text) {
+    return {items : [],value : value,text : text};
+  }
+
+  /**
+   * 表头列分组功能，仅处理数据展示，排序，不处理这个过程中的增删改，添加删除列
+   * @class BUI.Grid.Plugins.RowGroup
+   * @extends BUI.Base
+   */
+  var Group = function (cfg) {
+    Group.superclass.constructor.call(this,cfg);
+  };
+
+  Group.ATTRS = {
+   
+    groups : {
+      shared : false,
+      value : []
+    },
+    /**
+     * 渲染分组内容，函数原型 function(text,group){}
+     *
+     *  - text 是分组字段格式化后的文本
+     *  - group 是当前分组，包括,text(文本）,value（值）,items（分组包含的项）
+     * @type {Function}
+     */
+    renderer : {
+
+    }
+  };
+
+  BUI.extend(Group,BUI.Base);
+
+  BUI.augment(Group,{
+
+    renderUI : function (grid) {
+      var _self = this,
+        tbodyEl = grid.get('el').find('tbody');
+      _self.set('grid',grid);
+      _self.set('tbodyEl',tbodyEl);
+
+    },
+    bindUI : function (grid) {
+      var _self = this,
+         groups = [];
+
+      //显示完成记录时
+      grid.on('aftershow',function () {
+        var items = grid.getItems(),
+          column = _self._getSortColumn();
+        _self._clear();
+        if(column){
+          grid.get('view').getAllElements().hide();
+          var field = column.get('dataIndex');
+          BUI.each(items,function (item,index) {
+            var last = groups[groups.length - 1],
+              renderer = column.get('renderer'),
+              value = item[field],
+              text;
+            if(!last || value != last.value){
+              text = renderer ? renderer(value,item) : value;
+              var current = newGroup(value,text);
+              current.begin = index;
+              groups.push(current);
+              last && _self._createGroup(last);
+              last = current;
+            }
+            
+            last.items.push(item);
+            
+            
+          });
+          var last = groups[groups.length - 1];
+          last && _self._createGroup(last);
+          _self.set('groups',groups);
+        }
+        
+      });
+
+      //清除所有记录时
+      grid.on('clear',function () {
+        _self._clear();
+      });
+
+      _self.get('tbodyEl').delegate('.' + CLS_TRIGGER,'click',function (ev) {
+        var sender = $(ev.currentTarget),
+          group = _self._getGroupData(sender);
+        if(sender.hasClass(CLS_EXPAND)){
+          _self._collapse(group);
+          sender.removeClass(CLS_EXPAND);
+        }else{
+          _self._expand(group);
+          sender.addClass(CLS_EXPAND);
+        }
+
+      });
+    },
+    //获取排序的字段对应的列
+    _getSortColumn: function(){
+      var _self = this,
+        grid = _self.get('grid'),
+        store = grid.get('store'),
+        field = store.get('sortField');
+
+      return grid.findColumnByField(field);
+    },
+    //获取分组的数据
+    _getGroupData : function (el) {
+      var _self = this,
+        groupEl = el.closest('.' + CLS_GROUP);
+      return groupEl.data(DATA_GROUP);
+    },
+    _createGroup : function (group) {
+      var _self = this,
+        grid = _self.get('grid'),
+        item = group.items[0],
+        firstEl = grid.findElement(item),
+        count = grid.get('columns').length,
+        renderer = _self.get('renderer'),
+        text = renderer ? renderer(group.text,group) : group.text,
+        tpl = '<tr class="'+CLS_GROUP+'"><td colspan="' + (count + 1) + '"><div class="bui-grid-cell-inner"><span class="bui-grid-cell-text"><span class="bui-grid-cascade"><i class="bui-grid-cascade-icon"></i></span> ' + text + '</span></div></td></tr>',
+        node = $(tpl).insertBefore(firstEl);
+      node.data(DATA_GROUP,group);
+    },
+    _getGroupedElements : function(group){
+      var _self = this,
+        grid = _self.get('grid'),
+        elements = grid.get('view').getAllElements(),
+        begin = group.begin,
+        end = group.items.length + begin,
+        rst = [];
+      for(var i = begin; i < end; i++){
+        rst.push(elements[i]);
+      }
+      return $(rst);
+    },
+    _expand : function (group) {
+      var _self = this,
+        subEls = _self._getGroupedElements(group);
+      subEls.show();
+    },
+    _collapse : function (group) {
+       var _self = this,
+        subEls = _self._getGroupedElements(group);
+      subEls.hide();
+    },
+    _clear : function () {
+      var _self = this,
+        groups = _self.get('groups'),
+        tbodyEl = _self.get('tbodyEl');
+
+      BUI.Array.empty(groups);
+      tbodyEl.find('.' + CLS_GROUP).remove();
+
+    }
+  });
+
+  return Group;
+
+});/**
+ * @fileOverview 拖拽改变列的宽度
+ * @ignore
+ */
+
+define('bui/grid/plugins/columnresize',function (require) {
+  
+
+  var BUI = require('bui/common'),
+    NUM_DIS = 15,
+    NUM_MIN = 30,
+    STYLE_CURSOR = 'col-resize';
+
+  var Resize = function(cfg){
+    Resize.superclass.constructor.call(this,cfg);
+  };
+
+  Resize.ATTRS = {
+    /**
+     * @private
+     * 是否正在拖拽
+     * @type {Boolean}
+     */
+    resizing : {
+      value : false
+    },
+    //拖拽属性
+    draging : {
+
+    }
+  };
+
+  BUI.extend(Resize,BUI.Base);
+
+  BUI.augment(Resize,{
+
+    renderUI : function(grid){
+      this.set('grid',grid);
+    },
+
+    bindUI : function(grid){
+      var _self = this,
+        header = grid.get('header'),
+        curCol,
+        preCol,
+        direction;
+
+      header.get('el').delegate('.bui-grid-hd','mouseenter',function(ev){
+        var resizing = _self.get('resizing');
+        if(!resizing){
+          var sender = ev.currentTarget;
+          curCol = _self._getColumn(sender);
+          preCol = _self._getPreCol(curCol);
+        }
+      }).delegate('.bui-grid-hd','mouseleave',function(ev){
+        var resizing = _self.get('resizing');
+        if(!resizing && curCol){
+          curCol.get('el').css('cursor','');
+          curCol = null; 
+        }
+      }).delegate('.bui-grid-hd','mousemove',function(ev){
+        var resizing = _self.get('resizing');
+
+        if(!resizing && curCol){
+          var el = curCol.get('el'),
+            pageX = ev.pageX,
+            offset = el.offset(),
+            left = offset.left,
+            width = el.width();
+            
+          if(pageX - left < NUM_DIS && preCol){
+            el.css('cursor',STYLE_CURSOR);
+            direction = -1;
+          }else if((left + width) - pageX < NUM_DIS){
+            direction = 1;
+            el.css('cursor',STYLE_CURSOR);
+          }else{
+            curCol.get('el').css('cursor','');
+          }
+        }
+
+        if(resizing){
+          ev.preventDefault();
+          var draging = _self.get('draging'),
+            start = draging.start,
+            pageX = ev.pageX,
+            dif = pageX - start,
+            width = direction > 0 ? curCol.get('width') : preCol.get('width'),
+            toWidth = width + dif;
+          if(toWidth > NUM_MIN && toWidth < grid.get('el').width()){
+            draging.end = pageX;
+            _self.moveDrag(pageX);
+          }
+        }
+
+      }).delegate('.bui-grid-hd','mousedown',function(ev){
+        var resizing = _self.get('resizing');
+        if(!resizing && curCol && curCol.get('el').css('cursor') == STYLE_CURSOR){
+          ev.preventDefault();
+          _self.showDrag(ev.pageX);
+          bindDraging();
+        }
+      });
+
+      function callback(ev){
+        var draging = _self.get('draging')
+        if(curCol && draging){
+          var col = direction > 0 ? curCol : preCol,
+            width = col.get('width'),
+            dif = draging.end - draging.start;
+
+          _self.hideDrag();
+          if(grid.get('forceFit')){
+            var originWidth = col.get('originWidth'),
+              factor = width / originWidth,
+              toWidth = (width + dif) / factor;
+           // console.log(originWidth + ' ,'+width);
+            col.set('originWidth',toWidth);
+            col.set('width',toWidth);
+            //
+
+          }else{
+            col.set('width',width + dif);
+          }
+          
+        }    
+        $(document).off('mouseup',callback);
+      }
+
+      function bindDraging(){
+        $(document).on('mouseup',callback);
+      }
+
+    },
+    //显示拖拽
+    showDrag : function(pageX){
+      var _self = this,
+        grid = _self.get('grid'),
+        header = grid.get('header'),
+        bodyEl = grid.get('el').find('.bui-grid-body'),
+        height = header.get('el').height() + bodyEl.height(),
+        offset = header.get('el').offset(),
+        dragEl = _self.get('dragEl');
+
+      if(!dragEl){
+        var  tpl = '<div class="bui-drag-line"></div>';
+        dragEl = $(tpl).appendTo('body');
+        _self.set('dragEl',dragEl);
+      }
+
+      dragEl.css({
+        top: offset.top,
+        left: pageX,
+        height : height
+      });
+
+      _self.set('resizing',true);
+
+      _self.set('draging',{
+        start : pageX,
+        end : pageX
+      });
+      dragEl.show();
+    },
+    //关闭拖拽
+    hideDrag : function(){
+      var _self = this,
+        dragEl = _self.get('dragEl');
+      dragEl && dragEl.hide();
+      _self.set('draging',null);
+      _self.set('resizing',false);
+    },
+    //移动drag
+    moveDrag : function(pageX){
+      var _self = this,
+        dragEl = _self.get('dragEl');
+      dragEl && dragEl.css('left',pageX);
+    },
+    //获取点击的列
+    _getColumn : function(element){
+      var _self = this,
+        columns = _self.get('grid').get('columns'),
+        rst = null;
+      BUI.each(columns,function(column){
+        if(column.containsElement(element)){
+          rst = column;
+          return false;
+        }
+      });
+
+      return rst;
+    },
+    //获取前一个列
+    _getPreCol : function(col){
+      var _self = this,
+        columns = _self.get('grid').get('columns'),
+        rst = null;
+      BUI.each(columns,function(column,index){
+        if(column == col){
+          return false;
+        }else if(column.get('visible')){
+          rst = column;
+        }
+        
+      });
+
+      return rst;
+    }
+  });
+
+  return Resize;
 });
 /**
  * @fileOverview 选择框命名空间入口文件

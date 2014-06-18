@@ -26,13 +26,13 @@ function subTask(isAnt) {
         task = spawn('gulp', ['--gulpfile', file.path]);
       }
       task.stdout.on('data', function (data) {
-        console.log('stdout: ' + data);
+        process.stdout.write(data);
       });
       task.stderr.on('data', function (data) {
-        console.log('stderr: ' + data);
+        process.stdout.write(data);
       });
       task.on('close', function (code) {
-        console.log('child process exited with code ' + code);
+        process.stdout.write('child process exited with code ' + code);
         callback();
       });
     }
@@ -160,6 +160,38 @@ gulp.task('images', function() {
     ])
     .pipe(gulp.dest(dist + '/img'));
 
+});
+
+
+// 单元测试
+function runTest() {
+  // Creating a stream through which each file will pass
+  var stream = through.obj(function(file, enc, callback) {
+    if (file.isNull()) {
+      var task = spawn('totoro', ['--runner', file.path]);
+      task.stdout.on('data', function (data) {
+        process.stdout.write(data)
+      });
+      task.stderr.on('data', function (data) {
+        process.stdout.write(data)
+      });
+      task.on('close', function (code) {
+        process.stdout.write('child process exited with code ' + code);
+        callback();
+      });
+    }
+
+    //return callback();
+  });
+
+  // returning the file stream
+  return stream;
+};
+gulp.task('test', function(){
+  return gulp.src([
+    'tests/**/*.htm'
+    ], {read: false})
+    .pipe(runTest());
 });
 
 // 默认任务

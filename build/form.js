@@ -281,6 +281,7 @@ define('bui/form/basefield',['bui/common','bui/form/tips','bui/form/valid','bui/
     Valid = require('bui/form/valid'),
     Remote = require('bui/form/remote'),
     CLS_FIELD_ERROR = BUI.prefix + 'form-field-error',
+    CLS_TIP_CONTAINER = 'bui-form-tip-container',
     DATA_ERROR = 'data-error';
 
   /**
@@ -389,7 +390,9 @@ define('bui/form/basefield',['bui/common','bui/form/tips','bui/form/valid','bui/
       _self.on('afterRenderUI',function(){
         var tip = _self.get('tip');
         if(tip){
-          tip.trigger = _self.getTipTigger();
+          var trigger = _self.getTipTigger();
+          trigger && trigger.parent().addClass(CLS_TIP_CONTAINER);
+          tip.trigger = trigger;
           tip.autoRender = true;
           tip = new TipItem(tip);
           _self.set('tip',tip);
@@ -1164,8 +1167,13 @@ define('bui/form/selectfield',['bui/common','bui/form/basefield'],function (requ
   }
 
   function appendItem(value,text,select){
-     var str = '<option value="' + value +'">'+text+'</option>'
-    $(str).appendTo(select);
+    // var str = '<option value="' + value +'">'+text+'</option>'
+    // $(str).appendTo(select);
+    
+    // 上面那种写法在ie6下会报一个奇怪的错误，使用new Option则不会有这个问题
+    var option = new Option(text, value),
+      options = select[0].options;
+    options[options.length] = option;
   }
   /**
    * 表单选择域
@@ -1362,7 +1370,8 @@ define('bui/form/selectfield',['bui/common','bui/form/basefield'],function (requ
   });
 
   return selectField;
-});/**
+});
+/**
  * @fileOverview 表单日历域
  * @author dxq613@gmail.com
  * @ignore
@@ -3450,8 +3459,8 @@ define('bui/form/group/select',['bui/form/group/base','bui/data'],function (requ
           store.url = url;
         }
         store = new Data.TreeStore(store);
-        _self.set('store',store);
       }
+      _self.set('store',store);
     },
     bindUI : function  () {
       var _self = this;

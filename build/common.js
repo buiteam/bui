@@ -114,7 +114,8 @@ define('bui/util',function(require){
              * 子版本号
              * @type {Number}
              */
-            subVersion : 89,
+            subVersion : 96,
+
 
             /**
              * 是否为函数
@@ -1300,7 +1301,12 @@ define('bui/observable',['bui/util'],function (r) {
       var _self = this,
         callbacks = _self._getCallbacks(eventType);
       if(callbacks){
-        callbacks.remove(fn);
+        if(fn){
+          callbacks.remove(fn);
+        }else{
+          callbacks.empty();
+        }
+        
       }
       return _self;
     },
@@ -3939,7 +3945,24 @@ define('bui/component/uibase/align',['bui/ua'],function (require) {
                 /**/
             }
         },
+        __bindUI : function(){
+            var _self = this;
+            
+            _self.on('show',function(){
+                $(window).on('resize',BUI.wrapBehavior(_self,'handleWindowResize'));
+            });
 
+            _self.on('hide',function(){
+                $(window).off('resize',BUI.getWrapBehavior(_self,'handleWindowResize'));
+            });
+        },
+        //处理window resize事件
+        handleWindowResize : function(){
+            var _self = this,
+                align = _self.get('align');
+
+            _self.set('align',align);
+        },
         /*
          对齐 Overlay 到 node 的 points 点, 偏移 offset 处
          @method

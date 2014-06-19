@@ -10,7 +10,7 @@ var minifyCSS = require('gulp-minify-css');
 var n2a = require('gulp-native2ascii');
 var through = require('through2');
 var spawn = require('child_process').spawn;
-
+var colorful = require('colorful');
 
 //执行子任务
 function subTask(isAnt) {
@@ -179,12 +179,14 @@ function runTest() {
   // Creating a stream through which each file will pass
   var stream = through.obj(function(file, enc, callback) {
     if (file.isNull()) {
-      var task = spawn('totoro', ['--runner', file.path]);
+
+      process.stdout.write(colorful['magenta']("tototo start: ") + colorful['green'](file.relative) + '\n');
+      var task = spawn('totoro', ['--runner', file.path.replace(file.base, 'http://10.15.101.57/git/buiteam/bui/tests/')]);
       task.stdout.on('data', function (data) {
         process.stdout.write(data);
       });
       task.stderr.on('data', function (data) {
-        process.stdout.write(data);
+        process.stdout.write(colorful['red'](data));
       });
       task.on('close', function (code) {
         //process.stdout.write('child process exited with code ' + code);
@@ -198,9 +200,11 @@ function runTest() {
   // returning the file stream
   return stream;
 };
+
 gulp.task('test', function(){
   return gulp.src([
-    'tests/**/*.htm'
+    'tests/*/*.php',
+    '!tests/templates/*.php'
     ], {read: false})
     .pipe(runTest());
 });

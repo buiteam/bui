@@ -1,5 +1,4 @@
-bui
-===
+# bui
 
 基于jQuery的富客户端控件库
 - [文档库地址](http://www.builive.com/)
@@ -14,7 +13,6 @@ bui
 - build : js 和 css文件打包好的目录
 - src: js 的源文件
 - test: 单元测试，所有控件的单元测试都在内部，以php的方式提供
-- tools : 文件打包，以及生成文件的工具
 - docs ： 源文件中未提供，但是可以自己执行 tools/jsduck/run.bat文件，请不要提交此文件夹
 
 ## 打包
@@ -24,7 +22,7 @@ bui
 - 合并js，压缩js
 - 编译less生成 css,压缩css
 - 复制文件，将所有js合并成一个bui.js
-- 执行build.bat文件
+- 执行gulpfile.js文件
 
 ### 生成文档：
 

@@ -9,6 +9,7 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "colorful": "^2.1.0",
     "gulp": "^3.5.5",
     "gulp-clean": "~0.2.4",
     "gulp-concat": "~2.1.7",

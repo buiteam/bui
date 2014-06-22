@@ -55,8 +55,6 @@
 
 <?php include("../templates/script.php"); ?>
 
-<script src="../../build/calendar.js"></script>
-
 <script type="text/javascript">
   (function(){
     BUI.use(["./specs/calendar"], function(m) {

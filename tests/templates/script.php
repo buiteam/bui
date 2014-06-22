@@ -7,7 +7,6 @@
         map: [
           function(uri){
             if(uri.indexOf(loadPath) !== -1){
-              debugger;
               var usePath = uri.replace(loadPath, ''),
                 folder = usePath.replace(/^(\/|\\)([a-z]*)(\.)/, '$1$2/$2$3');
               // console.log(loadPath + folder);

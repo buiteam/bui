@@ -3,9 +3,9 @@
  * @ignore
  */
 
-define('bui/observable',['bui/util'],function (r) {
+define('bui/common/observable', ['bui/common/util'], function (require) {
   
-  var BUI = r('bui/util');
+  var BUI = require('bui/common/util');
   /**
    * @private
    * @class BUI.Observable.Callbacks

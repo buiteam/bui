@@ -3,10 +3,10 @@
  * @ignore
  */
 
-define('bui/component/uibase/decorate',['bui/array','bui/json','bui/component/manage'],function (require) {
+define('bui/component/uibase/decorate',['bui/common/array','bui/common/json','bui/component/manage'],function (require) {
   
-  var ArrayUtil = require('bui/array'),
-    JSON = require('bui/json'),
+  var ArrayUtil = require('bui/common/array'),
+    JSON = require('bui/common/json'),
     prefixCls = BUI.prefix,
     FIELD_PREFIX = 'data-',
     FIELD_CFG = FIELD_PREFIX + 'cfg',

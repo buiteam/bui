@@ -7,7 +7,7 @@
 
 define('bui/component/uibase/mask',function (require) {
 
-    var UA = require('bui/ua'),
+    var UA = require('bui/common/ua'),
         
         /**
          * 每组相同 prefixCls 的 position 共享一个遮罩

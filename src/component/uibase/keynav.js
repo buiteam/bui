@@ -3,9 +3,9 @@
  * @ignore
  */
 
-define('bui/component/uibase/keynav',['bui/keycode'],function (require) {
+define('bui/component/uibase/keynav',['bui/common/keycode'],function (require) {
 
-  var KeyCode = require('bui/keycode'),
+  var KeyCode = require('bui/common/keycode'),
       wrapBehavior = BUI.wrapBehavior,
       getWrapBehavior = BUI.getWrapBehavior;
   /**

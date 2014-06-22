@@ -9,9 +9,9 @@
  * @singleton
  */
 
-define('bui/array',['bui/util'],function (r) {
+define('bui/common/array',['bui/common/util'],function (require) {
   
-  var BUI = r('bui/util');
+  var BUI = require('bui/common/util');
   /**
    * @class BUI.Array
    * 数组帮助类

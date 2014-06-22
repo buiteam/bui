@@ -11,6 +11,14 @@ var n2a = require('gulp-native2ascii');
 var through = require('through2');
 var spawn = require('child_process').spawn;
 var colorful = require('colorful');
+var php = require('./php');
+
+function print(str, c){
+  if(c){
+    str =  colorful[c](str);
+  }
+  process.stdout.write(str);
+}
 
 //执行子任务
 function subTask(isAnt) {
@@ -26,10 +34,10 @@ function subTask(isAnt) {
         task = spawn('gulp', ['--gulpfile', file.path]);
       }
       task.stdout.on('data', function (data) {
-        process.stdout.write(data);
+        print(data);
       });
       task.stderr.on('data', function (data) {
-        process.stdout.write(data);
+        print(data);
       });
       task.on('close', function (code) {
         //process.stdout.write('child process exited with code ' + code);
@@ -180,18 +188,26 @@ function runTest() {
   var stream = through.obj(function(file, enc, callback) {
     if (file.isNull()) {
 
-      process.stdout.write(colorful['magenta']("tototo start: ") + colorful['green'](file.relative) + '\n');
-      var task = spawn('totoro', ['--runner', file.path.replace(file.base, 'http://10.15.101.57/git/buiteam/bui/tests/')]);
-      task.stdout.on('data', function (data) {
-        process.stdout.write(data);
-      });
-      task.stderr.on('data', function (data) {
-        process.stdout.write(colorful['red'](data));
-      });
-      task.on('close', function (code) {
-        //process.stdout.write('child process exited with code ' + code);
-        callback();
-      });
+      print("tototo start: ", 'magenta');
+      print(file.relative + '\n', 'green');
+
+      // var task = spawn('totoro', ['--runner', file.path.replace(file.base, 'http://10.15.101.57/git/buiteam/bui/tests/')]);
+      // task.stdout.on('data', function (data) {
+      //   process.stdout.write(data);
+      // });
+      // task.stderr.on('data', function (data) {
+      //   process.stdout.write(colorful['red'](data));
+      // });
+      // task.on('close', function (code) {
+      //   //process.stdout.write('child process exited with code ' + code);
+      //   callback();
+      // });
+      // 
+      // php(file.path, function(err, data) {
+      //   process.stdout.write(data);
+      //   callback();
+      // });
+      // 
     }
 
     //return callback();
@@ -205,8 +221,8 @@ gulp.task('test', function(){
   return gulp.src([
     'tests/*/*.php',
     '!tests/templates/*.php'
-    ], {read: false})
-    .pipe(runTest());
+    ])
+    .pipe(php({cwd: '.'}))
 });
 
 // 默认任务

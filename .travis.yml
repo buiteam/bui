@@ -4,7 +4,8 @@ node_js:
   - "0.10"
 
 before_script:
-  - npm install -g gulp
+  - npm install gulp -g 
+  - npm install totoro -g
 
 script:
   - gulp test

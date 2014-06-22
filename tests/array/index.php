@@ -6,7 +6,7 @@
 
 <script type="text/javascript">
   (function(){
-    BUI.use(["./specs/array"], function(m) {
+    seajs.use(["./specs/array"], function(m) {
       jasmine.getEnv().execute();
     })
   })();

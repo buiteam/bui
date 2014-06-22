@@ -3,7 +3,7 @@
  * @ignore
  * @author dxq613@gmail.com
  */
-define('bui/ua', function () {
+define('bui/common/ua', function () {
 
     function numberify(s) {
         var c = 0;

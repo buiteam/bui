@@ -39,35 +39,35 @@
     seajs.config(cfg);
   } 
 
-  BUI.setDebug = function (debug) {
-    BUI.debug = debug;
+  // BUI.setDebug = function (debug) {
+  //   BUI.debug = debug;
 
-    if(debug){
-      var map = seajs.data.map,
-        index = -1;
-      if(map){
-        for(var i = 0 ; i < map.length; i++){
-          var item = map[i];
-          if(item[0].toString() == /.js$/.toString() && item[1] == '-min.js'){
-            index = i;
-            break;
-          }
-        }
-        if(index != -1){
-          map.splice(index,1);
-        }
-      }      
-    }else{
-      seajs.config({
-        map : [
-          [/.js$/, '-min.js']
-        ]
-      });
-    }
-  }
+  //   if(debug){
+  //     var map = seajs.data.map,
+  //       index = -1;
+  //     if(map){
+  //       for(var i = 0 ; i < map.length; i++){
+  //         var item = map[i];
+  //         if(item[0].toString() == /.js$/.toString() && item[1] == '-min.js'){
+  //           index = i;
+  //           break;
+  //         }
+  //       }
+  //       if(index != -1){
+  //         map.splice(index,1);
+  //       }
+  //     }      
+  //   }//else{
+  //     // seajs.config({
+  //     //   map : [
+  //     //     [/.js$/, '-min.js']
+  //     //   ]
+  //     // });
+  //   //}
+  // }
 
   
-    BUI.setDebug(BUI.debug);
+  // BUI.setDebug(BUI.debug);
   
 
 })();

@@ -2,10 +2,10 @@
  * @fileOverview 由于jQuery只有 parseJSON ，没有stringify所以使用过程不方便
  * @ignore
  */
-define('bui/json',['bui/ua'],function (require) {
+define('bui/common/json',['bui/common/ua'],function (require) {
 
   var win = window,
-    UA = require('bui/ua'),
+    UA = require('bui/common/ua'),
     JSON = win.JSON;
 
   // ie 8.0.7600.16315@win7 json 有问题

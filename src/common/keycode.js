@@ -3,7 +3,7 @@
  * @ignore
  */
 
-define('bui/keycode',function () {
+define('bui/common/keycode',function () {
   
   /**
    * 键盘按键对应的数字值

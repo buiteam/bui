@@ -3,10 +3,10 @@
  * @ignore
  */
 
-define('bui/component/loader',['bui/util'],function (require) {
+define('bui/component/loader',['bui/common/util'],function (require) {
   'use strict';
-  var BUI = require('bui/util'),
-    Base = require('bui/base'),
+  var BUI = require('bui/common/util'),
+    Base = require('bui/common/base'),
     /**
      * @class BUI.Component.Loader
      * @extends BUI.Base

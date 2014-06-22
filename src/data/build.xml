@@ -20,7 +20,7 @@
 	<!-- 合并js --> 
 	<target name="combine.js" depends="prepare">
         <concat destfile="${des.dir}/data.js" encoding="${charset}" outputencoding="${charset}">
-			<path path="base.js"/>
+			<path path="data.js"/>
 			<path path="sortable.js"/>
 			<path path="proxy.js"/>
 			<path path="abstractstore.js"/>

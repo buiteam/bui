@@ -11,14 +11,7 @@
  * </code></pre>
  * @singleton
  */
-window.BUI = window.BUI || {};
-
-if(!BUI.use && window.seajs){
-    BUI.use = seajs.use;
-    BUI.config = seajs.config;
-}
-
-define('bui/util',function(require){
+define('bui/common/util',function(require){
 
     //兼容jquery 1.6以下
     (function($){

@@ -975,17 +975,17 @@ seajs.config = function(configData) {
           map.splice(index,1);
         }
       }      
-    }else{
-      seajs.config({
-        map : [
-          [/.js$/, '-min.js']
-        ]
-      });
-    }
+    }//else{
+      // seajs.config({
+      //   map : [
+      //     [/.js$/, '-min.js']
+      //   ]
+      // });
+    //}
   }
 
   
-    BUI.setDebug(BUI.debug);
+  BUI.setDebug(BUI.debug);
   
 
 })();

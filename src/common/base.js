@@ -4,10 +4,10 @@
  * copied by dxq613@gmail.com
  * @ignore
  */
-define('bui/base',['bui/observable'],function(require){
+define('bui/common/base',['bui/common/observable'],function(require){
 
   var INVALID = {},
-    Observable = require('bui/observable');
+    Observable = require('bui/common/observable');
 
   function ensureNonEmpty(obj, name, create) {
         var ret = obj[name] || {};

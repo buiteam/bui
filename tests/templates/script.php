@@ -5,17 +5,7 @@
 
       seajs.config({
         map: [
-          function(uri){
-            if(uri.indexOf(loadPath) !== -1){
-              var usePath = uri.replace(loadPath, ''),
-                folder = usePath.replace(/^(\/|\\)([a-z]*)(\.)/, '$1$2/$2$3');
-              // console.log(loadPath + folder);
-              return loadPath + folder;
-            }
-            // return loadPath + folder;
-            
-            // return uri;
-          }
+          [/(\/|\\)(src)(\/|\\)([a-z]*)(\.js)$/, '$1$2$3$4/$4$5']
         ]
       })
 

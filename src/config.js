@@ -8,20 +8,19 @@
         node.getAttribute("src", 4);
   }
 
-  //根据当前config.js的引用路径来获取use的路径
+  var BUI = window.BUI = window.BUI || {};
+  BUI.use = seajs.use;
+  BUI.config = seajs.config;
+
   var scripts = document.getElementsByTagName('script'),
     src = getScriptAbsoluteSrc(scripts[scripts.length - 1]),
     loaderPath = src.substring(0, src.lastIndexOf('/'));
 
-  //项目路径的配置
+  //配置bui的路径
   seajs.config({
     paths: {
       'bui': loaderPath
     }
   });
 
-  var BUI = window.BUI = window.BUI || {};
-  BUI.use = seajs.use;
-  BUI.config = seajs.config;
-  
 })();

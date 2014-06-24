@@ -1917,7 +1917,7 @@ fieldset[disabled] .x-icon-question.active {
   background-position: -432px -144px;
 }
 .icon-fullscreen {
-  background-position: -456px -144px;
+  background-position: -455.99999999px -144px;
 }
 .icon-warning {
   background-position: 0 -168px;
@@ -1956,7 +1956,7 @@ fieldset[disabled] .x-icon-question.active {
   background-position: -1px -227px;
 }
 .icon-caret-right {
-  background-position: -1px -234.99999999px;
+  background-position: -1px -235px;
 }
 .icon-caret-left-top {
   background-position: -1px -244px;

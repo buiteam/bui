@@ -1,13 +1,13 @@
 <script>
     (function() {
 
-      var loadPath = seajs.data.paths['bui'];
+      // var loadPath = seajs.data.paths['bui'];
 
-      seajs.config({
-        map: [
-          [/(\/|\\)(src)(\/|\\)([a-z]*)(\.js)$/, '$1$2$3$4/$4$5']
-        ]
-      })
+      // seajs.config({
+      //   map: [
+      //     [/(\/|\\)(src)(\/|\\)([a-z]*)(\.js)$/, '$1$2$3$4/$4$5']
+      //   ]
+      // })
 
       //BUI.setDebug(true);
       

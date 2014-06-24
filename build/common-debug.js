@@ -23,6 +23,7 @@
   });
 // })();
 
+
 /**
  * @class BUI
  * 控件库的工具方法，这些工具方法直接绑定到BUI对象上
@@ -718,6 +719,7 @@ define('bui/common/util',function(require){
 
     return BUI;
 });
+
 /**
  * @fileOverview 数组帮助类
  * @ignore
@@ -942,6 +944,7 @@ define('bui/common/array',['bui/common/util'],function (require) {
   };
   return BUI.Array;
 });
+
 /**
  * @fileOverview 观察者模式实现事件
  * @ignore
@@ -1330,6 +1333,7 @@ define('bui/common/observable', ['bui/common/util'], function (require) {
 
   return Observable;
 });
+
 /**
  * @fileOverview UA,jQuery的 $.browser 对象非常难使用
  * @ignore
@@ -1395,6 +1399,7 @@ define('bui/common/ua', function () {
 
     return UA;
 });
+
 /**
  * @fileOverview 由于jQuery只有 parseJSON ，没有stringify所以使用过程不方便
  * @ignore
@@ -1674,6 +1679,7 @@ define('bui/common/json',['bui/common/ua'],function (require) {
 
   return JSON;
 });
+
 /**
  * @fileOverview 键盘值
  * @ignore
@@ -1865,6 +1871,7 @@ define('bui/common/keycode',function () {
 
   return keyCode;
 });
+
 /*
  * @fileOverview Date Format 1.2.3
  * @ignore
@@ -2331,6 +2338,7 @@ define('bui/common/date', function () {
 
     return DateUtil;
 });
+
 /**
  * @fileOverview  Base UI控件的最基础的类
  * @author yiminghe@gmail.com

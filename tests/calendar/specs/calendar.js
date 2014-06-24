@@ -1,4 +1,4 @@
-define(function(require){
+define(['bui/calendar'], function(require){
   var CLS_DATE = 'x-datepicker-date',
     CLS_TEXT_YEAR= 'year-text',
     CLS_PREV = 'x-datepicker-prev',

@@ -63,7 +63,7 @@ gulp.task('prepare', function() {
 //
 gulp.task('copy', function() {
   gulp.src([
-    'src/common/adapter.js',
+    'src/adapter/adapter.js',
     'src/config.js'
     ])
     .pipe(gulp.dest(dist));

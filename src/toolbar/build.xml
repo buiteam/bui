@@ -20,7 +20,7 @@
 	<!-- 合并js --> 
 	<target name="combine.js" depends="prepare">
         <concat destfile="${des.dir}/toolbar.js" encoding="${charset}" outputencoding="${charset}">
-			<path path="base.js"/>
+			<path path="toolbar.js"/>
 			<path path="baritem.js"/>
 			<path path="bar.js"/>
 			<path path="pagingbar.js"/>

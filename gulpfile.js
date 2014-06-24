@@ -11,7 +11,6 @@ var n2a = require('gulp-native2ascii');
 var through = require('through2');
 var spawn = require('child_process').spawn;
 var colorful = require('colorful');
-var php = require('./php');
 
 function print(str, c){
   if(c){
@@ -63,7 +62,10 @@ gulp.task('prepare', function() {
 
 //
 gulp.task('copy', function() {
-  gulp.src(['src/common/adapter.js'])
+  gulp.src([
+    'src/common/adapter.js',
+    'src/config.js'
+    ])
     .pipe(gulp.dest(dist));
   gulp.src(['src/extensions/**/*.js'])
     .pipe(gulp.dest(dist + '/extensions'));
@@ -97,8 +99,8 @@ gulp.task('sub',['ant'], function () {
 //合并js 
 gulp.task('seed.js', ['sub'], function(){
   return gulp.src([
-      'src/loader/sea.js',
-      'src/loader/config.js',
+      'src/seajs/sea.js',
+      'src/config.js',
       dist + '/common.js',
       dist + '/cookie.js'
     ]).pipe(concat('seed.js'))
@@ -108,8 +110,8 @@ gulp.task('seed.js', ['sub'], function(){
 //合并bui.js
 gulp.task('bui.js', ['sub'], function(){
   return gulp.src([
-      'src/loader/sea.js',
-      'src/loader/config.js',
+      'src/seajs/sea.js',
+      'src/config.js',
       dist + '/common.js',
       dist + '/cookie.js',
       dist + '/data.js',
@@ -222,7 +224,7 @@ gulp.task('test', function(){
     'tests/*/*.php',
     '!tests/templates/*.php'
     ])
-    .pipe(php({cwd: '.'}))
+    //.pipe(php({cwd: '.'}))
 });
 
 // 默认任务

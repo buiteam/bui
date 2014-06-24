@@ -1,0 +1,1 @@
+!function(){function t(t){return t.hasAttribute?t.src:t.getAttribute("src",4)}var e=window.BUI=window.BUI||{};e.use=seajs.use,e.config=seajs.config;var s=document.getElementsByTagName("script"),n=s[s.length-1],i=t(n),r=i.substring(0,i.lastIndexOf("/"));e.loaderScript=n,seajs.config({paths:{bui:r}})}();

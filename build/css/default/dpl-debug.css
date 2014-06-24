@@ -1335,13 +1335,13 @@ s {
   background-position: -288px -48px;
 }
 .icon-align-right {
-  background-position: -311.99999999px -48px;
+  background-position: -312px -48px;
 }
 .icon-align-justify {
   background-position: -336px -48px;
 }
 .icon-list {
-  background-position: -360px -48px;
+  background-position: -359.99999999px -48px;
 }
 .icon-indent-left {
   background-position: -384px -48px;
@@ -1545,7 +1545,7 @@ s {
   background-position: -48px -144px;
 }
 .icon-certificate {
-  background-position: -71.99999999px -144px;
+  background-position: -72px -144px;
 }
 .icon-thumbs-up {
   background-position: -96px -144px;
@@ -1563,7 +1563,7 @@ s {
   background-position: -192px -144px;
 }
 .icon-hand-down {
-  background-position: -216px -144px;
+  background-position: -216px -143.99999999px;
 }
 .icon-circle-arrow-right {
   background-position: -240px -144px;

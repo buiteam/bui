@@ -5,17 +5,18 @@
 (function(){
 var BASE = 'bui/data/';
 define('bui/data',['bui/common',BASE + 'sortable',BASE + 'proxy',BASE + 'abstractstore',BASE + 'store',
-  BASE + 'node',BASE + 'treestore'],function(r) {
+  BASE + 'node',BASE + 'treestore'],function(require) {
   
-  var BUI = r('bui/common'),
+  var BUI = require('bui/common'),
     Data = BUI.namespace('Data');
+
   BUI.mix(Data,{
-    Sortable : r(BASE + 'sortable'),
-    Proxy : r(BASE + 'proxy'),
-    AbstractStore : r(BASE + 'abstractstore'),
-    Store : r(BASE + 'store'),
-    Node : r(BASE + 'node'),
-    TreeStore : r(BASE + 'treestore')
+    Sortable : require(BASE + 'sortable'),
+    Proxy : require(BASE + 'proxy'),
+    AbstractStore : require(BASE + 'abstractstore'),
+    Store : require(BASE + 'store'),
+    Node : require(BASE + 'node'),
+    TreeStore : require(BASE + 'treestore')
   });
 
   return Data;

@@ -1,1 +1,1078 @@
-define("bui/toolbar",["bui/common","bui/toolbar/baritem","bui/toolbar/bar","bui/toolbar/pagingbar","bui/toolbar/numberpagingbar"],function(require){var t=require("bui/common"),e=t.namespace("Toolbar");return t.mix(e,{BarItem:require("bui/toolbar/baritem"),Bar:require("bui/toolbar/bar"),PagingBar:require("bui/toolbar/pagingbar"),NumberPagingBar:require("bui/toolbar/numberpagingbar")}),e}),define("bui/toolbar/baritem",function(){var t=BUI.prefix,e=BUI.Component,a=e.UIBase,n=e.View.extend([a.ListItemView]),r=e.Controller.extend([a.ListItem],{renderUI:function(){var e=this.get("el");e.addClass(t+"inline-block"),e.attr("id")||e.attr("id",this.get("id"))}},{ATTRS:{elTagName:{view:!0,value:"li"},selectable:{value:!1},focusable:{value:!1},xview:{value:n}}},{xclass:"bar-item",priority:1}),i=r.extend({_uiSetDisabled:function(e){var a=this,n=a.get("el"),r=e?"addClass":"removeClass";n.find("button").attr("disabled",e)[r](t+"button-disabled")},_uiSetChecked:function(e){var a=this,n=a.get("el"),r=e?"addClass":"removeClass";n.find("button")[r](t+"button-checked")},_uiSetText:function(t){var e=this,a=e.get("el");a.find("button").text(t)},_uiSetbtnCls:function(t){var e=this,a=e.get("el");a.find("button").addClass(t)}},{ATTRS:{checked:{value:!1},tpl:{view:!0,value:'<button type="button" class="{btnCls}">{text}</button>'},btnCls:{sync:!1},text:{sync:!1,value:""}}},{xclass:"bar-item-button",priority:2}),u=r.extend({renderUI:function(){var t=this.get("el");t.attr("role","separator")}},{xclass:"bar-item-separator",priority:2}),o=r.extend({},{ATTRS:{width:{view:!0,value:2}}},{xclass:"bar-item-spacer",priority:2}),s=r.extend({_uiSetText:function(t){var e=this,a=e.get("el");a.html(t)}},{ATTRS:{text:{value:""}}},{xclass:"bar-item-text",priority:2});return r.types={button:i,separator:u,spacer:o,text:s},r}),define("bui/toolbar/bar",function(){var t=BUI.Component,e=t.UIBase,a=t.View.extend({renderUI:function(){var t=this.get("el");t.attr("role","toolbar"),t.attr("id")||t.attr("id",BUI.guid("bar"))}}),n=t.Controller.extend([e.ChildList],{getItem:function(t){return this.getChild(t)}},{ATTRS:{elTagName:{view:!0,value:"ul"},defaultChildClass:{value:"bar-item"},focusable:{value:!1},xview:{value:a}}},{xclass:"bar",priority:1});return n}),define("bui/toolbar/pagingbar",["bui/toolbar/bar"],function(require){var t=require("bui/toolbar/bar"),e=BUI.Component,a=e.UIBase.Bindable,n=BUI.prefix,r="first",i="prev",u="next",o="last",s="skip",l="refresh",g="totalPage",b="curPage",c="totalCount",m=[r,i,u,o,s,l],p=[g,b,c],v=t.extend([a],{initializer:function(){var t=this,e=t.get("children"),a=t.get("items"),n=t.get("store");a?BUI.each(a,function(a){BUI.isString(a)&&(a=BUI.Array.contains(a,m)?t._getButtonItem(a):BUI.Array.contains(a,p)?t._getTextItem(a):{xtype:a}),e.push(a)}):(a=t._getItems(),BUI.each(a,function(t){e.push(t)})),n&&n.get("pageSize")&&t.set("pageSize",n.get("pageSize"))},bindUI:function(){var t=this;t._bindButtonEvent()},jumpToPage:function(t){if(!(0>=t||t>this.get("totalPage"))){var e=this,a=e.get("store"),n=e.get("pageSize"),r=t-1,i=r*n,u=e.fire("beforepagechange",{from:e.get("curPage"),to:t});a&&u!==!1&&a.load({start:i,limit:n,pageIndex:r})}},_afterStoreLoad:function(t){var e,a,n,r,i=this,u=i.get("pageSize"),o=0;o=t.get("start"),a=t.getTotalCount(),e=a-o>u?o+t.getCount()-1:a,r=parseInt((a+u-1)/u,10),r=r>0?r:1,n=parseInt(o/u,10)+1,i.set("start",o),i.set("end",e),i.set("totalCount",a),i.set("curPage",n),i.set("totalPage",r),i._setAllButtonsState(),i._setNumberPages()},_bindButtonEvent:function(){function t(){var t=parseInt(e._getCurrentPageValue(),10);e._isPageAllowRedirect(t)?e.jumpToPage(t):e._setCurrentPageValue(e.get("curPage"))}var e=this;e._bindButtonItemEvent(r,function(){e.jumpToPage(1)}),e._bindButtonItemEvent(i,function(){e.jumpToPage(e.get("curPage")-1)}),e._bindButtonItemEvent(u,function(){e.jumpToPage(e.get("curPage")+1)}),e._bindButtonItemEvent(o,function(){e.jumpToPage(e.get("totalPage"))}),e._bindButtonItemEvent(s,function(){t()}),e._bindButtonItemEvent(l,function(){e.jumpToPage(e.get("curPage"))});var a=e.getItem(b);a&&a.get("el").on("keyup",function(e){e.stopPropagation(),13===e.keyCode&&t()})},_bindButtonItemEvent:function(t,e){var a=this,n=a.getItem(t);n&&n.on("click",e)},onLoad:function(t){var e=this,a=e.get("store");e._afterStoreLoad(a,t)},_getItems:function(){var t=this,e=t.get("items");return e&&e.length?e:(e=[],e.push(t._getButtonItem(r)),e.push(t._getButtonItem(i)),e.push(t._getSeparator()),e.push(t._getTextItem(g)),e.push(t._getTextItem(b)),e.push(t._getButtonItem(s)),e.push(t._getSeparator()),e.push(t._getButtonItem(u)),e.push(t._getButtonItem(o)),e.push(t._getSeparator()),e.push(t._getTextItem(c)),e)},_getButtonItem:function(t){var e=this;return{id:t,xclass:"bar-item-button",text:e.get(t+"Text"),disabled:!0,elCls:e.get(t+"Cls")}},_getSeparator:function(){return{xclass:"bar-item-separator"}},_getTextItem:function(t){var e=this;return{id:t,xclass:"bar-item-text",text:e._getTextItemTpl(t)}},_getTextItemTpl:function(t){var e=this,a=e.getAttrVals();return BUI.substitute(this.get(t+"Tpl"),a)},_isPageAllowRedirect:function(t){var e=this;return t&&t>0&&t<=e.get("totalPage")&&t!==e.get("curPage")},_setAllButtonsState:function(){var t=this,e=t.get("store");e&&t._setButtonsState([i,u,r,o,s],!0),1===t.get("curPage")&&t._setButtonsState([i,r],!1),t.get("curPage")===t.get("totalPage")&&t._setButtonsState([u,o],!1)},_setButtonsState:function(t,e){var a=this,n=a.get("children");BUI.each(n,function(a){-1!==BUI.Array.indexOf(a.get("id"),t)&&a.set("disabled",!e)})},_setNumberPages:function(){var t=this,e=t.getItems();BUI.each(e,function(e){"bar-item-text"===e.__xclass&&e.set("content",t._getTextItemTpl(e.get("id")))})},_getCurrentPageValue:function(t){var e=this;if(t=t||e.getItem(b)){var a=t.get("el").find("input");return a.val()}},_setCurrentPageValue:function(t,e){var a=this;if(e=e||a.getItem(b)){var n=e.get("el").find("input");n.val(t)}}},{ATTRS:{firstText:{value:"\u9996 \u9875"},firstCls:{value:n+"pb-first"},prevText:{value:"\u4e0a\u4e00\u9875"},prevCls:{value:n+"pb-prev"},nextText:{value:"\u4e0b\u4e00\u9875"},nextCls:{value:n+"pb-next"},lastText:{value:"\u672b \u9875"},lastCls:{value:n+"pb-last"},skipText:{value:"\u786e\u5b9a"},skipCls:{value:n+"pb-skip"},refreshText:{value:"\u5237\u65b0"},refreshCls:{value:n+"pb-refresh"},totalPageTpl:{value:"\u5171 {totalPage} \u9875"},curPageTpl:{value:'\u7b2c <input type="text" autocomplete="off" class="'+n+'pb-page" size="20" value="{curPage}" name="inputItem"> \u9875'},totalCountTpl:{value:"\u5171{totalCount}\u6761\u8bb0\u5f55"},autoInitItems:{value:!1},curPage:{value:0},totalPage:{value:0},totalCount:{value:0},pageSize:{value:30},store:{}},ID_FIRST:r,ID_PREV:i,ID_NEXT:u,ID_LAST:o,ID_SKIP:s,ID_REFRESH:l,ID_TOTAL_PAGE:g,ID_CURRENT_PAGE:b,ID_TOTAL_COUNT:c},{xclass:"pagingbar",priority:2});return v}),define("bui/toolbar/numberpagingbar",["bui/toolbar/pagingbar"],function(require){var t=(BUI.Component,require("bui/toolbar/pagingbar")),e=BUI.prefix,a=e+"button-number",n=t.extend({_getItems:function(){var e=this,a=e.get("items");return a?a:(a=[],a.push(e._getButtonItem(t.ID_PREV)),a.push(e._getButtonItem(t.ID_NEXT)),a)},_getButtonItem:function(t){var e=this;return{id:t,content:'<a href="javascript:;">'+e.get(t+"Text")+"</a>",disabled:!0}},_bindButtonEvent:function(){var t=this,e=t.get("numberButtonCls");t.constructor.superclass._bindButtonEvent.call(this),t.get("el").delegate("a","click",function(t){t.preventDefault()}),t.on("click",function(a){var n=a.target;if(n&&n.get("el").hasClass(e)){var r=n.get("id");t.jumpToPage(r)}})},_setNumberPages:function(){var t=this;t._setNumberButtons()},_setNumberButtons:function(){var t,e=this,a=e.get("curPage"),n=e.get("totalPage"),r=e._getNumberItems(a,n);e._clearNumberButtons(),BUI.each(r,function(t){e._appendNumberButton(t)}),t=e.getItem(a),t&&t.set("selected",!0)},_appendNumberButton:function(t){{var e=this,a=e.getItemCount();e.addItemAt(t,a-1)}},_clearNumberButtons:function(){for(var t=this,e=(t.getItems(),t.getItemCount());e>2;)t.removeItemAt(e-2),e=t.getItemCount()},_getNumberItems:function(t,e){function a(t,e){for(var a=t;e>=a;a++)u.push(i._getNumberItem(a))}function n(){u.push(i._getEllipsisItem())}var r,i=this,u=[],o=i.get("maxLimitCount"),s=i.get("showRangeCount");if(o>e)r=e,a(1,e);else{var l=o>=t?1:t-s,g=t+s,b=e>g?g>o?g:o:e;l>1&&(a(1,1),l>2&&n()),r=b,a(l,b)}return e>r&&(e-1>r&&n(),a(e,e)),u},_getEllipsisItem:function(){var t=this;return{disabled:!0,content:t.get("ellipsisTpl")}},_getNumberItem:function(t){var e=this;return{id:t,elCls:e.get("numberButtonCls")}}},{ATTRS:{itemStatusCls:{value:{selected:"active",disabled:"disabled"}},itemTpl:{value:'<a href="">{id}</a>'},prevText:{value:"<<"},nextText:{value:">>"},maxLimitCount:{value:4},showRangeCount:{value:1},numberButtonCls:{value:a},ellipsisTpl:{value:'<a href="#">...</a>'}}},{xclass:"pagingbar-number",priority:3});return n});
+/**
+ * @fileOverview 工具栏命名空间入口
+ * @ignore
+ */
+
+define('bui/toolbar',['bui/common','bui/toolbar/baritem','bui/toolbar/bar','bui/toolbar/pagingbar','bui/toolbar/numberpagingbar'],function (require) {
+  var BUI = require('bui/common'),
+    Toolbar = BUI.namespace('Toolbar');
+
+  BUI.mix(Toolbar,{
+    BarItem : require('bui/toolbar/baritem'),
+    Bar : require('bui/toolbar/bar'),
+    PagingBar : require('bui/toolbar/pagingbar'),
+    NumberPagingBar : require('bui/toolbar/numberpagingbar')
+  });
+  return Toolbar;
+});/**
+ * @fileOverview buttons or controls of toolbar
+ * @author dxq613@gmail.com, yiminghe@gmail.com
+ * @ignore
+ */
+define('bui/toolbar/baritem',function(){
+
+  /**
+   * @name BUI.Toolbar
+   * @namespace 工具栏命名空间
+   * @ignore
+   */
+  var PREFIX = BUI.prefix,
+    Component = BUI.Component,
+    UIBase = Component.UIBase;
+    
+  /**
+   * barItem的视图类
+   * @class BUI.Toolbar.BarItemView
+   * @extends BUI.Component.View
+   * @mixins BUI.Component.UIBase.ListItemView
+   * @private
+   */
+  var BarItemView = Component.View.extend([UIBase.ListItemView]);
+  /**
+     * 工具栏的子项，包括按钮、文本、链接和分隔符等
+     * @class BUI.Toolbar.BarItem
+     * @extends BUI.Component.Controller
+     */
+  var BarItem = Component.Controller.extend([UIBase.ListItem],{
+    
+    /**
+    * render baritem 's dom
+    * @protected
+    */
+    renderUI:function() {
+        var el = this.get('el');
+        el.addClass(PREFIX + 'inline-block');
+        if (!el.attr('id')) {
+            el.attr('id', this.get('id'));
+        }
+    }
+  },{
+    ATTRS:
+    {
+      elTagName :{
+          view : true,
+          value : 'li'
+      },
+      /**
+       * 是否可选择
+       * <pre><code>
+       * 
+       * </code></pre>
+       * @cfg {Object} [selectable = false]
+       */
+      selectable : {
+        value : false
+      },
+      /**
+      * 是否获取焦点
+      * @default {boolean} false
+      */
+      focusable : {
+        value : false
+      },
+      xview: {
+        value : BarItemView
+      }
+    }
+  },{
+    xclass : 'bar-item',
+    priority : 1  
+  });
+
+  /**
+     * 工具栏的子项，添加按钮
+     * xclass : 'bar-item-button'
+     * @extends  BUI.Toolbar.BarItem
+     * @class BUI.Toolbar.BarItem.Button
+     */
+  var ButtonBarItem = BarItem.extend({
+    
+    _uiSetDisabled : function(value){
+      var _self = this,
+        el = _self.get('el'),
+        method = value ? 'addClass' : 'removeClass';
+      
+      el.find('button').attr('disabled',value)[method](PREFIX + 'button-disabled');
+    },
+    _uiSetChecked: function(value){
+      var _self = this,
+        el = _self.get('el'),
+        method = value ? 'addClass' : 'removeClass';
+
+        el.find('button')[method](PREFIX + 'button-checked');
+    },
+    _uiSetText : function(v){
+      var _self = this,
+        el = _self.get('el');
+      el.find('button').text(v);
+    },
+    _uiSetbtnCls : function(v){
+      var _self = this,
+        el = _self.get('el');
+      el.find('button').addClass(v);
+    }
+    
+  },{
+    ATTRS:
+    {
+      /**
+       * 是否选中
+       * @type {Boolean}
+       */
+      checked : {
+        value :false
+      },
+      /**
+       * 模板
+       * @type {String}
+       */
+      tpl : {
+        view : true,
+        value : '<button type="button" class="{btnCls}">{text}</button>'
+      },
+      /**
+       * 按钮的样式
+       * @cfg {String} btnCls
+       */
+      /**
+       * 按钮的样式
+       * @type {String}
+       */
+      btnCls:{
+        sync:false
+      },
+      /**
+      * The text to be used as innerHTML (html tags are accepted).
+      * @cfg {String} text
+      */
+      /**
+      * The text to be used as innerHTML (html tags are accepted).
+      * @type {String} 
+      */
+      text : {
+        sync:false,
+        value : ''
+      }
+    }
+  },{
+    xclass : 'bar-item-button',
+    priority : 2  
+  });
+  
+  /**
+     * 工具栏项之间的分隔符
+     * xclass:'bar-item-separator'
+     * @extends  BUI.Toolbar.BarItem
+     * @class BUI.Toolbar.BarItem.Separator
+     */
+  var SeparatorBarItem = BarItem.extend({
+    /* render separator's dom
+    * @protected
+        *
+    */
+    renderUI:function() {
+            var el = this.get('el');
+            el .attr('role', 'separator');
+        }
+  },
+  {
+    xclass : 'bar-item-separator',
+    priority : 2  
+  });
+
+  
+  /**
+     * 工具栏项之间的空白
+     * xclass:'bar-item-spacer'
+     * @extends  BUI.Toolbar.BarItem
+     * @class BUI.Toolbar.BarItem.Spacer
+     */
+  var SpacerBarItem = BarItem.extend({
+    
+  },{
+    ATTRS:
+    {
+      /**
+      * 空白宽度
+      * @type {Number}
+      */
+      width : {
+        view:true,
+        value : 2
+      }
+    }
+  },{
+    xclass : 'bar-item-spacer',
+    priority : 2  
+  });
+  
+
+  /**
+     * 显示文本的工具栏项
+     * xclass:'bar-item-text'
+     * @extends  BUI.Toolbar.BarItem
+     * @class BUI.Toolbar.BarItem.Text
+     */
+  var TextBarItem = BarItem.extend({
+    _uiSetText : function(text){
+      var _self = this,
+        el = _self.get('el');
+      el.html(text);
+    }
+  },{
+    ATTRS:
+    {
+      
+      /**
+      * 文本用作 innerHTML (html tags are accepted).
+      * @cfg {String} text
+      */
+      /**
+      * 文本用作 innerHTML (html tags are accepted).
+      * @default {String} ""
+      */
+      text : {
+        value : ''
+      }
+    }
+  },{
+    xclass : 'bar-item-text',
+    priority : 2  
+  });
+  
+
+  BarItem.types = {
+    'button' : ButtonBarItem,
+    'separator' : SeparatorBarItem,
+    'spacer' : SpacerBarItem,
+    'text'  : TextBarItem
+  };
+  
+
+  return BarItem;
+});/**
+ * @fileOverview A collection of commonly used function buttons or controls represented in compact visual form.
+ * @author dxq613@gmail.com, yiminghe@gmail.com
+ * @ignore
+ */
+define('bui/toolbar/bar',function(){
+
+	var Component = BUI.Component,
+    UIBase = Component.UIBase;
+		
+	/**
+	 * bar的视图类
+	 * @class BUI.Toolbar.BarView
+	 * @extends BUI.Component.View
+	 * @private
+	 */
+	var barView = Component.View.extend({
+
+		renderUI:function() {
+        var el = this.get('el');
+        el.attr('role', 'toolbar');
+           
+        if (!el.attr('id')) {
+            el.attr('id', BUI.guid('bar'));
+        }
+    }
+	});
+
+	/**
+	 * 工具栏
+   * 可以放置按钮、文本、链接等，是分页栏的基类
+   * xclass : 'bar'
+   * <p>
+   * <img src="../assets/img/class-toolbar.jpg"/>
+   * </p>
+   * ## 按钮组
+   * <pre><code>
+   *   BUI.use('bui/toolbar',function(Toolbar){
+   *     var buttonGroup = new Toolbar.Bar({
+   *       elCls : 'button-group',
+   *       defaultChildCfg : {
+   *         elCls : 'button button-small'
+   *       },
+   *       children : [{content : '增加'},{content : '修改'},{content : '删除'}],
+   *       
+   *       render : '#b1'
+   *     });
+   *
+   *     buttonGroup.render();
+   *   });
+   * </code></pre>
+   * @class BUI.Toolbar.Bar
+   * @extends BUI.Component.Controller
+   * @mixins BUI.Component.UIBase.ChildList
+   */
+	var Bar = Component.Controller.extend([UIBase.ChildList],	
+	{
+		/**
+		* 通过id 获取项
+		* @param {String|Number} id the id of item 
+		* @return {BUI.Toolbar.BarItem}
+		*/
+		getItem : function(id){
+			return this.getChild(id);
+		}
+	},{
+		ATTRS:
+		{
+      elTagName :{
+          view : true,
+          value : 'ul'
+      },
+      /**
+       * 默认子项的样式
+       * @type {String}
+       * @override
+       */
+      defaultChildClass: {
+        value : 'bar-item'
+      },
+			/**
+			* 获取焦点
+      * @protected
+      * @ignore
+			*/
+			focusable : {
+				value : false
+			},
+			/**
+			* @private
+      * @ignore
+			*/
+			xview : {
+				value : barView	
+			}
+		}
+	},{
+		xclass : 'bar',
+		priority : 1	
+	});
+
+	return Bar;
+});/**
+ * @fileOverview  a specialized toolbar that is bound to a Grid.Store and provides automatic paging control.
+ * @author dxq613@gmail.com, yiminghe@gmail.com
+ * @ignore
+ */
+define('bui/toolbar/pagingbar',['bui/toolbar/bar'],function(require) {
+
+    var Bar = require('bui/toolbar/bar'),
+        Component = BUI.Component,
+        Bindable = Component.UIBase.Bindable;
+
+    var PREFIX = BUI.prefix,
+		ID_FIRST = 'first',
+        ID_PREV = 'prev',
+        ID_NEXT = 'next',
+        ID_LAST = 'last',
+        ID_SKIP = 'skip',
+        ID_REFRESH = 'refresh',
+        ID_TOTAL_PAGE = 'totalPage',
+        ID_CURRENT_PAGE = 'curPage',
+        ID_TOTAL_COUNT = 'totalCount',
+        ID_BUTTONS = [ID_FIRST,ID_PREV,ID_NEXT,ID_LAST,ID_SKIP,ID_REFRESH],
+        ID_TEXTS = [ID_TOTAL_PAGE,ID_CURRENT_PAGE,ID_TOTAL_COUNT];
+
+    /**
+     * 分页栏
+     * xclass:'pagingbar'
+     * @extends BUI.Toolbar.Bar
+     * @mixins BUI.Component.UIBase.Bindable
+     * @class BUI.Toolbar.PagingBar
+     */
+    var PagingBar = Bar.extend([Bindable],
+        {
+            /**
+             * From Bar, Initialize this paging bar items.
+             *
+             * @protected
+             */
+            initializer:function () {
+                var _self = this,
+                    children = _self.get('children'),
+                    items = _self.get('items'),
+                    store = _self.get('store');
+                if(!items){
+                    items = _self._getItems();
+                    BUI.each(items, function (item) {
+                        children.push(item);//item
+                    });
+                }else{
+                    BUI.each(items, function (item,index) { //转换对应的分页栏
+                        if(BUI.isString(item)){
+                            if(BUI.Array.contains(item,ID_BUTTONS)){
+                                item = _self._getButtonItem(item);
+                            }else if(BUI.Array.contains(item,ID_TEXTS)){
+                            
+                                item = _self._getTextItem(item);
+                            }else{
+                                item = {xtype : item};
+                            }
+
+                        }
+                        children.push(item);
+                    }); 
+                }
+                
+                if (store && store.get('pageSize')) {
+                    _self.set('pageSize', store.get('pageSize'));
+                }
+            },
+            /**
+             * bind page change and store events
+             *
+             * @protected
+             */
+            bindUI:function () {
+                var _self = this;
+                _self._bindButtonEvent();
+                //_self._bindStoreEvents();
+
+            },
+            /**
+             * skip to page
+             * this method can fire "beforepagechange" event,
+             * if you return false in the handler the action will be canceled
+             * @param {Number} page target page
+             */
+            jumpToPage:function (page) {
+                if (page <= 0 || page > this.get('totalPage')) {
+                    return;
+                }
+                var _self = this,
+                    store = _self.get('store'),
+                    pageSize = _self.get('pageSize'),
+                    index = page - 1,
+                    start = index * pageSize;
+                var result = _self.fire('beforepagechange', {from:_self.get('curPage'), to:page});
+                if (store && result !== false) {
+                    store.load({ start:start, limit:pageSize, pageIndex:index });
+                }
+            },
+            //after store loaded data,reset the information of paging bar and buttons state
+            _afterStoreLoad:function (store, params) {
+                var _self = this,
+                    pageSize = _self.get('pageSize'),
+                    start = 0, //页面的起始记录
+                    end, //页面的结束记录
+                    totalCount, //记录的总数
+                    curPage, //当前页
+                    totalPage;//总页数;
+
+                start = store.get('start');
+                
+                //设置加载数据后翻页栏的状态
+                totalCount = store.getTotalCount();
+                end = totalCount - start > pageSize ? start + store.getCount() - 1: totalCount;
+                totalPage = parseInt((totalCount + pageSize - 1) / pageSize, 10);
+                totalPage = totalPage > 0 ? totalPage : 1;
+                curPage = parseInt(start / pageSize, 10) + 1;
+
+                _self.set('start', start);
+                _self.set('end', end);
+                _self.set('totalCount', totalCount);
+                _self.set('curPage', curPage);
+                _self.set('totalPage', totalPage);
+
+                //设置按钮状态
+                _self._setAllButtonsState();
+                _self._setNumberPages();
+            },
+
+            //bind page change events
+            _bindButtonEvent:function () {
+                var _self = this;
+
+                //first page handler
+                _self._bindButtonItemEvent(ID_FIRST, function () {
+                    _self.jumpToPage(1);
+                });
+
+                //previous page handler
+                _self._bindButtonItemEvent(ID_PREV, function () {
+                    _self.jumpToPage(_self.get('curPage') - 1);
+                });
+
+                //previous page next
+                _self._bindButtonItemEvent(ID_NEXT, function () {
+                    _self.jumpToPage(_self.get('curPage') + 1);
+                });
+
+                //previous page next
+                _self._bindButtonItemEvent(ID_LAST, function () {
+                    _self.jumpToPage(_self.get('totalPage'));
+                });
+                //skip to one page
+                _self._bindButtonItemEvent(ID_SKIP, function () {
+                    handleSkip();
+                });
+
+                //refresh
+                _self._bindButtonItemEvent(ID_REFRESH, function () {
+                    _self.jumpToPage(_self.get('curPage'));
+                });
+                //input page number and press key "enter"
+                var curPage = _self.getItem(ID_CURRENT_PAGE);
+                if(curPage){
+                    curPage.get('el').on('keyup', function (event) {
+                        event.stopPropagation();
+                        if (event.keyCode === 13) {
+                            handleSkip();
+                        }
+                    });
+                }
+                
+                //when click skip button or press key "enter",cause an action of skipping page
+                /**
+                 * @private
+                 * @ignore
+                 */
+                function handleSkip() {
+                    var value = parseInt(_self._getCurrentPageValue(), 10);
+                    if (_self._isPageAllowRedirect(value)) {
+                        _self.jumpToPage(value);
+                    } else {
+                        _self._setCurrentPageValue(_self.get('curPage'));
+                    }
+                }
+            },
+            // bind button item event
+            _bindButtonItemEvent:function (id, func) {
+                var _self = this,
+                    item = _self.getItem(id);
+                if (item) {
+                    item.on('click', func);
+                }
+            },
+            onLoad:function (params) {
+                var _self = this,
+                    store = _self.get('store');
+                _self._afterStoreLoad(store, params);
+            },
+            //get the items of paging bar
+            _getItems:function () {
+                var _self = this,
+                    items = _self.get('items');
+                if (items && items.length) {
+                    return items;
+                }
+                //default items
+                items = [];
+                //first item
+                items.push(_self._getButtonItem(ID_FIRST));
+                //previous item
+                items.push(_self._getButtonItem(ID_PREV));
+                //separator item
+                items.push(_self._getSeparator());
+                //total page of store
+                items.push(_self._getTextItem(ID_TOTAL_PAGE));
+                //current page of store
+                items.push(_self._getTextItem(ID_CURRENT_PAGE));
+                //button for skip to
+                items.push(_self._getButtonItem(ID_SKIP));
+                //separator item
+                items.push(_self._getSeparator());
+                //next item
+                items.push(_self._getButtonItem(ID_NEXT));
+                //last item
+                items.push(_self._getButtonItem(ID_LAST));
+                //separator item
+                items.push(_self._getSeparator());
+                //current page of store
+                items.push(_self._getTextItem(ID_TOTAL_COUNT));
+                return items;
+            },
+            //get item which the xclass is button
+            _getButtonItem:function (id) {
+                var _self = this;
+                return {
+                    id:id,
+                    xclass:'bar-item-button',
+                    text:_self.get(id + 'Text'),
+                    disabled:true,
+                    elCls:_self.get(id + 'Cls')
+                };
+            },
+            //get separator item
+            _getSeparator:function () {
+                return {xclass:'bar-item-separator'};
+            },
+            //get text item
+            _getTextItem:function (id) {
+                var _self = this;
+                return {
+                    id:id,
+                    xclass:'bar-item-text',
+                    text:_self._getTextItemTpl(id)
+                };
+            },
+            //get text item's template
+            _getTextItemTpl:function (id) {
+                var _self = this,
+                    obj = _self.getAttrVals();
+                return BUI.substitute(this.get(id + 'Tpl'), obj);
+            },
+            //Whether to allow jump, if it had been in the current page or not within the scope of effective page, not allowed to jump
+            _isPageAllowRedirect:function (value) {
+                var _self = this;
+                return value && value > 0 && value <= _self.get('totalPage') && value !== _self.get('curPage');
+            },
+            //when page changed, reset all buttons state
+            _setAllButtonsState:function () {
+                var _self = this,
+                    store = _self.get('store');
+                if (store) {
+                    _self._setButtonsState([ID_PREV, ID_NEXT, ID_FIRST, ID_LAST, ID_SKIP], true);
+                }
+
+                if (_self.get('curPage') === 1) {
+                    _self._setButtonsState([ID_PREV, ID_FIRST], false);
+                }
+                if (_self.get('curPage') === _self.get('totalPage')) {
+                    _self._setButtonsState([ID_NEXT, ID_LAST], false);
+                }
+            },
+            //if button id in the param buttons,set the button state
+            _setButtonsState:function (buttons, enable) {
+                var _self = this,
+                    children = _self.get('children');
+                BUI.each(children, function (child) {
+                    if (BUI.Array.indexOf(child.get('id'), buttons) !== -1) {
+                        child.set('disabled', !enable);
+                    }
+                });
+            },
+            //show the information of current page , total count of pages and total count of records
+            _setNumberPages:function () {
+                var _self = this,
+                    items = _self.getItems();/*,
+                    totalPageItem = _self.getItem(ID_TOTAL_PAGE),
+                    totalCountItem = _self.getItem(ID_TOTAL_COUNT);
+                if (totalPageItem) {
+                    totalPageItem.set('content', _self._getTextItemTpl(ID_TOTAL_PAGE));
+                }
+                _self._setCurrentPageValue(_self.get(ID_CURRENT_PAGE));
+                if (totalCountItem) {
+                    totalCountItem.set('content', _self._getTextItemTpl(ID_TOTAL_COUNT));
+                }*/
+                BUI.each(items,function(item){
+                    if(item.__xclass === 'bar-item-text'){
+                        item.set('content', _self._getTextItemTpl(item.get('id')));
+                    }
+                });
+
+            },
+            _getCurrentPageValue:function (curItem) {
+                var _self = this;
+                curItem = curItem || _self.getItem(ID_CURRENT_PAGE);
+                if(curItem){
+                    var textEl = curItem.get('el').find('input');
+                    return textEl.val();
+                }
+                
+            },
+            //show current page in textbox
+            _setCurrentPageValue:function (value, curItem) {
+                var _self = this;
+                curItem = curItem || _self.getItem(ID_CURRENT_PAGE);
+                if(curItem){
+                    var textEl = curItem.get('el').find('input');
+                    textEl.val(value);
+                }
+                
+            }
+        }, {
+            ATTRS:
+     
+            {
+               
+                /**
+                 * the text of button for first page
+                 * @default {String} "首 页"
+                 */
+                firstText:{
+                    value:'首 页'
+                },
+                /**
+                 * the cls of button for first page
+                 * @default {String} "bui-pb-first"
+                 */
+                firstCls:{
+                    value:PREFIX + 'pb-first'
+                },
+                /**
+                 * the text for previous page button
+                 * @default {String} "前一页"
+                 */
+                prevText:{
+                    value:'上一页'
+                },
+                /**
+                 * the cls for previous page button
+                 * @default {String} "bui-pb-prev"
+                 */
+                prevCls:{
+                    value: PREFIX + 'pb-prev'
+                },
+                /**
+                 * the text for next page button
+                 * @default {String} "下一页"
+                 */
+                nextText:{
+                    value:'下一页'
+                },
+                /**
+                 * the cls for next page button
+                 * @default {String} "bui-pb-next"
+                 */
+                nextCls:{
+                    value: PREFIX + 'pb-next'
+                },
+                /**
+                 * the text for last page button
+                 * @default {String} "末 页"
+                 */
+                lastText:{
+                    value:'末 页'
+                },
+                /**
+                 * the cls for last page button
+                 * @default {String} "bui-pb-last"
+                 */
+                lastCls:{
+                    value:PREFIX + 'pb-last'
+                },
+                /**
+                 * the text for skip page button
+                 * @default {String} "跳 转"
+                 */
+                skipText:{
+                    value:'确定'
+                },
+                /**
+                 * the cls for skip page button
+                 * @default {String} "bui-pb-last"
+                 */
+                skipCls:{
+                    value:PREFIX + 'pb-skip'
+                },
+                refreshText : {
+                    value : '刷新'
+                },
+                refreshCls : {
+                    value:PREFIX + 'pb-refresh'
+                },
+                /**
+                 * the template of total page info
+                 * @default {String} '共 {totalPage} 页'
+                 */
+                totalPageTpl:{
+                    value:'共 {totalPage} 页'
+                },
+                /**
+                 * the template of current page info
+                 * @default {String} '第 &lt;input type="text" autocomplete="off" class="bui-pb-page" size="20" name="inputItem"&gt; 页'
+                 */
+                curPageTpl:{
+                    value:'第 <input type="text" '+
+                        'autocomplete="off" class="'+PREFIX+'pb-page" size="20" value="{curPage}" name="inputItem"> 页'
+                },
+                /**
+                 * the template of total count info
+                 * @default {String} '共{totalCount}条记录'
+                 */
+                totalCountTpl:{
+                    value:'共{totalCount}条记录'
+                },
+                autoInitItems : {
+                    value : false
+                },
+                /**
+                 * current page of the paging bar
+                 * @private
+                 * @default {Number} 0
+                 */
+                curPage:{
+                    value:0
+                },
+                /**
+                 * total page of the paging bar
+                 * @private
+                 * @default {Number} 0
+                 */
+                totalPage:{
+                    value:0
+                },
+                /**
+                 * total count of the store that the paging bar bind to
+                 * @private
+                 * @default {Number} 0
+                 */
+                totalCount:{
+                    value:0
+                },
+                /**
+                 * The number of records considered to form a 'page'.
+                 * if store set the property ,override this value by store's pageSize
+                 * @private
+                 */
+                pageSize:{
+                    value:30
+                },
+                /**
+                 * The {@link BUI.Data.Store} the paging toolbar should use as its data source.
+                 * @protected
+                 */
+                store:{
+
+                }
+            },
+            ID_FIRST:ID_FIRST,
+            ID_PREV:ID_PREV,
+            ID_NEXT:ID_NEXT,
+            ID_LAST:ID_LAST,
+            ID_SKIP:ID_SKIP,
+            ID_REFRESH: ID_REFRESH,
+            ID_TOTAL_PAGE:ID_TOTAL_PAGE,
+            ID_CURRENT_PAGE:ID_CURRENT_PAGE,
+            ID_TOTAL_COUNT:ID_TOTAL_COUNT
+        }, {
+            xclass:'pagingbar',
+            priority:2
+        });
+
+    return PagingBar;
+
+});/**
+ * @fileOverview  a specialized toolbar that is bound to a Grid.Store and provides automatic paging control.
+ * @author 
+ * @ignore
+ */
+define('bui/toolbar/numberpagingbar',['bui/toolbar/pagingbar'],function(require) {
+
+    var Component = BUI.Component,
+        PBar = require('bui/toolbar/pagingbar');
+
+    var PREFIX = BUI.prefix,
+        NUMBER_CONTAINER = 'numberContainer',
+        CLS_NUMBER_BUTTON = PREFIX + 'button-number';
+
+    /**
+     * 数字分页栏
+     * xclass:'pagingbar-number'
+     * @extends BUI.Toolbar.PagingBar
+     * @class BUI.Toolbar.NumberPagingBar
+     */
+    var NumberPagingBar = PBar.extend(
+        {
+        /**
+        * get the initial items of paging bar
+        * @protected
+        *
+        */
+        _getItems : function(){
+            var _self = this,
+                items = _self.get('items');
+
+            if(items){
+                return items;
+            }
+            //default items
+            items = [];
+            //previous item
+            items.push(_self._getButtonItem(PBar.ID_PREV));
+            //next item
+            items.push(_self._getButtonItem(PBar.ID_NEXT));
+            return items;
+        },
+        _getButtonItem : function(id){
+          var _self = this;
+
+          return {
+              id:id,
+              content:'<a href="javascript:;">'+_self.get(id + 'Text')+'</a>',
+              disabled:true
+          };
+        },
+        /**
+        * bind buttons event
+        * @protected
+        *
+        */
+        _bindButtonEvent : function(){
+            var _self = this,
+                cls = _self.get('numberButtonCls');
+            _self.constructor.superclass._bindButtonEvent.call(this);
+            _self.get('el').delegate('a','click',function(ev){
+              ev.preventDefault();
+            });
+            _self.on('click',function(ev){
+              var item = ev.target;
+              if(item && item.get('el').hasClass(cls)){
+                var page = item.get('id');
+                _self.jumpToPage(page);
+              }
+            });
+        },
+        //设置页码信息，设置 页数 按钮
+        _setNumberPages : function(){
+            var _self = this;
+
+            _self._setNumberButtons();
+        },
+        //设置 页数 按钮
+        _setNumberButtons : function(){
+            var _self = this,
+                curPage = _self.get('curPage'),
+                totalPage = _self.get('totalPage'),
+                numberItems = _self._getNumberItems(curPage,totalPage),
+                curItem;
+
+            _self._clearNumberButtons();
+
+            BUI.each(numberItems,function(item){
+                _self._appendNumberButton(item);
+            });
+            curItem = _self.getItem(curPage);
+            if(curItem){
+                curItem.set('selected',true);
+            }
+               
+        },
+        _appendNumberButton : function(cfg){
+          var _self = this,
+            count = _self.getItemCount();
+          var item = _self.addItemAt(cfg,count - 1);
+        },
+        _clearNumberButtons : function(){
+          var _self = this,
+            items = _self.getItems(),
+            count = _self.getItemCount();
+
+          while(count > 2){
+            _self.removeItemAt(count-2);  
+            count = _self.getItemCount();          
+          }
+        },
+        //获取所有页码按钮的配置项
+        _getNumberItems : function(curPage, totalPage){
+            var _self = this,
+                result = [],
+                maxLimitCount = _self.get('maxLimitCount'),
+                showRangeCount = _self.get('showRangeCount'),
+                maxPage;
+
+            function addNumberItem(from,to){
+                for(var i = from ;i<=to;i++){
+                    result.push(_self._getNumberItem(i));
+                }
+            }
+
+            function addEllipsis(){
+                result.push(_self._getEllipsisItem());
+            }
+
+            if(totalPage < maxLimitCount){
+                maxPage = totalPage;
+                addNumberItem(1,totalPage);
+            }else{
+                var startNum = (curPage <= maxLimitCount) ? 1 : (curPage - showRangeCount),
+                    lastLimit = curPage + showRangeCount,
+                    endNum = lastLimit < totalPage ? (lastLimit > maxLimitCount ? lastLimit : maxLimitCount) : totalPage;
+                if (startNum > 1) {
+                    addNumberItem(1, 1);
+                    if(startNum > 2){
+                        addEllipsis();
+                    }
+                }
+                maxPage = endNum;
+                addNumberItem(startNum, endNum);
+            }
+
+            if (maxPage < totalPage) {
+                if(maxPage < totalPage -1){
+                    addEllipsis();
+                }
+                addNumberItem(totalPage, totalPage);
+            }
+
+            return result;
+        },
+        //获取省略号
+        _getEllipsisItem : function(){
+            var _self = this;
+            return {
+                disabled: true,           
+                content : _self.get('ellipsisTpl')
+            };
+        },
+        //生成页面按钮配置项
+        _getNumberItem : function(page){
+            var _self = this;
+            return {
+                id : page,
+                elCls : _self.get('numberButtonCls')
+            };
+        }
+        
+    },{
+        ATTRS:{
+            itemStatusCls : {
+              value : {
+                selected : 'active',
+                disabled : 'disabled'
+              }
+            },
+            itemTpl : {
+              value : '<a href="">{id}</a>'
+            },
+            prevText : {
+              value : '<<'
+            },
+            nextText : {
+              value : '>>'
+            },
+            /**
+            * 当页码超过该设置页码时候显示省略号
+            * @default {Number} 4
+            */
+            maxLimitCount : {
+                value : 4
+            },
+            showRangeCount : {
+                value : 1   
+            },
+            /**
+            * the css used on number button
+            */
+            numberButtonCls:{
+                value : CLS_NUMBER_BUTTON
+            },
+            /**
+            * the template of ellipsis which represent the omitted pages number
+            */
+            ellipsisTpl : {
+                value : '<a href="#">...</a>'
+            }
+        }
+    },{
+        xclass : 'pagingbar-number',
+        priority : 3    
+    });
+
+    return NumberPagingBar;
+
+});

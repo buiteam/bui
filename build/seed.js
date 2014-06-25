@@ -1,1 +1,3882 @@
-!function(t,e){function n(t){return function(e){return Object.prototype.toString.call(e)==="[object "+t+"]"}}function r(){return E++}function i(t){return t.match(D)[0]}function o(t){for(t=t.replace(x,"/");t.match(F);)t=t.replace(F,"/");return t}function a(t){var e=t.length-1,n=t.charAt(e);return"#"===n?t.substring(0,e):".js"===t.substring(e-2)||t.indexOf("?")>0||".css"===t.substring(e-3)||"/"===n?t:t+".js"}function u(t){var e=A.alias;return e&&I(e[t])?e[t]:t}function s(t){var e,n=A.paths;return n&&(e=t.match(C))&&I(n[e[1]])&&(t=n[e[1]]+e[2]),t}function c(t){var e=A.vars;return e&&t.indexOf("{")>-1&&(t=t.replace(j,function(t,n){return I(e[n])?e[n]:t})),t}function l(t){var e=A.map,n=t;if(e)for(var r=0,i=e.length;i>r;r++){var o=e[r];if(n=T(o)?o(t)||t:t.replace(o[0],o[1]),n!==t)break}return n}function f(t,e){var n,r=t.charAt(0);if(k.test(t))n=t;else if("."===r)n=o((e?i(e):A.cwd)+t);else if("/"===r){var a=A.cwd.match(H);n=a?a[0]+t.substring(1):t}else n=A.base+t;return n}function d(t,e){if(!t)return"";t=u(t),t=s(t),t=c(t),t=a(t);var n=f(t,e);return n=l(n)}function h(t){return t.hasAttribute?t.src:t.getAttribute("src",4)}function m(t,e,n){var r=q.test(t),i=P.createElement(r?"link":"script");if(n){var o=T(n)?n(t):n;o&&(i.charset=o)}v(i,e,r),r?(i.rel="stylesheet",i.href=t):(i.async=!0,i.src=t),O=i,G?W.insertBefore(i,G):W.appendChild(i),O=null}function v(t,e,n){var r=n&&(X||!("onload"in t));return r?void setTimeout(function(){g(t,e)},1):void(t.onload=t.onerror=t.onreadystatechange=function(){Y.test(t.readyState)&&(t.onload=t.onerror=t.onreadystatechange=null,n||A.debug||W.removeChild(t),t=null,e())})}function g(t,e){var n,r=t.sheet;if(X)r&&(n=!0);else if(r)try{r.cssRules&&(n=!0)}catch(i){"NS_ERROR_DOM_SECURITY_ERR"===i.name&&(n=!0)}setTimeout(function(){n?e():g(t,e)},20)}function y(){if(O)return O;if(S&&"interactive"===S.readyState)return S;for(var t=W.getElementsByTagName("script"),e=t.length-1;e>=0;e--){var n=t[e];if("interactive"===n.readyState)return S=n}}function p(t){var e=[];return t.replace(z,"").replace(Z,function(t,n,r){r&&e.push(r)}),e}function b(t,e){this.uri=t,this.dependencies=e||[],this.exports=null,this.status=0,this._waitings={},this._remain=0}if(!t.seajs){var _=t.seajs={version:"2.1.1"},A=_.data={},U=n("Object"),I=n("String"),w=Array.isArray||n("Array"),T=n("Function"),E=0,M=A.events={};_.on=function(t,e){var n=M[t]||(M[t]=[]);return n.push(e),_},_.off=function(t,e){if(!t&&!e)return M=A.events={},_;var n=M[t];if(n)if(e)for(var r=n.length-1;r>=0;r--)n[r]===e&&n.splice(r,1);else delete M[t];return _};var O,S,N,B=_.emit=function(t,e){var n,r=M[t];if(r)for(r=r.slice();n=r.shift();)n(e);return _},D=/[^?#]*\//,x=/\/\.\//g,F=/\/[^/]+\/\.\.\//,C=/^([^/:]+)(\/.+)$/,j=/{([^{]+)}/g,k=/^\/\/.|:\//,H=/^.*?\/\/.*?\//,P=document,$=location,R=i($.href),V=P.getElementsByTagName("script"),L=P.getElementById("seajsnode")||V[V.length-1],J=i(h(L)||R),W=P.getElementsByTagName("head")[0]||P.documentElement,G=W.getElementsByTagName("base")[0],q=/\.css(?:\?|$)/i,Y=/^(?:loaded|complete|undefined)$/,X=1*navigator.userAgent.replace(/.*AppleWebKit\/(\d+)\..*/,"$1")<536,Z=/"(?:\\"|[^"])*"|'(?:\\'|[^'])*'|\/\*[\S\s]*?\*\/|\/(?:\\\/|[^\/\r\n])+\/(?=[^\/])|\/\/.*|\.\s*require|(?:^|[^$])\brequire\s*\(\s*(["'])(.+?)\1\s*\)/g,z=/\\\\/g,K=_.cache={},Q={},te={},ee={},ne=b.STATUS={FETCHING:1,SAVED:2,LOADING:3,LOADED:4,EXECUTING:5,EXECUTED:6};b.prototype.resolve=function(){for(var t=this,e=t.dependencies,n=[],r=0,i=e.length;i>r;r++)n[r]=b.resolve(e[r],t.uri);return n},b.prototype.load=function(){var t=this;if(!(t.status>=ne.LOADING)){t.status=ne.LOADING;var e=t.resolve();B("load",e);for(var n,r=t._remain=e.length,i=0;r>i;i++)n=b.get(e[i]),n.status<ne.LOADED?n._waitings[t.uri]=(n._waitings[t.uri]||0)+1:t._remain--;if(0===t._remain)return void t.onload();var o={};for(i=0;r>i;i++)n=K[e[i]],n.status<ne.FETCHING?n.fetch(o):n.status===ne.SAVED&&n.load();for(var a in o)o.hasOwnProperty(a)&&o[a]()}},b.prototype.onload=function(){var t=this;t.status=ne.LOADED,t.callback&&t.callback();var e,n,r=t._waitings;for(e in r)r.hasOwnProperty(e)&&(n=K[e],n._remain-=r[e],0===n._remain&&n.onload());delete t._waitings,delete t._remain},b.prototype.fetch=function(t){function e(){m(o.requestUri,o.onRequest,o.charset)}function n(){delete Q[a],te[a]=!0,N&&(b.save(i,N),N=null);var t,e=ee[a];for(delete ee[a];t=e.shift();)t.load()}var r=this,i=r.uri;r.status=ne.FETCHING;var o={uri:i};B("fetch",o);var a=o.requestUri||i;return!a||te[a]?void r.load():Q[a]?void ee[a].push(r):(Q[a]=!0,ee[a]=[r],B("request",o={uri:i,requestUri:a,onRequest:n,charset:A.charset}),void(o.requested||(t?t[o.requestUri]=e:e())))},b.prototype.exec=function(){function require(t){return b.get(require.resolve(t)).exec()}var t=this;if(t.status>=ne.EXECUTING)return t.exports;t.status=ne.EXECUTING;var n=t.uri;require.resolve=function(t){return b.resolve(t,n)},require.async=function(t,e){return b.use(t,e,n+"_async_"+r()),require};var i=t.factory,o=T(i)?i(require,t.exports={},t):i;return o===e&&(o=t.exports),null!==o||q.test(n)||B("error",t),delete t.factory,t.exports=o,t.status=ne.EXECUTED,B("exec",t),o},b.resolve=function(t,e){var n={id:t,refUri:e};return B("resolve",n),n.uri||d(n.id,e)},b.define=function(t,n,r){var i=arguments.length;1===i?(r=t,t=e):2===i&&(r=n,w(t)?(n=t,t=e):n=e),!w(n)&&T(r)&&(n=p(r.toString()));var o={id:t,uri:b.resolve(t),deps:n,factory:r};if(!o.uri&&P.attachEvent){var a=y();a&&(o.uri=a.src)}B("define",o),o.uri?b.save(o.uri,o):N=o},b.save=function(t,e){var n=b.get(t);n.status<ne.SAVED&&(n.id=e.id||t,n.dependencies=e.deps||[],n.factory=e.factory,n.status=ne.SAVED)},b.get=function(t,e){return K[t]||(K[t]=new b(t,e))},b.use=function(e,n,r){var i=b.get(r,w(e)?e:[e]);i.callback=function(){for(var e=[],r=i.resolve(),o=0,a=r.length;a>o;o++)e[o]=K[r[o]].exec();n&&n.apply(t,e),delete i.callback},i.load()},b.preload=function(t){var e=A.preload,n=e.length;n?b.use(e,function(){e.splice(0,n),b.preload(t)},A.cwd+"_preload_"+r()):t()},_.use=function(t,e){return b.preload(function(){b.use(t,e,A.cwd+"_use_"+r())}),_},b.define.cmd={},t.define=b.define,_.Module=b,A.fetchedList=te,A.cid=r,_.resolve=d,_.require=function(t){return(K[b.resolve(t)]||{}).exports};var re=/^(.+?\/)(\?\?)?(seajs\/)+/;A.base=(J.match(re)||["",J])[1],A.dir=J,A.cwd=R,A.charset="utf-8",A.preload=function(){var t=[],e=$.search.replace(/(seajs-\w+)(&|$)/g,"$1=1$2");return e+=" "+P.cookie,e.replace(/(seajs-\w+)=1/g,function(e,n){t.push(n)}),t}(),_.config=function(t){for(var e in t){var n=t[e],r=A[e];if(r&&U(r))for(var i in n)r[i]=n[i];else w(r)?n=r.concat(n):"base"===e&&("/"===n.slice(-1)||(n+="/"),n=f(n)),A[e]=n}return B("config",t),_}}}(this),function(){function t(t){return t.hasAttribute?t.src:t.getAttribute("src",4)}var e=window.BUI=window.BUI||{};e.use=seajs.use,e.config=seajs.config;var n=document.getElementsByTagName("script"),r=n[n.length-1],i=t(r),o=i.substring(0,i.lastIndexOf("/"));e.loaderScript=r,seajs.config({paths:{bui:o}})}(),define("bui/common",function(require){var t=require("bui/common/util");return t.mix(t,{UA:require("bui/common/ua"),JSON:require("bui/common/json"),Date:require("bui/common/date"),Array:require("bui/common/array"),KeyCode:require("bui/common/keycode"),Observable:require("bui/common/observable"),Base:require("bui/common/base"),Component:require("bui/component")}),t}),define("bui/common/util",function(){function t(t,n){for(var r in n)n.hasOwnProperty(r)&&(t[r]=t[r]||{},e(t[r],n[r]))}function e(t,e){for(var n in e)e.hasOwnProperty(n)&&("value"==n?BUI.isObject(e[n])?(t[n]=t[n]||{},BUI.mix(t[n],e[n])):BUI.isArray(e[n])?(t[n]=t[n]||[],t[n]=t[n].concat(e[n])):t[n]=e[n]:t[n]=e[n])}!function(t){t.fn&&(t.fn.on=t.fn.on||t.fn.bind,t.fn.off=t.fn.off||t.fn.unbind)}(jQuery);var n=window,r=document,i=Object.prototype,o=i.toString,a="body",u="documentElement",s="scroll",c=s+"Width",l=s+"Height",f="ATTRS",d="PARSER",h="guid";$.extend(BUI,{version:1,subVersion:96,isFunction:function(t){return"function"==typeof t},isArray:"isArray"in Array?Array.isArray:function(t){return"[object Array]"===o.call(t)},isDate:function(t){return"[object Date]"===o.call(t)},isObject:"[object Object]"===o.call(null)?function(t){return null!==t&&void 0!==t&&"[object Object]"===o.call(t)&&void 0===t.ownerDocument}:function(t){return"[object Object]"===o.call(t)},isNumeric:function(t){return!isNaN(parseFloat(t))&&isFinite(t)},augment:function(t){if(!BUI.isFunction(t))return t;for(var e=1;e<arguments.length;e++)BUI.mix(t.prototype,arguments[e].prototype||arguments[e]);return t},cloneObject:function(t){var e=BUI.isArray(t)?[]:{};return BUI.mix(!0,e,t)},error:function(t){if(BUI.debug)throw t},extend:function(t,e,n,r){BUI.isFunction(e)||(n=e,e=t,t=function(){});var i=Object.create?function(t,e){return Object.create(t,{constructor:{value:e}})}:function(t,e){function n(){}n.prototype=t;var r=new n;return r.constructor=e,r},o=i(e.prototype,t);return t.prototype=BUI.mix(o,t.prototype),t.superclass=i(e.prototype,e),BUI.mix(o,n),BUI.mix(t,r),t},guid:function(){var t={};return function(e){return e=e||BUI.prefix+h,t[e]?t[e]+=1:t[e]=1,e+t[e]}}(),isString:function(t){return"string"==typeof t},isNumber:function(t){return"number"==typeof t},isBoolean:function(t){return"boolean"==typeof t},log:function(t){BUI.debug&&n.console&&n.console.log&&n.console.log(t)},merge:function(){var t=$.makeArray(arguments),e=t[0];return BUI.isBoolean(e)?(t.shift(),t.unshift({}),t.unshift(e)):t.unshift({}),BUI.mix.apply(null,t)},mix:function(){return $.extend.apply(null,arguments)},app:function(t){return window[t]||(window[t]={namespace:function(e){return BUI.namespace(e,window[t])}}),window[t]},mixAttrs:t,mixAttr:e,mixin:function(e,n,r){r=r||[f,d];var i=n;if(i){e.mixins=i;var o={},a=i.concat(e);BUI.each(a,function(e){e&&BUI.each(r,function(n){e[n]&&(o[n]=o[n]||{},"ATTRS"==n?t(o[n],e[n]):BUI.mix(o[n],e[n]))})}),BUI.each(o,function(t,n){e[n]=t});var u={};BUI.each(a,function(t){if(t){var e=t.prototype;for(var n in e)e.hasOwnProperty(n)&&(u[n]=e[n])}}),BUI.each(u,function(t,n){e.prototype[n]=t})}return e},namespace:function(t,e){if(e=e||BUI,!t)return e;for(var n=t.split("."),r=e,i=0;i<n.length;i++){var o=n[i];r[o]||(r[o]={}),r=r[o]}return r},prefix:"bui-",substitute:function(t,e,n){return BUI.isString(t)&&(BUI.isObject(e)||BUI.isArray(e))?t.replace(n||/\\?\{([^{}]+)\}/g,function(t,n){return"\\"===t.charAt(0)?t.slice(1):void 0===e[n]?"":e[n]}):t},ucfirst:function(t){return t+="",t.charAt(0).toUpperCase()+t.substring(1)},isInView:function(t){var e=t.left,n=t.top,r=BUI.viewportWidth(),i=BUI.viewportHeight(),o=BUI.scrollTop(),a=BUI.scrollLeft();return a>e||e>a+r?!1:o>n||n>o+i?!1:!0},isInVerticalView:function(t){var e=BUI.viewportHeight(),n=BUI.scrollTop();return n>t||t>n+e?!1:!0},isInHorizontalView:function(t){var e=BUI.viewportWidth(),n=BUI.scrollLeft();return n>t||t>n+e?!1:!0},viewportWidth:function(){return $(window).width()},viewportHeight:function(){return $(window).height()},scrollLeft:function(){return $(window).scrollLeft()},scrollTop:function(){return $(window).scrollTop()},docWidth:function(){return Math.max(this.viewportWidth(),r[u][c],r[a][c])},docHeight:function(){return Math.max(this.viewportHeight(),r[u][l],r[a][l])},each:function(t,e){t&&$.each(t,function(t,n){return e(n,t)})},wrapBehavior:function(t,e){return t["__bui_wrap_"+e]=function(n){t.get("disabled")||t[e](n)}},getWrapBehavior:function(t,e){return t["__bui_wrap_"+e]},getControl:function(t){return BUI.Component.Manager.getComponent(t)}});var m=BUI.FormHelper={serializeToObject:function(t){var e=$(t).serializeArray(),n={};return BUI.each(e,function(t){var e=t.name;n[e]?(BUI.isArray(n[e])||(n[e]=[n[e]]),n[e].push(t.value)):n[e]=t.value}),n},setFields:function(t,e){for(var n in e)e.hasOwnProperty(n)&&BUI.FormHelper.setField(t,n,e[n])},clear:function(t){var e=$.makeArray(t.elements);BUI.each(e,function(t){"checkbox"===t.type||"radio"===t.type?$(t).attr("checked",!1):$(t).val(""),$(t).change()})},setField:function(t,e,n){var r=t.elements[e];r&&r.type?m._setFieldValue(r,n):(BUI.isArray(r)||r&&r.length)&&BUI.each(r,function(t){m._setFieldValue(t,n)})},_setFieldValue:function(t,e){"checkbox"===t.type?t.value==""+e||BUI.isArray(e)&&-1!==BUI.Array.indexOf(t.value,e)?$(t).attr("checked",!0):$(t).attr("checked",!1):"radio"===t.type?t.value==""+e?$(t).attr("checked",!0):$(t).attr("checked",!1):$(t).val(e)},getField:function(t,e){return BUI.FormHelper.serializeToObject(t)[e]}};return BUI}),define("bui/common/array",["bui/common/util"],function(require){var t=require("bui/common/util");return t.Array={peek:function(t){return t[t.length-1]},indexOf:function(t,e,n){for(var r=null==n?0:0>n?Math.max(0,e.length+n):n,i=r;i<e.length;i++)if(i in e&&e[i]===t)return i;return-1},contains:function(e,n){return t.Array.indexOf(e,n)>=0},each:t.each,equals:function(t,e){if(t==e)return!0;if(!t||!e)return!1;if(t.length!=e.length)return!1;for(var n=!0,r=0;r<t.length;r++)if(t[r]!==e[r]){n=!1;break}return n},filter:function(e,n){var r=[];return t.Array.each(e,function(t,e){n(t,e)&&r.push(t)}),r},map:function(e,n){var r=[];return t.Array.each(e,function(t,e){r.push(n(t,e))}),r},find:function(e,n){var r=t.Array.findIndex(e,n);return 0>r?null:e[r]},findIndex:function(e,n){var r=-1;return t.Array.each(e,function(t,e){return n(t,e)?(r=e,!1):void 0}),r},isEmpty:function(t){return 0==t.length},add:function(t,e){t.push(e)},addAt:function(e,n,r){t.Array.splice(e,r,0,n)},empty:function(t){if(!(t instanceof Array))for(var e=t.length-1;e>=0;e--)delete t[e];t.length=0},remove:function(e,n){var r,i=t.Array.indexOf(n,e);return(r=i>=0)&&t.Array.removeAt(e,i),r},removeAt:function(e,n){return 1==t.Array.splice(e,n,1).length},slice:function(t,e,n){return arguments.length<=2?Array.prototype.slice.call(t,e):Array.prototype.slice.call(t,e,n)},splice:function(e){return Array.prototype.splice.apply(e,t.Array.slice(arguments,1))}},t.Array}),define("bui/common/observable",["bui/common/util"],function(require){function t(){return new n}var e=require("bui/common/util"),n=function(){this._init()};e.augment(n,{_functions:null,_init:function(){var t=this;t._functions=[]},add:function(t){this._functions.push(t)},remove:function(t){var n=this._functions;index=e.Array.indexOf(t,n),index>=0&&n.splice(index,1)},empty:function(){var t=this._functions.length;this._functions.splice(0,t)},pause:function(){this._paused=!0},resume:function(){this._paused=!1},fireWith:function(t,n){var r,i=this;if(!this._paused)return e.each(i._functions,function(e){return r=e.apply(t,n),r===!1?!1:void 0}),r}});var r=function(t){this._events=[],this._eventMap={},this._bubblesEvents=[],this._initEvents(t)};return e.augment(r,{_events:[],_eventMap:{},_bubblesEvents:[],_bubbleTarget:null,_getCallbacks:function(t){var e=this,n=e._eventMap;return n[t]},_initEvents:function(t){var e=this,n=null;if(t&&(n=t.listeners||{},t.handler&&(n.click=t.handler),n))for(var r in n)n.hasOwnProperty(r)&&e.on(r,n[r])},_isBubbles:function(t){return e.Array.indexOf(t,this._bubblesEvents)>=0},addTarget:function(t){this._bubbleTarget=t},addEvents:function(n){function r(n){-1===e.Array.indexOf(n,o)&&(a[n]=t(),o.push(n))}var i=this,o=i._events,a=i._eventMap;e.isArray(n)?$.each(n,function(t,e){r(e)}):r(n)},clearListeners:function(){var t=this,e=t._eventMap;for(var n in e)e.hasOwnProperty(n)&&e[n].empty()},fire:function(t,e){var n,r=this,i=r._getCallbacks(t),o=$.makeArray(arguments);if(e||(e={},o.push(e)),e.target||(e.target=r),i&&(n=i.fireWith(r,Array.prototype.slice.call(o,1))),r._isBubbles(t)){var a=r._bubbleTarget;a&&a.fire&&a.fire(t,e)}return n},pauseEvent:function(t){var e=this,n=e._getCallbacks(t);n&&n.pause()},resumeEvent:function(t){var e=this,n=e._getCallbacks(t);n&&n.resume()},on:function(t,n){var r=t.split(" "),i=this,o=null;return r.length>1?e.each(r,function(t){i.on(t,n)}):(o=i._getCallbacks(t),o?o.add(n):(i.addEvents(t),i.on(t,n))),i},off:function(t,e){if(!t&&!e)return this.clearListeners(),this;var n=this,r=n._getCallbacks(t);return r&&(e?r.remove(e):r.empty()),n},publish:function(t,n){var r=this,i=r._bubblesEvents;if(n.bubbles)-1===e.Array.indexOf(t,i)&&i.push(t);else{var o=e.Array.indexOf(t,i);-1!==o&&i.splice(o,1)}}}),r}),define("bui/common/ua",function(){function t(t){var e=0;return parseFloat(t.replace(/\./g,function(){return 0===e++?".":""}))}function e(t){t=t.toLowerCase();var e=/(chrome)[ \/]([\w.]+)/.exec(t)||/(webkit)[ \/]([\w.]+)/.exec(t)||/(opera)(?:.*version|)[ \/]([\w.]+)/.exec(t)||/(msie) ([\w.]+)/.exec(t)||t.indexOf("compatible")<0&&/(mozilla)(?:.*? rv:([\w.]+)|)/.exec(t)||[],n={browser:e[1]||"",version:e[2]||"0"},r={};return n.browser&&(r[n.browser]=!0,r.version=n.version),r.chrome?r.webkit=!0:r.webkit&&(r.safari=!0),r}var n=$.UA||function(){var n=$.browser||e(navigator.userAgent),r=t(n.version),i={ie:n.msie&&r,webkit:n.webkit&&r,opera:n.opera&&r,mozilla:n.mozilla&&r};return i}();return n}),define("bui/common/json",["bui/common/ua"],function(require){function t(t){return 10>t?"0"+t:t}function e(t){return l.lastIndex=0,l.test(t)?'"'+t.replace(l,function(t){var e=f[t];return"string"==typeof e?e:"\\u"+("0000"+t.charCodeAt(0).toString(16)).slice(-4)})+'"':'"'+t+'"'}function n(t,r){var i,o,a,l,f,d=u,h=r[t];switch(h&&"object"==typeof h&&"function"==typeof h.toJSON&&(h=h.toJSON(t)),"function"==typeof c&&(h=c.call(r,t,h)),typeof h){case"string":return e(h);case"number":return isFinite(h)?String(h):"null";case"boolean":case"null":return String(h);case"object":if(!h)return"null";if(u+=s,f=[],"[object Array]"===Object.prototype.toString.apply(h)){for(l=h.length,i=0;l>i;i+=1)f[i]=n(i,h)||"null";return a=0===f.length?"[]":u?"[\n"+u+f.join(",\n"+u)+"\n"+d+"]":"["+f.join(",")+"]",u=d,a}if(c&&"object"==typeof c)for(l=c.length,i=0;l>i;i+=1)o=c[i],"string"==typeof o&&(a=n(o,h),a&&f.push(e(o)+(u?": ":":")+a));else for(o in h)Object.hasOwnProperty.call(h,o)&&(a=n(o,h),a&&f.push(e(o)+(u?": ":":")+a));return a=0===f.length?"{}":u?"{\n"+u+f.join(",\n"+u)+"\n"+d+"}":"{"+f.join(",")+"}",u=d,a}}function r(t){try{return new Function("return "+t+";")()}catch(e){throw"Json parse error!"}}var i=window,o=require("bui/common/ua"),a=i.JSON;(!a||o.ie<9)&&(a=i.JSON={}),"function"!=typeof Date.prototype.toJSON&&(Date.prototype.toJSON=function(){return isFinite(this.valueOf())?this.getUTCFullYear()+"-"+t(this.getUTCMonth()+1)+"-"+t(this.getUTCDate())+"T"+t(this.getUTCHours())+":"+t(this.getUTCMinutes())+":"+t(this.getUTCSeconds())+"Z":null},String.prototype.toJSON=Number.prototype.toJSON=Boolean.prototype.toJSON=function(){return this.valueOf()});var u,s,c,l=/[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,f={"\b":"\\b","	":"\\t","\n":"\\n","\f":"\\f","\r":"\\r",'"':'\\"',"\\":"\\\\"};"function"!=typeof a.stringify&&(a.stringify=function(t,e,r){var i;if(u="",s="","number"==typeof r)for(i=0;r>i;i+=1)s+=" ";else"string"==typeof r&&(s=r);if(c=e,e&&"function"!=typeof e&&("object"!=typeof e||"number"!=typeof e.length))throw new Error("JSON.stringify");return n("",{"":t})});var a={parse:$.parseJSON,looseParse:r,stringify:a.stringify};return a}),define("bui/common/keycode",function(){var t={BACKSPACE:8,TAB:9,NUM_CENTER:12,ENTER:13,RETURN:13,SHIFT:16,CTRL:17,ALT:18,PAUSE:19,CAPS_LOCK:20,ESC:27,SPACE:32,PAGE_UP:33,PAGE_DOWN:34,END:35,HOME:36,LEFT:37,UP:38,RIGHT:39,DOWN:40,PRINT_SCREEN:44,INSERT:45,DELETE:46,ZERO:48,ONE:49,TWO:50,THREE:51,FOUR:52,FIVE:53,SIX:54,SEVEN:55,EIGHT:56,NINE:57,A:65,B:66,C:67,D:68,E:69,F:70,G:71,H:72,I:73,J:74,K:75,L:76,M:77,N:78,O:79,P:80,Q:81,R:82,S:83,T:84,U:85,V:86,W:87,X:88,Y:89,Z:90,CONTEXT_MENU:93,NUM_ZERO:96,NUM_ONE:97,NUM_TWO:98,NUM_THREE:99,NUM_FOUR:100,NUM_FIVE:101,NUM_SIX:102,NUM_SEVEN:103,NUM_EIGHT:104,NUM_NINE:105,NUM_MULTIPLY:106,NUM_PLUS:107,NUM_MINUS:109,NUM_PERIOD:110,NUM_DIVISION:111,F1:112,F2:113,F3:114,F4:115,F5:116,F6:117,F7:118,F8:119,F9:120,F10:121,F11:122,F12:123};return t}),define("bui/common/date",function(){function t(e,n){if(e instanceof Date)return e;if("undefined"==typeof n||null==n||""==n){for(var r=new Array("y-m-d","yyyy-mm-dd","yyyy-mm-dd HH:MM:ss","H:M:s"),i=0;i<r.length;i++){var o=t(e,r[i]);if(null!=o)return o}return null}e+="";var a,u,s=0,c=0,l="",f="",d=new Date,h=d.getYear(),m=d.getMonth()+1,v=1,g=0,y=0,p=0;for(this.isInteger=function(t){return/^\d*$/.test(t)},this.getInt=function(t,e,n,r){for(var i=r;i>=n;i--){var o=t.substring(e,e+i);if(o.length<n)return null;if(this.isInteger(o))return o}return null};c<n.length;){for(l=n.charAt(c),f="";n.charAt(c)==l&&c<n.length;)f+=n.charAt(c++);if("yyyy"==f||"yy"==f||"y"==f){if("yyyy"==f&&(a=4,u=4),"yy"==f&&(a=2,u=2),"y"==f&&(a=2,u=4),h=this.getInt(e,s,a,u),null==h)return null;s+=h.length,2==h.length&&(h=h>70?1900+(h-0):2e3+(h-0))}else if("mm"==f||"m"==f){if(m=this.getInt(e,s,f.length,2),null==m||1>m||m>12)return null;s+=m.length}else if("dd"==f||"d"==f){if(v=this.getInt(e,s,f.length,2),null==v||1>v||v>31)return null;s+=v.length}else if("hh"==f||"h"==f){if(g=this.getInt(e,s,f.length,2),null==g||1>g||g>12)return null;s+=g.length}else if("HH"==f||"H"==f){if(g=this.getInt(e,s,f.length,2),null==g||0>g||g>23)return null;s+=g.length}else if("MM"==f||"M"==f){if(y=this.getInt(e,s,f.length,2),null==y||0>y||y>59)return null;s+=y.length}else if("ss"==f||"s"==f){if(p=this.getInt(e,s,f.length,2),null==p||0>p||p>59)return null;s+=p.length}else{if(e.substring(s,s+f.length)!=f)return null;s+=f.length}}if(s!=e.length)return null;if(2==m)if(h%4==0&&h%100!=0||h%400==0){if(v>29)return null}else if(v>28)return null;return(4==m||6==m||9==m||11==m)&&v>30?null:new Date(h,m-1,v,g,y,p)}function e(t,e,n){var r=new Date(n);switch(isNaN(r)&&(r=new Date),e=parseInt(e,10),t){case"s":r=new Date(r.getTime()+1e3*e);break;case"n":r=new Date(r.getTime()+6e4*e);break;case"h":r=new Date(r.getTime()+36e5*e);break;case"d":r=new Date(r.getTime()+864e5*e);break;case"w":r=new Date(r.getTime()+6048e5*e);break;case"m":r=new Date(r.getFullYear(),r.getMonth()+e,r.getDate(),r.getHours(),r.getMinutes(),r.getSeconds());break;case"y":r=new Date(r.getFullYear()+e,r.getMonth(),r.getDate(),r.getHours(),r.getMinutes(),r.getSeconds())}return r}var n=/^(?:(?!0000)[0-9]{4}([-/.]+)(?:(?:0?[1-9]|1[0-2])\1(?:0?[1-9]|1[0-9]|2[0-8])|(?:0?[13-9]|1[0-2])\1(?:29|30)|(?:0?[13578]|1[02])\1(?:31))|(?:[0-9]{2}(?:0[48]|[2468][048]|[13579][26])|(?:0[48]|[2468][048]|[13579][26])00)([-/.]?)0?2\2(?:29))(\s+([01]|([01][0-9]|2[0-3])):([0-9]|[0-5][0-9]):([0-9]|[0-5][0-9]))?$/,r=function(){var t=/w{1}|d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g,e=/\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g,n=/[^-+\dA-Z]/g,r=function(t,e){for(t=String(t),e=e||2;t.length<e;)t="0"+t;return t},i={"default":"ddd mmm dd yyyy HH:MM:ss",shortDate:"m/d/yy",longDate:"mmmm d, yyyy",fullDate:"dddd, mmmm d, yyyy",shortTime:"h:MM TT",longTime:"h:MM:ss TT Z",isoDate:"yyyy-mm-dd",isoTime:"HH:MM:ss",isoDateTime:"yyyy-mm-dd'T'HH:MM:ss",isoUTCDateTime:"UTC:yyyy-mm-dd'T'HH:MM:ss'Z'",localShortDate:"yy\u5e74mm\u6708dd\u65e5",localShortDateTime:"yy\u5e74mm\u6708dd\u65e5 hh:MM:ss TT",localLongDate:"yyyy\u5e74mm\u6708dd\u65e5",localLongDateTime:"yyyy\u5e74mm\u6708dd\u65e5 hh:MM:ss TT",localFullDate:"yyyy\u5e74mm\u6708dd\u65e5 w",localFullDateTime:"yyyy\u5e74mm\u6708dd\u65e5 w hh:MM:ss TT"},o={dayNames:["Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","\u661f\u671f\u65e5","\u661f\u671f\u4e00","\u661f\u671f\u4e8c","\u661f\u671f\u4e09","\u661f\u671f\u56db","\u661f\u671f\u4e94","\u661f\u671f\u516d"],monthNames:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","January","February","March","April","May","June","July","August","September","October","November","December"]};return function(a,u,s){if(1!==arguments.length||"[object String]"!==Object.prototype.toString.call(a)||/\d/.test(a)||(u=a,a=void 0),a=a?new Date(a):new Date,isNaN(a))throw SyntaxError("invalid date");u=String(i[u]||u||i["default"]),"UTC:"===u.slice(0,4)&&(u=u.slice(4),s=!0);var c=s?"getUTC":"get",l=a[c+"Date"](),f=a[c+"Day"](),d=a[c+"Month"](),h=a[c+"FullYear"](),m=a[c+"Hours"](),v=a[c+"Minutes"](),g=a[c+"Seconds"](),y=a[c+"Milliseconds"](),p=s?0:a.getTimezoneOffset(),b={d:l,dd:r(l,void 0),ddd:o.dayNames[f],dddd:o.dayNames[f+7],w:o.dayNames[f+14],m:d+1,mm:r(d+1,void 0),mmm:o.monthNames[d],mmmm:o.monthNames[d+12],yy:String(h).slice(2),yyyy:h,h:m%12||12,hh:r(m%12||12,void 0),H:m,HH:r(m,void 0),M:v,MM:r(v,void 0),s:g,ss:r(g,void 0),l:r(y,3),L:r(y>99?Math.round(y/10):y,void 0),t:12>m?"a":"p",tt:12>m?"am":"pm",T:12>m?"A":"P",TT:12>m?"AM":"PM",Z:s?"UTC":(String(a).match(e)||[""]).pop().replace(n,""),o:(p>0?"-":"+")+r(100*Math.floor(Math.abs(p)/60)+Math.abs(p)%60,4),S:["th","st","nd","rd"][l%10>3?0:(l%100-l%10!==10)*l%10]};return u.replace(t,function(t){return t in b?b[t]:t.slice(1,t.length-1)})}}(),i={add:function(t,n,r){return e(t,n,r)},addHour:function(t,n){return e("h",t,n)},addMinute:function(t,n){return e("n",t,n)},addSecond:function(t,n){return e("s",t,n)},addDay:function(t,n){return e("d",t,n)},addWeek:function(t,n){return e("w",t,n)},addMonths:function(t,n){return e("m",t,n)},addYear:function(t,n){return e("y",t,n)},isDateEquals:function(t,e){return t.getFullYear()===e.getFullYear()&&t.getMonth()===e.getMonth()&&t.getDate()===e.getDate()},isEquals:function(t,e){return t==e?!0:t&&e&&t.getTime&&e.getTime?t.getTime()==e.getTime():!1},isDateString:function(t){return n.test(t)},format:function(t,e,n){return r(t,e,n)},parse:function(e,n){return BUI.isString(e)&&(e=e.replace("/","-")),t(e,n)},today:function(){var t=new Date;return new Date(t.getFullYear(),t.getMonth(),t.getDate())},getDate:function(t){return new Date(t.getFullYear(),t.getMonth(),t.getDate())}};return i}),define("bui/common/base",["bui/common/observable"],function(require){function t(t,e,n){var r=t[e]||{};return n&&(t[e]=r),r}function e(t,e){return BUI.isString(e)?t[e]:e}function n(t,e,n,r,i){var o=n;return t.fire(e+BUI.ucfirst(n)+"Change",{attrName:o,prevVal:r,newVal:i})}function r(t,e,r,i){i=i||{};var o,a;return a=t.get(e),$.isPlainObject(r)||BUI.isArray(r)||a!==r?i.silent||!1!==n(t,"before",e,a,r)?(o=t._set(e,r,i),o===!1?o:(i.silent||(r=t.__attrVals[e],n(t,"after",e,a,r)),t)):!1:void 0}function i(t){if(!t._attrs&&t!=u){var e=t.superclass.constructor;e&&!e._attrs&&i(e),t._attrs={},BUI.mixAttrs(t._attrs,e._attrs),BUI.mixAttrs(t._attrs,t.ATTRS)}}var o={},a=require("bui/common/observable"),u=function(t){var e=this,n=e.constructor,r=[];for(this.__attrs={},this.__attrVals={},a.apply(this,arguments);n;)r.push(n),n.extensions&&(BUI.mixin(n,n.extensions),delete n.extensions),n=n.superclass?n.superclass.constructor:null;var o=e.constructor;i(o),e._initStaticAttrs(o._attrs),e._initAttrs(t)};return u.INVALID=o,BUI.extend(u,a),BUI.augment(u,{_initStaticAttrs:function(t){var e,n=this;e=n.__attrs={};for(var r in t)if(t.hasOwnProperty(r)){var i=t[r];i.shared===!1||i.valueFn?(e[r]={},BUI.mixAttr(e[r],t[r])):e[r]=t[r]}},addAttr:function(t,e){var n=this,r=n.__attrs,i=r[t];i||(i=r[t]={});for(var o in e)e.hasOwnProperty(o)&&("value"==o?BUI.isObject(e[o])?(i[o]=i[o]||{},BUI.mix(i[o],e[o])):BUI.isArray(e[o])?(i[o]=i[o]||[],BUI.mix(i[o],e[o])):i[o]=e[o]:i[o]=e[o]);return n},addAttrs:function(t,e,n){var r=this;return t?("boolean"==typeof e&&(n=e,e=null),BUI.each(t,function(t,e){r.addAttr(e,t,n)}),e&&r.set(e),r):r},hasAttr:function(t){return t&&this.__attrs.hasOwnProperty(t)},getAttrs:function(){return this.__attrs},getAttrVals:function(){return this.__attrVals},get:function(n){var r,i,o,a=this,u=a.__attrVals;return r=t(a.__attrs,n),i=r.getter,o=n in u?u[n]:a._getDefAttrVal(n),i&&(i=e(a,i))&&(o=i.call(a,o,n)),o},clearAttrVals:function(){this.__attrVals={}},removeAttr:function(t){var e=this;return e.hasAttr(t)&&(delete e.__attrs[t],delete e.__attrVals[t]),e},set:function(t,e,n){var i=this;if($.isPlainObject(t)){n=e;var o=Object(t);for(t in o)o.hasOwnProperty(t)&&r(i,t,o[t],n);return i}return r(i,t,e,n)},setInternal:function(t,e,n){return this._set(t,e,n)},_getDefAttrVal:function(n){var r,i=this,o=i.__attrs,a=t(o,n),u=a.valueFn;return u&&(u=e(i,u))&&(r=u.call(i),void 0!==r&&(a.value=r),delete a.valueFn,o[n]=a),a.value},_set:function(n,r){var i,a=this,u=t(a.__attrs,n,!0),s=u.setter;return s&&(s=e(a,s))&&(i=s.call(a,r,n)),i===o?!1:(void 0!==i&&(r=i),a.__attrVals[n]=r,a)},_initAttrs:function(t){var e=this;if(t)for(var n in t)t.hasOwnProperty(n)&&e._set(n,t[n])}}),u}),define("bui/cookie",function(){function t(t){return"string"==typeof t&&""!==t}var e=document,n=864e5,r=encodeURIComponent,i=decodeURIComponent,o={get:function(n){var r,o;return t(n)&&(o=String(e.cookie).match(new RegExp("(?:^| )"+n+"(?:(?:=([^;]*))|;|$)")))&&(r=o[1]?i(o[1]):""),r},set:function(i,o,a,u,s,c){var l=String(r(o)),f=a;"number"==typeof f&&(f=new Date,f.setTime(f.getTime()+a*n)),f instanceof Date&&(l+="; expires="+f.toUTCString()),t(u)&&(l+="; domain="+u),t(s)&&(l+="; path="+s),c&&(l+="; secure"),e.cookie=i+"="+l},remove:function(t,e,n,r){this.set(t,"",-1,e,n,r)}};return BUI.Cookie=o,o});
+/**
+ * Sea.js 2.1.1 | seajs.org/LICENSE.md
+ */
+(function(global, undefined) {
+
+// Avoid conflicting when `sea.js` is loaded multiple times
+if (global.seajs) {
+  return
+}
+
+var seajs = global.seajs = {
+  // The current version of Sea.js being used
+  version: "2.1.1"
+}
+
+var data = seajs.data = {}
+
+/**
+ * util-lang.js - The minimal language enhancement
+ */
+
+function isType(type) {
+  return function(obj) {
+    return Object.prototype.toString.call(obj) === "[object " + type + "]"
+  }
+}
+
+var isObject = isType("Object")
+var isString = isType("String")
+var isArray = Array.isArray || isType("Array")
+var isFunction = isType("Function")
+
+var _cid = 0
+function cid() {
+  return _cid++
+}
+
+
+/**
+ * util-events.js - The minimal events support
+ */
+
+var events = data.events = {}
+
+// Bind event
+seajs.on = function(name, callback) {
+  var list = events[name] || (events[name] = [])
+  list.push(callback)
+  return seajs
+}
+
+// Remove event. If `callback` is undefined, remove all callbacks for the
+// event. If `event` and `callback` are both undefined, remove all callbacks
+// for all events
+seajs.off = function(name, callback) {
+  // Remove *all* events
+  if (!(name || callback)) {
+    events = data.events = {}
+    return seajs
+  }
+
+  var list = events[name]
+  if (list) {
+    if (callback) {
+      for (var i = list.length - 1; i >= 0; i--) {
+        if (list[i] === callback) {
+          list.splice(i, 1)
+        }
+      }
+    }
+    else {
+      delete events[name]
+    }
+  }
+
+  return seajs
+}
+
+// Emit event, firing all bound callbacks. Callbacks receive the same
+// arguments as `emit` does, apart from the event name
+var emit = seajs.emit = function(name, data) {
+  var list = events[name], fn
+
+  if (list) {
+    // Copy callback lists to prevent modification
+    list = list.slice()
+
+    // Execute event callbacks
+    while ((fn = list.shift())) {
+      fn(data)
+    }
+  }
+
+  return seajs
+}
+
+
+/**
+ * util-path.js - The utilities for operating path such as id, uri
+ */
+
+var DIRNAME_RE = /[^?#]*\//
+
+var DOT_RE = /\/\.\//g
+var DOUBLE_DOT_RE = /\/[^/]+\/\.\.\//
+
+// Extract the directory portion of a path
+// dirname("a/b/c.js?t=123#xx/zz") ==> "a/b/"
+// ref: http://jsperf.com/regex-vs-split/2
+function dirname(path) {
+  return path.match(DIRNAME_RE)[0]
+}
+
+// Canonicalize a path
+// realpath("http://test.com/a//./b/../c") ==> "http://test.com/a/c"
+function realpath(path) {
+  // /a/b/./c/./d ==> /a/b/c/d
+  path = path.replace(DOT_RE, "/")
+
+  // a/b/c/../../d  ==>  a/b/../d  ==>  a/d
+  while (path.match(DOUBLE_DOT_RE)) {
+    path = path.replace(DOUBLE_DOT_RE, "/")
+  }
+
+  return path
+}
+
+// Normalize an id
+// normalize("path/to/a") ==> "path/to/a.js"
+// NOTICE: substring is faster than negative slice and RegExp
+function normalize(path) {
+  var last = path.length - 1
+  var lastC = path.charAt(last)
+
+  // If the uri ends with `#`, just return it without '#'
+  if (lastC === "#") {
+    return path.substring(0, last)
+  }
+
+  return (path.substring(last - 2) === ".js" ||
+      path.indexOf("?") > 0 ||
+      path.substring(last - 3) === ".css" ||
+      lastC === "/") ? path : path + ".js"
+}
+
+
+var PATHS_RE = /^([^/:]+)(\/.+)$/
+var VARS_RE = /{([^{]+)}/g
+
+function parseAlias(id) {
+  var alias = data.alias
+  return alias && isString(alias[id]) ? alias[id] : id
+}
+
+function parsePaths(id) {
+  var paths = data.paths
+  var m
+
+  if (paths && (m = id.match(PATHS_RE)) && isString(paths[m[1]])) {
+    id = paths[m[1]] + m[2]
+  }
+
+  return id
+}
+
+function parseVars(id) {
+  var vars = data.vars
+
+  if (vars && id.indexOf("{") > -1) {
+    id = id.replace(VARS_RE, function(m, key) {
+      return isString(vars[key]) ? vars[key] : m
+    })
+  }
+
+  return id
+}
+
+function parseMap(uri) {
+  var map = data.map
+  var ret = uri
+
+  if (map) {
+    for (var i = 0, len = map.length; i < len; i++) {
+      var rule = map[i]
+
+      ret = isFunction(rule) ?
+          (rule(uri) || uri) :
+          uri.replace(rule[0], rule[1])
+
+      // Only apply the first matched rule
+      if (ret !== uri) break
+    }
+  }
+
+  return ret
+}
+
+
+var ABSOLUTE_RE = /^\/\/.|:\//
+var ROOT_DIR_RE = /^.*?\/\/.*?\//
+
+function addBase(id, refUri) {
+  var ret
+  var first = id.charAt(0)
+
+  // Absolute
+  if (ABSOLUTE_RE.test(id)) {
+    ret = id
+  }
+  // Relative
+  else if (first === ".") {
+    ret = realpath((refUri ? dirname(refUri) : data.cwd) + id)
+  }
+  // Root
+  else if (first === "/") {
+    var m = data.cwd.match(ROOT_DIR_RE)
+    ret = m ? m[0] + id.substring(1) : id
+  }
+  // Top-level
+  else {
+    ret = data.base + id
+  }
+
+  return ret
+}
+
+function id2Uri(id, refUri) {
+  if (!id) return ""
+
+  id = parseAlias(id)
+  id = parsePaths(id)
+  id = parseVars(id)
+  id = normalize(id)
+
+  var uri = addBase(id, refUri)
+  uri = parseMap(uri)
+
+  return uri
+}
+
+
+var doc = document
+var loc = location
+var cwd = dirname(loc.href)
+var scripts = doc.getElementsByTagName("script")
+
+// Recommend to add `seajsnode` id for the `sea.js` script element
+var loaderScript = doc.getElementById("seajsnode") ||
+    scripts[scripts.length - 1]
+
+// When `sea.js` is inline, set loaderDir to current working directory
+var loaderDir = dirname(getScriptAbsoluteSrc(loaderScript) || cwd)
+
+function getScriptAbsoluteSrc(node) {
+  return node.hasAttribute ? // non-IE6/7
+      node.src :
+    // see http://msdn.microsoft.com/en-us/library/ms536429(VS.85).aspx
+      node.getAttribute("src", 4)
+}
+
+
+/**
+ * util-request.js - The utilities for requesting script and style files
+ * ref: tests/research/load-js-css/test.html
+ */
+
+var head = doc.getElementsByTagName("head")[0] || doc.documentElement
+var baseElement = head.getElementsByTagName("base")[0]
+
+var IS_CSS_RE = /\.css(?:\?|$)/i
+var READY_STATE_RE = /^(?:loaded|complete|undefined)$/
+
+var currentlyAddingScript
+var interactiveScript
+
+// `onload` event is not supported in WebKit < 535.23 and Firefox < 9.0
+// ref:
+//  - https://bugs.webkit.org/show_activity.cgi?id=38995
+//  - https://bugzilla.mozilla.org/show_bug.cgi?id=185236
+//  - https://developer.mozilla.org/en/HTML/Element/link#Stylesheet_load_events
+var isOldWebKit = (navigator.userAgent
+    .replace(/.*AppleWebKit\/(\d+)\..*/, "$1")) * 1 < 536
+
+
+function request(url, callback, charset) {
+  var isCSS = IS_CSS_RE.test(url)
+  var node = doc.createElement(isCSS ? "link" : "script")
+
+  if (charset) {
+    var cs = isFunction(charset) ? charset(url) : charset
+    if (cs) {
+      node.charset = cs
+    }
+  }
+
+  addOnload(node, callback, isCSS)
+
+  if (isCSS) {
+    node.rel = "stylesheet"
+    node.href = url
+  }
+  else {
+    node.async = true
+    node.src = url
+  }
+
+  // For some cache cases in IE 6-8, the script executes IMMEDIATELY after
+  // the end of the insert execution, so use `currentlyAddingScript` to
+  // hold current node, for deriving url in `define` call
+  currentlyAddingScript = node
+
+  // ref: #185 & http://dev.jquery.com/ticket/2709
+  baseElement ?
+      head.insertBefore(node, baseElement) :
+      head.appendChild(node)
+
+  currentlyAddingScript = null
+}
+
+function addOnload(node, callback, isCSS) {
+  var missingOnload = isCSS && (isOldWebKit || !("onload" in node))
+
+  // for Old WebKit and Old Firefox
+  if (missingOnload) {
+    setTimeout(function() {
+      pollCss(node, callback)
+    }, 1) // Begin after node insertion
+    return
+  }
+
+  node.onload = node.onerror = node.onreadystatechange = function() {
+    if (READY_STATE_RE.test(node.readyState)) {
+
+      // Ensure only run once and handle memory leak in IE
+      node.onload = node.onerror = node.onreadystatechange = null
+
+      // Remove the script to reduce memory leak
+      if (!isCSS && !data.debug) {
+        head.removeChild(node)
+      }
+
+      // Dereference the node
+      node = null
+
+      callback()
+    }
+  }
+}
+
+function pollCss(node, callback) {
+  var sheet = node.sheet
+  var isLoaded
+
+  // for WebKit < 536
+  if (isOldWebKit) {
+    if (sheet) {
+      isLoaded = true
+    }
+  }
+  // for Firefox < 9.0
+  else if (sheet) {
+    try {
+      if (sheet.cssRules) {
+        isLoaded = true
+      }
+    } catch (ex) {
+      // The value of `ex.name` is changed from "NS_ERROR_DOM_SECURITY_ERR"
+      // to "SecurityError" since Firefox 13.0. But Firefox is less than 9.0
+      // in here, So it is ok to just rely on "NS_ERROR_DOM_SECURITY_ERR"
+      if (ex.name === "NS_ERROR_DOM_SECURITY_ERR") {
+        isLoaded = true
+      }
+    }
+  }
+
+  setTimeout(function() {
+    if (isLoaded) {
+      // Place callback here to give time for style rendering
+      callback()
+    }
+    else {
+      pollCss(node, callback)
+    }
+  }, 20)
+}
+
+function getCurrentScript() {
+  if (currentlyAddingScript) {
+    return currentlyAddingScript
+  }
+
+  // For IE6-9 browsers, the script onload event may not fire right
+  // after the script is evaluated. Kris Zyp found that it
+  // could query the script nodes and the one that is in "interactive"
+  // mode indicates the current script
+  // ref: http://goo.gl/JHfFW
+  if (interactiveScript && interactiveScript.readyState === "interactive") {
+    return interactiveScript
+  }
+
+  var scripts = head.getElementsByTagName("script")
+
+  for (var i = scripts.length - 1; i >= 0; i--) {
+    var script = scripts[i]
+    if (script.readyState === "interactive") {
+      interactiveScript = script
+      return interactiveScript
+    }
+  }
+}
+
+
+/**
+ * util-deps.js - The parser for dependencies
+ * ref: tests/research/parse-dependencies/test.html
+ */
+
+var REQUIRE_RE = /"(?:\\"|[^"])*"|'(?:\\'|[^'])*'|\/\*[\S\s]*?\*\/|\/(?:\\\/|[^\/\r\n])+\/(?=[^\/])|\/\/.*|\.\s*require|(?:^|[^$])\brequire\s*\(\s*(["'])(.+?)\1\s*\)/g
+var SLASH_RE = /\\\\/g
+
+function parseDependencies(code) {
+  var ret = []
+
+  code.replace(SLASH_RE, "")
+      .replace(REQUIRE_RE, function(m, m1, m2) {
+        if (m2) {
+          ret.push(m2)
+        }
+      })
+
+  return ret
+}
+
+
+/**
+ * module.js - The core of module loader
+ */
+
+var cachedMods = seajs.cache = {}
+var anonymousMeta
+
+var fetchingList = {}
+var fetchedList = {}
+var callbackList = {}
+
+var STATUS = Module.STATUS = {
+  // 1 - The `module.uri` is being fetched
+  FETCHING: 1,
+  // 2 - The meta data has been saved to cachedMods
+  SAVED: 2,
+  // 3 - The `module.dependencies` are being loaded
+  LOADING: 3,
+  // 4 - The module are ready to execute
+  LOADED: 4,
+  // 5 - The module is being executed
+  EXECUTING: 5,
+  // 6 - The `module.exports` is available
+  EXECUTED: 6
+}
+
+
+function Module(uri, deps) {
+  this.uri = uri
+  this.dependencies = deps || []
+  this.exports = null
+  this.status = 0
+
+  // Who depends on me
+  this._waitings = {}
+
+  // The number of unloaded dependencies
+  this._remain = 0
+}
+
+// Resolve module.dependencies
+Module.prototype.resolve = function() {
+  var mod = this
+  var ids = mod.dependencies
+  var uris = []
+
+  for (var i = 0, len = ids.length; i < len; i++) {
+    uris[i] = Module.resolve(ids[i], mod.uri)
+  }
+  return uris
+}
+
+// Load module.dependencies and fire onload when all done
+Module.prototype.load = function() {
+  var mod = this
+
+  // If the module is being loaded, just wait it onload call
+  if (mod.status >= STATUS.LOADING) {
+    return
+  }
+
+  mod.status = STATUS.LOADING
+
+  // Emit `load` event for plugins such as combo plugin
+  var uris = mod.resolve()
+  emit("load", uris)
+
+  var len = mod._remain = uris.length
+  var m
+
+  // Initialize modules and register waitings
+  for (var i = 0; i < len; i++) {
+    m = Module.get(uris[i])
+
+    if (m.status < STATUS.LOADED) {
+      // Maybe duplicate
+      m._waitings[mod.uri] = (m._waitings[mod.uri] || 0) + 1
+    }
+    else {
+      mod._remain--
+    }
+  }
+
+  if (mod._remain === 0) {
+    mod.onload()
+    return
+  }
+
+  // Begin parallel loading
+  var requestCache = {}
+
+  for (i = 0; i < len; i++) {
+    m = cachedMods[uris[i]]
+
+    if (m.status < STATUS.FETCHING) {
+      m.fetch(requestCache)
+    }
+    else if (m.status === STATUS.SAVED) {
+      m.load()
+    }
+  }
+
+  // Send all requests at last to avoid cache bug in IE6-9. Issues#808
+  for (var requestUri in requestCache) {
+    if (requestCache.hasOwnProperty(requestUri)) {
+      requestCache[requestUri]()
+    }
+  }
+}
+
+// Call this method when module is loaded
+Module.prototype.onload = function() {
+  var mod = this
+  mod.status = STATUS.LOADED
+
+  if (mod.callback) {
+    mod.callback()
+  }
+
+  // Notify waiting modules to fire onload
+  var waitings = mod._waitings
+  var uri, m
+
+  for (uri in waitings) {
+    if (waitings.hasOwnProperty(uri)) {
+      m = cachedMods[uri]
+      m._remain -= waitings[uri]
+      if (m._remain === 0) {
+        m.onload()
+      }
+    }
+  }
+
+  // Reduce memory taken
+  delete mod._waitings
+  delete mod._remain
+}
+
+// Fetch a module
+Module.prototype.fetch = function(requestCache) {
+  var mod = this
+  var uri = mod.uri
+
+  mod.status = STATUS.FETCHING
+
+  // Emit `fetch` event for plugins such as combo plugin
+  var emitData = { uri: uri }
+  emit("fetch", emitData)
+  var requestUri = emitData.requestUri || uri
+
+  // Empty uri or a non-CMD module
+  if (!requestUri || fetchedList[requestUri]) {
+    mod.load()
+    return
+  }
+
+  if (fetchingList[requestUri]) {
+    callbackList[requestUri].push(mod)
+    return
+  }
+
+  fetchingList[requestUri] = true
+  callbackList[requestUri] = [mod]
+
+  // Emit `request` event for plugins such as text plugin
+  emit("request", emitData = {
+    uri: uri,
+    requestUri: requestUri,
+    onRequest: onRequest,
+    charset: data.charset
+  })
+
+  if (!emitData.requested) {
+    requestCache ?
+        requestCache[emitData.requestUri] = sendRequest :
+        sendRequest()
+  }
+
+  function sendRequest() {
+    request(emitData.requestUri, emitData.onRequest, emitData.charset)
+  }
+
+  function onRequest() {
+    delete fetchingList[requestUri]
+    fetchedList[requestUri] = true
+
+    // Save meta data of anonymous module
+    if (anonymousMeta) {
+      Module.save(uri, anonymousMeta)
+      anonymousMeta = null
+    }
+
+    // Call callbacks
+    var m, mods = callbackList[requestUri]
+    delete callbackList[requestUri]
+    while ((m = mods.shift())) m.load()
+  }
+}
+
+// Execute a module
+Module.prototype.exec = function () {
+  var mod = this
+
+  // When module is executed, DO NOT execute it again. When module
+  // is being executed, just return `module.exports` too, for avoiding
+  // circularly calling
+  if (mod.status >= STATUS.EXECUTING) {
+    return mod.exports
+  }
+
+  mod.status = STATUS.EXECUTING
+
+  // Create require
+  var uri = mod.uri
+
+  function require(id) {
+    return Module.get(require.resolve(id)).exec()
+  }
+
+  require.resolve = function(id) {
+    return Module.resolve(id, uri)
+  }
+
+  require.async = function(ids, callback) {
+    Module.use(ids, callback, uri + "_async_" + cid())
+    return require
+  }
+
+  // Exec factory
+  var factory = mod.factory
+
+  var exports = isFunction(factory) ?
+      factory(require, mod.exports = {}, mod) :
+      factory
+
+  if (exports === undefined) {
+    exports = mod.exports
+  }
+
+  // Emit `error` event
+  if (exports === null && !IS_CSS_RE.test(uri)) {
+    emit("error", mod)
+  }
+
+  // Reduce memory leak
+  delete mod.factory
+
+  mod.exports = exports
+  mod.status = STATUS.EXECUTED
+
+  // Emit `exec` event
+  emit("exec", mod)
+
+  return exports
+}
+
+// Resolve id to uri
+Module.resolve = function(id, refUri) {
+  // Emit `resolve` event for plugins such as text plugin
+  var emitData = { id: id, refUri: refUri }
+  emit("resolve", emitData)
+
+  return emitData.uri || id2Uri(emitData.id, refUri)
+}
+
+// Define a module
+Module.define = function (id, deps, factory) {
+  var argsLen = arguments.length
+
+  // define(factory)
+  if (argsLen === 1) {
+    factory = id
+    id = undefined
+  }
+  else if (argsLen === 2) {
+    factory = deps
+
+    // define(deps, factory)
+    if (isArray(id)) {
+      deps = id
+      id = undefined
+    }
+    // define(id, factory)
+    else {
+      deps = undefined
+    }
+  }
+
+  // Parse dependencies according to the module factory code
+  if (!isArray(deps) && isFunction(factory)) {
+    deps = parseDependencies(factory.toString())
+  }
+
+  var meta = {
+    id: id,
+    uri: Module.resolve(id),
+    deps: deps,
+    factory: factory
+  }
+
+  // Try to derive uri in IE6-9 for anonymous modules
+  if (!meta.uri && doc.attachEvent) {
+    var script = getCurrentScript()
+
+    if (script) {
+      meta.uri = script.src
+    }
+
+    // NOTE: If the id-deriving methods above is failed, then falls back
+    // to use onload event to get the uri
+  }
+
+  // Emit `define` event, used in nocache plugin, seajs node version etc
+  emit("define", meta)
+
+  meta.uri ? Module.save(meta.uri, meta) :
+      // Save information for "saving" work in the script onload event
+      anonymousMeta = meta
+}
+
+// Save meta data to cachedMods
+Module.save = function(uri, meta) {
+  var mod = Module.get(uri)
+
+  // Do NOT override already saved modules
+  if (mod.status < STATUS.SAVED) {
+    mod.id = meta.id || uri
+    mod.dependencies = meta.deps || []
+    mod.factory = meta.factory
+    mod.status = STATUS.SAVED
+  }
+}
+
+// Get an existed module or create a new one
+Module.get = function(uri, deps) {
+  return cachedMods[uri] || (cachedMods[uri] = new Module(uri, deps))
+}
+
+// Use function is equal to load a anonymous module
+Module.use = function (ids, callback, uri) {
+  var mod = Module.get(uri, isArray(ids) ? ids : [ids])
+
+  mod.callback = function() {
+    var exports = []
+    var uris = mod.resolve()
+
+    for (var i = 0, len = uris.length; i < len; i++) {
+      exports[i] = cachedMods[uris[i]].exec()
+    }
+
+    if (callback) {
+      callback.apply(global, exports)
+    }
+
+    delete mod.callback
+  }
+
+  mod.load()
+}
+
+// Load preload modules before all other modules
+Module.preload = function(callback) {
+  var preloadMods = data.preload
+  var len = preloadMods.length
+
+  if (len) {
+    Module.use(preloadMods, function() {
+      // Remove the loaded preload modules
+      preloadMods.splice(0, len)
+
+      // Allow preload modules to add new preload modules
+      Module.preload(callback)
+    }, data.cwd + "_preload_" + cid())
+  }
+  else {
+    callback()
+  }
+}
+
+
+// Public API
+
+seajs.use = function(ids, callback) {
+  Module.preload(function() {
+    Module.use(ids, callback, data.cwd + "_use_" + cid())
+  })
+  return seajs
+}
+
+Module.define.cmd = {}
+global.define = Module.define
+
+
+// For Developers
+
+seajs.Module = Module
+data.fetchedList = fetchedList
+data.cid = cid
+
+seajs.resolve = id2Uri
+seajs.require = function(id) {
+  return (cachedMods[Module.resolve(id)] || {}).exports
+}
+
+
+/**
+ * config.js - The configuration for the loader
+ */
+
+var BASE_RE = /^(.+?\/)(\?\?)?(seajs\/)+/
+
+// The root path to use for id2uri parsing
+// If loaderUri is `http://test.com/libs/seajs/[??][seajs/1.2.3/]sea.js`, the
+// baseUri should be `http://test.com/libs/`
+data.base = (loaderDir.match(BASE_RE) || ["", loaderDir])[1]
+
+// The loader directory
+data.dir = loaderDir
+
+// The current working directory
+data.cwd = cwd
+
+// The charset for requesting files
+data.charset = "utf-8"
+
+// Modules that are needed to load before all other modules
+data.preload = (function() {
+  var plugins = []
+
+  // Convert `seajs-xxx` to `seajs-xxx=1`
+  // NOTE: use `seajs-xxx=1` flag in uri or cookie to preload `seajs-xxx`
+  var str = loc.search.replace(/(seajs-\w+)(&|$)/g, "$1=1$2")
+
+  // Add cookie string
+  str += " " + doc.cookie
+
+  // Exclude seajs-xxx=0
+  str.replace(/(seajs-\w+)=1/g, function(m, name) {
+    plugins.push(name)
+  })
+
+  return plugins
+})()
+
+// data.alias - An object containing shorthands of module id
+// data.paths - An object containing path shorthands in module id
+// data.vars - The {xxx} variables in module id
+// data.map - An array containing rules to map module uri
+// data.debug - Debug mode. The default value is false
+
+seajs.config = function(configData) {
+
+  for (var key in configData) {
+    var curr = configData[key]
+    var prev = data[key]
+
+    // Merge object config such as alias, vars
+    if (prev && isObject(prev)) {
+      for (var k in curr) {
+        prev[k] = curr[k]
+      }
+    }
+    else {
+      // Concat array config such as map, preload
+      if (isArray(prev)) {
+        curr = prev.concat(curr)
+      }
+      // Make sure that `data.base` is an absolute path
+      else if (key === "base") {
+        (curr.slice(-1) === "/") || (curr += "/")
+        curr = addBase(curr)
+      }
+
+      // Set config
+      data[key] = curr
+    }
+  }
+
+  emit("config", configData)
+  return seajs
+}
+
+
+})(this);
+
+;(function(){
+
+  //from seajs
+  function getScriptAbsoluteSrc(node) {
+    return node.hasAttribute ? // non-IE6/7
+        node.src :
+      // see http://msdn.microsoft.com/en-us/library/ms536429(VS.85).aspx
+        node.getAttribute("src", 4);
+  }
+
+  var BUI = window.BUI = window.BUI || {};
+  BUI.use = seajs.use;
+  BUI.config = seajs.config;
+
+  var scripts = document.getElementsByTagName('script'),
+    loaderScript = scripts[scripts.length - 1],
+    src = getScriptAbsoluteSrc(loaderScript),
+    loaderPath = src.substring(0, src.lastIndexOf('/'));
+
+  BUI.loaderScript = loaderScript;
+
+  //配置bui的路径
+  seajs.config({
+    paths: {
+      'bui': loaderPath
+    }
+  });
+
+})();
+
+// (function(){
+//   var requires = ['bui/util','bui/ua','bui/json','bui/date','bui/array','bui/keycode','bui/observable','bui/base','bui/component'];
+//   if(window.KISSY && (!window.KISSY.Node || !window.jQuery)){ //如果是kissy同时未加载core模块
+//     requires.unshift('bui/adapter');
+//   }
+  define('bui/common', function(require){
+    // if(window.KISSY && (!window.KISSY.Node || !window.jQuery)){
+    //   require('bui/adapter');
+    // }
+    var BUI = require('bui/common/util');
+
+    BUI.mix(BUI, {
+      UA : require('bui/common/ua'),
+      JSON : require('bui/common/json'),
+      Date : require('bui/common/date'),
+      Array : require('bui/common/array'),
+      KeyCode : require('bui/common/keycode'),
+      Observable : require('bui/common/observable'),
+      Base : require('bui/common/base'),
+      Component : require('bui/component')
+    });
+    return BUI;
+  });
+// })();
+
+
+/**
+ * @class BUI
+ * 控件库的工具方法，这些工具方法直接绑定到BUI对象上
+ * <pre><code>
+ *     BUI.isString(str);
+ *
+ *     BUI.extend(A,B);
+ *
+ *     BUI.mix(A,{a:'a'});
+ * </code></pre>
+ * @singleton
+ */
+define('bui/common/util',function(require){
+
+    //兼容jquery 1.6以下
+    (function($){
+        if($.fn){
+            $.fn.on = $.fn.on || $.fn.bind;
+            $.fn.off = $.fn.off || $.fn.unbind;
+        }
+
+    })(jQuery);
+    /**
+     * @ignore
+     * 处于效率的目的，复制属性
+     */
+    function mixAttrs(to,from){
+
+        for(var c in from){
+            if(from.hasOwnProperty(c)){
+                to[c] = to[c] || {};
+                mixAttr(to[c],from[c]);
+            }
+        }
+
+    }
+    //合并属性
+    function mixAttr(attr,attrConfig){
+        for (var p in attrConfig) {
+            if(attrConfig.hasOwnProperty(p)){
+                if(p == 'value'){
+                    if(BUI.isObject(attrConfig[p])){
+                        attr[p] = attr[p] || {};
+                        BUI.mix(/*true,*/attr[p], attrConfig[p]);
+                    }else if(BUI.isArray(attrConfig[p])){
+                        attr[p] = attr[p] || [];
+                        //BUI.mix(/*true,*/attr[p], attrConfig[p]);
+                        attr[p] = attr[p].concat(attrConfig[p]);
+                    }else{
+                        attr[p] = attrConfig[p];
+                    }
+                }else{
+                    attr[p] = attrConfig[p];
+                }
+            }
+        };
+    }
+
+    var win = window,
+        doc = document,
+        objectPrototype = Object.prototype,
+        toString = objectPrototype.toString,
+        BODY = 'body',
+        DOC_ELEMENT = 'documentElement',
+        SCROLL = 'scroll',
+        SCROLL_WIDTH = SCROLL + 'Width',
+        SCROLL_HEIGHT = SCROLL + 'Height',
+        ATTRS = 'ATTRS',
+        PARSER = 'PARSER',
+        GUID_DEFAULT = 'guid';
+
+    $.extend(BUI,
+        {
+            /**
+             * 版本号
+             * @memberOf BUI
+             * @type {Number}
+             */
+            version:1.0,
+
+            /**
+             * 子版本号
+             * @type {Number}
+             */
+            subVersion : 96,
+
+
+            /**
+             * 是否为函数
+             * @param  {*} fn 对象
+             * @return {Boolean}  是否函数
+             */
+            isFunction : function(fn){
+                return typeof(fn) === 'function';
+            },
+            /**
+             * 是否数组
+             * @method
+             * @param  {*}  obj 是否数组
+             * @return {Boolean}  是否数组
+             */
+            isArray : ('isArray' in Array) ? Array.isArray : function(value) {
+                return toString.call(value) === '[object Array]';
+            },
+            /**
+             * 是否日期
+             * @param  {*}  value 对象
+             * @return {Boolean}  是否日期
+             */
+            isDate: function(value) {
+                return toString.call(value) === '[object Date]';
+            },
+            /**
+             * 是否是javascript对象
+             * @param {Object} value The value to test
+             * @return {Boolean}
+             * @method
+             */
+            isObject: (toString.call(null) === '[object Object]') ?
+                function(value) {
+                    // check ownerDocument here as well to exclude DOM nodes
+                    return value !== null && value !== undefined && toString.call(value) === '[object Object]' && value.ownerDocument === undefined;
+                } :
+                function(value) {
+                    return toString.call(value) === '[object Object]';
+                },
+            /**
+             * 是否是数字或者数字字符串
+             * @param  {String}  value 数字字符串
+             * @return {Boolean}  是否是数字或者数字字符串
+             */
+            isNumeric: function(value) {
+                return !isNaN(parseFloat(value)) && isFinite(value);
+            },
+            /**
+             * 将指定的方法或属性放到构造函数的原型链上，
+             * 函数支持多于2个变量，后面的变量同s1一样将其成员复制到构造函数的原型链上。
+             * @param  {Function} r  构造函数
+             * @param  {Object} s1 将s1 的成员复制到构造函数的原型链上
+             *          @example
+             *          BUI.augment(class1,{
+     *              method1: function(){
+     *   
+     *              }
+     *          });
+             */
+            augment : function(r,s1){
+                if(!BUI.isFunction(r))
+                {
+                    return r;
+                }
+                for (var i = 1; i < arguments.length; i++) {
+                    BUI.mix(r.prototype,arguments[i].prototype || arguments[i]);
+                };
+                return r;
+            },
+            /**
+             * 拷贝对象
+             * @param  {Object} obj 要拷贝的对象
+             * @return {Object} 拷贝生成的对象
+             */
+            cloneObject : function(obj){
+                var result = BUI.isArray(obj) ? [] : {};
+
+                return BUI.mix(true,result,obj);
+            },
+            /**
+             * 抛出错误
+             */
+            error : function(msg){
+                if(BUI.debug){
+                    throw msg;
+                }
+            },
+            
+            /**
+             * 实现类的继承，通过父类生成子类
+             * @param  {Function} subclass
+             * @param  {Function} superclass 父类构造函数
+             * @param  {Object} overrides  子类的属性或者方法
+             * @return {Function} 返回的子类构造函数
+             * 示例:
+             *      @example
+             *      //父类
+             *      function base(){
+             *  
+             *      }
+             *
+             *      function sub(){
+             * 
+             *      }
+             *      //子类
+             *      BUI.extend(sub,base,{
+             *          method : function(){
+             *    
+             *          }
+             *      });
+             *
+             *      //或者
+             *      var sub = BUI.extend(base,{});
+             */
+            extend : function(subclass,superclass,overrides, staticOverrides){
+                //如果只提供父类构造函数，则自动生成子类构造函数
+                if(!BUI.isFunction(superclass))
+                {
+
+                    overrides = superclass;
+                    superclass = subclass;
+                    subclass =  function(){};
+                }
+
+                var create = Object.create ?
+                    function (proto, c) {
+                        return Object.create(proto, {
+                            constructor: {
+                                value: c
+                            }
+                        });
+                    } :
+                    function (proto, c) {
+                        function F() {
+                        }
+
+                        F.prototype = proto;
+
+                        var o = new F();
+                        o.constructor = c;
+                        return o;
+                    };
+                var superObj = create(superclass.prototype,subclass);//new superclass(),//实例化父类作为子类的prototype
+                subclass.prototype = BUI.mix(superObj,subclass.prototype);     //指定子类的prototype
+                subclass.superclass = create(superclass.prototype,superclass);
+                BUI.mix(superObj,overrides);
+                BUI.mix(subclass,staticOverrides);
+                return subclass;
+            },
+            /**
+             * 生成唯一的Id
+             * @method
+             * @param {String} prefix 前缀
+             * @default 'bui-guid'
+             * @return {String} 唯一的编号
+             */
+            guid : (function(){
+                var map = {};
+                return function(prefix){
+                    prefix = prefix || BUI.prefix + GUID_DEFAULT;
+                    if(!map[prefix]){
+                        map[prefix] = 1;
+                    }else{
+                        map[prefix] += 1;
+                    }
+                    return prefix + map[prefix];
+                };
+            })(),
+            /**
+             * 判断是否是字符串
+             * @return {Boolean} 是否是字符串
+             */
+            isString : function(value){
+                return typeof value === 'string';
+            },
+            /**
+             * 判断是否数字，由于$.isNumberic方法会把 '123'认为数字
+             * @return {Boolean} 是否数字
+             */
+            isNumber : function(value){
+                return typeof value === 'number';
+            },
+            /**
+             * 是否是布尔类型
+             *
+             * @param {Object} value 测试的值
+             * @return {Boolean}
+             */
+            isBoolean: function(value) {
+                return typeof value === 'boolean';
+            },
+            /**
+             * 控制台输出日志
+             * @param  {Object} obj 输出的数据
+             */
+            log : function(obj){
+                if(BUI.debug && win.console && win.console.log){
+                    win.console.log(obj);
+                }
+            },
+            /**
+             * 将多个对象的属性复制到一个新的对象
+             */
+            merge : function(){
+                var args = $.makeArray(arguments),
+                    first = args[0];
+                if(BUI.isBoolean(first)){
+                    args.shift();
+                    args.unshift({});
+                    args.unshift(first);
+                }else{
+                    args.unshift({});
+                }
+
+                return BUI.mix.apply(null,args);
+
+            },
+            /**
+             * 封装 jQuery.extend 方法，将多个对象的属性merge到第一个对象中
+             * @return {Object}
+             */
+            mix : function(){
+                return $.extend.apply(null,arguments);
+            },
+            /**
+             * 创造顶层的命名空间，附加到window对象上,
+             * 包含namespace方法
+             */
+            app : function(name){
+                if(!window[name]){
+                    window[name] = {
+                        namespace :function(nsName){
+                            return BUI.namespace(nsName,window[name]);
+                        }
+                    };
+                }
+                return window[name];
+            },
+
+            mixAttrs : mixAttrs,
+
+            mixAttr : mixAttr,
+
+            /**
+             * 将其他类作为mixin集成到指定类上面
+             * @param {Function} c 构造函数
+             * @param {Array} mixins 扩展类
+             * @param {Array} attrs 扩展的静态属性，默认为['ATTRS']
+             * @return {Function} 传入的构造函数
+             */
+            mixin : function(c,mixins,attrs){
+                attrs = attrs || [ATTRS,PARSER];
+                var extensions = mixins;
+                if (extensions) {
+                    c.mixins = extensions;
+
+                    var desc = {
+                        // ATTRS:
+                        // HTML_PARSER:
+                    }, constructors = extensions['concat'](c);
+
+                    // [ex1,ex2]，扩展类后面的优先，ex2 定义的覆盖 ex1 定义的
+                    // 主类最优先
+                    BUI.each(constructors, function (ext) {
+                        if (ext) {
+                            // 合并 ATTRS/HTML_PARSER 到主类
+                            BUI.each(attrs, function (K) {
+                                if (ext[K]) {
+                                    desc[K] = desc[K] || {};
+                                    // 不覆盖主类上的定义，因为继承层次上扩展类比主类层次高
+                                    // 但是值是对象的话会深度合并
+                                    // 注意：最好值是简单对象，自定义 new 出来的对象就会有问题(用 function return 出来)!
+                                    if(K == 'ATTRS'){
+                                        //BUI.mix(true,desc[K], ext[K]);
+                                        mixAttrs(desc[K],ext[K]);
+                                    }else{
+                                        BUI.mix(desc[K], ext[K]);
+                                    }
+
+                                }
+                            });
+                        }
+                    });
+
+                    BUI.each(desc, function (v,k) {
+                        c[k] = v;
+                    });
+
+                    var prototype = {};
+
+                    // 主类最优先
+                    BUI.each(constructors, function (ext) {
+                        if (ext) {
+                            var proto = ext.prototype;
+                            // 合并功能代码到主类，不覆盖
+                            for (var p in proto) {
+                                // 不覆盖主类，但是主类的父类还是覆盖吧
+                                if (proto.hasOwnProperty(p)) {
+                                    prototype[p] = proto[p];
+                                }
+                            }
+                        }
+                    });
+
+                    BUI.each(prototype, function (v,k) {
+                        c.prototype[k] = v;
+                    });
+                }
+                return c;
+            },
+            /**
+             * 生成命名空间
+             * @param  {String} name 命名空间的名称
+             * @param  {Object} baseNS 在已有的命名空间上创建命名空间，默认“BUI”
+             * @return {Object} 返回的命名空间对象
+             *      @example
+             *      BUI.namespace("Grid"); // BUI.Grid
+             */
+            namespace : function(name,baseNS){
+                baseNS = baseNS || BUI;
+                if(!name){
+                    return baseNS;
+                }
+                var list = name.split('.'),
+                //firstNS = win[list[0]],
+                    curNS = baseNS;
+
+                for (var i = 0; i < list.length; i++) {
+                    var nsName = list[i];
+                    if(!curNS[nsName]){
+                        curNS[nsName] = {};
+                    }
+                    curNS = curNS[nsName];
+                };
+                return curNS;
+            },
+            /**
+             * BUI 控件的公用前缀
+             * @type {String}
+             */
+            prefix : 'bui-',
+            /**
+             * 替换字符串中的字段.
+             * @param {String} str 模版字符串
+             * @param {Object} o json data
+             * @param {RegExp} [regexp] 匹配字符串的正则表达式
+             */
+            substitute: function (str, o, regexp) {
+                if (!BUI.isString(str)
+                    || (!BUI.isObject(o)) && !BUI.isArray(o)) {
+                    return str;
+                }
+
+                return str.replace(regexp || /\\?\{([^{}]+)\}/g, function (match, name) {
+                    if (match.charAt(0) === '\\') {
+                        return match.slice(1);
+                    }
+                    return (o[name] === undefined) ? '' : o[name];
+                });
+            },
+            /**
+             * 使第一个字母变成大写
+             * @param  {String} s 字符串
+             * @return {String} 首字母大写后的字符串
+             */
+            ucfirst : function(s){
+                s += '';
+                return s.charAt(0).toUpperCase() + s.substring(1);
+            },
+            /**
+             * 页面上的一点是否在用户的视图内
+             * @param {Object} offset 坐标，left,top
+             * @return {Boolean} 是否在视图内
+             */
+            isInView : function(offset){
+                var left = offset.left,
+                    top = offset.top,
+                    viewWidth = BUI.viewportWidth(),
+                    wiewHeight = BUI.viewportHeight(),
+                    scrollTop = BUI.scrollTop(),
+                    scrollLeft = BUI.scrollLeft();
+                //判断横坐标
+                if(left < scrollLeft ||left > scrollLeft + viewWidth){
+                    return false;
+                }
+                //判断纵坐标
+                if(top < scrollTop || top > scrollTop + wiewHeight){
+                    return false;
+                }
+                return true;
+            },
+            /**
+             * 页面上的一点纵向坐标是否在用户的视图内
+             * @param {Object} top  纵坐标
+             * @return {Boolean} 是否在视图内
+             */
+            isInVerticalView : function(top){
+                var wiewHeight = BUI.viewportHeight(),
+                    scrollTop = BUI.scrollTop();
+
+                //判断纵坐标
+                if(top < scrollTop || top > scrollTop + wiewHeight){
+                    return false;
+                }
+                return true;
+            },
+            /**
+             * 页面上的一点横向坐标是否在用户的视图内
+             * @param {Object} left 横坐标
+             * @return {Boolean} 是否在视图内
+             */
+            isInHorizontalView : function(left){
+                var viewWidth = BUI.viewportWidth(),
+                    scrollLeft = BUI.scrollLeft();
+                //判断横坐标
+                if(left < scrollLeft ||left > scrollLeft + viewWidth){
+                    return false;
+                }
+                return true;
+            },
+            /**
+             * 获取窗口可视范围宽度
+             * @return {Number} 可视区宽度
+             */
+            viewportWidth : function(){
+                return $(window).width();
+            },
+            /**
+             * 获取窗口可视范围高度
+             * @return {Number} 可视区高度
+             */
+            viewportHeight:function(){
+                return $(window).height();
+            },
+            /**
+             * 滚动到窗口的left位置
+             */
+            scrollLeft : function(){
+                return $(window).scrollLeft();
+            },
+            /**
+             * 滚动到横向位置
+             */
+            scrollTop : function(){
+                return $(window).scrollTop();
+            },
+            /**
+             * 窗口宽度
+             * @return {Number} 窗口宽度
+             */
+            docWidth : function(){
+                return Math.max(this.viewportWidth(), doc[DOC_ELEMENT][SCROLL_WIDTH], doc[BODY][SCROLL_WIDTH]);
+            },
+            /**
+             * 窗口高度
+             * @return {Number} 窗口高度
+             */
+            docHeight : function(){
+                return Math.max(this.viewportHeight(), doc[DOC_ELEMENT][SCROLL_HEIGHT], doc[BODY][SCROLL_HEIGHT]);
+            },
+            /**
+             * 遍历数组或者对象
+             * @param {Object|Array} element/Object 数组中的元素或者对象的值
+             * @param {Function} func 遍历的函数 function(elememt,index){} 或者 function(value,key){}
+             */
+            each : function (elements,func) {
+                if(!elements){
+                    return;
+                }
+                $.each(elements,function(k,v){
+                    return func(v,k);
+                });
+            },
+            /**
+             * 封装事件，便于使用上下文this,和便于解除事件时使用
+             * @protected
+             * @param  {Object} self   对象
+             * @param  {String} action 事件名称
+             */
+            wrapBehavior : function(self, action) {
+                return self['__bui_wrap_' + action] = function (e) {
+                    if (!self.get('disabled')) {
+                        self[action](e);
+                    }
+                };
+            },
+            /**
+             * 获取封装的事件
+             * @protected
+             * @param  {Object} self   对象
+             * @param  {String} action 事件名称
+             */
+            getWrapBehavior : function(self, action) {
+                return self['__bui_wrap_' + action];
+            },
+            /**
+             * 获取页面上使用了此id的控件
+             * @param  {String} id 控件id
+             * @return {BUI.Component.Controller}    查找的控件
+             */
+            getControl : function(id){
+                return BUI.Component.Manager.getComponent(id);
+            }
+
+        });
+
+    /**
+     * 表单帮助类，序列化、反序列化，设置值
+     * @class BUI.FormHelper
+     * @singleton
+     */
+    var formHelper = BUI.FormHelper = {
+        /**
+         * 将表单格式化成键值对形式
+         * @param {HTMLElement} form 表单
+         * @return {Object} 键值对的对象
+         */
+        serializeToObject:function(form){
+            var array = $(form).serializeArray(),
+                result = {};
+            BUI.each(array,function(item){
+                var name = item.name;
+                if(!result[name]){ //如果是单个值，直接赋值
+                    result[name] = item.value;
+                }else{ //多值使用数组
+                    if(!BUI.isArray(result[name])){
+                        result[name] = [result[name]];
+                    }
+                    result[name].push(item.value);
+                }
+            });
+            return result;
+        },
+        /**
+         * 设置表单的值
+         * @param {HTMLElement} form 表单
+         * @param {Object} obj  键值对
+         */
+        setFields : function(form,obj){
+            for(var name in obj){
+                if(obj.hasOwnProperty(name)){
+                    BUI.FormHelper.setField(form,name,obj[name]);
+                }
+            }
+        },
+        /**
+         * 清空表单
+         * @param  {HTMLElement} form 表单元素
+         */
+        clear : function(form){
+            var elements = $.makeArray(form.elements);
+
+            BUI.each(elements,function(element){
+                if(element.type === 'checkbox' || element.type === 'radio' ){
+                    $(element).attr('checked',false);
+                }else{
+                    $(element).val('');
+                }
+                $(element).change();
+            });
+        },
+        /**
+         * 设置表单字段
+         * @param {HTMLElement} form 表单元素
+         * @param {string} field 字段名
+         * @param {string} value 字段值
+         */
+        setField:function(form,fieldName,value){
+            var fields = form.elements[fieldName];
+            if(fields && fields.type){
+                formHelper._setFieldValue(fields,value);
+            }else if(BUI.isArray(fields) || (fields && fields.length)){
+                BUI.each(fields,function(field){
+                    formHelper._setFieldValue(field,value);
+                });
+            }
+        },
+        //设置字段的值
+        _setFieldValue : function(field,value){
+            if(field.type === 'checkbox'){
+                if(field.value == ''+ value ||(BUI.isArray(value) && BUI.Array.indexOf(field.value,value) !== -1)) {
+                    $(field).attr('checked',true);
+                }else{
+                    $(field).attr('checked',false);
+                }
+            }else if(field.type === 'radio'){
+                if(field.value == ''+  value){
+                    $(field).attr('checked',true);
+                }else{
+                    $(field).attr('checked',false);
+                }
+            }else{
+                $(field).val(value);
+            }
+        },
+        /**
+         * 获取表单字段值
+         * @param {HTMLElement} form 表单元素
+         * @param {string} field 字段名
+         * @return {String}   字段值
+         */
+        getField : function(form,fieldName){
+            return BUI.FormHelper.serializeToObject(form)[fieldName];
+        }
+    };
+
+    return BUI;
+});
+
+/**
+ * @fileOverview 数组帮助类
+ * @ignore
+ */
+
+/**
+ * @class BUI
+ * 控件库的基础命名空间
+ * @singleton
+ */
+
+define('bui/common/array',['bui/common/util'],function (require) {
+  
+  var BUI = require('bui/common/util');
+  /**
+   * @class BUI.Array
+   * 数组帮助类
+   */
+  BUI.Array ={
+    /**
+     * 返回数组的最后一个对象
+     * @param {Array} array 数组或者类似于数组的对象.
+     * @return {*} 数组的最后一项.
+     */
+    peek : function(array) {
+      return array[array.length - 1];
+    },
+    /**
+     * 查找记录所在的位置
+     * @param  {*} value 值
+     * @param  {Array} array 数组或者类似于数组的对象
+     * @param  {Number} [fromIndex=0] 起始项，默认为0
+     * @return {Number} 位置，如果为 -1则不在数组内
+     */
+    indexOf : function(value, array,opt_fromIndex){
+       var fromIndex = opt_fromIndex == null ?
+          0 : (opt_fromIndex < 0 ?
+               Math.max(0, array.length + opt_fromIndex) : opt_fromIndex);
+
+      for (var i = fromIndex; i < array.length; i++) {
+        if (i in array && array[i] === value)
+          return i;
+      }
+      return -1;
+    },
+    /**
+     * 数组是否存在指定值
+     * @param  {*} value 值
+     * @param  {Array} array 数组或者类似于数组的对象
+     * @return {Boolean} 是否存在于数组中
+     */
+    contains : function(value,array){
+      return BUI.Array.indexOf(value,array) >=0;
+    },
+    /**
+     * 遍历数组或者对象
+     * @method 
+     * @param {Object|Array} element/Object 数组中的元素或者对象的值 
+     * @param {Function} func 遍历的函数 function(elememt,index){} 或者 function(value,key){}
+     */
+    each : BUI.each,
+    /**
+     * 2个数组内部的值是否相等
+     * @param  {Array} a1 数组1
+     * @param  {Array} a2 数组2
+     * @return {Boolean} 2个数组相等或者内部元素是否相等
+     */
+    equals : function(a1,a2){
+      if(a1 == a2){
+        return true;
+      }
+      if(!a1 || !a2){
+        return false;
+      }
+
+      if(a1.length != a2.length){
+        return false;
+      }
+      var rst = true;
+      for(var i = 0 ;i < a1.length; i++){
+        if(a1[i] !== a2[i]){
+          rst = false;
+          break;
+        }
+      }
+      return rst;
+    },
+
+    /**
+     * 过滤数组
+     * @param {Object|Array} element/Object 数组中的元素或者对象的值 
+     * @param {Function} func 遍历的函数 function(elememt,index){} 或者 function(value,key){},如果返回true则添加到结果集
+     * @return {Array} 过滤的结果集
+     */
+    filter : function(array,func){
+      var result = [];
+      BUI.Array.each(array,function(value,index){
+        if(func(value,index)){
+          result.push(value);
+        }
+      });
+      return result;
+    },
+    /**
+     * 转换数组数组
+     * @param {Object|Array} element/Object 数组中的元素或者对象的值 
+     * @param {Function} func 遍历的函数 function(elememt,index){} 或者 function(value,key){},将返回的结果添加到结果集
+     * @return {Array} 过滤的结果集
+     */
+    map : function(array,func){
+      var result = [];
+      BUI.Array.each(array,function(value,index){
+        result.push(func(value,index));
+      });
+      return result;
+    },
+    /**
+     * 获取第一个符合条件的数据
+     * @param  {Array} array 数组
+     * @param  {Function} func  匹配函数
+     * @return {*}  符合条件的数据
+     */
+    find : function(array,func){
+      var i = BUI.Array.findIndex(array, func);
+      return i < 0 ? null : array[i];
+    },
+    /**
+     * 获取第一个符合条件的数据的索引值
+    * @param  {Array} array 数组
+     * @param  {Function} func  匹配函数
+     * @return {Number} 符合条件的数据的索引值
+     */
+    findIndex : function(array,func){
+      var result = -1;
+      BUI.Array.each(array,function(value,index){
+        if(func(value,index)){
+          result = index;
+          return false;
+        }
+      });
+      return result;
+    },
+    /**
+     * 数组是否为空
+     * @param  {Array}  array 数组
+     * @return {Boolean}  是否为空
+     */
+    isEmpty : function(array){
+      return array.length == 0;
+    },
+    /**
+     * 插入数组
+     * @param  {Array} array 数组
+     * @param  {Number} index 位置
+     * @param {*} value 插入的数据
+     */
+    add : function(array,value){
+      array.push(value);
+    },
+    /**
+     * 将数据插入数组指定的位置
+     * @param  {Array} array 数组
+     * @param {*} value 插入的数据
+     * @param  {Number} index 位置
+     */
+    addAt : function(array,value,index){
+      BUI.Array.splice(array, index, 0, value);
+    },
+    /**
+     * 清空数组
+     * @param  {Array} array 数组
+     * @return {Array}  清空后的数组
+     */
+    empty : function(array){
+      if(!(array instanceof(Array))){
+        for (var i = array.length - 1; i >= 0; i--) {
+          delete array[i];
+        }
+      }
+      array.length = 0;
+    },
+    /**
+     * 移除记录
+     * @param  {Array} array 数组
+     * @param  {*} value 记录
+     * @return {Boolean}   是否移除成功
+     */
+    remove : function(array,value){
+      var i = BUI.Array.indexOf(value, array);
+      var rv;
+      if ((rv = i >= 0)) {
+        BUI.Array.removeAt(array, i);
+      }
+      return rv;
+    },
+    /**
+     * 移除指定位置的记录
+     * @param  {Array} array 数组
+     * @param  {Number} index 索引值
+     * @return {Boolean}   是否移除成功
+     */
+    removeAt : function(array,index){
+      return BUI.Array.splice(array, index, 1).length == 1;
+    },
+    /**
+     * @private
+     */
+    slice : function(arr, start, opt_end){
+      if (arguments.length <= 2) {
+        return Array.prototype.slice.call(arr, start);
+      } else {
+        return Array.prototype.slice.call(arr, start, opt_end);
+      }
+    },
+    /**
+     * @private
+     */
+    splice : function(arr, index, howMany, var_args){
+      return Array.prototype.splice.apply(arr, BUI.Array.slice(arguments, 1))
+    }
+
+  };
+  return BUI.Array;
+});
+
+/**
+ * @fileOverview 观察者模式实现事件
+ * @ignore
+ */
+
+define('bui/common/observable', ['bui/common/util'], function (require) {
+  
+  var BUI = require('bui/common/util');
+  /**
+   * @private
+   * @class BUI.Observable.Callbacks
+   * jquery 1.7 时存在 $.Callbacks,但是fireWith的返回结果是$.Callbacks 对象，
+   * 而我们想要的效果是：当其中有一个函数返回为false时，阻止后面的执行，并返回false
+   */
+  var Callbacks = function(){
+    this._init();
+  };
+
+  BUI.augment(Callbacks,{
+
+    _functions : null,
+
+    _init : function(){
+      var _self = this;
+
+      _self._functions = [];
+    },
+    /**
+     * 添加回调函数
+     * @param {Function} fn 回调函数
+     */
+    add:function(fn){
+      this._functions.push(fn);
+    },
+    /**
+     * 移除回调函数
+     * @param  {Function} fn 回调函数
+     */
+    remove : function(fn){
+      var functions = this._functions;
+        index = BUI.Array.indexOf(fn,functions);
+      if(index>=0){
+        functions.splice(index,1);
+      }
+    },
+    /**
+     * 清空事件
+     */
+    empty : function(){
+      var length = this._functions.length; //ie6,7下，必须指定需要删除的数量
+      this._functions.splice(0,length);
+    },
+    /**
+     * 暂停事件
+     */
+    pause : function(){
+      this._paused = true;
+    },
+    /**
+     * 唤醒事件
+     */
+    resume : function(){
+      this._paused = false;
+    },
+    /**
+     * 触发回调
+     * @param  {Object} scope 上下文
+     * @param  {Array} args  回调函数的参数
+     * @return {Boolean|undefined} 当其中有一个函数返回为false时，阻止后面的执行，并返回false
+     */
+    fireWith : function(scope,args){
+      var _self = this,
+        rst;
+      if(this._paused){
+        return;
+      }
+      BUI.each(_self._functions,function(fn){
+        rst = fn.apply(scope,args);
+        if(rst === false){
+          return false;
+        }
+      });
+      return rst;
+    }
+  });
+
+  function getCallbacks(){
+    return new Callbacks();
+  }
+  /**
+   * 支持事件的对象，参考观察者模式
+   *  - 此类提供事件绑定
+   *  - 提供事件冒泡机制
+   *
+   * <pre><code>
+   *   var control = new Control();
+   *   control.on('click',function(ev){
+   *   
+   *   });
+   *
+   *   control.off();  //移除所有事件
+   * </code></pre>
+   * @class BUI.Observable
+   * @abstract
+   * @param {Object} config 配置项键值对
+   */
+  var Observable = function(config){
+        this._events = [];
+        this._eventMap = {};
+        this._bubblesEvents = [];
+    this._initEvents(config);
+  };
+
+  BUI.augment(Observable,
+  {
+
+    /**
+     * @cfg {Object} listeners 
+     *  初始化事件,快速注册事件
+     *  <pre><code>
+     *    var list = new BUI.List.SimpleList({
+     *      listeners : {
+     *        itemclick : function(ev){},
+     *        itemrendered : function(ev){}
+     *      },
+     *      items : []
+     *    });
+     *    list.render();
+     *  </code></pre>
+     */
+    
+    /**
+     * @cfg {Function} handler
+     * 点击事件的处理函数，快速配置点击事件而不需要写listeners属性
+     * <pre><code>
+     *    var list = new BUI.List.SimpleList({
+     *      handler : function(ev){} //click 事件
+     *    });
+     *    list.render();
+     *  </code></pre>
+     */
+    
+    /**
+     * 支持的事件名列表
+     * @private
+     */
+    _events:[],
+
+    /**
+     * 绑定的事件
+     * @private
+     */
+    _eventMap : {},
+
+    _bubblesEvents : [],
+
+    _bubbleTarget : null,
+
+    //获取回调集合
+    _getCallbacks : function(eventType){
+      var _self = this,
+        eventMap = _self._eventMap;
+      return eventMap[eventType];
+    },
+    //初始化事件列表
+    _initEvents : function(config){
+      var _self = this,
+        listeners = null; 
+
+      if(!config){
+        return;
+      }
+      listeners = config.listeners || {};
+      if(config.handler){
+        listeners.click = config.handler;
+      }
+      if(listeners){
+        for (var name in listeners) {
+          if(listeners.hasOwnProperty(name)){
+            _self.on(name,listeners[name]);
+          }
+        };
+      }
+    },
+    //事件是否支持冒泡
+    _isBubbles : function (eventType) {
+        return BUI.Array.indexOf(eventType,this._bubblesEvents) >= 0;
+    },
+    /**
+     * 添加冒泡的对象
+     * @protected
+     * @param {Object} target  冒泡的事件源
+     */
+    addTarget : function(target) {
+        this._bubbleTarget = target;
+    },
+    /**
+     * 添加支持的事件
+     * @protected
+     * @param {String|String[]} events 事件
+     */
+    addEvents : function(events){
+      var _self = this,
+        existEvents = _self._events,
+        eventMap = _self._eventMap;
+
+      function addEvent(eventType){
+        if(BUI.Array.indexOf(eventType,existEvents) === -1){
+          eventMap[eventType] = getCallbacks();
+          existEvents.push(eventType);
+        }
+      }
+      if(BUI.isArray(events)){
+        $.each(events,function(index,eventType){
+          addEvent(eventType);
+        });
+      }else{
+        addEvent(events);
+      }
+    },
+    /**
+     * 移除所有绑定的事件
+     * @protected
+     */
+    clearListeners : function(){
+      var _self = this,
+        eventMap = _self._eventMap;
+      for(var name in eventMap){
+        if(eventMap.hasOwnProperty(name)){
+          eventMap[name].empty();
+        }
+      }
+    },
+    /**
+     * 触发事件
+     * <pre><code>
+     *   //绑定事件
+     *   list.on('itemclick',function(ev){
+     *     alert('21');
+     *   });
+     *   //触发事件
+     *   list.fire('itemclick');
+     * </code></pre>
+     * @param  {String} eventType 事件类型
+     * @param  {Object} eventData 事件触发时传递的数据
+     * @return {Boolean|undefined}  如果其中一个事件处理器返回 false , 则返回 false, 否则返回最后一个事件处理器的返回值
+     */
+    fire : function(eventType,eventData){
+      var _self = this,
+        callbacks = _self._getCallbacks(eventType),
+        args = $.makeArray(arguments),
+        result;
+      if(!eventData){
+        eventData = {};
+        args.push(eventData);
+      }
+      if(!eventData.target){
+        eventData.target = _self;
+      }
+      if(callbacks){
+        result = callbacks.fireWith(_self,Array.prototype.slice.call(args,1));
+      }
+      if(_self._isBubbles(eventType)){
+          var bubbleTarget = _self._bubbleTarget;
+          if(bubbleTarget && bubbleTarget.fire){
+              bubbleTarget.fire(eventType,eventData);
+          }
+      }
+      return result;
+    },
+    /**
+     * 暂停事件的执行
+     * <pre><code>
+     *  list.pauseEvent('itemclick');
+     * </code></pre>
+     * @param  {String} eventType 事件类型
+     */
+    pauseEvent : function(eventType){
+      var _self = this,
+        callbacks = _self._getCallbacks(eventType);
+      callbacks && callbacks.pause();
+    },
+    /**
+     * 唤醒事件
+     * <pre><code>
+     *  list.resumeEvent('itemclick');
+     * </code></pre>
+     * @param  {String} eventType 事件类型
+     */
+    resumeEvent : function(eventType){
+      var _self = this,
+        callbacks = _self._getCallbacks(eventType);
+      callbacks && callbacks.resume();
+    },
+    /**
+     * 添加绑定事件
+     * <pre><code>
+     *   //绑定单个事件
+     *   list.on('itemclick',function(ev){
+     *     alert('21');
+     *   });
+     *   //绑定多个事件
+     *   list.on('itemrendered itemupdated',function(){
+     *     //列表项创建、更新时触发操作
+     *   });
+     * </code></pre>
+     * @param  {String}   eventType 事件类型
+     * @param  {Function} fn        回调函数
+     */
+    on : function(eventType,fn){
+      //一次监听多个事件
+      var arr = eventType.split(' '),
+        _self = this,
+        callbacks =null;
+      if(arr.length > 1){
+        BUI.each(arr,function(name){
+          _self.on(name,fn);
+        });
+      }else{
+        callbacks = _self._getCallbacks(eventType);
+        if(callbacks){
+          callbacks.add(fn);
+        }else{
+          _self.addEvents(eventType);
+          _self.on(eventType,fn);
+        }
+      }
+      return _self;
+    },
+    /**
+     * 移除绑定的事件
+     * <pre><code>
+     *  //移除所有事件
+     *  list.off();
+     *  
+     *  //移除特定事件
+     *  function callback(ev){}
+     *  list.on('click',callback);
+     *
+     *  list.off('click',callback);//需要保存回调函数的引用
+     * 
+     * </code></pre>
+     * @param  {String}   eventType 事件类型
+     * @param  {Function} fn        回调函数
+     */
+    off : function(eventType,fn){
+      if(!eventType && !fn){
+        this.clearListeners();
+        return this;
+      }
+      var _self = this,
+        callbacks = _self._getCallbacks(eventType);
+      if(callbacks){
+        if(fn){
+          callbacks.remove(fn);
+        }else{
+          callbacks.empty();
+        }
+        
+      }
+      return _self;
+    },
+    /**
+     * 配置事件是否允许冒泡
+     * @protected
+     * @param  {String} eventType 支持冒泡的事件
+     * @param  {Object} cfg 配置项
+     * @param {Boolean} cfg.bubbles 是否支持冒泡
+     */
+    publish : function(eventType, cfg){
+      var _self = this,
+          bubblesEvents = _self._bubblesEvents;
+
+      if(cfg.bubbles){
+          if(BUI.Array.indexOf(eventType,bubblesEvents) === -1){
+              bubblesEvents.push(eventType);
+          }
+      }else{
+          var index = BUI.Array.indexOf(eventType,bubblesEvents);
+          if(index !== -1){
+              bubblesEvents.splice(index,1);
+          }
+      }
+    }
+  });
+
+  return Observable;
+});
+
+/**
+ * @fileOverview UA,jQuery的 $.browser 对象非常难使用
+ * @ignore
+ * @author dxq613@gmail.com
+ */
+define('bui/common/ua', function () {
+
+    function numberify(s) {
+        var c = 0;
+        // convert '1.2.3.4' to 1.234
+        return parseFloat(s.replace(/\./g, function () {
+            return (c++ === 0) ? '.' : '';
+        }));
+    };
+
+    function uaMatch(s) {
+        s = s.toLowerCase();
+        var r = /(chrome)[ \/]([\w.]+)/.exec(s) || /(webkit)[ \/]([\w.]+)/.exec(s) || /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(s) || /(msie) ([\w.]+)/.exec(s) || s.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(s) || [],
+            a = {
+                browser: r[1] || "",
+                version: r[2] || "0"
+            },
+            b = {};
+        a.browser && (b[a.browser] = !0, b.version = a.version),
+            b.chrome ? b.webkit = !0 : b.webkit && (b.safari = !0);
+        return b;
+    }
+
+    var UA = $.UA || (function () {
+        var browser = $.browser || uaMatch(navigator.userAgent),
+            versionNumber = numberify(browser.version),
+            /**
+             * 浏览器版本检测
+             * @class BUI.UA
+             * @singleton
+             */
+                ua =
+            {
+                /**
+                 * ie 版本
+                 * @type {Number}
+                 */
+                ie: browser.msie && versionNumber,
+
+                /**
+                 * webkit 版本
+                 * @type {Number}
+                 */
+                webkit: browser.webkit && versionNumber,
+                /**
+                 * opera 版本
+                 * @type {Number}
+                 */
+                opera: browser.opera && versionNumber,
+                /**
+                 * mozilla 火狐版本
+                 * @type {Number}
+                 */
+                mozilla: browser.mozilla && versionNumber
+            };
+        return ua;
+    })();
+
+    return UA;
+});
+
+/**
+ * @fileOverview 由于jQuery只有 parseJSON ，没有stringify所以使用过程不方便
+ * @ignore
+ */
+define('bui/common/json',['bui/common/ua'],function (require) {
+
+  var win = window,
+    UA = require('bui/common/ua'),
+    JSON = win.JSON;
+
+  // ie 8.0.7600.16315@win7 json 有问题
+  if (!JSON || UA['ie'] < 9) {
+      JSON = win.JSON = {};
+  }
+
+  function f(n) {
+      // Format integers to have at least two digits.
+      return n < 10 ? '0' + n : n;
+  }
+
+  if (typeof Date.prototype.toJSON !== 'function') {
+
+      Date.prototype.toJSON = function (key) {
+
+          return isFinite(this.valueOf()) ?
+              this.getUTCFullYear() + '-' +
+                  f(this.getUTCMonth() + 1) + '-' +
+                  f(this.getUTCDate()) + 'T' +
+                  f(this.getUTCHours()) + ':' +
+                  f(this.getUTCMinutes()) + ':' +
+                  f(this.getUTCSeconds()) + 'Z' : null;
+      };
+
+      String.prototype.toJSON =
+          Number.prototype.toJSON =
+              Boolean.prototype.toJSON = function (key) {
+                  return this.valueOf();
+              };
+  }
+
+
+  var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+    escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+    gap,
+    indent,
+    meta = {    // table of character substitutions
+        '\b': '\\b',
+        '\t': '\\t',
+        '\n': '\\n',
+        '\f': '\\f',
+        '\r': '\\r',
+        '"' : '\\"',
+        '\\': '\\\\'
+    },
+    rep;
+
+    function quote(string) {
+
+      // If the string contains no control characters, no quote characters, and no
+      // backslash characters, then we can safely slap some quotes around it.
+      // Otherwise we must also replace the offending characters with safe escape
+      // sequences.
+
+      escapable['lastIndex'] = 0;
+      return escapable.test(string) ?
+          '"' + string.replace(escapable, function (a) {
+              var c = meta[a];
+              return typeof c === 'string' ? c :
+                  '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+          }) + '"' :
+          '"' + string + '"';
+    }
+
+    function str(key, holder) {
+
+      // Produce a string from holder[key].
+
+      var i,          // The loop counter.
+          k,          // The member key.
+          v,          // The member value.
+          length,
+          mind = gap,
+          partial,
+          value = holder[key];
+
+      // If the value has a toJSON method, call it to obtain a replacement value.
+
+      if (value && typeof value === 'object' &&
+          typeof value.toJSON === 'function') {
+          value = value.toJSON(key);
+      }
+
+      // If we were called with a replacer function, then call the replacer to
+      // obtain a replacement value.
+
+      if (typeof rep === 'function') {
+          value = rep.call(holder, key, value);
+      }
+
+      // What happens next depends on the value's type.
+
+      switch (typeof value) {
+          case 'string':
+              return quote(value);
+
+          case 'number':
+
+      // JSON numbers must be finite. Encode non-finite numbers as null.
+
+              return isFinite(value) ? String(value) : 'null';
+
+          case 'boolean':
+          case 'null':
+
+      // If the value is a boolean or null, convert it to a string. Note:
+      // typeof null does not produce 'null'. The case is included here in
+      // the remote chance that this gets fixed someday.
+
+              return String(value);
+
+      // If the type is 'object', we might be dealing with an object or an array or
+      // null.
+
+          case 'object':
+
+      // Due to a specification blunder in ECMAScript, typeof null is 'object',
+      // so watch out for that case.
+
+              if (!value) {
+                  return 'null';
+              }
+
+      // Make an array to hold the partial results of stringifying this object value.
+
+              gap += indent;
+              partial = [];
+
+      // Is the value an array?
+
+              if (Object.prototype.toString.apply(value) === '[object Array]') {
+
+      // The value is an array. Stringify every element. Use null as a placeholder
+      // for non-JSON values.
+
+                  length = value.length;
+                  for (i = 0; i < length; i += 1) {
+                      partial[i] = str(i, value) || 'null';
+                  }
+
+      // Join all of the elements together, separated with commas, and wrap them in
+      // brackets.
+
+                  v = partial.length === 0 ? '[]' :
+                      gap ? '[\n' + gap +
+                          partial.join(',\n' + gap) + '\n' +
+                          mind + ']' :
+                          '[' + partial.join(',') + ']';
+                  gap = mind;
+                  return v;
+              }
+
+      // If the replacer is an array, use it to select the members to be stringified.
+
+              if (rep && typeof rep === 'object') {
+                  length = rep.length;
+                  for (i = 0; i < length; i += 1) {
+                      k = rep[i];
+                      if (typeof k === 'string') {
+                          v = str(k, value);
+                          if (v) {
+                              partial.push(quote(k) + (gap ? ': ' : ':') + v);
+                          }
+                      }
+                  }
+              } else {
+
+      // Otherwise, iterate through all of the keys in the object.
+
+                  for (k in value) {
+                      if (Object.hasOwnProperty.call(value, k)) {
+                          v = str(k, value);
+                          if (v) {
+                              partial.push(quote(k) + (gap ? ': ' : ':') + v);
+                          }
+                      }
+                  }
+              }
+
+      // Join all of the member texts together, separated with commas,
+      // and wrap them in braces.
+
+              v = partial.length === 0 ? '{}' :
+                  gap ? '{\n' + gap + partial.join(',\n' + gap) + '\n' +
+                      mind + '}' : '{' + partial.join(',') + '}';
+              gap = mind;
+              return v;
+      }
+  }
+
+  if (typeof JSON.stringify !== 'function') {
+    JSON.stringify = function (value, replacer, space) {
+
+      // The stringify method takes a value and an optional replacer, and an optional
+      // space parameter, and returns a JSON text. The replacer can be a function
+      // that can replace values, or an array of strings that will select the keys.
+      // A default replacer method can be provided. Use of the space parameter can
+      // produce text that is more easily readable.
+
+      var i;
+      gap = '';
+      indent = '';
+
+      // If the space parameter is a number, make an indent string containing that
+      // many spaces.
+
+      if (typeof space === 'number') {
+          for (i = 0; i < space; i += 1) {
+              indent += ' ';
+          }
+
+      // If the space parameter is a string, it will be used as the indent string.
+
+      } else if (typeof space === 'string') {
+          indent = space;
+      }
+
+      // If there is a replacer, it must be a function or an array.
+      // Otherwise, throw an error.
+
+      rep = replacer;
+      if (replacer && typeof replacer !== 'function' &&
+          (typeof replacer !== 'object' ||
+              typeof replacer.length !== 'number')) {
+          throw new Error('JSON.stringify');
+      }
+
+      // Make a fake root object containing our value under the key of ''.
+      // Return the result of stringifying the value.
+
+      return str('', {'': value});
+      };
+    }
+
+  function looseParse(data){
+    try{
+      return new Function('return ' + data + ';')();
+    }catch(e){
+      throw 'Json parse error!';
+    }
+  }
+ /**
+	* JSON 格式化
+  * @class BUI.JSON
+	* @singleton
+  */
+  var JSON = {
+    /**
+     * 转成json 等同于$.parseJSON
+     * @method
+     * @param {String} jsonstring 合法的json 字符串
+     */
+    parse : $.parseJSON,
+    /**
+     * 业务中有些字符串组成的json数据不是严格的json数据，如使用单引号，或者属性名不是字符串
+     * 如 ： {a:'abc'}
+     * @method 
+     * @param {String} jsonstring
+     */
+    looseParse : looseParse,
+    /**
+     * 将Json转成字符串
+     * @method 
+     * @param {Object} json json 对象
+     */
+    stringify : JSON.stringify
+  }
+
+  return JSON;
+});
+
+/**
+ * @fileOverview 键盘值
+ * @ignore
+ */
+
+define('bui/common/keycode',function () {
+  
+  /**
+   * 键盘按键对应的数字值
+   * @class BUI.KeyCode
+   * @singleton
+   */
+  var keyCode = {
+    /** Key constant @type Number */
+    BACKSPACE: 8,
+    /** Key constant @type Number */
+    TAB: 9,
+    /** Key constant @type Number */
+    NUM_CENTER: 12,
+    /** Key constant @type Number */
+    ENTER: 13,
+    /** Key constant @type Number */
+    RETURN: 13,
+    /** Key constant @type Number */
+    SHIFT: 16,
+    /** Key constant @type Number */
+    CTRL: 17,
+    /** Key constant @type Number */
+    ALT: 18,
+    /** Key constant @type Number */
+    PAUSE: 19,
+    /** Key constant @type Number */
+    CAPS_LOCK: 20,
+    /** Key constant @type Number */
+    ESC: 27,
+    /** Key constant @type Number */
+    SPACE: 32,
+    /** Key constant @type Number */
+    PAGE_UP: 33,
+    /** Key constant @type Number */
+    PAGE_DOWN: 34,
+    /** Key constant @type Number */
+    END: 35,
+    /** Key constant @type Number */
+    HOME: 36,
+    /** Key constant @type Number */
+    LEFT: 37,
+    /** Key constant @type Number */
+    UP: 38,
+    /** Key constant @type Number */
+    RIGHT: 39,
+    /** Key constant @type Number */
+    DOWN: 40,
+    /** Key constant @type Number */
+    PRINT_SCREEN: 44,
+    /** Key constant @type Number */
+    INSERT: 45,
+    /** Key constant @type Number */
+    DELETE: 46,
+    /** Key constant @type Number */
+    ZERO: 48,
+    /** Key constant @type Number */
+    ONE: 49,
+    /** Key constant @type Number */
+    TWO: 50,
+    /** Key constant @type Number */
+    THREE: 51,
+    /** Key constant @type Number */
+    FOUR: 52,
+    /** Key constant @type Number */
+    FIVE: 53,
+    /** Key constant @type Number */
+    SIX: 54,
+    /** Key constant @type Number */
+    SEVEN: 55,
+    /** Key constant @type Number */
+    EIGHT: 56,
+    /** Key constant @type Number */
+    NINE: 57,
+    /** Key constant @type Number */
+    A: 65,
+    /** Key constant @type Number */
+    B: 66,
+    /** Key constant @type Number */
+    C: 67,
+    /** Key constant @type Number */
+    D: 68,
+    /** Key constant @type Number */
+    E: 69,
+    /** Key constant @type Number */
+    F: 70,
+    /** Key constant @type Number */
+    G: 71,
+    /** Key constant @type Number */
+    H: 72,
+    /** Key constant @type Number */
+    I: 73,
+    /** Key constant @type Number */
+    J: 74,
+    /** Key constant @type Number */
+    K: 75,
+    /** Key constant @type Number */
+    L: 76,
+    /** Key constant @type Number */
+    M: 77,
+    /** Key constant @type Number */
+    N: 78,
+    /** Key constant @type Number */
+    O: 79,
+    /** Key constant @type Number */
+    P: 80,
+    /** Key constant @type Number */
+    Q: 81,
+    /** Key constant @type Number */
+    R: 82,
+    /** Key constant @type Number */
+    S: 83,
+    /** Key constant @type Number */
+    T: 84,
+    /** Key constant @type Number */
+    U: 85,
+    /** Key constant @type Number */
+    V: 86,
+    /** Key constant @type Number */
+    W: 87,
+    /** Key constant @type Number */
+    X: 88,
+    /** Key constant @type Number */
+    Y: 89,
+    /** Key constant @type Number */
+    Z: 90,
+    /** Key constant @type Number */
+    CONTEXT_MENU: 93,
+    /** Key constant @type Number */
+    NUM_ZERO: 96,
+    /** Key constant @type Number */
+    NUM_ONE: 97,
+    /** Key constant @type Number */
+    NUM_TWO: 98,
+    /** Key constant @type Number */
+    NUM_THREE: 99,
+    /** Key constant @type Number */
+    NUM_FOUR: 100,
+    /** Key constant @type Number */
+    NUM_FIVE: 101,
+    /** Key constant @type Number */
+    NUM_SIX: 102,
+    /** Key constant @type Number */
+    NUM_SEVEN: 103,
+    /** Key constant @type Number */
+    NUM_EIGHT: 104,
+    /** Key constant @type Number */
+    NUM_NINE: 105,
+    /** Key constant @type Number */
+    NUM_MULTIPLY: 106,
+    /** Key constant @type Number */
+    NUM_PLUS: 107,
+    /** Key constant @type Number */
+    NUM_MINUS: 109,
+    /** Key constant @type Number */
+    NUM_PERIOD: 110,
+    /** Key constant @type Number */
+    NUM_DIVISION: 111,
+    /** Key constant @type Number */
+    F1: 112,
+    /** Key constant @type Number */
+    F2: 113,
+    /** Key constant @type Number */
+    F3: 114,
+    /** Key constant @type Number */
+    F4: 115,
+    /** Key constant @type Number */
+    F5: 116,
+    /** Key constant @type Number */
+    F6: 117,
+    /** Key constant @type Number */
+    F7: 118,
+    /** Key constant @type Number */
+    F8: 119,
+    /** Key constant @type Number */
+    F9: 120,
+    /** Key constant @type Number */
+    F10: 121,
+    /** Key constant @type Number */
+    F11: 122,
+    /** Key constant @type Number */
+    F12: 123
+  };
+
+  return keyCode;
+});
+
+/*
+ * @fileOverview Date Format 1.2.3
+ * @ignore
+ * (c) 2007-2009 Steven Levithan <stevenlevithan.com>
+ * MIT license
+ *
+ * Includes enhancements by Scott Trenda <scott.trenda.net>
+ * and Kris Kowal <cixar.com/~kris.kowal/>
+ *
+ * Accepts a date, a mask, or a date and a mask.
+ * Returns a formatted version of the given date.
+ * The date defaults to the current date/time.
+ * The mask defaults to dateFormat.masks.default.
+ *
+ * Last modified by jayli 拔赤 2010-09-09
+ * - 增加中文的支持
+ * - 简单的本地化，对w（星期x）的支持
+ * 
+ */
+define('bui/common/date', function () {
+
+    var dateRegex = /^(?:(?!0000)[0-9]{4}([-/.]+)(?:(?:0?[1-9]|1[0-2])\1(?:0?[1-9]|1[0-9]|2[0-8])|(?:0?[13-9]|1[0-2])\1(?:29|30)|(?:0?[13578]|1[02])\1(?:31))|(?:[0-9]{2}(?:0[48]|[2468][048]|[13579][26])|(?:0[48]|[2468][048]|[13579][26])00)([-/.]?)0?2\2(?:29))(\s+([01]|([01][0-9]|2[0-3])):([0-9]|[0-5][0-9]):([0-9]|[0-5][0-9]))?$/;
+
+    function dateParse(val, format) {
+		if(val instanceof Date){
+			return val;
+		}
+		if (typeof(format)=="undefined" || format==null || format=="") {
+			var checkList=new Array('y-m-d','yyyy-mm-dd','yyyy-mm-dd HH:MM:ss','H:M:s');
+			for (var i=0; i<checkList.length; i++) {
+					var d=dateParse(val,checkList[i]);
+					if (d!=null) { 
+						return d; 
+					}
+			}
+			return null;
+		};
+        val = val + "";
+        var i_val = 0;
+        var i_format = 0;
+        var c = "";
+        var token = "";
+        var x, y;
+        var now = new Date();
+        var year = now.getYear();
+        var month = now.getMonth() + 1;
+        var date = 1;
+        var hh = 00;
+        var mm = 00;
+        var ss = 00;
+        this.isInteger = function(val) {
+            return /^\d*$/.test(val);
+		};
+		this.getInt = function(str,i,minlength,maxlength) {
+			for (var x=maxlength; x>=minlength; x--) {
+				var token=str.substring(i,i+x);
+				if (token.length < minlength) { 
+					return null; 
+				}
+				if (this.isInteger(token)) { 
+					return token; 
+				}
+			}
+		return null;
+		};
+
+        while (i_format < format.length) {
+            c = format.charAt(i_format);
+            token = "";
+            while ((format.charAt(i_format) == c) && (i_format < format.length)) {
+                token += format.charAt(i_format++);
+            }
+            if (token=="yyyy" || token=="yy" || token=="y") {
+				if (token=="yyyy") { 
+					x=4;y=4; 
+				}
+				if (token=="yy") { 
+					x=2;y=2; 
+				}
+				if (token=="y") { 
+					x=2;y=4; 
+				}
+				year=this.getInt(val,i_val,x,y);
+				if (year==null) { 
+					return null; 
+				}
+				i_val += year.length;
+				if (year.length==2) {
+                    year = year>70?1900+(year-0):2000+(year-0);
+				}
+			}
+            else if (token=="mm"||token=="m") {
+				month=this.getInt(val,i_val,token.length,2);
+				if(month==null||(month<1)||(month>12)){
+					return null;
+				}
+				i_val+=month.length;
+			}
+			else if (token=="dd"||token=="d") {
+				date=this.getInt(val,i_val,token.length,2);
+				if(date==null||(date<1)||(date>31)){
+					return null;
+				}
+				i_val+=date.length;
+			}
+			else if (token=="hh"||token=="h") {
+				hh=this.getInt(val,i_val,token.length,2);
+				if(hh==null||(hh<1)||(hh>12)){
+					return null;
+				}
+				i_val+=hh.length;
+			}
+			else if (token=="HH"||token=="H") {
+				hh=this.getInt(val,i_val,token.length,2);
+				if(hh==null||(hh<0)||(hh>23)){
+					return null;
+				}
+				i_val+=hh.length;
+			}
+			else if (token=="MM"||token=="M") {
+				mm=this.getInt(val,i_val,token.length,2);
+				if(mm==null||(mm<0)||(mm>59)){
+					return null;
+				}
+				i_val+=mm.length;
+			}
+			else if (token=="ss"||token=="s") {
+				ss=this.getInt(val,i_val,token.length,2);
+				if(ss==null||(ss<0)||(ss>59)){
+					return null;
+				}
+				i_val+=ss.length;
+			}
+			else {
+				if (val.substring(i_val,i_val+token.length)!=token) {
+					return null;
+				}
+				else {
+					i_val+=token.length;
+				}
+			}
+		}
+		if (i_val != val.length) { 
+			return null; 
+		}
+		if (month==2) {
+			if ( ( (year%4==0)&&(year%100 != 0) ) || (year%400==0) ) { // leap year
+				if (date > 29){ 
+					return null; 
+				}
+			}
+			else { 
+				if (date > 28) { 
+					return null; 
+				} 
+			}
+		}
+		if ((month==4)||(month==6)||(month==9)||(month==11)) {
+			if (date > 30) { 
+				return null; 
+			}
+		}
+		return new Date(year,month-1,date,hh,mm,ss);
+    }
+
+    function DateAdd(strInterval, NumDay, dtDate) {
+        var dtTmp = new Date(dtDate);
+        if (isNaN(dtTmp)) {
+            dtTmp = new Date();
+        }
+        NumDay = parseInt(NumDay,10);
+        switch (strInterval) {
+            case   's':
+                dtTmp = new Date(dtTmp.getTime() + (1000 * NumDay));
+                break;
+            case   'n':
+                dtTmp = new Date(dtTmp.getTime() + (60000 * NumDay));
+                break;
+            case   'h':
+                dtTmp = new Date(dtTmp.getTime() + (3600000 * NumDay));
+                break;
+            case   'd':
+                dtTmp = new Date(dtTmp.getTime() + (86400000 * NumDay));
+                break;
+            case   'w':
+                dtTmp = new Date(dtTmp.getTime() + ((86400000 * 7) * NumDay));
+                break;
+            case   'm':
+                dtTmp = new Date(dtTmp.getFullYear(), (dtTmp.getMonth()) + NumDay, dtTmp.getDate(), dtTmp.getHours(), dtTmp.getMinutes(), dtTmp.getSeconds());
+                break;
+            case   'y':
+                //alert(dtTmp.getFullYear());
+                dtTmp = new Date(dtTmp.getFullYear() + NumDay, dtTmp.getMonth(), dtTmp.getDate(), dtTmp.getHours(), dtTmp.getMinutes(), dtTmp.getSeconds());
+                //alert(dtTmp);
+                break;
+        }
+        return dtTmp;
+    }
+
+    var dateFormat = function () {
+        var token = /w{1}|d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g,
+            timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g,
+            timezoneClip = /[^-+\dA-Z]/g,
+            pad = function (val, len) {
+                val = String(val);
+                len = len || 2;
+                while (val.length < len) {
+                    val = '0' + val;
+                }
+                return val;
+            },
+            // Some common format strings
+            masks = {
+                'default':'ddd mmm dd yyyy HH:MM:ss',
+                shortDate:'m/d/yy',
+                //mediumDate:     'mmm d, yyyy',
+                longDate:'mmmm d, yyyy',
+                fullDate:'dddd, mmmm d, yyyy',
+                shortTime:'h:MM TT',
+                //mediumTime:     'h:MM:ss TT',
+                longTime:'h:MM:ss TT Z',
+                isoDate:'yyyy-mm-dd',
+                isoTime:'HH:MM:ss',
+                isoDateTime:"yyyy-mm-dd'T'HH:MM:ss",
+                isoUTCDateTime:"UTC:yyyy-mm-dd'T'HH:MM:ss'Z'",
+
+                //added by jayli
+                localShortDate:'yy年mm月dd日',
+                localShortDateTime:'yy年mm月dd日 hh:MM:ss TT',
+                localLongDate:'yyyy年mm月dd日',
+                localLongDateTime:'yyyy年mm月dd日 hh:MM:ss TT',
+                localFullDate:'yyyy年mm月dd日 w',
+                localFullDateTime:'yyyy年mm月dd日 w hh:MM:ss TT'
+
+            },
+
+            // Internationalization strings
+            i18n = {
+                dayNames:[
+                    'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat',
+                    'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+                    '星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'
+                ],
+                monthNames:[
+                    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+                    'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
+                ]
+            };
+
+        // Regexes and supporting functions are cached through closure
+        return function (date, mask, utc) {
+
+            // You can't provide utc if you skip other args (use the "UTC:" mask prefix)
+            if (arguments.length === 1 && Object.prototype.toString.call(date) === '[object String]' && !/\d/.test(date)) {
+                mask = date;
+                date = undefined;
+            }
+
+            // Passing date through Date applies Date.parse, if necessary
+            date = date ? new Date(date) : new Date();
+            if (isNaN(date)) {
+                throw SyntaxError('invalid date');
+            }
+
+            mask = String(masks[mask] || mask || masks['default']);
+
+            // Allow setting the utc argument via the mask
+            if (mask.slice(0, 4) === 'UTC:') {
+                mask = mask.slice(4);
+                utc = true;
+            }
+
+            var _ = utc ? 'getUTC' : 'get',
+                d = date[_ + 'Date'](),
+                D = date[_ + 'Day'](),
+                m = date[_ + 'Month'](),
+                y = date[_ + 'FullYear'](),
+                H = date[_ + 'Hours'](),
+                M = date[_ + 'Minutes'](),
+                s = date[_ + 'Seconds'](),
+                L = date[_ + 'Milliseconds'](),
+                o = utc ? 0 : date.getTimezoneOffset(),
+                flags = {
+                    d:d,
+                    dd:pad(d, undefined),
+                    ddd:i18n.dayNames[D],
+                    dddd:i18n.dayNames[D + 7],
+                    w:i18n.dayNames[D + 14],
+                    m:m + 1,
+                    mm:pad(m + 1, undefined),
+                    mmm:i18n.monthNames[m],
+                    mmmm:i18n.monthNames[m + 12],
+                    yy:String(y).slice(2),
+                    yyyy:y,
+                    h:H % 12 || 12,
+                    hh:pad(H % 12 || 12, undefined),
+                    H:H,
+                    HH:pad(H, undefined),
+                    M:M,
+                    MM:pad(M, undefined),
+                    s:s,
+                    ss:pad(s, undefined),
+                    l:pad(L, 3),
+                    L:pad(L > 99 ? Math.round(L / 10) : L, undefined),
+                    t:H < 12 ? 'a' : 'p',
+                    tt:H < 12 ? 'am' : 'pm',
+                    T:H < 12 ? 'A' : 'P',
+                    TT:H < 12 ? 'AM' : 'PM',
+                    Z:utc ? 'UTC' : (String(date).match(timezone) || ['']).pop().replace(timezoneClip, ''),
+                    o:(o > 0 ? '-' : '+') + pad(Math.floor(Math.abs(o) / 60) * 100 + Math.abs(o) % 60, 4),
+                    S:['th', 'st', 'nd', 'rd'][d % 10 > 3 ? 0 : (d % 100 - d % 10 !== 10) * d % 10]
+                };
+
+            return mask.replace(token, function ($0) {
+                return $0 in flags ? flags[$0] : $0.slice(1, $0.length - 1);
+            });
+        };
+    }();
+
+    /**
+     * 日期的工具方法
+     * @class BUI.Date
+     */
+    var DateUtil = {
+        /**
+         * 日期加法
+         * @param {String} strInterval 加法的类型，s(秒),n(分),h(时),d(天),w(周),m(月),y(年)
+         * @param {Number} Num         数量，如果为负数，则为减法
+         * @param {Date} dtDate      起始日期，默认为此时
+         */
+        add: function (strInterval, Num, dtDate) {
+            return DateAdd(strInterval, Num, dtDate);
+        },
+        /**
+         * 小时的加法
+         * @param {Number} hours 小时
+         * @param {Date} date 起始日期
+         */
+        addHour: function (hours, date) {
+            return DateAdd('h', hours, date);
+        },
+        /**
+         * 分的加法
+         * @param {Number} minutes 分
+         * @param {Date} date 起始日期
+         */
+        addMinute: function (minutes, date) {
+            return DateAdd('n', minutes, date);
+        },
+        /**
+         * 秒的加法
+         * @param {Number} seconds 秒
+         * @param {Date} date 起始日期
+         */
+        addSecond: function (seconds, date) {
+            return DateAdd('s', seconds, date);
+        },
+        /**
+         * 天的加法
+         * @param {Number} days 天数
+         * @param {Date} date 起始日期
+         */
+        addDay: function (days, date) {
+            return DateAdd('d', days, date);
+        },
+        /**
+         * 增加周
+         * @param {Number} weeks 周数
+         * @param {Date} date  起始日期
+         */
+        addWeek: function (weeks, date) {
+            return DateAdd('w', weeks, date);
+        },
+        /**
+         * 增加月
+         * @param {Number} months 月数
+         * @param {Date} date  起始日期
+         */
+        addMonths: function (months, date) {
+            return DateAdd('m', months, date);
+        },
+        /**
+         * 增加年
+         * @param {Number} years 年数
+         * @param {Date} date  起始日期
+         */
+        addYear: function (years, date) {
+            return DateAdd('y', years, date);
+        },
+        /**
+         * 日期是否相等，忽略时间
+         * @param  {Date}  d1 日期对象
+         * @param  {Date}  d2 日期对象
+         * @return {Boolean}    是否相等
+         */
+        isDateEquals: function (d1, d2) {
+
+            return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+        },
+        /**
+         * 日期时间是否相等，包含时间
+         * @param  {Date}  d1 日期对象
+         * @param  {Date}  d2 日期对象
+         * @return {Boolean}    是否相等
+         */
+        isEquals: function (d1, d2) {
+            if (d1 == d2) {
+                return true;
+            }
+            if (!d1 || !d2) {
+                return false;
+            }
+            if (!d1.getTime || !d2.getTime) {
+                return false;
+            }
+            return d1.getTime() == d2.getTime();
+        },
+        /**
+         * 字符串是否是有效的日期类型
+         * @param {String} str 字符串
+         * @return 字符串是否能转换成日期
+         */
+        isDateString: function (str) {
+            return dateRegex.test(str);
+        },
+        /**
+         * 将日期格式化成字符串
+         * @param  {Date} date 日期
+         * @param  {String} mask 格式化方式
+         * @param  {Date} utc  是否utc时间
+         * @return {String}      日期的字符串
+         */
+        format: function (date, mask, utc) {
+            return dateFormat(date, mask, utc);
+        },
+        /**
+         * 转换成日期
+         * @param  {String|Date} date 字符串或者日期
+         * @param  {String} dateMask  日期的格式,如:yyyy-MM-dd
+         * @return {Date}      日期对象
+         */
+        parse: function (date, s) {
+            if(BUI.isString(date)){
+                date = date.replace('\/','-');
+            }
+            return dateParse(date, s);
+        },
+        /**
+         * 当前天
+         * @return {Date} 当前天 00:00:00
+         */
+        today: function () {
+            var now = new Date();
+            return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        },
+        /**
+         * 返回当前日期
+         * @return {Date} 日期的 00:00:00
+         */
+        getDate: function (date) {
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        }
+    };
+
+    return DateUtil;
+});
+
+/**
+ * @fileOverview  Base UI控件的最基础的类
+ * @author yiminghe@gmail.com
+ * copied by dxq613@gmail.com
+ * @ignore
+ */
+define('bui/common/base',['bui/common/observable'],function(require){
+
+  var INVALID = {},
+    Observable = require('bui/common/observable');
+
+  function ensureNonEmpty(obj, name, create) {
+        var ret = obj[name] || {};
+        if (create) {
+            obj[name] = ret;
+        }
+        return ret;
+  }
+
+  function normalFn(host, method) {
+      if (BUI.isString(method)) {
+          return host[method];
+      }
+      return method;
+  }
+
+  function __fireAttrChange(self, when, name, prevVal, newVal) {
+      var attrName = name;
+      return self.fire(when + BUI.ucfirst(name) + 'Change', {
+          attrName: attrName,
+          prevVal: prevVal,
+          newVal: newVal
+      });
+  }
+
+  function setInternal(self, name, value, opts, attrs) {
+      opts = opts || {};
+
+      var ret,
+          subVal,
+          prevVal;
+
+      prevVal = self.get(name);
+
+      //如果未改变值不进行修改
+      if(!$.isPlainObject(value) && !BUI.isArray(value) && prevVal === value){
+        return undefined;
+      }
+      // check before event
+      if (!opts['silent']) {
+          if (false === __fireAttrChange(self, 'before', name, prevVal, value)) {
+              return false;
+          }
+      }
+      // set it
+      ret = self._set(name, value, opts);
+
+      if (ret === false) {
+          return ret;
+      }
+
+      // fire after event
+      if (!opts['silent']) {
+          value = self.__attrVals[name];
+          __fireAttrChange(self, 'after', name, prevVal, value);
+      }
+      return self;
+  }
+
+  function initClassAttrs(c){
+    if(c._attrs || c == Base){
+      return;
+    }
+
+    var superCon = c.superclass.constructor;
+    if(superCon && !superCon._attrs){
+      initClassAttrs(superCon);
+    }
+    c._attrs =  {};
+    
+    BUI.mixAttrs(c._attrs,superCon._attrs);
+    BUI.mixAttrs(c._attrs,c.ATTRS);
+  }
+  /**
+   * 基础类，此类提供以下功能
+   *  - 提供设置获取属性
+   *  - 提供事件支持
+   *  - 属性变化时会触发对应的事件
+   *  - 将配置项自动转换成属性
+   *
+   * ** 创建类，继承BUI.Base类 **
+   * <pre><code>
+   *   var Control = function(cfg){
+   *     Control.superclass.constructor.call(this,cfg); //调用BUI.Base的构造方法，将配置项变成属性
+   *   };
+   *
+   *   BUI.extend(Control,BUI.Base);
+   * </code></pre>
+   *
+   * ** 声明默认属性 ** 
+   * <pre><code>
+   *   Control.ATTRS = {
+   *     id : {
+   *       value : 'id' //value 是此属性的默认值
+   *     },
+   *     renderTo : {
+   *      
+   *     },
+   *     el : {
+   *       valueFn : function(){                 //第一次调用的时候将renderTo的DOM转换成el属性
+   *         return $(this.get('renderTo'));
+   *       }
+   *     },
+   *     text : {
+   *       getter : function(){ //getter 用于获取值，而不是设置的值
+   *         return this.get('el').val();
+   *       },
+   *       setter : function(v){ //不仅仅是设置值，可以进行相应的操作
+   *         this.get('el').val(v);
+   *       }
+   *     }
+   *   };
+   * </code></pre>
+   *
+   * ** 声明类的方法 ** 
+   * <pre><code>
+   *   BUI.augment(Control,{
+   *     getText : function(){
+   *       return this.get('text');   //可以用get方法获取属性值
+   *     },
+   *     setText : function(txt){
+   *       this.set('text',txt);      //使用set 设置属性值
+   *     }
+   *   });
+   * </code></pre>
+   *
+   * ** 创建对象 ** 
+   * <pre><code>
+   *   var c = new Control({
+   *     id : 'oldId',
+   *     text : '测试文本',
+   *     renderTo : '#t1'
+   *   });
+   *
+   *   var el = c.get(el); //$(#t1);
+   *   el.val(); //text的值 ： '测试文本'
+   *   c.set('text','修改的值');
+   *   el.val();  //'修改的值'
+   *
+   *   c.set('id','newId') //会触发2个事件： beforeIdChange,afterIdChange 2个事件 ev.newVal 和ev.prevVal标示新旧值
+   * </code></pre>
+   * @class BUI.Base
+   * @abstract
+   * @extends BUI.Observable
+   * @param {Object} config 配置项
+   */
+  var Base = function(config){
+    var _self = this,
+            c = _self.constructor,
+            constructors = [];
+        this.__attrs = {};
+        this.__attrVals = {};
+        Observable.apply(this,arguments);
+        // define
+        while (c) {
+            constructors.push(c);
+            if(c.extensions){ //延迟执行mixin
+              BUI.mixin(c,c.extensions);
+              delete c.extensions;
+            }
+            //_self.addAttrs(c['ATTRS']);
+            c = c.superclass ? c.superclass.constructor : null;
+        }
+        //以当前对象的属性最终添加到属性中，覆盖之前的属性
+        /*for (var i = constructors.length - 1; i >= 0; i--) {
+          _self.addAttrs(constructors[i]['ATTRS'],true);
+        };*/
+      var con = _self.constructor;
+      initClassAttrs(con);
+      _self._initStaticAttrs(con._attrs);
+      _self._initAttrs(config);
+  };
+
+  Base.INVALID = INVALID;
+
+  BUI.extend(Base,Observable);
+
+  BUI.augment(Base,
+  {
+    _initStaticAttrs : function(attrs){
+      var _self = this,
+        __attrs;
+
+      __attrs = _self.__attrs = {};
+      for (var p in attrs) {
+        if(attrs.hasOwnProperty(p)){
+          var attr = attrs[p];
+          /*if(BUI.isObject(attr.value) || BUI.isArray(attr.value) || attr.valueFn){*/
+          if(attr.shared === false || attr.valueFn){
+            __attrs[p] = {};
+            BUI.mixAttr(__attrs[p], attrs[p]); 
+          }else{
+            __attrs[p] = attrs[p];
+          }
+        }
+      };
+    },
+    /**
+     * 添加属性定义
+     * @protected
+     * @param {String} name       属性名
+     * @param {Object} attrConfig 属性定义
+     * @param {Boolean} overrides 是否覆盖字段
+     */
+    addAttr: function (name, attrConfig,overrides) {
+            var _self = this,
+                attrs = _self.__attrs,
+                attr = attrs[name];
+            
+            if(!attr){
+              attr = attrs[name] = {};
+            }
+            for (var p in attrConfig) {
+              if(attrConfig.hasOwnProperty(p)){
+                if(p == 'value'){
+                  if(BUI.isObject(attrConfig[p])){
+                    attr[p] = attr[p] || {};
+                    BUI.mix(/*true,*/attr[p], attrConfig[p]); 
+                  }else if(BUI.isArray(attrConfig[p])){
+                    attr[p] = attr[p] || [];
+                    BUI.mix(/*true,*/attr[p], attrConfig[p]); 
+                  }else{
+                    attr[p] = attrConfig[p];
+                  }
+                }else{
+                  attr[p] = attrConfig[p];
+                }
+              }
+
+            };
+            return _self;
+    },
+    /**
+     * 添加属性定义
+     * @protected
+     * @param {Object} attrConfigs  An object with attribute name/configuration pairs.
+     * @param {Object} initialValues user defined initial values
+     * @param {Boolean} overrides 是否覆盖字段
+     */
+    addAttrs: function (attrConfigs, initialValues,overrides) {
+        var _self = this;
+        if(!attrConfigs)
+        {
+          return _self;
+        }
+        if(typeof(initialValues) === 'boolean'){
+          overrides = initialValues;
+          initialValues = null;
+        }
+        BUI.each(attrConfigs, function (attrConfig, name) {
+            _self.addAttr(name, attrConfig,overrides);
+        });
+        if (initialValues) {
+            _self.set(initialValues);
+        }
+        return _self;
+    },
+    /**
+     * 是否包含此属性
+     * @protected
+     * @param  {String}  name 值
+     * @return {Boolean} 是否包含
+     */
+    hasAttr : function(name){
+      return name && this.__attrs.hasOwnProperty(name);
+    },
+    /**
+     * 获取默认的属性值
+     * @protected
+     * @return {Object} 属性值的键值对
+     */
+    getAttrs : function(){
+       return this.__attrs;//ensureNonEmpty(this, '__attrs', true);
+    },
+    /**
+     * 获取属性名/属性值键值对
+     * @protected
+     * @return {Object} 属性对象
+     */
+    getAttrVals: function(){
+      return this.__attrVals; //ensureNonEmpty(this, '__attrVals', true);
+    },
+    /**
+     * 获取属性值，所有的配置项和属性都可以通过get方法获取
+     * <pre><code>
+     *  var control = new Control({
+     *   text : 'control text'
+     *  });
+     *  control.get('text'); //control text
+     *
+     *  control.set('customValue','value'); //临时变量
+     *  control.get('customValue'); //value
+     * </code></pre>
+     * ** 属性值/配置项 **
+     * <pre><code> 
+     *   Control.ATTRS = { //声明属性值
+     *     text : {
+     *       valueFn : function(){},
+     *       value : 'value',
+     *       getter : function(v){} 
+     *     }
+     *   };
+     *   var c = new Control({
+     *     text : 'text value'
+     *   });
+     *   //get 函数取的顺序为：是否有修改值（配置项、set)、默认值（第一次调用执行valueFn)，如果有getter，则将值传入getter返回
+     *
+     *   c.get('text') //text value
+     *   c.set('text','new text');//修改值
+     *   c.get('text');//new text
+     * </code></pre>
+     * @param  {String} name 属性名
+     * @return {Object} 属性值
+     */
+    get : function(name){
+      var _self = this,
+                //declared = _self.hasAttr(name),
+                attrVals = _self.__attrVals,
+                attrConfig,
+                getter, 
+                ret;
+
+            attrConfig = ensureNonEmpty(_self.__attrs, name);
+            getter = attrConfig['getter'];
+
+            // get user-set value or default value
+            //user-set value takes privilege
+            ret = name in attrVals ?
+                attrVals[name] :
+                _self._getDefAttrVal(name);
+
+            // invoke getter for this attribute
+            if (getter && (getter = normalFn(_self, getter))) {
+                ret = getter.call(_self, ret, name);
+            }
+
+            return ret;
+    },
+  	/**
+  	* @清理所有属性值
+    * @protected 
+  	*/
+  	clearAttrVals : function(){
+  		this.__attrVals = {};
+  	},
+    /**
+     * 移除属性定义
+     * @protected
+     */
+    removeAttr: function (name) {
+        var _self = this;
+
+        if (_self.hasAttr(name)) {
+            delete _self.__attrs[name];
+            delete _self.__attrVals[name];
+        }
+
+        return _self;
+    },
+    /**
+     * 设置属性值，会触发before+Name+Change,和 after+Name+Change事件
+     * <pre><code>
+     *  control.on('beforeTextChange',function(ev){
+     *    var newVal = ev.newVal,
+     *      attrName = ev.attrName,
+     *      preVal = ev.prevVal;
+     *
+     *    //TO DO
+     *  });
+     *  control.set('text','new text');  //此时触发 beforeTextChange,afterTextChange
+     *  control.set('text','modify text',{silent : true}); //此时不触发事件
+     * </code></pre>
+     * @param {String|Object} name  属性名
+     * @param {Object} value 值
+     * @param {Object} opts 配置项
+     * @param {Boolean} opts.silent  配置属性时，是否不触发事件
+     */
+    set : function(name,value,opts){
+      var _self = this;
+            if ($.isPlainObject(name)) {
+                opts = value;
+                var all = Object(name),
+                    attrs = [];
+                   
+                for (name in all) {
+                    if (all.hasOwnProperty(name)) {
+                        setInternal(_self, name, all[name], opts);
+                    }
+                }
+                return _self;
+            }
+            return setInternal(_self, name, value, opts);
+    },
+    /**
+     * 设置属性，不触发事件
+     * <pre><code>
+     *  control.setInternal('text','text');//此时不触发事件
+     * </code></pre>
+     * @param  {String} name  属性名
+     * @param  {Object} value 属性值
+     * @return {Boolean|undefined}   如果值无效则返回false,否则返回undefined
+     */
+    setInternal : function(name, value, opts){
+        return this._set(name, value, opts);
+    },
+    //获取属性默认值
+    _getDefAttrVal : function(name){
+      var _self = this,
+        attrs = _self.__attrs,
+              attrConfig = ensureNonEmpty(attrs, name),
+              valFn = attrConfig.valueFn,
+              val;
+
+          if (valFn && (valFn = normalFn(_self, valFn))) {
+              val = valFn.call(_self);
+              if (val !== undefined) {
+                  attrConfig.value = val;
+              }
+              delete attrConfig.valueFn;
+              attrs[name] = attrConfig;
+          }
+
+          return attrConfig.value;
+    },
+    //仅仅设置属性值
+    _set : function(name, value, opts){
+      var _self = this,
+                setValue,
+            // if host does not have meta info corresponding to (name,value)
+            // then register on demand in order to collect all data meta info
+            // 一定要注册属性元数据，否则其他模块通过 _attrs 不能枚举到所有有效属性
+            // 因为属性在声明注册前可以直接设置值
+                attrConfig = ensureNonEmpty(_self.__attrs, name, true),
+                setter = attrConfig['setter'];
+
+            // if setter has effect
+            if (setter && (setter = normalFn(_self, setter))) {
+                setValue = setter.call(_self, value, name);
+            }
+
+            if (setValue === INVALID) {
+                return false;
+            }
+
+            if (setValue !== undefined) {
+                value = setValue;
+            }
+            
+            // finally set
+            _self.__attrVals[name] = value;
+      return _self;
+    },
+    //初始化属性
+    _initAttrs : function(config){
+      var _self = this;
+      if (config) {
+              for (var attr in config) {
+                  if (config.hasOwnProperty(attr)) {
+                      // 用户设置会调用 setter/validator 的，但不会触发属性变化事件
+                      _self._set(attr, config[attr]);
+                  }
+
+              }
+          }
+    }
+  });
+
+  //BUI.Base = Base;
+  return Base;
+});
+
+/**
+ * @ignore
+ * @fileOverview cookie
+ * @author lifesinger@gmail.com
+ */
+
+
+define('bui/cookie',function () {
+
+    var doc = document,
+        MILLISECONDS_OF_DAY = 24 * 60 * 60 * 1000,
+        encode = encodeURIComponent,
+        decode = decodeURIComponent;
+
+    function isNotEmptyString(val) {
+        return typeof(val) === 'string' && val !== '';
+    }
+
+    /**
+     * Provide Cookie utilities.
+     * @class BUI.Cookie
+     * @singleton
+     */
+    var Cookie = {
+
+        /**
+         * Returns the cookie value for given name
+         * @return {String} name The name of the cookie to retrieve
+         */
+        get: function (name) {
+            var ret, m;
+
+            if (isNotEmptyString(name)) {
+                if ((m = String(doc.cookie).match(
+                    new RegExp('(?:^| )' + name + '(?:(?:=([^;]*))|;|$)')))) {
+                    ret = m[1] ? decode(m[1]) : '';
+                }
+            }
+            return ret;
+        },
+
+        /**
+         * Set a cookie with a given name and value
+         * @param {String} name The name of the cookie to set
+         * @param {String} val The value to set for cookie
+         * @param {Number|Date} expires
+         * if Number secified how many days this cookie will expire
+         * @param {String} domain set cookie's domain
+         * @param {String} path set cookie's path
+         * @param {Boolean} secure whether this cookie can only be sent to server on https
+         */
+        set: function (name, val, expires, domain, path, secure) {
+            var text = String(encode(val)), date = expires;
+
+            // 从当前时间开始，多少天后过期
+            if (typeof date === 'number') {
+                date = new Date();
+                date.setTime(date.getTime() + expires * MILLISECONDS_OF_DAY);
+            }
+            // expiration date
+            if (date instanceof Date) {
+                text += '; expires=' + date.toUTCString();
+            }
+
+            // domain
+            if (isNotEmptyString(domain)) {
+                text += '; domain=' + domain;
+            }
+
+            // path
+            if (isNotEmptyString(path)) {
+                text += '; path=' + path;
+            }
+
+            // secure
+            if (secure) {
+                text += '; secure';
+            }
+
+            doc.cookie = name + '=' + text;
+        },
+
+        /**
+         * Remove a cookie from the machine by setting its expiration date to sometime in the past
+         * @param {String} name The name of the cookie to remove.
+         * @param {String} domain The cookie's domain
+         * @param {String} path The cookie's path
+         * @param {String} secure The cookie's secure option
+         */
+        remove: function (name, domain, path, secure) {
+            this.set(name, '', -1, domain, path, secure);
+        }
+    };
+    
+    BUI.Cookie = Cookie;
+    
+    return Cookie;
+});
+
+/**
+* @ignore
+* 2012.02.14 yiminghe@gmail.com
+* - jsdoc added
+*
+* 2010.04
+* - get 方法要考虑 ie 下，
+* 值为空的 cookie 为 'test3; test3=3; test3tt=2; test1=t1test3; test3', 没有等于号。
+* 除了正则获取，还可以 split 字符串的方式来获取。
+* - api 设计上，原本想借鉴 jQuery 的简明风格：S.cookie(name, ...), 但考虑到可扩展性，目前
+* 独立成静态工具类的方式更优。
+*/

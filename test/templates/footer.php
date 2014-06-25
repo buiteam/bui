@@ -4,8 +4,8 @@
         arrs = url.split(',');
       BUI.use(arrs,function(){
         setTimeout(function(){
-          var reporter = new jasmine.TrivialReporter()
-          jasmine.getEnv().addReporter(reporter);
+          // var reporter = new jasmine.TrivialReporter()
+          // jasmine.getEnv().addReporter(reporter);
           jasmine.getEnv().execute();
         },200);
       });

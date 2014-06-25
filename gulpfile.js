@@ -142,15 +142,15 @@ gulp.task('compress.js', ['seed.js', 'bui.js'], function(){
     ])
     .pipe(rename({suffix: '-debug'}))
     .pipe(gulp.dest(dist))
-    .pipe(uglify({
-      output: {
-        ascii_only: true
-      },
-      mangle:{
-        except: ['require']
-      }
-      })
-    )
+    // .pipe(uglify({
+    //   output: {
+    //     ascii_only: true
+    //   },
+    //   mangle:{
+    //     except: ['require']
+    //   }
+    //   })
+    // )
     .pipe(rename(function(path){
         path.basename = path.basename.replace(/-debug$/, '');
       })

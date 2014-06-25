@@ -62,7 +62,7 @@
 
 
 
- <script type="text/javascript" src="../specs/chart/bubble-spec.js"></script>
+ <script type="text/javascript" src="specs/chart/bubble-spec.js"></script>
 <!-- <script type="text/javascript" src="../specs/chart/column-stacked-spec.js"></script>
  -->
 <?php include("../templates/footer.php"); ?>

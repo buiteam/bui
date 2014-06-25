@@ -63,10 +63,10 @@
  
   <script type="text/javascript" src="../../src/chart/seriesgroup.js"></script>
 
-  <script type="text/javascript" src="../specs/chart/series-group-spec.js"></script>
+  <script type="text/javascript" src="specs/series-group-spec.js"></script>
 
-  <script type="text/javascript" src="../specs/chart/series-group-number-spec.js"></script><!-- -->
+  <script type="text/javascript" src="specs/series-group-number-spec.js"></script><!-- -->
 
-  <script type="text/javascript" src="../specs/chart/series-group-time-spec.js"></script>
+  <script type="text/javascript" src="specs/series-group-time-spec.js"></script>
 
 <?php include("../templates/footer.php"); ?>

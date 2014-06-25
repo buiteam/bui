@@ -66,9 +66,9 @@
   <script type="text/javascript" src="../../src/chart/theme.js"></script>
   <script type="text/javascript" src="../../src/chart/chart.js"></script>
 <!---->
-  <script type="text/javascript" src="../specs/chart/data-chart-spec.js"></script>
+  <script type="text/javascript" src="specs/data-chart-spec.js"></script>
 
-    <script type="text/javascript" src="../specs/chart/radar-data-spec.js"></script>
+    <script type="text/javascript" src="specs/radar-data-spec.js"></script>
 
  
 

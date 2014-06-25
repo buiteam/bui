@@ -28,6 +28,6 @@
 	<script type="text/javascript" src="../../src/graphic/group.js"></script>
   <script type="text/javascript" src="../../src/graphic/canvas.js"></script>
 
-  <script type="text/javascript" src="../specs/chart/graphic-spec.js"></script>
+  <script type="text/javascript" src="specs/graphic-spec.js"></script>
 <!---->
 <?php include("../templates/footer.php"); ?>

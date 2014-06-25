@@ -63,8 +63,8 @@
   <script type="text/javascript" src="../../src/chart/chart.js"></script>
 
 
-  <script type="text/javascript" src="../specs/chart/area-series-spec.js"></script>
+  <script type="text/javascript" src="specs/area-series-spec.js"></script>
 <!---->
-  <script type="text/javascript" src="../specs/chart/area-stacked-spec.js"></script>
+  <script type="text/javascript" src="specs/area-stacked-spec.js"></script>
 
 <?php include("../templates/footer.php"); ?>

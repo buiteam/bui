@@ -63,5 +63,5 @@
 
 
 
- <script type="text/javascript" src="../specs/chart/scatter-spec.js"></script>
+ <script type="text/javascript" src="specs/scatter-spec.js"></script>
  <?php include("../templates/footer.php"); ?>

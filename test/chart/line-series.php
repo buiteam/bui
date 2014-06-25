@@ -31,6 +31,6 @@
   <script type="text/javascript" src="../../src/chart/series/cartesian.js"></script>
   <script type="text/javascript" src="../../src/chart/series/line.js"></script>
 
-  <script type="text/javascript" src="../specs/chart/line-series-spec.js"></script>
+  <script type="text/javascript" src="specs/line-series-spec.js"></script>
 
 <?php include("../templates/footer.php"); ?>

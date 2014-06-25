@@ -102,6 +102,7 @@ gulp.task('seed.js', ['sub'], function(){
       'src/seajs/sea.js',
       'src/config.js',
       dist + '/common.js',
+      dist + '/component.js',
       dist + '/cookie.js'
     ]).pipe(concat('seed.js'))
     .pipe(gulp.dest(dist));
@@ -113,6 +114,7 @@ gulp.task('bui.js', ['sub'], function(){
       'src/seajs/sea.js',
       'src/config.js',
       dist + '/common.js',
+      dist + '/component.js',
       dist + '/cookie.js',
       dist + '/data.js',
       dist + '/overlay.js',
@@ -193,23 +195,17 @@ function runTest() {
       print("tototo start: ", 'magenta');
       print(file.relative + '\n', 'green');
 
-      // var task = spawn('totoro', ['--runner', file.path.replace(file.base, 'http://10.15.101.57/git/buiteam/bui/tests/')]);
-      // task.stdout.on('data', function (data) {
-      //   process.stdout.write(data);
-      // });
-      // task.stderr.on('data', function (data) {
-      //   process.stdout.write(colorful['red'](data));
-      // });
-      // task.on('close', function (code) {
-      //   //process.stdout.write('child process exited with code ' + code);
-      //   callback();
-      // });
-      // 
-      // php(file.path, function(err, data) {
-      //   process.stdout.write(data);
-      //   callback();
-      // });
-      // 
+      var task = spawn('totoro', ['--runner', file.path.replace(file.base, 'http://10.15.106.209/git/buiteam/bui/test/')]);
+      task.stdout.on('data', function (data) {
+        process.stdout.write(data);
+      });
+      task.stderr.on('data', function (data) {
+        process.stdout.write(colorful['red'](data));
+      });
+      task.on('close', function (code) {
+        //process.stdout.write('child process exited with code ' + code);
+        callback();
+      });
     }
 
     //return callback();
@@ -221,9 +217,10 @@ function runTest() {
 
 gulp.task('test', function(){
   return gulp.src([
-    'tests/*/*.php',
-    '!tests/templates/*.php'
-    ])
+    'test/*/*.php',
+    '!test/templates/*.php'
+    ], {read: false})
+    .pipe(runTest())
     //.pipe(php({cwd: '.'}))
 });
 

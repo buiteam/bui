@@ -16,6 +16,6 @@
 	<script type="text/javascript" src="../../src/chart/plotitem.js"></script>
   <script type="text/javascript" src="../../src/chart/labels.js"></script>
 
-  <script type="text/javascript" src="../specs/chart/labels-spec.js"></script>
+  <script type="text/javascript" src="specs/labels-spec.js"></script>
 
 <?php include("../templates/footer.php"); ?>

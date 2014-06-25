@@ -134,7 +134,7 @@ BUI.use(['bui/chart/chart'],function (Chart) {
 BUI.use(['bui/chart/chart','bui/data'],function (Chart,Data) {
   
   var store = new Data.Store({
-    url : '../data/chart.json'
+    url : 'data/chart.json'
   });
 
   var chart = new Chart({
@@ -272,7 +272,7 @@ BUI.use(['bui/chart/chart','bui/data'],function (Chart,Data) {
 BUI.use(['bui/chart/chart','bui/data'],function (Chart,Data) {
   
   var store = new Data.Store({
-    url : '../data/chart.json'
+    url : 'data/chart.json'
   });
 
   var chart = new Chart({
@@ -413,7 +413,7 @@ BUI.use(['bui/chart/chart','bui/data'],function (Chart,Data) {
 BUI.use(['bui/chart/chart','bui/data'],function (Chart,Data) {
 
   var store = new Data.Store({
-    url : '../data/pie.json'
+    url : 'data/pie.json'
   });
 
   var chart = new Chart({

@@ -39,7 +39,7 @@
   <script type="text/javascript" src="../../src/chart/tooltip.js"></script>
   <script type="text/javascript" src="../../src/chart/plotrange.js"></script>
 
-  <script type="text/javascript" src="../specs/chart/tooltip-spec.js"></script> <!---->
-   <script type="text/javascript" src="../specs/chart/tooltip-single-spec.js"></script>
+  <script type="text/javascript" src="specs/tooltip-spec.js"></script> <!---->
+   <script type="text/javascript" src="specs/tooltip-single-spec.js"></script>
   
 <?php include("../templates/footer.php"); ?>

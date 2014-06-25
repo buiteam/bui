@@ -37,7 +37,7 @@
 
 
 
-  <script type="text/javascript" src="../specs/chart/axis-circle-spec.js"></script>
+  <script type="text/javascript" src="specs/axis-circle-spec.js"></script>
   
 
 <?php include("../templates/footer.php"); ?>

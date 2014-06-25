@@ -66,9 +66,9 @@
   <script type="text/javascript" src="../../src/chart/theme.js"></script>
   <script type="text/javascript" src="../../src/chart/chart.js"></script>
   
-  <script type="text/javascript" src="../specs/chart/dynamic-spec.js"></script>
+  <script type="text/javascript" src="specs/dynamic-spec.js"></script>
   <!--
-  <script type="text/javascript" src="../specs/chart/dynamic-time-spec.js"></script>
+  <script type="text/javascript" src="specs/dynamic-time-spec.js"></script>
 -->
 
 

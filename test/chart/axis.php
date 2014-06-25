@@ -36,11 +36,11 @@
 
 
 
-  <script type="text/javascript" src="../specs/chart/axis-spec.js"></script>
-  <script type="text/javascript" src="../specs/chart/axis-number-spec.js"></script>
-   <script type="text/javascript" src="../specs/chart/axis-category-spec.js"></script> <!---->
+  <script type="text/javascript" src="specs/axis-spec.js"></script>
+  <script type="text/javascript" src="specs/axis-number-spec.js"></script>
+   <script type="text/javascript" src="specs/axis-category-spec.js"></script> <!---->
 
-  <script type="text/javascript" src="../specs/chart/axis-time-spec.js"></script>
+  <script type="text/javascript" src="specs/axis-time-spec.js"></script>
   
 
 <?php include("../templates/footer.php"); ?>

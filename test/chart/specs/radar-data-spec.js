@@ -1,7 +1,7 @@
 BUI.use(['bui/chart/chart','bui/data'],function (Chart,Data) {
 
   var store = new Data.Store({
-    url : '../data/radar.json'
+    url : 'data/radar.json'
   });
   var chart = new Chart({
     width : 1000,

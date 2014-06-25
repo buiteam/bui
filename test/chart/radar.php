@@ -62,5 +62,5 @@
 
 
 
- <script type="text/javascript" src="../specs/chart/radar-line-spec.js"></script>
+ <script type="text/javascript" src="specs/radar-line-spec.js"></script>
  <?php include("../templates/footer.php"); ?>

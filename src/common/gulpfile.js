@@ -35,7 +35,7 @@ gulp.task('component.js', ['uimixins.js'], function(){
       'component/component.js',
       'component/manage.js',
       'component/uibase.js',
-      'component/tmp/uimixins.js',
+      'tmp/uimixins.js',
       'component/view.js',
       'component/loader.js',
       'component/controller.js'

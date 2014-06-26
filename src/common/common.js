@@ -1,12 +1,12 @@
-// (function(){
-//   var requires = ['bui/util','bui/ua','bui/json','bui/date','bui/array','bui/keycode','bui/observable','bui/base','bui/component'];
-//   if(window.KISSY && (!window.KISSY.Node || !window.jQuery)){ //如果是kissy同时未加载core模块
-//     requires.unshift('bui/adapter');
-//   }
+(function(){
+  var requires = ['bui/util','bui/ua','bui/json','bui/date','bui/array','bui/keycode','bui/observable','bui/base','bui/component'];
+  if(window.KISSY && (!window.KISSY.Node || !window.jQuery)){ //如果是kissy同时未加载core模块
+    requires.unshift('bui/adapter');
+  }
   define('bui/common', function(require){
-    // if(window.KISSY && (!window.KISSY.Node || !window.jQuery)){
-    //   require('bui/adapter');
-    // }
+    if(window.KISSY && (!window.KISSY.Node || !window.jQuery)){
+      require('bui/adapter');
+    }
     var BUI = require('bui/common/util');
 
     BUI.mix(BUI, {
@@ -21,4 +21,4 @@
     });
     return BUI;
   });
-// })();
+})();

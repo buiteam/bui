@@ -372,16 +372,35 @@ var adapterCallback = function(){
   return KISSY;
 };
 
-define('bui/adapter',['core'],adapterCallback);
+define('bui/adapter', ['core'], adapterCallback);
 if(KISSY.Node){
   adapterCallback();
 }
 
-KISSY.config({
-  packages:[{
-    name:"bui",
-    tag:"201312251606",
-    path:"http://g.tbcdn.cn/fi",
-    charset:'utf-8'
-  }]
-});
+;(function(){
+
+  //from seajs
+  function getScriptAbsoluteSrc(node) {
+    return node.hasAttribute ? // non-IE6/7
+        node.src :
+        // see http://msdn.microsoft.com/en-us/library/ms536429(VS.85).aspx
+        node.getAttribute("src", 4);
+  }
+
+  var scripts = document.getElementsByTagName('script'),
+    loaderScript = scripts[scripts.length - 1],
+    src = getScriptAbsoluteSrc(loaderScript),
+    loaderPath = src.substring(0, src.lastIndexOf('/'));
+
+  BUI.loaderScript = loaderScript;
+
+  KISSY.config({
+    packages: [{
+      name:"bui",
+      debug: true,
+      path: loaderPath,
+      charset:'utf-8',
+      ignorePackageNameInUri: true
+    }]
+  });
+})();

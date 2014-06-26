@@ -23,6 +23,7 @@ define('bui/list',['bui/common',BASE + 'list',BASE + 'listitem',BASE + 'simpleli
   return List;
 });  
 })();
+
 /**
  * @fileOverview 使用DOM元素作为选项的扩展类
  * @author dxq613@gmail.com
@@ -1010,7 +1011,8 @@ define('bui/list/domlist',['bui/common'],function (require) {
   domList.View = domListView;
 
   return domList;
-});/**
+});
+/**
  * @fileOverview 列表选项，使用键盘导航
  * @author dxq613@gmail.com
  * @ignore
@@ -1282,7 +1284,8 @@ define('bui/list/keynav',['bui/common'],function (require) {
   });
 
   return KeyNav;
-});/**
+});
+/**
  * @fileOverview 列表排序
  * @ignore
  */
@@ -1362,7 +1365,8 @@ define('bui/list/sortable',['bui/common','bui/data'],function (require) {
   });
 
   return Sortable;
-});/**
+});
+/**
  * @fileOverview 简单列表，直接使用DOM作为列表项
  * @ignore
  */
@@ -1644,7 +1648,8 @@ define('bui/list/simplelist',['bui/common','bui/list/domlist','bui/list/keynav',
 
   simpleList.View = simpleListView;
   return simpleList;
-});/**
+});
+/**
  * @fileOverview 可选择的列表
  * @author dengbin
  * @ignore
@@ -1694,7 +1699,8 @@ define('bui/list/listbox',['bui/list/simplelist'],function (require) {
   });
 
   return listbox;
-});/**
+});
+/**
  * @fileOverview 列表项
  * @author dxq613@gmail.com
  * @ignore
@@ -1747,7 +1753,8 @@ define('bui/list/listitem',['bui/common'],function (require) {
   item.View = itemView;
   
   return item;
-});/**
+});
+/**
  * @fileOverview 列表
  * @ignore
  */

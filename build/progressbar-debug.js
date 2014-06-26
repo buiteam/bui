@@ -12,7 +12,8 @@ define('bui/progressbar',['bui/common','bui/progressbar/base','bui/progressbar/l
   });
 
   return ProgressBar;
-});/**
+});
+/**
  * @fileOverview 进度条
  * @author dengbin
  * @ignore
@@ -84,7 +85,8 @@ define('bui/progressbar/base',['bui/common'],function(require){
 	});
 
 	return progressBar;
-});/**
+});
+/**
  * @fileOverview 异步进度条
  * @author dengbin
  * @ignore

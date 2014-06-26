@@ -16,6 +16,7 @@ define(BASE, ['bui/common',BASE + '/imgview',BASE + '/viewcontent',BASE + '/prev
   return ImgView;
 });
 })();
+
 /**
  * @fileOverview 带样式的图片浏览
  * @ignore
@@ -319,6 +320,7 @@ define('bui/imgview/imgview',['bui/common','bui/toolbar','bui/imgview/viewconten
 
   return ImgView;
 });
+
 /**
  * @fileOverview 图片预览控件
  * @ignore
@@ -647,6 +649,7 @@ define('bui/imgview/previewlist',['bui/common','bui/list'],function (r) {
 
   return PreviewList;
 });
+
 /**
  * @fileOverview 图片预览
  * @ignore

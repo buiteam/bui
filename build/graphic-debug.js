@@ -15,7 +15,8 @@ define('bui/graphic',['bui/common','bui/graphic/canvas','bui/graphic/shape','bui
 	});
 
 	return Graphic;
-});define('bui/graphic/base',['bui/graphic/util'],function (require) {
+});
+define('bui/graphic/base',['bui/graphic/util'],function (require) {
 	
     var BUI = require('bui/common'),
         Util = require('bui/graphic/util');
@@ -303,7 +304,8 @@ define('bui/graphic',['bui/common','bui/graphic/canvas','bui/graphic/shape','bui
 	});
 
 	return Base;
-});define('bui/graphic/container',['bui/common','bui/graphic/base','bui/graphic/shape','bui/graphic/util'],function (require) {
+});
+define('bui/graphic/container',['bui/common','bui/graphic/base','bui/graphic/shape','bui/graphic/util'],function (require) {
 
 	var BUI = require('bui/common'),
 		Shape = require('bui/graphic/shape'),
@@ -572,7 +574,8 @@ define('bui/graphic',['bui/common','bui/graphic/canvas','bui/graphic/shape','bui
 	});
 
 	return Container;
-});/**
+});
+/**
  * @fileOverview 画布内部的元素扩展
  * @ignore
  */
@@ -644,7 +647,8 @@ define('bui/graphic/canvasitem',['bui/common'],function(require) {
 	});
 
 	return Item;
-});define('bui/graphic/shape',['bui/common','bui/graphic/base','bui/graphic/canvasitem','bui/graphic/raphael','bui/graphic/util'],function(require){
+});
+define('bui/graphic/shape',['bui/common','bui/graphic/base','bui/graphic/canvasitem','bui/graphic/raphael','bui/graphic/util'],function(require){
 
   var BUI = require('bui/common'),
     Base = require('bui/graphic/base'),
@@ -1479,6 +1483,7 @@ define('bui/graphic/canvasitem',['bui/common'],function(require) {
   
   return Shape;
 });
+
 define('bui/graphic/group',['bui/common','bui/graphic/util','bui/graphic/container','bui/graphic/shape','bui/graphic/canvasitem','bui/graphic/raphael/group'],function(require) {
 
 	var Container = require('bui/graphic/container'),
@@ -1675,7 +1680,8 @@ define('bui/graphic/group',['bui/common','bui/graphic/util','bui/graphic/contain
 	});
 
 	return Group;
-});define('bui/graphic/canvas',['bui/common','bui/graphic/group','bui/graphic/container','bui/graphic/raphael'],function(require) {
+});
+define('bui/graphic/canvas',['bui/common','bui/graphic/group','bui/graphic/container','bui/graphic/raphael'],function(require) {
 
 	var BUI = require('bui/common'),
 		Group = require('bui/graphic/group'),
@@ -1822,7 +1828,8 @@ define('bui/graphic/group',['bui/common','bui/graphic/util','bui/graphic/contain
 	});
 
 	return Canvas;
-});define('bui/graphic/util',['bui/graphic/raphael'],function (require) {
+});
+define('bui/graphic/util',['bui/graphic/raphael'],function (require) {
 
 	var BUI = require('bui/common'),
 		Raphael = require('bui/graphic/raphael'),
@@ -2155,13 +2162,15 @@ define('bui/graphic/group',['bui/common','bui/graphic/util','bui/graphic/contain
 	  }
 	});
 	return Util;
-});define('bui/graphic/raphael',['bui/graphic/raphael/core','bui/graphic/raphael/svg','bui/graphic/raphael/vml'],function (require) {
+});
+define('bui/graphic/raphael',['bui/graphic/raphael/core','bui/graphic/raphael/svg','bui/graphic/raphael/vml'],function (require) {
 	
 	var Raphael = require('bui/graphic/raphael/core');
 	require('bui/graphic/raphael/svg');
 	require('bui/graphic/raphael/vml');
 	return Raphael;
-});// Copyright (c) 2013 Adobe Systems Incorporated. All rights reserved.
+});
+// Copyright (c) 2013 Adobe Systems Incorporated. All rights reserved.
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -2533,6 +2542,7 @@ define('bui/graphic/group',['bui/common','bui/graphic/util','bui/graphic/contain
     //(typeof module != "undefined" && module.exports) ? (module.exports = eve) : (typeof define != "undefined" ? (define("eve", [], function() { return eve; })) : (glob.eve = eve));
     glob.eve = eve;
 })(this);
+
 // ┌─────────────────────────────────────────────────────────────────────┐ \\
 // │ "Raphaël 2.1.2" - JavaScript Vector Library                         │ \\
 // ├─────────────────────────────────────────────────────────────────────┤ \\
@@ -7920,6 +7930,7 @@ define('bui/graphic/raphael/core',function(){
 });
 
 
+
 // ┌─────────────────────────────────────────────────────────────────────┐ \\
 // │ Raphaël - JavaScript Vector Library                                 │ \\
 // ├─────────────────────────────────────────────────────────────────────┤ \\
@@ -9294,6 +9305,7 @@ define('bui/graphic/raphael/svg',function(){
     }(window.Raphael);
 });
 
+
 // ┌─────────────────────────────────────────────────────────────────────┐ \\
 // │ Raphaël - JavaScript Vector Library                                 │ \\
 // ├─────────────────────────────────────────────────────────────────────┤ \\
@@ -10275,6 +10287,7 @@ define('bui/graphic/raphael/vml',function(){
         
     }(window.Raphael);
 });
+
 
 define('bui/graphic/raphael/group',['bui/common'],function(require){
 

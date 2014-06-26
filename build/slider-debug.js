@@ -9,6 +9,7 @@ define('bui/slider',['bui/common', 'bui/slider/slider'],function (require) {
 
   return Slider;
 });
+
 /**
  * @fileOverview 滑块
  * @ignore

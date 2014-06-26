@@ -24,6 +24,7 @@ define('bui/form',['bui/common',BASE + 'fieldcontainer',BASE + 'form',BASE + 'ro
   return Form;
 });
 })();
+
 /**
  * @fileOverview 输入提示信息
  * @author dxq613@gmail.com
@@ -268,7 +269,8 @@ define('bui/form/tips',['bui/common','bui/overlay'],function (require) {
   Tips.Item = tipItem;
   return Tips;
 
-});/**
+});
+/**
  * @fileOverview 表单元素
  * @ignore
  */
@@ -889,7 +891,8 @@ define('bui/form/basefield',['bui/common','bui/form/tips','bui/form/valid','bui/
   
   return field;
 
-});/**
+});
+/**
  * @fileOverview 表单文本域
  * @author dxq613@gmail.com
  * @ignore
@@ -910,7 +913,8 @@ define('bui/form/textfield',['bui/form/basefield'],function (require) {
   });
 
   return textField;
-});/**
+});
+/**
  * @fileOverview 表单文本域
  * @author dxq613@gmail.com
  * @ignore
@@ -976,7 +980,8 @@ define('bui/form/textareafield',['bui/form/basefield'],function (require) {
   });
 
   return TextAreaField;
-});/**
+});
+/**
  * @fileOverview 表单文本域
  * @author dxq613@gmail.com
  * @ignore
@@ -1080,7 +1085,8 @@ define('bui/form/numberfield',['bui/form/basefield'],function (require) {
   });
 
   return numberField;
-});/**
+});
+/**
 * @fileOverview 隐藏字段
 * @ignore
 * @author dxq613@gmail.com
@@ -1114,7 +1120,8 @@ define('bui/form/hiddenfield',['bui/form/basefield'],function (require) {
 
   return hiddenField;
 
-});/**
+});
+/**
 * @fileOverview 只读字段
 * @ignore
 * @author dxq613@gmail.com
@@ -1145,7 +1152,8 @@ define('bui/form/readonlyfield',['bui/form/basefield'],function (require) {
 
   return readonlyField;
 
-});/**
+});
+/**
  * @fileOverview 模拟选择框在表单中
  * @ignore
  */
@@ -1371,6 +1379,7 @@ define('bui/form/selectfield',['bui/common','bui/form/basefield'],function (requ
 
   return selectField;
 });
+
 /**
  * @fileOverview 表单日历域
  * @author dxq613@gmail.com
@@ -1559,7 +1568,8 @@ define('bui/form/datefield',['bui/common','bui/form/basefield','bui/calendar'],f
   });
 
   return dateField;
-});/**
+});
+/**
  * @fileOverview  可勾选字段
  * @ignore
  */
@@ -1662,7 +1672,8 @@ define('bui/form/checkfield',['bui/form/basefield'],function (require) {
   });
 
   return checkField;
-});/**
+});
+/**
  * @fileOverview  复选框表单域
  * @ignore
  */
@@ -1704,7 +1715,8 @@ define('bui/form/checkboxfield',['bui/form/checkfield'],function (required) {
   });
 
   return CheckBoxField;
-});/**
+});
+/**
  * @fileOverview  单选框表单域
  * @ignore
  */
@@ -1761,7 +1773,8 @@ define('bui/form/radiofield',['bui/form/checkfield'],function (required) {
   });
 
   return RadioField;
-});/**
+});
+/**
  * @fileOverview 仅仅用于显示文本，不能编辑的字段
  * @ignore
  */
@@ -1848,7 +1861,8 @@ define('bui/form/plainfield',['bui/form/basefield'],function (require) {
   });
 
   return PlainField;
-});/**
+});
+/**
  * @fileOverview 表单中的列表，每个列表后有个隐藏域用来存储数据
  * @ignore
  */
@@ -2013,7 +2027,8 @@ define('bui/form/listfield',['bui/common','bui/form/basefield','bui/list'],funct
   });
 
   return List;
-});/**
+});
+/**
  * @fileOverview 模拟选择框在表单中
  * @ignore
  */
@@ -2162,7 +2177,8 @@ define('bui/form/uploaderfield',['bui/common','bui/form/basefield','bui/form/rul
   }); 
 
   return uploaderField;
-});/**
+});
+/**
  * @fileOverview 可勾选的列表，模拟多个checkbox
  * @ignore
  */
@@ -2200,7 +2216,8 @@ define('bui/form/checklistfield',['bui/common','bui/form/listfield'],function (r
 
   return CheckList;
 
-});/**
+});
+/**
  * @fileOverview 可勾选的列表，模拟多个radio
  * @ignore
  */
@@ -2237,7 +2254,8 @@ define('bui/form/radiolistfield',['bui/common','bui/form/listfield'],function (r
 
   return RadioList;
 
-});/**
+});
+/**
  * @fileOverview 表单域的入口文件
  * @ignore
  */
@@ -2270,6 +2288,7 @@ define(BASE + 'field',['bui/common',BASE + 'textfield',BASE + 'datefield',BASE +
 });
 
 })();
+
 /**
  * @fileOverview 表单验证
  * @ignore
@@ -2643,7 +2662,8 @@ define('bui/form/valid',['bui/common','bui/form/rules'],function (require) {
 
   Valid.View = ValidView;
   return Valid;
-});/**
+});
+/**
  * @fileOverview 表单分组验证
  * @ignore
  */
@@ -2860,7 +2880,8 @@ define('bui/form/groupvalid',['bui/form/valid'],function (require) {
   GroupValid.View = GroupValidView;
 
   return GroupValid;
-});/**
+});
+/**
  * @fileOverview 表单字段的容器扩展
  * @ignore
  */
@@ -3230,7 +3251,8 @@ define('bui/form/fieldcontainer',['bui/common','bui/form/field','bui/form/groupv
   container.View = containerView;
   return container;
   
-});/**
+});
+/**
  * @fileOverview 表单文本域组，可以包含一个至多个字段
  * @author dxq613@gmail.com
  * @ignore
@@ -3265,7 +3287,8 @@ define('bui/form/group/base',['bui/common','bui/form/fieldcontainer'],function (
   });
 
   return Group;
-});/**
+});
+/**
  * @fileOverview 范围的字段组，比如日期范围等
  * @ignore
  */
@@ -3341,7 +3364,8 @@ define('bui/form/group/range',['bui/form/group/base'],function (require) {
   });
 
   return Range;
-});/**
+});
+/**
  * @fileOverview 选择分组，包含，checkbox,radio
  * @ignore
  */
@@ -3421,7 +3445,8 @@ define('bui/form/group/check',['bui/form/group/base'],function (require) {
 
   return Check;
 
-});/**
+});
+/**
  * @fileOverview 选择框分组
  * @ignore
  */
@@ -3573,7 +3598,8 @@ define('bui/form/group/select',['bui/form/group/base','bui/data'],function (requ
 
 
   return Select;
-});/**
+});
+/**
  * @fileOverview 表单文本域组，可以包含一个至多个字段
  * @author dxq613@gmail.com
  * @ignore
@@ -3589,7 +3615,8 @@ define('bui/form/fieldgroup',['bui/common','bui/form/group/base','bui/form/group
     Select : require('bui/form/group/select')
   });
   return Group;
-});/**
+});
+/**
  * @fileOverview 创建表单
  * @ignore
  */
@@ -3981,7 +4008,8 @@ define('bui/form/form',['bui/common','bui/form/fieldcontainer'],function (requir
   
   Form.View = FormView;
   return Form;
-});/**
+});
+/**
  * @fileOverview 垂直表单
  * @ignore
  */
@@ -4034,7 +4062,8 @@ define('bui/form/horizontal',['bui/common','bui/form/form'],function (require) {
     xclass : 'form-horizontal'
   });
   return Horizontal;
-});/**
+});
+/**
  * @fileOverview 表单里的一行元素
  * @ignore
  */
@@ -4077,7 +4106,8 @@ define('bui/form/row',['bui/common','bui/form/fieldcontainer'],function (require
   });
 
   return Row;
-});/**
+});
+/**
  * @fileOverview 验证规则
  * @ignore
  */
@@ -4204,7 +4234,8 @@ define('bui/form/rule',['bui/common'],function (require) {
   return Rule;
 
 
-});/**
+});
+/**
  * @fileOverview 验证集合
  * @ignore
  */
@@ -4799,7 +4830,8 @@ define('bui/form/rules',['bui/form/rule'],function (require) {
   
 
   return rules;
-});/**
+});
+/**
  * @fileOverview 表单异步请求，异步校验、远程获取数据
  * @ignore
  */

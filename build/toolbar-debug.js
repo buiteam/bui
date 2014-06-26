@@ -14,7 +14,8 @@ define('bui/toolbar',['bui/common','bui/toolbar/baritem','bui/toolbar/bar','bui/
     NumberPagingBar : require('bui/toolbar/numberpagingbar')
   });
   return Toolbar;
-});/**
+});
+/**
  * @fileOverview buttons or controls of toolbar
  * @author dxq613@gmail.com, yiminghe@gmail.com
  * @ignore
@@ -260,7 +261,8 @@ define('bui/toolbar/baritem',function(){
   
 
   return BarItem;
-});/**
+});
+/**
  * @fileOverview A collection of commonly used function buttons or controls represented in compact visual form.
  * @author dxq613@gmail.com, yiminghe@gmail.com
  * @ignore
@@ -362,7 +364,8 @@ define('bui/toolbar/bar',function(){
 	});
 
 	return Bar;
-});/**
+});
+/**
  * @fileOverview  a specialized toolbar that is bound to a Grid.Store and provides automatic paging control.
  * @author dxq613@gmail.com, yiminghe@gmail.com
  * @ignore
@@ -856,7 +859,8 @@ define('bui/toolbar/pagingbar',['bui/toolbar/bar'],function(require) {
 
     return PagingBar;
 
-});/**
+});
+/**
  * @fileOverview  a specialized toolbar that is bound to a Grid.Store and provides automatic paging control.
  * @author 
  * @ignore

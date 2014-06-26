@@ -14,7 +14,8 @@ define('bui/tooltip',['bui/common','bui/tooltip/tip','bui/tooltip/tips'],functio
     Tips : Tips
   });
   return Tooltip;
-});/**
+});
+/**
  * @fileOverview 简单易用的提示信息
  * @ignore
  */
@@ -268,7 +269,8 @@ define('bui/tooltip/tip',['bui/common','bui/overlay'],function (require) {
   Tip.View = TipView;
 
   return Tip;
-});/**
+});
+/**
  * @fileOverview 批量显示提示信息
  * @ignore
  */

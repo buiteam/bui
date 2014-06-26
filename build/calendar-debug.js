@@ -16,6 +16,7 @@ define('bui/calendar',['bui/common','bui/calendar/calendar','bui/calendar/monthp
 
   return Calendar;
 });
+
 /**
  * @fileOverview 选择年月
  * @author dxq613@gmail.com
@@ -355,6 +356,7 @@ define('bui/calendar/monthpicker',['bui/common','bui/overlay','bui/list','bui/to
   return monthPicker;
 
 });
+
 /**
  * @fileOverview 日期控件来选择年月的部分
  * @ignore
@@ -504,7 +506,8 @@ define('bui/calendar/header',['bui/common'],function (require) {
 
   return header;
 
-});/**
+});
+/**
  * @fileOverview 日历控件显示一月的日期
  * @author dxq613@gmail.com
  * @ignore
@@ -891,7 +894,8 @@ define('bui/calendar/panel',['bui/common'],function (require) {
   });
 
   return panel;
-});/**
+});
+/**
  * @fileOverview 日期控件
  * @author dxq613@gmail.com
  * @ignore
@@ -1391,6 +1395,7 @@ define('bui/calendar/calendar',['bui/picker','bui/calendar/monthpicker','bui/cal
 
   return calendar;
 });
+
 /**
  * @fileOverview 日期选择器
  * @author dxq613@gmail.com

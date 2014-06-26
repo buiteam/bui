@@ -17,7 +17,8 @@ define('bui/menu',['bui/common','bui/menu/menu','bui/menu/menuitem','bui/memu/co
 
   Menu.ContextMenuItem = Menu.ContextMenu.Item;
   return Menu;
-});/**
+});
+/**
  * @fileOverview 菜单项
  * @ignore
  */
@@ -304,7 +305,8 @@ define('bui/menu/menuitem',['bui/common'],function(require){
   menuItem.Separator = separator;
   
   return menuItem;
-});/**
+});
+/**
  * @fileOverview 菜单基类
  * @author dxq613@gmail.com
  * @ignore
@@ -451,7 +453,8 @@ define('bui/menu/menu',['bui/common'],function(require){
   });
 
   return Menu;
-});/**
+});
+/**
  * @fileOverview 下拉菜单，一般用于下拉显示菜单
  * @author dxq613@gmail.com
  * @ignore
@@ -519,7 +522,8 @@ define('bui/menu/popmenu',['bui/common','bui/menu/menu'],function (require) {
   
   return popMenu;
 
-});/**
+});
+/**
  * @fileOverview 弹出菜单，一般用于右键菜单
  * @author dxq613@gmail.com
  * @ignore
@@ -618,6 +622,7 @@ define('bui/memu/contextmenu',['bui/common','bui/menu/menuitem','bui/menu/popmen
   contextMenu.Item = contextMenuItem;
   return contextMenu;
 });
+
 /**
  * @fileOverview 侧边栏菜单
  * @author dxq613@gmail.com

@@ -13,7 +13,8 @@ define('bui/select',['bui/common','bui/select/select','bui/select/combox','bui/s
     Suggest: require('bui/select/suggest')
   });
   return Select;
-});/**
+});
+/**
  * @fileOverview 选择控件
  * @author dxq613@gmail.com
  * @ignore
@@ -484,7 +485,8 @@ define('bui/select/select',['bui/common','bui/picker'],function (require) {
 
   return select;
 
-});/**
+});
+/**
  * @fileOverview 输入、选择完毕后显示tag
  * @ignore
  */
@@ -698,6 +700,7 @@ define('bui/select/tag',['bui/common','bui/list'],function (require) {
 
   return Tag;
 });
+
 /**
  * @fileOverview 组合框可用于选择输入文本
  * @ignore
@@ -805,7 +808,8 @@ define('bui/select/combox',['bui/common','bui/select/select'],function (require)
   });
 
   return combox;
-});/**
+});
+/**
  * @fileOverview 组合框可用于选择输入文本
  * @ignore
  */

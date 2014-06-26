@@ -21,7 +21,8 @@ define('bui/overlay',['bui/common','bui/overlay/overlay','bui/overlay/dialog','b
   BUI.Message = BUI.Overlay.Message;
   return Overlay;
 
-});/**
+});
+/**
  * @fileOverview 悬浮层
  * @ignore
  */
@@ -258,7 +259,8 @@ define('bui/overlay/overlay',['bui/common'],function (require) {
   overlay.View = overlayView;
   return overlay;
 
-});/**
+});
+/**
  * @fileOverview 弹出框
  * @author dxq613@gmail.com
  * @ignore
@@ -616,7 +618,8 @@ define('bui/overlay/dialog',['bui/overlay/overlay'],function (require) {
   dialog.View = dialogView;
   return dialog;
   
-});/**
+});
+/**
  * @fileOverview 消息框，警告、确认
  * @author dxq613@gmail.com
  * @ignore

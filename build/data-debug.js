@@ -22,6 +22,7 @@ define('bui/data',['bui/common',BASE + 'sortable',BASE + 'proxy',BASE + 'abstrac
   return Data;
 });
 })();
+
 /**
  * @fileOverview 可排序扩展类
  * @ignore
@@ -187,6 +188,7 @@ define('bui/data/sortable',function() {
 
   return sortable;
 });
+
 define('bui/data/proxy',['bui/data/sortable'],function(require) {
 
   var Sortable = require('bui/data/sortable');
@@ -636,6 +638,7 @@ define('bui/data/proxy',['bui/data/sortable'],function(require) {
 
 
 });
+
 /**
  * @fileOverview 抽象数据缓冲类
  * @ignore
@@ -1141,7 +1144,8 @@ define('bui/data/abstractstore',['bui/common','bui/data/proxy'],function (requir
   });
 
   return AbstractStore;
-});/**
+});
+/**
  * @fileOverview 树形数据结构的节点类，无法直接使用数据作为节点，所以进行一层封装
  * 可以直接作为TreeNode控件的配置项
  * @ignore
@@ -1232,7 +1236,8 @@ define('bui/data/node',['bui/common'],function (require) {
     isNode : true
   });
   return Node;
-});/**
+});
+/**
  * @fileOverview 树形对象缓冲类
  * @ignore
  */
@@ -1840,7 +1845,8 @@ define('bui/data/treestore',['bui/common','bui/data/node','bui/data/abstractstor
 
   return TreeStore;
 
-});/**
+});
+/**
  * @fileOverview 数据缓冲对象
  * @author dxq613@gmail.com
  * @ignore

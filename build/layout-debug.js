@@ -26,7 +26,8 @@
 		return Layout;
 	});
 
-})();/**
+})();
+/**
  * @fileOverview 布局控件的基类
  * @ignore
  */
@@ -541,6 +542,7 @@ define('bui/layout/abstract',['bui/common','bui/layout/baseitem'],function(requi
 
 	return Abstract;
 });
+
 /**
  * @fileOverview 布局内部存在可折叠的项
  * @ignore
@@ -719,7 +721,8 @@ define('bui/layout/collapsable',['bui/common'],function (require) {
 	});
 
 	return Collapsable;
-});/**
+});
+/**
  * @fileOverview 绝对位置布局
  * @ignore
  */
@@ -819,7 +822,8 @@ define('bui/layout/absolute',['bui/common','bui/layout/abstract','bui/layout/abs
 	BUI.extend(Absolute,Abstract);
 
 	return Absolute;
-});/**
+});
+/**
  * @fileOverview 锚定布局，根据容器的边缘自动计算宽高
  * @ignore
  */
@@ -887,7 +891,8 @@ define('bui/layout/anchor',['bui/common','bui/layout/abstract','bui/layout/ancho
 	BUI.extend(Anchor,Abstract);
 
 	return Anchor;
-});/**
+});
+/**
  * @fileOverview 列模式布局
  * @ignore
  */
@@ -1063,7 +1068,8 @@ define('bui/layout/columns',['bui/common','bui/layout/abstract'],function (requi
 	});
 
 	return Columns;
-});/**
+});
+/**
  * @fileOverview 浮动布局，所有的元素float:left
  * @ignore
  */
@@ -1137,7 +1143,8 @@ define('bui/layout/flow',['bui/common','bui/layout/abstract','bui/layout/baseite
 	BUI.extend(Flow,Abstract);
 
 	return Flow;
-});/**
+});
+/**
  * @fileOverview 表格布局
  * @ignore
  */
@@ -1383,7 +1390,8 @@ define('bui/layout/table',['bui/common','bui/layout/abstract','bui/layout/cellit
 
 	return Table;
 
-});/**
+});
+/**
  * @fileOverview 经典的边框布局
  * @ignore
  */
@@ -1735,6 +1743,7 @@ define('bui/layout/border',['bui/common','bui/layout/abstract','bui/layout/borde
 
 	return Border;
 });
+
 /**
  * @fileOverview 可折叠的布局，只能展开一个选项内容
  * @ignore
@@ -1914,7 +1923,8 @@ define('bui/layout/accordion',['bui/common','bui/layout/abstract','bui/layout/ta
 
 	return Accordion;
 
-});/**
+});
+/**
  * @fileOverview 全屏容器，一般情况下用于布局
  * @ignore
  */
@@ -2037,6 +2047,7 @@ define('bui/layout/viewport',['bui/common'],function (require) {
 	return Viewport;
 
 });
+
 
 /**
  * @fileOverview 布局插件的子项，用于封装控件，控制控件的位置
@@ -2503,7 +2514,8 @@ define('bui/layout/baseitem',['bui/common'],function (require) {
 	});
 
 	return Item;
-});/**
+});
+/**
  * @fileOverview 绝对布局的布局项
  * @ignore
  */
@@ -2563,7 +2575,8 @@ define('bui/layout/absoluteitem',['bui/common','bui/layout/baseitem'],function (
 	});
 
 	return AbsoluteItem;
-});/**
+});
+/**
  * @fileOverview 锚定容器的布局项
  * @ignore
  */
@@ -2635,7 +2648,8 @@ define('bui/layout/anchoritem',['bui/common','bui/layout/baseitem'],function (re
 	});
 
 	return Anchor;
-});/**
+});
+/**
  * @fileOverview 边框布局选项
  * @ignore
  */
@@ -2885,7 +2899,8 @@ define('bui/layout/borderitem',['bui/common','bui/layout/baseitem'],function (re
 
 
 	return Border;
-});/**
+});
+/**
  * @fileOverview 表格布局的项，是一个个的单元格
  * @ignore
  */
@@ -2952,7 +2967,8 @@ define('bui/layout/cellitem',['bui/common','bui/layout/baseitem'],function (requ
 	});
 
 	return Cell;
-});/**
+});
+/**
  * @fileOverview 可以收缩的选项
  * @ignore
  */

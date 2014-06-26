@@ -128,6 +128,7 @@ define('bui/swf/ua', function (require) {
  -    ref: http://googlechromereleases.blogspot.com/2010/03/dev-channel-update_30.html
  *
  */
+
 /**
  * @ignore
  * insert swf into document in an easy way

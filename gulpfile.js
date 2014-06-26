@@ -72,19 +72,8 @@ gulp.task('copy', function() {
 });
 
 
-// ant的子任务
-gulp.task('ant', function(){
-  return gulp.src([
-      './**/build.xml',
-      //除去根目录下的gulpfile.js
-      '!./build.xml'
-    ], {read: false})
-    .pipe(subTask(true));
-})
-
-
 // gulpfile的子任务
-gulp.task('sub',['ant'], function () {
+gulp.task('sub', function () {
   return gulp.src([
       './**/gulpfile.js',
       //除去根目录下的gulpfile.js

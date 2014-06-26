@@ -11886,6 +11886,7 @@ define('bui/data',['bui/common',BASE + 'sortable',BASE + 'proxy',BASE + 'abstrac
   return Data;
 });
 })();
+
 /**
  * @fileOverview 可排序扩展类
  * @ignore
@@ -12051,6 +12052,7 @@ define('bui/data/sortable',function() {
 
   return sortable;
 });
+
 define('bui/data/proxy',['bui/data/sortable'],function(require) {
 
   var Sortable = require('bui/data/sortable');
@@ -12500,6 +12502,7 @@ define('bui/data/proxy',['bui/data/sortable'],function(require) {
 
 
 });
+
 /**
  * @fileOverview 抽象数据缓冲类
  * @ignore
@@ -13005,7 +13008,8 @@ define('bui/data/abstractstore',['bui/common','bui/data/proxy'],function (requir
   });
 
   return AbstractStore;
-});/**
+});
+/**
  * @fileOverview 树形数据结构的节点类，无法直接使用数据作为节点，所以进行一层封装
  * 可以直接作为TreeNode控件的配置项
  * @ignore
@@ -13096,7 +13100,8 @@ define('bui/data/node',['bui/common'],function (require) {
     isNode : true
   });
   return Node;
-});/**
+});
+/**
  * @fileOverview 树形对象缓冲类
  * @ignore
  */
@@ -13704,7 +13709,8 @@ define('bui/data/treestore',['bui/common','bui/data/node','bui/data/abstractstor
 
   return TreeStore;
 
-});/**
+});
+/**
  * @fileOverview 数据缓冲对象
  * @author dxq613@gmail.com
  * @ignore
@@ -14651,7 +14657,8 @@ define('bui/overlay',['bui/common','bui/overlay/overlay','bui/overlay/dialog','b
   BUI.Message = BUI.Overlay.Message;
   return Overlay;
 
-});/**
+});
+/**
  * @fileOverview 悬浮层
  * @ignore
  */
@@ -14888,7 +14895,8 @@ define('bui/overlay/overlay',['bui/common'],function (require) {
   overlay.View = overlayView;
   return overlay;
 
-});/**
+});
+/**
  * @fileOverview 弹出框
  * @author dxq613@gmail.com
  * @ignore
@@ -15246,7 +15254,8 @@ define('bui/overlay/dialog',['bui/overlay/overlay'],function (require) {
   dialog.View = dialogView;
   return dialog;
   
-});/**
+});
+/**
  * @fileOverview 消息框，警告、确认
  * @author dxq613@gmail.com
  * @ignore
@@ -15538,6 +15547,7 @@ define('bui/list',['bui/common',BASE + 'list',BASE + 'listitem',BASE + 'simpleli
   return List;
 });  
 })();
+
 /**
  * @fileOverview 使用DOM元素作为选项的扩展类
  * @author dxq613@gmail.com
@@ -16525,7 +16535,8 @@ define('bui/list/domlist',['bui/common'],function (require) {
   domList.View = domListView;
 
   return domList;
-});/**
+});
+/**
  * @fileOverview 列表选项，使用键盘导航
  * @author dxq613@gmail.com
  * @ignore
@@ -16797,7 +16808,8 @@ define('bui/list/keynav',['bui/common'],function (require) {
   });
 
   return KeyNav;
-});/**
+});
+/**
  * @fileOverview 列表排序
  * @ignore
  */
@@ -16877,7 +16889,8 @@ define('bui/list/sortable',['bui/common','bui/data'],function (require) {
   });
 
   return Sortable;
-});/**
+});
+/**
  * @fileOverview 简单列表，直接使用DOM作为列表项
  * @ignore
  */
@@ -17159,7 +17172,8 @@ define('bui/list/simplelist',['bui/common','bui/list/domlist','bui/list/keynav',
 
   simpleList.View = simpleListView;
   return simpleList;
-});/**
+});
+/**
  * @fileOverview 可选择的列表
  * @author dengbin
  * @ignore
@@ -17209,7 +17223,8 @@ define('bui/list/listbox',['bui/list/simplelist'],function (require) {
   });
 
   return listbox;
-});/**
+});
+/**
  * @fileOverview 列表项
  * @author dxq613@gmail.com
  * @ignore
@@ -17262,7 +17277,8 @@ define('bui/list/listitem',['bui/common'],function (require) {
   item.View = itemView;
   
   return item;
-});/**
+});
+/**
  * @fileOverview 列表
  * @ignore
  */
@@ -17327,7 +17343,8 @@ define('bui/picker',['bui/common','bui/picker/mixin','bui/picker/picker','bui/pi
   });
 
   return Picker;
-});/**
+});
+/**
  * @fileOverview picker的扩展
  * @ignore
  */
@@ -17602,7 +17619,8 @@ define('bui/picker/mixin', function (require) {
   }
 
   return Mixin;
-});/**
+});
+/**
  * @fileOverview 选择器
  * @ignore
  */
@@ -17652,7 +17670,8 @@ define('bui/picker/picker',['bui/overlay', 'bui/picker/mixin'],function (require
   });
 
   return picker;
-});/**
+});
+/**
  * @fileOverview 列表项的选择器
  * @ignore
  */
@@ -17813,6 +17832,7 @@ define('bui/form',['bui/common',BASE + 'fieldcontainer',BASE + 'form',BASE + 'ro
   return Form;
 });
 })();
+
 /**
  * @fileOverview 输入提示信息
  * @author dxq613@gmail.com
@@ -18057,7 +18077,8 @@ define('bui/form/tips',['bui/common','bui/overlay'],function (require) {
   Tips.Item = tipItem;
   return Tips;
 
-});/**
+});
+/**
  * @fileOverview 表单元素
  * @ignore
  */
@@ -18678,7 +18699,8 @@ define('bui/form/basefield',['bui/common','bui/form/tips','bui/form/valid','bui/
   
   return field;
 
-});/**
+});
+/**
  * @fileOverview 表单文本域
  * @author dxq613@gmail.com
  * @ignore
@@ -18699,7 +18721,8 @@ define('bui/form/textfield',['bui/form/basefield'],function (require) {
   });
 
   return textField;
-});/**
+});
+/**
  * @fileOverview 表单文本域
  * @author dxq613@gmail.com
  * @ignore
@@ -18765,7 +18788,8 @@ define('bui/form/textareafield',['bui/form/basefield'],function (require) {
   });
 
   return TextAreaField;
-});/**
+});
+/**
  * @fileOverview 表单文本域
  * @author dxq613@gmail.com
  * @ignore
@@ -18869,7 +18893,8 @@ define('bui/form/numberfield',['bui/form/basefield'],function (require) {
   });
 
   return numberField;
-});/**
+});
+/**
 * @fileOverview 隐藏字段
 * @ignore
 * @author dxq613@gmail.com
@@ -18903,7 +18928,8 @@ define('bui/form/hiddenfield',['bui/form/basefield'],function (require) {
 
   return hiddenField;
 
-});/**
+});
+/**
 * @fileOverview 只读字段
 * @ignore
 * @author dxq613@gmail.com
@@ -18934,7 +18960,8 @@ define('bui/form/readonlyfield',['bui/form/basefield'],function (require) {
 
   return readonlyField;
 
-});/**
+});
+/**
  * @fileOverview 模拟选择框在表单中
  * @ignore
  */
@@ -19160,6 +19187,7 @@ define('bui/form/selectfield',['bui/common','bui/form/basefield'],function (requ
 
   return selectField;
 });
+
 /**
  * @fileOverview 表单日历域
  * @author dxq613@gmail.com
@@ -19348,7 +19376,8 @@ define('bui/form/datefield',['bui/common','bui/form/basefield','bui/calendar'],f
   });
 
   return dateField;
-});/**
+});
+/**
  * @fileOverview  可勾选字段
  * @ignore
  */
@@ -19451,7 +19480,8 @@ define('bui/form/checkfield',['bui/form/basefield'],function (require) {
   });
 
   return checkField;
-});/**
+});
+/**
  * @fileOverview  复选框表单域
  * @ignore
  */
@@ -19493,7 +19523,8 @@ define('bui/form/checkboxfield',['bui/form/checkfield'],function (required) {
   });
 
   return CheckBoxField;
-});/**
+});
+/**
  * @fileOverview  单选框表单域
  * @ignore
  */
@@ -19550,7 +19581,8 @@ define('bui/form/radiofield',['bui/form/checkfield'],function (required) {
   });
 
   return RadioField;
-});/**
+});
+/**
  * @fileOverview 仅仅用于显示文本，不能编辑的字段
  * @ignore
  */
@@ -19637,7 +19669,8 @@ define('bui/form/plainfield',['bui/form/basefield'],function (require) {
   });
 
   return PlainField;
-});/**
+});
+/**
  * @fileOverview 表单中的列表，每个列表后有个隐藏域用来存储数据
  * @ignore
  */
@@ -19802,7 +19835,8 @@ define('bui/form/listfield',['bui/common','bui/form/basefield','bui/list'],funct
   });
 
   return List;
-});/**
+});
+/**
  * @fileOverview 模拟选择框在表单中
  * @ignore
  */
@@ -19951,7 +19985,8 @@ define('bui/form/uploaderfield',['bui/common','bui/form/basefield','bui/form/rul
   }); 
 
   return uploaderField;
-});/**
+});
+/**
  * @fileOverview 可勾选的列表，模拟多个checkbox
  * @ignore
  */
@@ -19989,7 +20024,8 @@ define('bui/form/checklistfield',['bui/common','bui/form/listfield'],function (r
 
   return CheckList;
 
-});/**
+});
+/**
  * @fileOverview 可勾选的列表，模拟多个radio
  * @ignore
  */
@@ -20026,7 +20062,8 @@ define('bui/form/radiolistfield',['bui/common','bui/form/listfield'],function (r
 
   return RadioList;
 
-});/**
+});
+/**
  * @fileOverview 表单域的入口文件
  * @ignore
  */
@@ -20059,6 +20096,7 @@ define(BASE + 'field',['bui/common',BASE + 'textfield',BASE + 'datefield',BASE +
 });
 
 })();
+
 /**
  * @fileOverview 表单验证
  * @ignore
@@ -20432,7 +20470,8 @@ define('bui/form/valid',['bui/common','bui/form/rules'],function (require) {
 
   Valid.View = ValidView;
   return Valid;
-});/**
+});
+/**
  * @fileOverview 表单分组验证
  * @ignore
  */
@@ -20649,7 +20688,8 @@ define('bui/form/groupvalid',['bui/form/valid'],function (require) {
   GroupValid.View = GroupValidView;
 
   return GroupValid;
-});/**
+});
+/**
  * @fileOverview 表单字段的容器扩展
  * @ignore
  */
@@ -21019,7 +21059,8 @@ define('bui/form/fieldcontainer',['bui/common','bui/form/field','bui/form/groupv
   container.View = containerView;
   return container;
   
-});/**
+});
+/**
  * @fileOverview 表单文本域组，可以包含一个至多个字段
  * @author dxq613@gmail.com
  * @ignore
@@ -21054,7 +21095,8 @@ define('bui/form/group/base',['bui/common','bui/form/fieldcontainer'],function (
   });
 
   return Group;
-});/**
+});
+/**
  * @fileOverview 范围的字段组，比如日期范围等
  * @ignore
  */
@@ -21130,7 +21172,8 @@ define('bui/form/group/range',['bui/form/group/base'],function (require) {
   });
 
   return Range;
-});/**
+});
+/**
  * @fileOverview 选择分组，包含，checkbox,radio
  * @ignore
  */
@@ -21210,7 +21253,8 @@ define('bui/form/group/check',['bui/form/group/base'],function (require) {
 
   return Check;
 
-});/**
+});
+/**
  * @fileOverview 选择框分组
  * @ignore
  */
@@ -21362,7 +21406,8 @@ define('bui/form/group/select',['bui/form/group/base','bui/data'],function (requ
 
 
   return Select;
-});/**
+});
+/**
  * @fileOverview 表单文本域组，可以包含一个至多个字段
  * @author dxq613@gmail.com
  * @ignore
@@ -21378,7 +21423,8 @@ define('bui/form/fieldgroup',['bui/common','bui/form/group/base','bui/form/group
     Select : require('bui/form/group/select')
   });
   return Group;
-});/**
+});
+/**
  * @fileOverview 创建表单
  * @ignore
  */
@@ -21770,7 +21816,8 @@ define('bui/form/form',['bui/common','bui/form/fieldcontainer'],function (requir
   
   Form.View = FormView;
   return Form;
-});/**
+});
+/**
  * @fileOverview 垂直表单
  * @ignore
  */
@@ -21823,7 +21870,8 @@ define('bui/form/horizontal',['bui/common','bui/form/form'],function (require) {
     xclass : 'form-horizontal'
   });
   return Horizontal;
-});/**
+});
+/**
  * @fileOverview 表单里的一行元素
  * @ignore
  */
@@ -21866,7 +21914,8 @@ define('bui/form/row',['bui/common','bui/form/fieldcontainer'],function (require
   });
 
   return Row;
-});/**
+});
+/**
  * @fileOverview 验证规则
  * @ignore
  */
@@ -21993,7 +22042,8 @@ define('bui/form/rule',['bui/common'],function (require) {
   return Rule;
 
 
-});/**
+});
+/**
  * @fileOverview 验证集合
  * @ignore
  */
@@ -22588,7 +22638,8 @@ define('bui/form/rules',['bui/form/rule'],function (require) {
   
 
   return rules;
-});/**
+});
+/**
  * @fileOverview 表单异步请求，异步校验、远程获取数据
  * @ignore
  */
@@ -22897,7 +22948,8 @@ define('bui/select',['bui/common','bui/select/select','bui/select/combox','bui/s
     Suggest: require('bui/select/suggest')
   });
   return Select;
-});/**
+});
+/**
  * @fileOverview 选择控件
  * @author dxq613@gmail.com
  * @ignore
@@ -23368,7 +23420,8 @@ define('bui/select/select',['bui/common','bui/picker'],function (require) {
 
   return select;
 
-});/**
+});
+/**
  * @fileOverview 输入、选择完毕后显示tag
  * @ignore
  */
@@ -23582,6 +23635,7 @@ define('bui/select/tag',['bui/common','bui/list'],function (require) {
 
   return Tag;
 });
+
 /**
  * @fileOverview 组合框可用于选择输入文本
  * @ignore
@@ -23689,7 +23743,8 @@ define('bui/select/combox',['bui/common','bui/select/select'],function (require)
   });
 
   return combox;
-});/**
+});
+/**
  * @fileOverview 组合框可用于选择输入文本
  * @ignore
  */
@@ -24043,7 +24098,8 @@ define('bui/mask',['bui/common','bui/mask/mask','bui/mask/loadmask'],function (r
     Mask = require('bui/mask/mask');
   Mask.LoadMask = require('bui/mask/loadmask');
   return Mask;
-});/**
+});
+/**
  * @fileOverview Mask屏蔽层
  * @author dxq613@gmail.com
  * @ignore
@@ -24154,6 +24210,7 @@ define('bui/mask/mask',['bui/common'],function (require) {
     
     return Mask;
 });
+
 /**
  * @fileOverview 加载数据时屏蔽层
  * @ignore
@@ -24312,7 +24369,8 @@ define('bui/menu',['bui/common','bui/menu/menu','bui/menu/menuitem','bui/memu/co
 
   Menu.ContextMenuItem = Menu.ContextMenu.Item;
   return Menu;
-});/**
+});
+/**
  * @fileOverview 菜单项
  * @ignore
  */
@@ -24599,7 +24657,8 @@ define('bui/menu/menuitem',['bui/common'],function(require){
   menuItem.Separator = separator;
   
   return menuItem;
-});/**
+});
+/**
  * @fileOverview 菜单基类
  * @author dxq613@gmail.com
  * @ignore
@@ -24746,7 +24805,8 @@ define('bui/menu/menu',['bui/common'],function(require){
   });
 
   return Menu;
-});/**
+});
+/**
  * @fileOverview 下拉菜单，一般用于下拉显示菜单
  * @author dxq613@gmail.com
  * @ignore
@@ -24814,7 +24874,8 @@ define('bui/menu/popmenu',['bui/common','bui/menu/menu'],function (require) {
   
   return popMenu;
 
-});/**
+});
+/**
  * @fileOverview 弹出菜单，一般用于右键菜单
  * @author dxq613@gmail.com
  * @ignore
@@ -24913,6 +24974,7 @@ define('bui/memu/contextmenu',['bui/common','bui/menu/menuitem','bui/menu/popmen
   contextMenu.Item = contextMenuItem;
   return contextMenu;
 });
+
 /**
  * @fileOverview 侧边栏菜单
  * @author dxq613@gmail.com
@@ -25103,7 +25165,8 @@ define('bui/tab',['bui/common','bui/tab/tab','bui/tab/tabitem','bui/tab/navtabit
   });
 
   return Tab;
-});/**
+});
+/**
  * @fileOverview 拥有内容的标签项的扩展类，每个标签项都有一个分离的容器作为面板
  * @ignore
  */
@@ -25258,7 +25321,8 @@ define('bui/tab/panelitem',function (requrie) {
 
   return PanelItem;
 
-});/**
+});
+/**
  * @fileOverview 拥有多个面板的容器
  * @ignore
  */
@@ -25365,7 +25429,8 @@ define('bui/tab/panels',function (require) {
   });
 
   return Panels;
-});/**
+});
+/**
  * @fileOverview 导航项
  * @author dxq613@gmail.com
  * @ignore
@@ -25707,7 +25772,8 @@ define('bui/tab/navtabitem',['bui/common'],function(requrie){
 
   navTabItem.View = navTabItemView;
   return navTabItem;
-});/**
+});
+/**
  * @fileOverview 导航标签
  * @author dxq613@gmail.com
  * @ignore              
@@ -26315,7 +26381,8 @@ define('bui/tab/navtab',['bui/common','bui/menu'],function(require){
   );
 
   return navTab;
-});/**
+});
+/**
  * @fileOverview 
  * @ignore
  */
@@ -26371,7 +26438,8 @@ define('bui/tab/tabitem',['bui/common'],function (require) {
   
   item.View = itemView;
   return item;
-});/**
+});
+/**
  * @fileOverview 切换标签
  * @ignore
  */
@@ -26435,7 +26503,8 @@ define('bui/tab/tab',['bui/common'],function (require) {
 
   return tab;
 
-});/**
+});
+/**
  * @fileOverview 
  * @ignore
  */
@@ -26528,7 +26597,8 @@ define('bui/tab/tabpanelitem',['bui/common','bui/tab/tabitem','bui/tab/panelitem
   item.View = itemView;
   return item;
 
-});/**
+});
+/**
  * @fileOverview 每个标签对应一个面板
  * @ignore
  */
@@ -26643,7 +26713,8 @@ define('bui/toolbar',['bui/common','bui/toolbar/baritem','bui/toolbar/bar','bui/
     NumberPagingBar : require('bui/toolbar/numberpagingbar')
   });
   return Toolbar;
-});/**
+});
+/**
  * @fileOverview buttons or controls of toolbar
  * @author dxq613@gmail.com, yiminghe@gmail.com
  * @ignore
@@ -26889,7 +26960,8 @@ define('bui/toolbar/baritem',function(){
   
 
   return BarItem;
-});/**
+});
+/**
  * @fileOverview A collection of commonly used function buttons or controls represented in compact visual form.
  * @author dxq613@gmail.com, yiminghe@gmail.com
  * @ignore
@@ -26991,7 +27063,8 @@ define('bui/toolbar/bar',function(){
 	});
 
 	return Bar;
-});/**
+});
+/**
  * @fileOverview  a specialized toolbar that is bound to a Grid.Store and provides automatic paging control.
  * @author dxq613@gmail.com, yiminghe@gmail.com
  * @ignore
@@ -27485,7 +27558,8 @@ define('bui/toolbar/pagingbar',['bui/toolbar/bar'],function(require) {
 
     return PagingBar;
 
-});/**
+});
+/**
  * @fileOverview  a specialized toolbar that is bound to a Grid.Store and provides automatic paging control.
  * @author 
  * @ignore
@@ -27719,7 +27793,8 @@ define('bui/progressbar',['bui/common','bui/progressbar/base','bui/progressbar/l
   });
 
   return ProgressBar;
-});/**
+});
+/**
  * @fileOverview 进度条
  * @author dengbin
  * @ignore
@@ -27791,7 +27866,8 @@ define('bui/progressbar/base',['bui/common'],function(require){
 	});
 
 	return progressBar;
-});/**
+});
+/**
  * @fileOverview 异步进度条
  * @author dengbin
  * @ignore
@@ -28028,6 +28104,7 @@ define('bui/calendar',['bui/common','bui/calendar/calendar','bui/calendar/monthp
 
   return Calendar;
 });
+
 /**
  * @fileOverview 选择年月
  * @author dxq613@gmail.com
@@ -28367,6 +28444,7 @@ define('bui/calendar/monthpicker',['bui/common','bui/overlay','bui/list','bui/to
   return monthPicker;
 
 });
+
 /**
  * @fileOverview 日期控件来选择年月的部分
  * @ignore
@@ -28516,7 +28594,8 @@ define('bui/calendar/header',['bui/common'],function (require) {
 
   return header;
 
-});/**
+});
+/**
  * @fileOverview 日历控件显示一月的日期
  * @author dxq613@gmail.com
  * @ignore
@@ -28903,7 +28982,8 @@ define('bui/calendar/panel',['bui/common'],function (require) {
   });
 
   return panel;
-});/**
+});
+/**
  * @fileOverview 日期控件
  * @author dxq613@gmail.com
  * @ignore
@@ -29403,6 +29483,7 @@ define('bui/calendar/calendar',['bui/picker','bui/calendar/monthpicker','bui/cal
 
   return calendar;
 });
+
 /**
  * @fileOverview 日期选择器
  * @author dxq613@gmail.com
@@ -29679,7 +29760,8 @@ define('bui/editor',['bui/common','bui/form','bui/editor/editor','bui/editor/rec
     DialogEditor : require('bui/editor/dialog')
   });
   return Editor;
-});/**
+});
+/**
  * @fileOverview 编辑器扩展类，引入这个扩展，控件可以支持编辑器功能。
  * @ignore
  */
@@ -29985,7 +30067,8 @@ define('bui/editor/mixin',function (require) {
   };
 
   return Mixin;
-});/**
+});
+/**
  * @ignore
  * @fileOverview 编辑器
  * @author dxq613@gmail.com
@@ -30240,7 +30323,8 @@ define('bui/editor/editor',['bui/common','bui/overlay','bui/editor/mixin'],funct
   });
 
   return editor;
-});/**
+});
+/**
  * @fileOverview 对象编辑器
  * @ignore
  */
@@ -30385,7 +30469,8 @@ define('bui/editor/record',['bui/common','bui/editor/editor'],function (require)
   });
 
   return editor;
-});/**
+});
+/**
  * @fileOverview 使用弹出框作为编辑器
  * @ignore
  */
@@ -30568,7 +30653,8 @@ define('bui/grid',['bui/common','bui/grid/simplegrid','bui/grid/grid','bui/grid/
 
   return Grid;
 
-});/**
+});
+/**
  * @fileOverview 简单表格,仅用于展示数据
  * @author dxq613@gmail.com
  * @ignore
@@ -30919,7 +31005,8 @@ define('bui/grid/simplegrid',['bui/common','bui/list'],function(require) {
   
   simpleGrid.View = simpleGridView;
   return  simpleGrid;
-});/**
+});
+/**
  * @fileOverview This class specifies the definition for a column of a grid.
  * @author dxq613@gmail.com
  * @ignore
@@ -31424,6 +31511,7 @@ define('bui/grid/column',['bui/common'],function (require) {
 
 });
 	
+
 /**
  * @fileOverview 表格的头部
  * @author dxq613@gmail.com, yiminghe@gmail.com
@@ -31924,7 +32012,8 @@ define('bui/grid/header',['bui/common','bui/grid/column'],function(require) {
     });
   
   return header;
-});/**
+});
+/**
  * @fileOverview 表格
  * @ignore
  * @author dxq613@gmail.com
@@ -33253,7 +33342,8 @@ define('bui/grid/grid',['bui/common','bui/mask','bui/toolbar','bui/list','bui/gr
  * 2013.1.18 
  *   这是一个重构的版本，将Body取消掉了，目的是为了可以将Grid和SimpleGrid联系起来，
  *   同时将selection 统一         
- *//**
+ */
+/**
  * @fileOverview this class details some util tools of grid,like loadMask, formatter for grid's cell render
  * @author dxq613@gmail.com, yiminghe@gmail.com
  * @ignore
@@ -33397,7 +33487,8 @@ define('bui/grid/format',function (require) {
     };
 
     return Format;
-});/**
+});
+/**
  * @fileOverview 表格插件的入口
  * @author dxq613@gmail.com, yiminghe@gmail.com
  * @ignore
@@ -33430,6 +33521,7 @@ define('bui/grid/plugins',['bui/common',BASE + 'selection',BASE + 'cascade',BASE
 	return Plugins;
 });
 })();
+
 /**
  * @fileOverview 自动适应表格宽度的扩展
  * @ignore
@@ -33490,7 +33582,8 @@ define('bui/grid/plugins/autofit',['bui/common'],function (require) {
   });
 
   return AutoFit;
-});/**
+});
+/**
  * @fileOverview Grid 菜单
  * @ignore
  */
@@ -33736,7 +33829,8 @@ define('bui/grid/plugins/menu',['bui/common','bui/menu'],function (require) {
 
   return gridMenu;
 
-});/**
+});
+/**
  * @fileOverview 级联表格
  * @ignore
  */
@@ -34122,7 +34216,8 @@ define('bui/grid/plugins/cascade',['bui/common'],function(require){
   });
 
   return cascade;
-});/**
+});
+/**
  * @fileOverview 选择的插件
  * @ignore
  */
@@ -34317,7 +34412,8 @@ define('bui/grid/plugins/selection',['bui/common'],function(require){
 
   
   return Selection;
-});/**
+});
+/**
  * @fileOverview 表格数据汇总
  * @author dxq613@gmail.com
  * @ignore
@@ -34646,7 +34742,8 @@ define('bui/grid/plugins/summary',['bui/common'],function (require) {
   });
 
   return summary;
-});/**
+});
+/**
  * @fileOverview 表格编辑插件
  * @ignore
  */
@@ -35210,7 +35307,8 @@ define('bui/grid/plugins/editing',function (require) {
   });
 
   return Editing;
-});/**
+});
+/**
  * @fileOverview 表格单元格编辑
  * @ignore
  */
@@ -35374,7 +35472,8 @@ define('bui/grid/plugins/cellediting',['bui/grid/plugins/editing'],function (req
   });
 
   return CellEditing;
-});/**
+});
+/**
  * @fileOverview 表格行编辑
  * @ignore
  */
@@ -35618,7 +35717,8 @@ define('bui/grid/plugins/rowediting',['bui/common','bui/grid/plugins/editing'],f
     }
   });
   return RowEditing;
-});/**
+});
+/**
  * @fileOverview 表格跟表单联用
  * @ignore
  */
@@ -35881,7 +35981,8 @@ define('bui/grid/plugins/dialogediting',['bui/common'],function (require) {
   });
 
   return Dialog;
-});define('bui/grid/plugins/rownumber',function (require) {
+});
+define('bui/grid/plugins/rownumber',function (require) {
 
   var CLS_NUMBER = 'x-grid-rownumber';
   /**
@@ -35931,7 +36032,8 @@ define('bui/grid/plugins/dialogediting',['bui/common'],function (require) {
   
   return RowNumber;
   
-});define('bui/grid/plugins/columngroup',['bui/common'],function(require){
+});
+define('bui/grid/plugins/columngroup',['bui/common'],function(require){
 
   var BUI = require('bui/common'),
     PREFIX = BUI.prefix,
@@ -36037,7 +36139,8 @@ define('bui/grid/plugins/dialogediting',['bui/common'],function (require) {
 
   return Group;
 
-});define('bui/grid/plugins/rowgroup',['bui/common'],function(require){
+});
+define('bui/grid/plugins/rowgroup',['bui/common'],function(require){
 
   var BUI = require('bui/common'),
     DATA_GROUP = 'data-group',
@@ -36206,7 +36309,8 @@ define('bui/grid/plugins/dialogediting',['bui/common'],function (require) {
 
   return Group;
 
-});/**
+});
+/**
  * @fileOverview 拖拽改变列的宽度
  * @ignore
  */
@@ -36433,7 +36537,8 @@ define('bui/tree',['bui/common','bui/tree/treemixin','bui/tree/treelist','bui/tr
     TreeMenu : require('bui/tree/treemenu')
   });
   return Tree;
-});/**
+});
+/**
  * @fileOverview 树形扩展，基于list扩展，可以组合出tree list,tree grid ,tree menu
  * @ignore
  */
@@ -37893,7 +37998,8 @@ define('bui/tree/treemixin',['bui/common','bui/data'],function (require) {
   });
 
   return Mixin;
-})/**
+})
+/**
  * @fileOverview 树的选中，跟列表的选中有所差异
  * @ignore
  */
@@ -37951,7 +38057,8 @@ define('bui/tree/selection',['bui/list'],function (require) {
 
 	return Selection;
 
-});/**
+});
+/**
  * @fileOverview 树形列表
  * @ignore
  */
@@ -38055,6 +38162,7 @@ define('bui/tree/treelist',['bui/common','bui/list','bui/tree/treemixin','bui/tr
 
   return TreeList;
 });
+
 
 /**
  * @fileOverview 树形菜单
@@ -38199,7 +38307,8 @@ define('bui/tooltip',['bui/common','bui/tooltip/tip','bui/tooltip/tips'],functio
     Tips : Tips
   });
   return Tooltip;
-});/**
+});
+/**
  * @fileOverview 简单易用的提示信息
  * @ignore
  */
@@ -38453,7 +38562,8 @@ define('bui/tooltip/tip',['bui/common','bui/overlay'],function (require) {
   Tip.View = TipView;
 
   return Tip;
-});/**
+});
+/**
  * @fileOverview 批量显示提示信息
  * @ignore
  */

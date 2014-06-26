@@ -13,7 +13,8 @@ define('bui/tree',['bui/common','bui/tree/treemixin','bui/tree/treelist','bui/tr
     TreeMenu : require('bui/tree/treemenu')
   });
   return Tree;
-});/**
+});
+/**
  * @fileOverview 树形扩展，基于list扩展，可以组合出tree list,tree grid ,tree menu
  * @ignore
  */
@@ -1473,7 +1474,8 @@ define('bui/tree/treemixin',['bui/common','bui/data'],function (require) {
   });
 
   return Mixin;
-})/**
+})
+/**
  * @fileOverview 树的选中，跟列表的选中有所差异
  * @ignore
  */
@@ -1531,7 +1533,8 @@ define('bui/tree/selection',['bui/list'],function (require) {
 
 	return Selection;
 
-});/**
+});
+/**
  * @fileOverview 树形列表
  * @ignore
  */
@@ -1635,6 +1638,7 @@ define('bui/tree/treelist',['bui/common','bui/list','bui/tree/treemixin','bui/tr
 
   return TreeList;
 });
+
 
 /**
  * @fileOverview 树形菜单

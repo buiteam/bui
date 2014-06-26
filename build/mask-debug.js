@@ -8,7 +8,8 @@ define('bui/mask',['bui/common','bui/mask/mask','bui/mask/loadmask'],function (r
     Mask = require('bui/mask/mask');
   Mask.LoadMask = require('bui/mask/loadmask');
   return Mask;
-});/**
+});
+/**
  * @fileOverview Mask屏蔽层
  * @author dxq613@gmail.com
  * @ignore
@@ -119,6 +120,7 @@ define('bui/mask/mask',['bui/common'],function (require) {
     
     return Mask;
 });
+
 /**
  * @fileOverview 加载数据时屏蔽层
  * @ignore

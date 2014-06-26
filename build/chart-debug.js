@@ -18,6 +18,7 @@ define('bui/chart',['bui/common','bui/chart/chart','bui/chart/axis','bui/chart/s
 
   return Chart;
 });
+
 /**
  * @fileOverview 图表中的激活的元素
  * @ignore
@@ -84,7 +85,8 @@ define('bui/chart/actived',function (require) {
 	});
 
 	return Actived;
-});/**
+});
+/**
  * @fileOverview 子元素可以被激活
  * @ignore
  */
@@ -201,7 +203,8 @@ define('bui/chart/activedgroup',function  (require) {
 	});
 
 	return Group;
-});/**
+});
+/**
  * 内部显示Labels的控件扩展
  * @ignore
  */
@@ -313,7 +316,8 @@ define('bui/chart/showlabels',['bui/chart/labels'],function (require) {
 	})
 
 	return ShowLabels;
-});/**
+});
+/**
  * @fileOverview 图表中的文本信息
  * @ignore
  */
@@ -475,7 +479,8 @@ define('bui/chart/labels',['bui/common','bui/chart/plotitem','bui/graphic'],func
 
 
 	return Labels;
-});/**
+});
+/**
  * @fileOverview 图例，用于标志具体的数据序列，并跟数据序列进行交互
  * @ignore
  */
@@ -744,6 +749,7 @@ define('bui/chart/legend',['bui/common','bui/chart/plotitem','bui/chart/legendit
 
   return Legend;
 });
+
 /**
  * @fileOverview 图例项
  * @ignore
@@ -969,7 +975,8 @@ define('bui/chart/legenditem',['bui/common','bui/chart/plotitem'],function (requ
 	});
 
 	return LegendItem;
-});/**
+});
+/**
  * @fileOverview 显示点的标记
  * @ignore
  */
@@ -1181,6 +1188,7 @@ define('bui/chart/markers',['bui/chart/plotitem','bui/graphic','bui/chart/active
 
 	return Markers;
 });
+
 /**
  * @fileOverview 坐标系内部区域,用于显示背景
  * @ignore
@@ -1342,7 +1350,8 @@ define('bui/chart/plotback',['bui/common','bui/chart/plotitem'],function (requir
 
 
 	return PlotBack;
-});/**
+});
+/**
  * @fileOverview 所有图表内部元素的基类，继承自group
  * @ignore
  */
@@ -1465,7 +1474,8 @@ define('bui/chart/plotitem',['bui/common','bui/graphic'],function (require) {
 	});
 
 	return Item;
-});/**
+});
+/**
  * @fileOverview 坐标轴区域
  * @ignore
  */
@@ -1598,7 +1608,8 @@ define('bui/chart/plotrange',function (require) {
 
 	});
 	return PlotRange;
-});/**
+});
+/**
  * @fileOverview 图表的皮肤
  * @ignore
  */
@@ -1865,6 +1876,7 @@ define('bui/chart/theme',function (requrie) {
 
   return Theme;
 });
+
 /**
  * @fileOverview 提示信息
  * @ignore
@@ -2315,6 +2327,7 @@ define('bui/chart/tooltip',['bui/common','bui/graphic','bui/chart/plotitem'],fun
 	return Tooltip;
 
 });
+
 /**
  * @fileOverview 抽象的坐标轴
  * @ignore
@@ -2666,7 +2679,8 @@ define('bui/chart/abstractaxis',function (require) {
   });
 
   return Abstract;
-});/**
+});
+/**
  * @fileOverview 坐标轴的基类
  * @ignore
  */
@@ -3286,6 +3300,7 @@ define('bui/chart/baseaxis',['bui/common','bui/graphic','bui/chart/abstractaxis'
 
     return Axis;
 });
+
 /**
  * @fileOverview 自动计算坐标轴的坐标点、起始点，间距等信息
  * @ignore
@@ -3790,7 +3805,8 @@ define('bui/chart/axis/auto',['bui/graphic'],function  (require) {
   }
 
   return Auto;
-});/**
+});
+/**
  * @fileOverview  数字类型的坐标轴
  * @ignore
  */
@@ -4026,7 +4042,8 @@ define('bui/chart/numberaxis',['bui/chart/baseaxis','bui/common','bui/graphic'],
 	});
 
 	return NumberAxis;
-});/**
+});
+/**
  * @fileOverview 表格的栅格背景
  * @ignore
  */
@@ -4393,7 +4410,8 @@ define('bui/chart/grid',['bui/common','bui/chart/plotitem'],function (require) {
 	});
 
 	return Grid;
-});/**
+});
+/**
  * @fileOverview 圆形的坐标，用于雷达图或者圆形仪表盘
  * @ignore
  */
@@ -4702,7 +4720,8 @@ define('bui/chart/circleaxis',['bui/common','bui/graphic','bui/chart/abstractaxi
   });
 
   return Circle;
-});/**
+});
+/**
  * @fileOverview 作为圆的半径的坐标轴使用
  * @ignore
  */
@@ -4796,7 +4815,8 @@ define('bui/chart/radiusaxis',['bui/common','bui/chart/numberaxis'],function (re
   });
 
   return Radius;
-});/**
+});
+/**
  * @fileOverview 时间坐标轴
  * @ignore
  */
@@ -4873,7 +4893,8 @@ define('bui/chart/timeaxis',['bui/common','bui/chart/numberaxis'],function (requ
   });
 
   return Time;
-});/**
+});
+/**
  * @fileOverview 分类坐标轴
  * @ignore
  */
@@ -5014,7 +5035,8 @@ define('bui/chart/categoryaxis',['bui/chart/baseaxis','bui/common'],function (re
 	});
 
 	return Category;
-});/**
+});
+/**
  * @fileOverview 坐标轴的入口文件
  * @ignore
  */
@@ -5038,7 +5060,8 @@ define('bui/chart/axis',['bui/common','bui/chart/baseaxis','bui/chart/categoryax
   Axis.Radius = require('bui/chart/radiusaxis');
 
 	return Axis;
-});/**
+});
+/**
  * @fileOverview 所有数据序列的基类
  * @ignore
  */
@@ -5584,7 +5607,8 @@ define('bui/chart/baseseries',['bui/chart/plotitem','bui/chart/showlabels','bui/
 
 
   return Series;
-});/**
+});
+/**
  * @fileOverview 处理层叠的数据序列的扩展
  * @ignore
  */
@@ -5720,7 +5744,8 @@ define('bui/chart/series/stacked',function (require) {
   });
 
   return Stacked;
-});/**
+});
+/**
  * @fileOverview 包含数据序列子项的数据序列类,作为一个扩展可以用于柱状图、饼图
  * @ignore
  */
@@ -6041,6 +6066,7 @@ define('bui/chart/series/itemgroup',['bui/chart/baseseries'],function (require) 
 
   return Group;
 });
+
 /**
  * @fileOverview 在x,y坐标轴中渲染的数据序列
  * @ignore
@@ -6345,7 +6371,8 @@ define('bui/chart/cartesianseries',['bui/chart/baseseries','bui/graphic'],functi
 
   return Cartesian;
 
-});/**
+});
+/**
  * @fileOverview 线形式的数据图序列
  * @ignore
  */
@@ -6717,6 +6744,7 @@ define('bui/chart/lineseries',['bui/chart/cartesianseries','bui/graphic'],functi
 
   return Line;
 });
+
 /**
  * @fileOverview 区域图序列
  * @ignore
@@ -6973,7 +7001,8 @@ define('bui/chart/areaseries',['bui/common','bui/chart/lineseries','bui/graphic'
     }
   });
   return Area;
-});/**
+});
+/**
  * @fileOverview 散列图,用于标示点的分步
  * @ignore
  */
@@ -7091,7 +7120,8 @@ define('bui/chart/scatterseries',['bui/chart/cartesianseries','bui/chart/actived
   });
 
   return Scatter;
-});/**
+});
+/**
  * @fileOverview 气泡图
  * @ignore
  */
@@ -7302,7 +7332,8 @@ define('bui/chart/bubbleseries',['bui/common','bui/chart/cartesianseries','bui/g
   });
 
   return Bubble;
-});/**
+});
+/**
  * @fileOverview 柱状图
  * @ignore
  */
@@ -7686,7 +7717,8 @@ define('bui/chart/columnseries',['bui/common','bui/graphic','bui/chart/activedgr
   return Column;
   
 
-});/**
+});
+/**
  * @fileOverview 饼图
  * @ignore
  */
@@ -8435,6 +8467,7 @@ define('bui/chart/pieseries',['bui/common','bui/graphic','bui/chart/baseseries',
 
   return Pie;
 });
+
 /**
  * @fileOverview 数据序列的入口文件
  * @ignore
@@ -8453,7 +8486,8 @@ define('bui/chart/series',['bui/chart/baseseries','bui/chart/lineseries','bui/ch
   Series.Pie = require('bui/chart/pieseries');
 
 	return Series;
-});/**
+});
+/**
  * @fileOverview 所有数据图形序列的容器,管理这些序列的增删，active状态，事件处理等等
  * @ignore
  */
@@ -9331,6 +9365,7 @@ define('bui/chart/seriesgroup',['bui/common','bui/chart/plotitem','bui/chart/leg
 
   return Group;
 });
+
 /**
  * @fileOverview 图表控件
  * @ignore

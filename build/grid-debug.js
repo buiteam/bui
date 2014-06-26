@@ -19,7 +19,8 @@ define('bui/grid',['bui/common','bui/grid/simplegrid','bui/grid/grid','bui/grid/
 
   return Grid;
 
-});/**
+});
+/**
  * @fileOverview 简单表格,仅用于展示数据
  * @author dxq613@gmail.com
  * @ignore
@@ -370,7 +371,8 @@ define('bui/grid/simplegrid',['bui/common','bui/list'],function(require) {
   
   simpleGrid.View = simpleGridView;
   return  simpleGrid;
-});/**
+});
+/**
  * @fileOverview This class specifies the definition for a column of a grid.
  * @author dxq613@gmail.com
  * @ignore
@@ -875,6 +877,7 @@ define('bui/grid/column',['bui/common'],function (require) {
 
 });
 	
+
 /**
  * @fileOverview 表格的头部
  * @author dxq613@gmail.com, yiminghe@gmail.com
@@ -1375,7 +1378,8 @@ define('bui/grid/header',['bui/common','bui/grid/column'],function(require) {
     });
   
   return header;
-});/**
+});
+/**
  * @fileOverview 表格
  * @ignore
  * @author dxq613@gmail.com
@@ -2704,7 +2708,8 @@ define('bui/grid/grid',['bui/common','bui/mask','bui/toolbar','bui/list','bui/gr
  * 2013.1.18 
  *   这是一个重构的版本，将Body取消掉了，目的是为了可以将Grid和SimpleGrid联系起来，
  *   同时将selection 统一         
- *//**
+ */
+/**
  * @fileOverview this class details some util tools of grid,like loadMask, formatter for grid's cell render
  * @author dxq613@gmail.com, yiminghe@gmail.com
  * @ignore
@@ -2848,7 +2853,8 @@ define('bui/grid/format',function (require) {
     };
 
     return Format;
-});/**
+});
+/**
  * @fileOverview 表格插件的入口
  * @author dxq613@gmail.com, yiminghe@gmail.com
  * @ignore
@@ -2881,6 +2887,7 @@ define('bui/grid/plugins',['bui/common',BASE + 'selection',BASE + 'cascade',BASE
 	return Plugins;
 });
 })();
+
 /**
  * @fileOverview 自动适应表格宽度的扩展
  * @ignore
@@ -2941,7 +2948,8 @@ define('bui/grid/plugins/autofit',['bui/common'],function (require) {
   });
 
   return AutoFit;
-});/**
+});
+/**
  * @fileOverview Grid 菜单
  * @ignore
  */
@@ -3187,7 +3195,8 @@ define('bui/grid/plugins/menu',['bui/common','bui/menu'],function (require) {
 
   return gridMenu;
 
-});/**
+});
+/**
  * @fileOverview 级联表格
  * @ignore
  */
@@ -3573,7 +3582,8 @@ define('bui/grid/plugins/cascade',['bui/common'],function(require){
   });
 
   return cascade;
-});/**
+});
+/**
  * @fileOverview 选择的插件
  * @ignore
  */
@@ -3768,7 +3778,8 @@ define('bui/grid/plugins/selection',['bui/common'],function(require){
 
   
   return Selection;
-});/**
+});
+/**
  * @fileOverview 表格数据汇总
  * @author dxq613@gmail.com
  * @ignore
@@ -4097,7 +4108,8 @@ define('bui/grid/plugins/summary',['bui/common'],function (require) {
   });
 
   return summary;
-});/**
+});
+/**
  * @fileOverview 表格编辑插件
  * @ignore
  */
@@ -4661,7 +4673,8 @@ define('bui/grid/plugins/editing',function (require) {
   });
 
   return Editing;
-});/**
+});
+/**
  * @fileOverview 表格单元格编辑
  * @ignore
  */
@@ -4825,7 +4838,8 @@ define('bui/grid/plugins/cellediting',['bui/grid/plugins/editing'],function (req
   });
 
   return CellEditing;
-});/**
+});
+/**
  * @fileOverview 表格行编辑
  * @ignore
  */
@@ -5069,7 +5083,8 @@ define('bui/grid/plugins/rowediting',['bui/common','bui/grid/plugins/editing'],f
     }
   });
   return RowEditing;
-});/**
+});
+/**
  * @fileOverview 表格跟表单联用
  * @ignore
  */
@@ -5332,7 +5347,8 @@ define('bui/grid/plugins/dialogediting',['bui/common'],function (require) {
   });
 
   return Dialog;
-});define('bui/grid/plugins/rownumber',function (require) {
+});
+define('bui/grid/plugins/rownumber',function (require) {
 
   var CLS_NUMBER = 'x-grid-rownumber';
   /**
@@ -5382,7 +5398,8 @@ define('bui/grid/plugins/dialogediting',['bui/common'],function (require) {
   
   return RowNumber;
   
-});define('bui/grid/plugins/columngroup',['bui/common'],function(require){
+});
+define('bui/grid/plugins/columngroup',['bui/common'],function(require){
 
   var BUI = require('bui/common'),
     PREFIX = BUI.prefix,
@@ -5488,7 +5505,8 @@ define('bui/grid/plugins/dialogediting',['bui/common'],function (require) {
 
   return Group;
 
-});define('bui/grid/plugins/rowgroup',['bui/common'],function(require){
+});
+define('bui/grid/plugins/rowgroup',['bui/common'],function(require){
 
   var BUI = require('bui/common'),
     DATA_GROUP = 'data-group',
@@ -5657,7 +5675,8 @@ define('bui/grid/plugins/dialogediting',['bui/common'],function (require) {
 
   return Group;
 
-});/**
+});
+/**
  * @fileOverview 拖拽改变列的宽度
  * @ignore
  */

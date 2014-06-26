@@ -15,7 +15,8 @@ define('bui/picker',['bui/common','bui/picker/mixin','bui/picker/picker','bui/pi
   });
 
   return Picker;
-});/**
+});
+/**
  * @fileOverview picker的扩展
  * @ignore
  */
@@ -290,7 +291,8 @@ define('bui/picker/mixin', function (require) {
   }
 
   return Mixin;
-});/**
+});
+/**
  * @fileOverview 选择器
  * @ignore
  */
@@ -340,7 +342,8 @@ define('bui/picker/picker',['bui/overlay', 'bui/picker/mixin'],function (require
   });
 
   return picker;
-});/**
+});
+/**
  * @fileOverview 列表项的选择器
  * @ignore
  */

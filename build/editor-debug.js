@@ -14,7 +14,8 @@ define('bui/editor',['bui/common','bui/form','bui/editor/editor','bui/editor/rec
     DialogEditor : require('bui/editor/dialog')
   });
   return Editor;
-});/**
+});
+/**
  * @fileOverview 编辑器扩展类，引入这个扩展，控件可以支持编辑器功能。
  * @ignore
  */
@@ -320,7 +321,8 @@ define('bui/editor/mixin',function (require) {
   };
 
   return Mixin;
-});/**
+});
+/**
  * @ignore
  * @fileOverview 编辑器
  * @author dxq613@gmail.com
@@ -575,7 +577,8 @@ define('bui/editor/editor',['bui/common','bui/overlay','bui/editor/mixin'],funct
   });
 
   return editor;
-});/**
+});
+/**
  * @fileOverview 对象编辑器
  * @ignore
  */
@@ -720,7 +723,8 @@ define('bui/editor/record',['bui/common','bui/editor/editor'],function (require)
   });
 
   return editor;
-});/**
+});
+/**
  * @fileOverview 使用弹出框作为编辑器
  * @ignore
  */

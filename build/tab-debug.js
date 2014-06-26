@@ -17,7 +17,8 @@ define('bui/tab',['bui/common','bui/tab/tab','bui/tab/tabitem','bui/tab/navtabit
   });
 
   return Tab;
-});/**
+});
+/**
  * @fileOverview 拥有内容的标签项的扩展类，每个标签项都有一个分离的容器作为面板
  * @ignore
  */
@@ -172,7 +173,8 @@ define('bui/tab/panelitem',function (requrie) {
 
   return PanelItem;
 
-});/**
+});
+/**
  * @fileOverview 拥有多个面板的容器
  * @ignore
  */
@@ -279,7 +281,8 @@ define('bui/tab/panels',function (require) {
   });
 
   return Panels;
-});/**
+});
+/**
  * @fileOverview 导航项
  * @author dxq613@gmail.com
  * @ignore
@@ -621,7 +624,8 @@ define('bui/tab/navtabitem',['bui/common'],function(requrie){
 
   navTabItem.View = navTabItemView;
   return navTabItem;
-});/**
+});
+/**
  * @fileOverview 导航标签
  * @author dxq613@gmail.com
  * @ignore              
@@ -1229,7 +1233,8 @@ define('bui/tab/navtab',['bui/common','bui/menu'],function(require){
   );
 
   return navTab;
-});/**
+});
+/**
  * @fileOverview 
  * @ignore
  */
@@ -1285,7 +1290,8 @@ define('bui/tab/tabitem',['bui/common'],function (require) {
   
   item.View = itemView;
   return item;
-});/**
+});
+/**
  * @fileOverview 切换标签
  * @ignore
  */
@@ -1349,7 +1355,8 @@ define('bui/tab/tab',['bui/common'],function (require) {
 
   return tab;
 
-});/**
+});
+/**
  * @fileOverview 
  * @ignore
  */
@@ -1442,7 +1449,8 @@ define('bui/tab/tabpanelitem',['bui/common','bui/tab/tabitem','bui/tab/panelitem
   item.View = itemView;
   return item;
 
-});/**
+});
+/**
  * @fileOverview 每个标签对应一个面板
  * @ignore
  */

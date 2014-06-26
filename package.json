@@ -1,7 +1,7 @@
 {
   "name": "bui",
   "description": "The streaming build system",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "homepage": "http://builive.com",
   "repository": {
     "type": "git",

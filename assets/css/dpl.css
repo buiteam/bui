@@ -1305,7 +1305,7 @@ s {
   background-position: -48px -48px;
 }
 .icon-bookmark {
-  background-position: -71.99999999px -48px;
+  background-position: -72px -48px;
 }
 .icon-print {
   background-position: -96px -48px;
@@ -1332,7 +1332,7 @@ s {
   background-position: -264px -48px;
 }
 .icon-align-center {
-  background-position: -288px -48px;
+  background-position: -288px -47.99999999px;
 }
 .icon-align-right {
   background-position: -312px -48px;
@@ -1488,7 +1488,7 @@ s {
   background-position: -72px -120px;
 }
 .icon-eye-open {
-  background-position: -96px -120px;
+  background-position: -95.99999999px -120px;
 }
 .icon-eye-close {
   background-position: -120px -120px;
@@ -1536,7 +1536,7 @@ s {
   background-position: -456px -118px;
 }
 .icon-hdd {
-  background-position: 0 -143.99999999px;
+  background-position: 0 -144px;
 }
 .icon-bullhorn {
   background-position: -24px -144px;

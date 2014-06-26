@@ -91,7 +91,6 @@ gulp.task('seed.js', ['sub'], function(){
       'src/seajs/sea.js',
       'src/config.js',
       dist + '/common.js',
-      dist + '/component.js',
       dist + '/cookie.js'
     ]).pipe(concat('seed.js'))
     .pipe(gulp.dest(dist));
@@ -103,7 +102,6 @@ gulp.task('bui.js', ['sub'], function(){
       'src/seajs/sea.js',
       'src/config.js',
       dist + '/common.js',
-      dist + '/component.js',
       dist + '/cookie.js',
       dist + '/data.js',
       dist + '/overlay.js',

@@ -1332,7 +1332,7 @@ s {
   background-position: -264px -48px;
 }
 .icon-align-center {
-  background-position: -288px -47.99999999px;
+  background-position: -288px -48px;
 }
 .icon-align-right {
   background-position: -312px -48px;
@@ -1365,7 +1365,7 @@ s {
   background-position: -48px -72px;
 }
 .icon-tint {
-  background-position: -72px -72px;
+  background-position: -71.99999999px -72px;
 }
 .icon-edit {
   background-position: -96px -72px;
@@ -1488,7 +1488,7 @@ s {
   background-position: -72px -120px;
 }
 .icon-eye-open {
-  background-position: -95.99999999px -120px;
+  background-position: -96px -120px;
 }
 .icon-eye-close {
   background-position: -120px -120px;
@@ -1527,7 +1527,7 @@ s {
   background-position: -384px -120px;
 }
 .icon-folder-open {
-  background-position: -408px -120px;
+  background-position: -407.99999999px -120px;
 }
 .icon-resize-vertical {
   background-position: -432px -119px;

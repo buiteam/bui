@@ -945,6 +945,17 @@ seajs.config = function(configData) {
     }
   });
 
+  // chrome下本身就存在全局的$,所以不能判断 !window.$
+  // 所以只要存在window.jQuery则就往全局上写一份
+  if(window.jQuery){
+    window.$ = window.jQuery;
+  }
+  else{
+    var alias = seajs.data.alias,
+      jquery = alias && (alias.$ || alias.jquery);
+    jquery && seajs.use(jquery);
+  }
+
 })();
 
 // (function(){

@@ -25,8 +25,8 @@
   </head>
   <body>
     
-  <script type="text/javascript" src="../src/jquery-1.8.1.min.js"></script>
-  <script type="text/javascript" data-debug="true" src="../build/loader.js"></script>
+  <script type="text/javascript" src="http://cdn.staticfile.org/jquery/1.8.3/jquery.js"></script>
+  <script type="text/javascript" data-debug="true" src="../build/bui.js"></script>
   <script type="text/javascript">
   BUI.setDebug(true);
   BUI.use(['bui/tree','bui/layout'],function(Tree,Layout){
@@ -37,7 +37,7 @@
         text : 'util类及基础类',
         expanded : true,
         children : [
-          {text : 'seajs'},
+          {text : 'loader'},
           {text : 'array'},
           {text : 'common'},
           {text : 'mixins'},
@@ -49,14 +49,14 @@
       {
         text : '简单控件',
         children : [
-          'bar','calendar','dialog','editor','list','mask','menu',
+          'toolbar','calendar','dialog','editor','list','mask','menu',
           'message','progressbar','tips','picker','select','slider','tab',
           'uploader'
         ]
       },{
         text : '数据',
         children : [
-          'store','treestore','module'
+          'store', 'module'
         ]
       },{
         text : 'Grid',
@@ -71,11 +71,23 @@
       },{
         text : 'Tree',
         children : [
-          'treestore','tree','treemenu','treegrid','treepicker'
+          {text : 'treestore',href: 'tree/treestore.php'},
+          {text : 'tree',href: 'tree/tree.php'},
+          {text : 'treemenu',href: 'tree/treemenu.php'},
+          {text : 'treegrid',href: 'tree/treegrid.php'},
+          {text : 'treepicker',href: 'tree/treepicker.php'}
         ]
       },{
         text : 'layout',
-        children : ['layout-absolute','layout-border','layout-flow','layout-table','layout-anchor','layout-columns','layout-accordion','viewport']
+        children : [
+          {text : 'layout-absolute',href: 'layout/layout-absolute.php'},
+          {text : 'layout-border',href: 'layout/layout-border.php'},
+          {text : 'layout-table',href: 'layout/layout-table.php'},
+          {text : 'layout-flow',href: 'layout/layout-flow.php'},
+          {text : 'layout-anchor',href: 'layout/layout-anchor.php'},
+          {text : 'layout-columns',href: 'layout/layout-columns.php'},
+          {text : 'viewport',href: 'layout/viewport.php'}
+        ]
       },{
         text : 'chart',
         children : [
@@ -116,7 +128,7 @@
             children[index] = {text : subNode};
           }
           if(!children[index].href){
-            children[index].href = children[index].text + '.php'
+            children[index].href = children[index].text + '/' + children[index].text + '.php'
           }
           
         });

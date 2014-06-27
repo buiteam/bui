@@ -61,12 +61,22 @@
       },{
         text : 'Grid',
         children : [
-          'grid','grid-plugin','grid-editor','header','simple-grid'
+          {text : 'grid',href: 'grid/grid.php'},
+          {text : 'grid-plugin',href: 'grid/grid-plugin.php'},
+          {text : 'grid-editor',href: 'grid/grid-editor.php'},
+          {text : 'header',href: 'grid/header.php'},
+          {text : 'simple-grid',href: 'grid/simple-grid.php'}
         ]
       },{
         text : 'form',
         children : [
-          'form','form-field','form-group','form-panel','form-remote','form-rules','form-submit'
+          {text : 'form',href: 'form/form.php'},
+          {text : 'form-field',href: 'form/form-field.php'},
+          {text : 'form-group',href: 'form/form-group.php'},
+          {text : 'form-panel',href: 'form/form-panel.php'},
+          {text : 'form-remote',href: 'form/form-remote.php'},
+          {text : 'form-rules',href: 'form/form-rules.php'},
+          {text : 'form-submit',href: 'form/form-submit.php'}
         ]
       },{
         text : 'Tree',

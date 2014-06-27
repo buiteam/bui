@@ -13,8 +13,11 @@ Thumbs.db
 .*proj
 .svn/
 *.swp
-out/
-node_modules/
-tmp/
-reports/
-docs/
+*.swo
+*.pyc
+*.pyo
+build
+node_modules
+_site
+sea-modules
+.cache

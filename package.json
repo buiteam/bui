@@ -1,11 +1,15 @@
 {
+  "family": "bui",
   "name": "bui",
-  "description": "The streaming build system",
   "version": "1.1.0",
+  "description": "The streaming build system",
   "homepage": "http://builive.com",
+  "maintainers": [
+    ""
+  ],
   "repository": {
     "type": "git",
-    "url": "git@github.com:dxq613/bui.git"
+    "url": "git://github.com/buiteam/bui.git"
   },
   "dependencies": {},
   "devDependencies": {
@@ -19,6 +23,15 @@
     "gulp-rename": "~1.2.0",
     "gulp-uglify": "~0.2.1",
     "through2": "^0.4.1"
+  },
+  "spm": {
+    "output": [
+      "bui.js",
+      "bui.css"
+    ],
+    "alias": {},
+    "devAlias": {},
+    "engines": {}
   },
   "readmeFilename": "README.md"
 }

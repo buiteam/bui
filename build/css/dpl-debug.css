@@ -1359,10 +1359,10 @@ s {
   background-position: 0 -72px;
 }
 .icon-map-marker {
-  background-position: -24px -72px;
+  background-position: -23.99999999px -72px;
 }
 .icon-adjust {
-  background-position: -47.99999999px -72px;
+  background-position: -48px -72px;
 }
 .icon-tint {
   background-position: -72px -72px;
@@ -1500,13 +1500,13 @@ s {
   background-position: -168px -120px;
 }
 .icon-calendar {
-  background-position: -191.99999999px -120px;
+  background-position: -192px -120px;
 }
 .icon-random {
   background-position: -216px -120px;
 }
 .icon-comment {
-  background-position: -240px -120px;
+  background-position: -239.99999999px -120px;
 }
 .icon-magnet {
   background-position: -264px -120px;

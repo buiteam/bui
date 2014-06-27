@@ -15,7 +15,8 @@
   var scripts = document.getElementsByTagName('script'),
     loaderScript = scripts[scripts.length - 1],
     src = getScriptAbsoluteSrc(loaderScript),
-    loaderPath = src.substring(0, src.lastIndexOf('/'));
+    loaderPath = src.substring(0, src.lastIndexOf('/')),
+    debug = loaderScript.getAttribute('data-debug') === 'true' ? true : false;
 
   BUI.loaderScript = loaderScript;
 
@@ -36,6 +37,7 @@
       });
     }
   }
+  BUI.setDebug(debug);
 
   // chrome下本身就存在全局的$,所以不能判断 !window.$
   // 所以只要存在window.jQuery则就往全局上写一份

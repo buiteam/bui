@@ -6,7 +6,7 @@
     <link href="../assets/css/dpl.css" rel="stylesheet">
     <link href="../assets/css/bui.css" rel="stylesheet">
     <link href="../assets/css/layout.css" rel="stylesheet">
-    <link href="assets/docs.css" rel="stylesheet">
+    <!-- <link href="assets/docs.css" rel="stylesheet"> -->
     <style>
       html{
         overflow: hidden;

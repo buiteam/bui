@@ -934,7 +934,8 @@ seajs.config = function(configData) {
   var scripts = document.getElementsByTagName('script'),
     loaderScript = scripts[scripts.length - 1],
     src = getScriptAbsoluteSrc(loaderScript),
-    loaderPath = src.substring(0, src.lastIndexOf('/'));
+    loaderPath = src.substring(0, src.lastIndexOf('/')),
+    debug = loaderScript.getAttribute('data-debug') === 'true' ? true : false;
 
   BUI.loaderScript = loaderScript;
 
@@ -955,6 +956,7 @@ seajs.config = function(configData) {
       });
     }
   }
+  BUI.setDebug(debug);
 
   // chrome下本身就存在全局的$,所以不能判断 !window.$
   // 所以只要存在window.jQuery则就往全局上写一份
@@ -970,14 +972,14 @@ seajs.config = function(configData) {
 })();
 
 (function(){
-  var requires = ['bui/util','bui/ua','bui/json','bui/date','bui/array','bui/keycode','bui/observable','bui/base','bui/component'];
+  var requires = ['bui/common/util', 'bui/common/ua', 'bui/common/json', 'bui/common/date', 'bui/common/array', 'bui/common/keycode', 'bui/common/observable', 'bui/common/base', 'bui/component'];
+
   if(window.KISSY && (!window.KISSY.Node || !window.jQuery)){ //如果是kissy同时未加载core模块
     requires.unshift('bui/adapter');
   }
-  define('bui/common', function(require){
-    if(window.KISSY && (!window.KISSY.Node || !window.jQuery)){
-      require('bui/adapter');
-    }
+
+  define('bui/common', requires, function(require){
+
     var BUI = require('bui/common/util');
 
     BUI.mix(BUI, {

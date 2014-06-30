@@ -1,6 +1,4 @@
-# bui
-
-[![Build Status](https://api.travis-ci.org/buiteam/bui.png)](https://api.travis-ci.org/buiteam/bui)
+# bui [![Build Status](https://api.travis-ci.org/buiteam/bui.png)](https://api.travis-ci.org/buiteam/bui)
 
 基于jQuery的富客户端控件库
 - [文档库地址](http://www.builive.com/)

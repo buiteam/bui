@@ -1,37 +1,34 @@
 {
-  "family": "bui",
   "name": "bui",
   "version": "1.1.0",
-  "description": "The streaming build system",
-  "homepage": "http://builive.com",
-  "maintainers": [
-    ""
-  ],
+  "description": "",
+  "keywords": [],
+  "homepage": "",
+  "author": "",
   "repository": {
     "type": "git",
     "url": "git://github.com/buiteam/bui.git"
   },
-  "dependencies": {},
+  "bugs": {
+    "url": ""
+  },
+  "licenses": "MIT",
   "devDependencies": {
-    "colorful": "^2.1.0",
-    "gulp": "^3.5.5",
-    "gulp-clean": "~0.2.4",
-    "gulp-concat": "~2.1.7",
-    "gulp-less": "~1.2.3",
-    "gulp-minify-css": "~0.3.0",
-    "gulp-native2ascii": "~0.0.2",
-    "gulp-rename": "~1.2.0",
-    "gulp-uglify": "~0.2.1",
-    "through2": "^0.4.1"
+    "spm": "^3.0.3"
   },
   "spm": {
-    "output": [
-      "bui.js",
-      "bui.css"
-    ],
-    "alias": {},
-    "devAlias": {},
-    "engines": {}
-  },
-  "readmeFilename": "README.md"
+    "main": "index.js",
+    "dependencies": {
+      "bui-common": "1.1.0",
+      "bui-data": "1.1.0",
+      "bui-list": "1.1.0"
+    },
+    "devDependencies": {
+      "expect.js": "0.3.1"
+    },
+    "engines": {
+      "seajs": "2.2.1"
+    },
+    "tests": "tests/*.js"
+  }
 }

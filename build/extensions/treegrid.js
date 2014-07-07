@@ -1,1 +1,0 @@
-define("bui/extensions/treegrid",["bui/common","bui/grid","bui/tree"],function(require){"use strict";var i=require("bui/tree"),e=require("bui/grid"),r=e.Grid.extend([i.Mixin],{},{ATTRS:{iconContainer:{value:".bui-grid-cell-inner"}}},{xclass:"tree-grid"});return r});

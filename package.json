@@ -20,8 +20,18 @@
     "main": "index.js",
     "dependencies": {
       "bui-common": "1.1.0",
+      "bui-cookie": "1.1.0",
       "bui-data": "1.1.0",
-      "bui-list": "1.1.0"
+      "bui-list": "1.1.0",
+      "bui-mask": "1.1.0",
+      "bui-overlay": "1.1.0",
+      "bui-picker": "1.1.0",
+      "bui-calendar": "1.1.0",
+      "bui-select": "1.1.0",
+      "bui-form": "1.1.0",
+      "bui-menu": "1.1.0",
+      "bui-grid": "1.1.0",
+      "bui-toolbar": "1.1.0"
     },
     "devDependencies": {
       "expect.js": "0.3.1"

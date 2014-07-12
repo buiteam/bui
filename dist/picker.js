@@ -1,4 +1,4 @@
-define("bui/picker", ["bui/common", "bui/picker/mixin", "bui/picker/picker", "bui/picker/listpicker", "bui/overlay", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/picker", ["jquery/1.9.1/jquery", "bui/common", "bui/picker/mixin", "bui/picker/picker", "bui/picker/listpicker", "bui/overlay", "bui/data", "bui/list"], function(require, exports, module) {
   /**
    * @fileOverview Picker的入口
    * @author dxq613@gmail.com
@@ -13,11 +13,12 @@ define("bui/picker", ["bui/common", "bui/picker/mixin", "bui/picker/picker", "bu
   });
   module.exports = Picker;
 });
-define("bui/picker/mixin", [], function(require, exports, module) {
+define("bui/picker/mixin", ["jquery/1.9.1/jquery"], function(require, exports, module) {
   /**
    * @fileOverview picker的扩展
    * @ignore
    */
+  var $ = require("jquery/1.9.1/jquery");
   /**
    * @class BUI.Picker.Mixin
    */
@@ -267,12 +268,13 @@ define("bui/picker/mixin", [], function(require, exports, module) {
   }
   module.exports = Mixin;
 });
-define("bui/picker/picker", ["bui/common", "bui/overlay", "bui/picker/mixin"], function(require, exports, module) {
+define("bui/picker/picker", ["jquery/1.9.1/jquery", "bui/common", "bui/overlay", "bui/picker/mixin"], function(require, exports, module) {
   /**
    * @fileOverview 选择器
    * @ignore
    */
-  var Overlay = require("bui/overlay").Overlay,
+  var $ = require("jquery/1.9.1/jquery"),
+    Overlay = require("bui/overlay").Overlay,
     Mixin = require("bui/picker/mixin");
   /**
    * 选择器控件的基类，弹出一个层来选择数据，不要使用此类创建控件，仅用于继承实现控件
@@ -310,12 +312,13 @@ define("bui/picker/picker", ["bui/common", "bui/overlay", "bui/picker/mixin"], f
   });
   module.exports = picker;
 });
-define("bui/picker/listpicker", ["bui/common", "bui/data", "bui/list", "bui/picker/picker", "bui/overlay", "bui/picker/mixin"], function(require, exports, module) {
+define("bui/picker/listpicker", ["jquery/1.9.1/jquery", "bui/common", "bui/data", "bui/list", "bui/picker/picker", "bui/overlay", "bui/picker/mixin"], function(require, exports, module) {
   /**
    * @fileOverview 列表项的选择器
    * @ignore
    */
-  var List = require("bui/list"),
+  var $ = require("jquery/1.9.1/jquery"),
+    List = require("bui/list"),
     Picker = require("bui/picker/picker"),
     /**
      * 列表选择器,xclass = 'list-picker'

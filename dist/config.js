@@ -39,15 +39,11 @@
   }
   BUI.setDebug(debug);
 
-  // chrome下本身就存在全局的$,所以不能判断 !window.$
-  // 所以只要存在window.jQuery则就往全局上写一份
+  // 所有的模块都是依赖于jquery, 所以定义一个jquery的模块，并直接返回
   if(window.jQuery){
-    window.$ = window.jQuery;
-  }
-  else{
-    var alias = seajs.data.alias,
-      jquery = alias && (alias.$ || alias.jquery);
-    jquery && seajs.use(jquery);
+    define('jquery', [], function(){
+      return window.jQuery;
+    });
   }
 
 })();

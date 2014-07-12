@@ -1,4 +1,4 @@
-define("bui/common", ["bui/common/util", "bui/common/ua", "bui/common/json", "bui/common/date", "bui/common/array", "bui/common/keycode", "bui/common/observable", "bui/common/base", "bui/common/component/component", "bui/common/component/manage", "bui/common/component/uibase", "bui/common/component/view", "bui/common/component/controller", "bui/common/component/uibase/base", "bui/common/component/uibase/align", "bui/common/component/uibase/autoshow", "bui/common/component/uibase/autohide", "bui/common/component/uibase/close", "bui/common/component/uibase/collapsable", "bui/common/component/uibase/drag", "bui/common/component/uibase/keynav", "bui/common/component/uibase/list", "bui/common/component/uibase/listitem", "bui/common/component/uibase/mask", "bui/common/component/uibase/position", "bui/common/component/uibase/selection", "bui/common/component/uibase/stdmod", "bui/common/component/uibase/decorate", "bui/common/component/uibase/tpl", "bui/common/component/uibase/childcfg", "bui/common/component/uibase/bindable", "bui/common/component/uibase/depends", "bui/common/component/loader"], function(require, exports, module) {
+define("bui/common", ["bui/common/util", "bui/common/ua", "bui/common/json", "bui/common/date", "bui/common/array", "bui/common/keycode", "bui/common/observable", "bui/common/base", "bui/common/component/component", "jquery", "bui/common/component/manage", "bui/common/component/uibase/uibase", "bui/common/component/view", "bui/common/component/controller", "bui/common/component/uibase/base", "bui/common/component/uibase/align", "bui/common/component/uibase/autoshow", "bui/common/component/uibase/autohide", "bui/common/component/uibase/close", "bui/common/component/uibase/collapsable", "bui/common/component/uibase/drag", "bui/common/component/uibase/keynav", "bui/common/component/uibase/list", "bui/common/component/uibase/listitem", "bui/common/component/uibase/mask", "bui/common/component/uibase/position", "bui/common/component/uibase/selection", "bui/common/component/uibase/stdmod", "bui/common/component/uibase/decorate", "bui/common/component/uibase/tpl", "bui/common/component/uibase/childcfg", "bui/common/component/uibase/bindable", "bui/common/component/uibase/depends", "bui/common/component/loader"], function(require, exports, module) {
   var BUI = require("bui/common/util");
   BUI.mix(BUI, {
     UA: require("bui/common/ua"),
@@ -12,7 +12,7 @@ define("bui/common", ["bui/common/util", "bui/common/ua", "bui/common/json", "bu
   });
   module.exports = BUI;
 });
-define("bui/common/util", [], function(require, exports, module) {
+define("bui/common/util", ["jquery"], function(require, exports, module) {
   /**
    * @class BUI
    * 控件库的工具方法，这些工具方法直接绑定到BUI对象上
@@ -25,13 +25,14 @@ define("bui/common/util", [], function(require, exports, module) {
    * </code></pre>
    * @singleton
    */
+  var $ = require("jquery");
   //兼容jquery 1.6以下
   (function($) {
     if ($.fn) {
       $.fn.on = $.fn.on || $.fn.bind;
       $.fn.off = $.fn.off || $.fn.unbind;
     }
-  })(jQuery);
+  })($);
   /**
    * @ignore
    * 处于效率的目的，复制属性
@@ -77,18 +78,14 @@ define("bui/common/util", [], function(require, exports, module) {
     ATTRS = 'ATTRS',
     PARSER = 'PARSER',
     GUID_DEFAULT = 'guid';
+  window.BUI = window.BUI || {};
   $.extend(BUI, {
     /**
      * 版本号
      * @memberOf BUI
      * @type {Number}
      */
-    version: 1.0,
-    /**
-     * 子版本号
-     * @type {Number}
-     */
-    subVersion: 96,
+    version: '1.1.0',
     /**
      * 是否为函数
      * @param  {*} fn 对象
@@ -570,7 +567,7 @@ define("bui/common/util", [], function(require, exports, module) {
    * @class BUI.FormHelper
    * @singleton
    */
-  var formHelper = BUI.FormHelper = {
+  var FormHelper = {
     /**
      * 将表单格式化成键值对形式
      * @param {HTMLElement} form 表单
@@ -663,14 +660,17 @@ define("bui/common/util", [], function(require, exports, module) {
       return BUI.FormHelper.serializeToObject(form)[fieldName];
     }
   };
+  BUI.FormHelper = FormHelper;
   module.exports = BUI;
 });
-define("bui/common/ua", [], function(require, exports, module) {
+define("bui/common/ua", ["jquery"], function(require, exports, module) {
   /**
    * @fileOverview UA,jQuery的 $.browser 对象非常难使用
    * @ignore
    * @author dxq613@gmail.com
    */
+  var $ = require("jquery");
+
   function numberify(s) {
     var c = 0;
     // convert '1.2.3.4' to 1.234
@@ -725,13 +725,14 @@ define("bui/common/ua", [], function(require, exports, module) {
   })();
   module.exports = UA;
 });
-define("bui/common/json", ["bui/common/ua"], function(require, exports, module) {
+define("bui/common/json", ["jquery", "bui/common/ua"], function(require, exports, module) {
   /**
    * @fileOverview 由于jQuery只有 parseJSON ，没有stringify所以使用过程不方便
    * @ignore
    */
-  var win = window,
+  var $ = require("jquery"),
     UA = require("bui/common/ua"),
+    win = window,
     JSON = win.JSON;
   // ie 8.0.7600.16315@win7 json 有问题
   if (!JSON || UA['ie'] < 9) {
@@ -1369,7 +1370,7 @@ define("bui/common/date", [], function(require, exports, module) {
   };
   module.exports = DateUtil;
 });
-define("bui/common/array", ["bui/common/util"], function(require, exports, module) {
+define("bui/common/array", ["bui/common/util", "jquery"], function(require, exports, module) {
   /**
    * @fileOverview 数组帮助类
    * @ignore
@@ -1414,7 +1415,7 @@ define("bui/common/array", ["bui/common/util"], function(require, exports, modul
      * @return {Boolean} 是否存在于数组中
      */
     contains: function(value, array) {
-      return BUI.Array.indexOf(value, array) >= 0;
+      return ArrayUtil.indexOf(value, array) >= 0;
     },
     /**
      * 遍历数组或者对象
@@ -1456,7 +1457,7 @@ define("bui/common/array", ["bui/common/util"], function(require, exports, modul
      */
     filter: function(array, func) {
       var result = [];
-      BUI.Array.each(array, function(value, index) {
+      ArrayUtil.each(array, function(value, index) {
         if (func(value, index)) {
           result.push(value);
         }
@@ -1471,7 +1472,7 @@ define("bui/common/array", ["bui/common/util"], function(require, exports, modul
      */
     map: function(array, func) {
       var result = [];
-      BUI.Array.each(array, function(value, index) {
+      ArrayUtil.each(array, function(value, index) {
         result.push(func(value, index));
       });
       return result;
@@ -1483,7 +1484,7 @@ define("bui/common/array", ["bui/common/util"], function(require, exports, modul
      * @return {*}  符合条件的数据
      */
     find: function(array, func) {
-      var i = BUI.Array.findIndex(array, func);
+      var i = ArrayUtil.findIndex(array, func);
       return i < 0 ? null : array[i];
     },
     /**
@@ -1494,7 +1495,7 @@ define("bui/common/array", ["bui/common/util"], function(require, exports, modul
      */
     findIndex: function(array, func) {
       var result = -1;
-      BUI.Array.each(array, function(value, index) {
+      ArrayUtil.each(array, function(value, index) {
         if (func(value, index)) {
           result = index;
           return false;
@@ -1526,7 +1527,7 @@ define("bui/common/array", ["bui/common/util"], function(require, exports, modul
      * @param  {Number} index 位置
      */
     addAt: function(array, value, index) {
-      BUI.Array.splice(array, index, 0, value);
+      ArrayUtil.splice(array, index, 0, value);
     },
     /**
      * 清空数组
@@ -1548,10 +1549,10 @@ define("bui/common/array", ["bui/common/util"], function(require, exports, modul
      * @return {Boolean}   是否移除成功
      */
     remove: function(array, value) {
-      var i = BUI.Array.indexOf(value, array);
+      var i = ArrayUtil.indexOf(value, array);
       var rv;
       if ((rv = i >= 0)) {
-        BUI.Array.removeAt(array, i);
+        ArrayUtil.removeAt(array, i);
       }
       return rv;
     },
@@ -1562,7 +1563,7 @@ define("bui/common/array", ["bui/common/util"], function(require, exports, modul
      * @return {Boolean}   是否移除成功
      */
     removeAt: function(array, index) {
-      return BUI.Array.splice(array, index, 1).length == 1;
+      return ArrayUtil.splice(array, index, 1).length == 1;
     },
     /**
      * @private
@@ -1578,7 +1579,7 @@ define("bui/common/array", ["bui/common/util"], function(require, exports, modul
      * @private
      */
     splice: function(arr, index, howMany, var_args) {
-      return Array.prototype.splice.apply(arr, BUI.Array.slice(arguments, 1))
+      return Array.prototype.splice.apply(arr, ArrayUtil.slice(arguments, 1))
     }
   };
   module.exports = ArrayUtil;
@@ -1771,12 +1772,14 @@ define("bui/common/keycode", [], function(require, exports, module) {
   };
   module.exports = keyCode;
 });
-define("bui/common/observable", ["bui/common/util"], function(require, exports, module) {
+define("bui/common/observable", ["jquery", "bui/common/util", "bui/common/array"], function(require, exports, module) {
   /**
    * @fileOverview 观察者模式实现事件
    * @ignore
    */
-  var BUI = require("bui/common/util");
+  var $ = require("jquery");
+  var BUI = require("bui/common/util"),
+    ArrayUtil = require("bui/common/array");
   /**
    * @private
    * @class BUI.Observable.Callbacks
@@ -1805,7 +1808,7 @@ define("bui/common/observable", ["bui/common/util"], function(require, exports, 
      */
     remove: function(fn) {
       var functions = this._functions;
-      index = BUI.Array.indexOf(fn, functions);
+      index = ArrayUtil.indexOf(fn, functions);
       if (index >= 0) {
         functions.splice(index, 1);
       }
@@ -1838,7 +1841,7 @@ define("bui/common/observable", ["bui/common/util"], function(require, exports, 
     fireWith: function(scope, args) {
       var _self = this,
         rst;
-      if (this._paused) {
+      if (_self._paused) {
         return;
       }
       BUI.each(_self._functions, function(fn) {
@@ -1941,7 +1944,7 @@ define("bui/common/observable", ["bui/common/util"], function(require, exports, 
     },
     //事件是否支持冒泡
     _isBubbles: function(eventType) {
-      return BUI.Array.indexOf(eventType, this._bubblesEvents) >= 0;
+      return ArrayUtil.indexOf(eventType, this._bubblesEvents) >= 0;
     },
     /**
      * 添加冒泡的对象
@@ -1962,13 +1965,13 @@ define("bui/common/observable", ["bui/common/util"], function(require, exports, 
         eventMap = _self._eventMap;
 
       function addEvent(eventType) {
-        if (BUI.Array.indexOf(eventType, existEvents) === -1) {
+        if (ArrayUtil.indexOf(eventType, existEvents) === -1) {
           eventMap[eventType] = getCallbacks();
           existEvents.push(eventType);
         }
       }
       if (BUI.isArray(events)) {
-        $.each(events, function(index, eventType) {
+        BUI.each(events, function(eventType) {
           addEvent(eventType);
         });
       } else {
@@ -2140,13 +2143,14 @@ define("bui/common/observable", ["bui/common/util"], function(require, exports, 
   });
   module.exports = Observable;
 });
-define("bui/common/base", ["bui/common/observable", "bui/common/util"], function(require, exports, module) {
+define("bui/common/base", ["jquery", "bui/common/observable", "bui/common/util", "bui/common/array"], function(require, exports, module) {
   /**
    * @fileOverview  Base UI控件的最基础的类
    * @author yiminghe@gmail.com
    * copied by dxq613@gmail.com
    * @ignore
    */
+  var $ = require("jquery");
   var INVALID = {},
     Observable = require("bui/common/observable");
 
@@ -2586,7 +2590,7 @@ define("bui/common/base", ["bui/common/observable", "bui/common/util"], function
   });
   module.exports = Base;
 });
-define("bui/common/component/component", ["bui/common/component/manage", "bui/common/component/uibase", "bui/common/component/view", "bui/common/component/controller", "bui/common/component/uibase/base", "bui/common/component/uibase/align", "bui/common/component/uibase/autoshow", "bui/common/component/uibase/autohide", "bui/common/component/uibase/close", "bui/common/component/uibase/collapsable", "bui/common/component/uibase/drag", "bui/common/component/uibase/keynav", "bui/common/component/uibase/list", "bui/common/component/uibase/listitem", "bui/common/component/uibase/mask", "bui/common/component/uibase/position", "bui/common/component/uibase/selection", "bui/common/component/uibase/stdmod", "bui/common/component/uibase/decorate", "bui/common/component/uibase/tpl", "bui/common/component/uibase/childcfg", "bui/common/component/uibase/bindable", "bui/common/component/uibase/depends", "bui/common/base", "bui/common/observable", "bui/common/util", "bui/common/ua", "bui/common/keycode", "bui/common/array", "bui/common/json", "bui/common/component/loader"], function(require, exports, module) {
+define("bui/common/component/component", ["bui/common/component/manage", "bui/common/component/uibase/uibase", "bui/common/component/view", "bui/common/component/controller", "jquery", "bui/common/component/uibase/base", "bui/common/component/uibase/align", "bui/common/component/uibase/autoshow", "bui/common/component/uibase/autohide", "bui/common/component/uibase/close", "bui/common/component/uibase/collapsable", "bui/common/component/uibase/drag", "bui/common/component/uibase/keynav", "bui/common/component/uibase/list", "bui/common/component/uibase/listitem", "bui/common/component/uibase/mask", "bui/common/component/uibase/position", "bui/common/component/uibase/selection", "bui/common/component/uibase/stdmod", "bui/common/component/uibase/decorate", "bui/common/component/uibase/tpl", "bui/common/component/uibase/childcfg", "bui/common/component/uibase/bindable", "bui/common/component/uibase/depends", "bui/common/base", "bui/common/observable", "bui/common/util", "bui/common/array", "bui/common/ua", "bui/common/keycode", "bui/common/json", "bui/common/component/loader"], function(require, exports, module) {
   /**
    * @fileOverview Component命名空间的入口文件
    * @ignore
@@ -2601,7 +2605,7 @@ define("bui/common/component/component", ["bui/common/component/manage", "bui/co
   var Component = {};
   BUI.mix(Component, {
     Manager: require("bui/common/component/manage"),
-    UIBase: require("bui/common/component/uibase"),
+    UIBase: require("bui/common/component/uibase/uibase"),
     View: require("bui/common/component/view"),
     Controller: require("bui/common/component/controller")
   });
@@ -2631,7 +2635,7 @@ define("bui/common/component/component", ["bui/common/component/manage", "bui/co
   Component.create = create;
   module.exports = Component;
 });
-define("bui/common/component/manage", [], function(require, exports, module) {
+define("bui/common/component/manage", ["jquery"], function(require, exports, module) {
   /**
    * @fileOverview  Base UI控件的管理类
    * @author yiminghe@gmail.com
@@ -2639,6 +2643,7 @@ define("bui/common/component/manage", [], function(require, exports, module) {
    * @ignore
    */
   //控件类的管理器
+  var $ = require("jquery");
   var uis = {
     // 不带前缀 prefixCls
     /*
@@ -2761,7 +2766,7 @@ define("bui/common/component/manage", [], function(require, exports, module) {
   };
   module.exports = Manager;
 });
-define("bui/common/component/uibase", ["bui/common/component/uibase/base", "bui/common/component/uibase/align", "bui/common/component/uibase/autoshow", "bui/common/component/uibase/autohide", "bui/common/component/uibase/close", "bui/common/component/uibase/collapsable", "bui/common/component/uibase/drag", "bui/common/component/uibase/keynav", "bui/common/component/uibase/list", "bui/common/component/uibase/listitem", "bui/common/component/uibase/mask", "bui/common/component/uibase/position", "bui/common/component/uibase/selection", "bui/common/component/uibase/stdmod", "bui/common/component/uibase/decorate", "bui/common/component/uibase/tpl", "bui/common/component/uibase/childcfg", "bui/common/component/uibase/bindable", "bui/common/component/uibase/depends", "bui/common/component/manage", "bui/common/base", "bui/common/observable", "bui/common/util", "bui/common/ua", "bui/common/keycode", "bui/common/array", "bui/common/json"], function(require, exports, module) {
+define("bui/common/component/uibase/uibase", ["bui/common/component/uibase/base", "bui/common/component/uibase/align", "bui/common/component/uibase/autoshow", "bui/common/component/uibase/autohide", "bui/common/component/uibase/close", "bui/common/component/uibase/collapsable", "bui/common/component/uibase/drag", "bui/common/component/uibase/keynav", "bui/common/component/uibase/list", "bui/common/component/uibase/listitem", "bui/common/component/uibase/mask", "bui/common/component/uibase/position", "bui/common/component/uibase/selection", "bui/common/component/uibase/stdmod", "bui/common/component/uibase/decorate", "bui/common/component/uibase/tpl", "bui/common/component/uibase/childcfg", "bui/common/component/uibase/bindable", "bui/common/component/uibase/depends", "jquery", "bui/common/component/manage", "bui/common/base", "bui/common/observable", "bui/common/util", "bui/common/array", "bui/common/ua", "bui/common/keycode", "bui/common/json"], function(require, exports, module) {
   /**
    * @fileOverview uibase的入口文件
    * @ignore
@@ -2801,16 +2806,17 @@ define("bui/common/component/uibase", ["bui/common/component/uibase/base", "bui/
   });
   module.exports = UIBase;
 });
-define("bui/common/component/view", ["bui/common/component/manage", "bui/common/component/uibase", "bui/common/component/uibase/base", "bui/common/component/uibase/align", "bui/common/component/uibase/autoshow", "bui/common/component/uibase/autohide", "bui/common/component/uibase/close", "bui/common/component/uibase/collapsable", "bui/common/component/uibase/drag", "bui/common/component/uibase/keynav", "bui/common/component/uibase/list", "bui/common/component/uibase/listitem", "bui/common/component/uibase/mask", "bui/common/component/uibase/position", "bui/common/component/uibase/selection", "bui/common/component/uibase/stdmod", "bui/common/component/uibase/decorate", "bui/common/component/uibase/tpl", "bui/common/component/uibase/childcfg", "bui/common/component/uibase/bindable", "bui/common/component/uibase/depends", "bui/common/base", "bui/common/observable", "bui/common/util", "bui/common/ua", "bui/common/keycode", "bui/common/array", "bui/common/json"], function(require, exports, module) {
+define("bui/common/component/view", ["jquery", "bui/common/component/manage", "bui/common/component/uibase/uibase", "bui/common/component/uibase/base", "bui/common/component/uibase/align", "bui/common/component/uibase/autoshow", "bui/common/component/uibase/autohide", "bui/common/component/uibase/close", "bui/common/component/uibase/collapsable", "bui/common/component/uibase/drag", "bui/common/component/uibase/keynav", "bui/common/component/uibase/list", "bui/common/component/uibase/listitem", "bui/common/component/uibase/mask", "bui/common/component/uibase/position", "bui/common/component/uibase/selection", "bui/common/component/uibase/stdmod", "bui/common/component/uibase/decorate", "bui/common/component/uibase/tpl", "bui/common/component/uibase/childcfg", "bui/common/component/uibase/bindable", "bui/common/component/uibase/depends", "bui/common/base", "bui/common/observable", "bui/common/util", "bui/common/array", "bui/common/ua", "bui/common/keycode", "bui/common/json"], function(require, exports, module) {
   /**
    * @fileOverview  控件的视图层
    * @author yiminghe@gmail.com
    * copied by dxq613@gmail.com
    * @ignore
    */
-  var win = window,
+  var $ = require("jquery"),
+    win = window,
     Manager = require("bui/common/component/manage"),
-    UIBase = require("bui/common/component/uibase"), //BUI.Component.UIBase,
+    UIBase = require("bui/common/component/uibase/uibase"), //BUI.Component.UIBase,
     doc = document;
   /**
    * 控件的视图层基类
@@ -3220,7 +3226,7 @@ define("bui/common/component/view", ["bui/common/component/manage", "bui/common/
   };
   module.exports = View;
 });
-define("bui/common/component/controller", ["bui/common/component/uibase", "bui/common/component/manage", "bui/common/component/view", "bui/common/component/loader", "bui/common/component/uibase/base", "bui/common/component/uibase/align", "bui/common/component/uibase/autoshow", "bui/common/component/uibase/autohide", "bui/common/component/uibase/close", "bui/common/component/uibase/collapsable", "bui/common/component/uibase/drag", "bui/common/component/uibase/keynav", "bui/common/component/uibase/list", "bui/common/component/uibase/listitem", "bui/common/component/uibase/mask", "bui/common/component/uibase/position", "bui/common/component/uibase/selection", "bui/common/component/uibase/stdmod", "bui/common/component/uibase/decorate", "bui/common/component/uibase/tpl", "bui/common/component/uibase/childcfg", "bui/common/component/uibase/bindable", "bui/common/component/uibase/depends", "bui/common/base", "bui/common/observable", "bui/common/util", "bui/common/ua", "bui/common/keycode", "bui/common/array", "bui/common/json"], function(require, exports, module) {
+define("bui/common/component/controller", ["jquery", "bui/common/component/uibase/uibase", "bui/common/component/manage", "bui/common/component/view", "bui/common/component/loader", "bui/common/component/uibase/base", "bui/common/component/uibase/align", "bui/common/component/uibase/autoshow", "bui/common/component/uibase/autohide", "bui/common/component/uibase/close", "bui/common/component/uibase/collapsable", "bui/common/component/uibase/drag", "bui/common/component/uibase/keynav", "bui/common/component/uibase/list", "bui/common/component/uibase/listitem", "bui/common/component/uibase/mask", "bui/common/component/uibase/position", "bui/common/component/uibase/selection", "bui/common/component/uibase/stdmod", "bui/common/component/uibase/decorate", "bui/common/component/uibase/tpl", "bui/common/component/uibase/childcfg", "bui/common/component/uibase/bindable", "bui/common/component/uibase/depends", "bui/common/base", "bui/common/observable", "bui/common/util", "bui/common/array", "bui/common/ua", "bui/common/keycode", "bui/common/json"], function(require, exports, module) {
   /**
    * @fileOverview  控件可以实例化的基类
    * @ignore
@@ -3233,7 +3239,8 @@ define("bui/common/component/controller", ["bui/common/component/uibase", "bui/c
    * @private
    */
   'use strict';
-  var UIBase = require("bui/common/component/uibase"),
+  var $ = require("jquery"),
+    UIBase = require("bui/common/component/uibase/uibase"),
     Manager = require("bui/common/component/manage"),
     View = require("bui/common/component/view"),
     Loader = require("bui/common/component/loader"),
@@ -4828,13 +4835,14 @@ define("bui/common/component/controller", ["bui/common/component/uibase", "bui/c
   });
   module.exports = Controller;
 });
-define("bui/common/component/uibase/base", ["bui/common/component/manage", "bui/common/base", "bui/common/observable", "bui/common/util"], function(require, exports, module) {
+define("bui/common/component/uibase/base", ["jquery", "bui/common/component/manage", "bui/common/base", "bui/common/observable", "bui/common/util", "bui/common/array"], function(require, exports, module) {
   /**
    * @fileOverview  UI控件的流程控制
    * @author yiminghe@gmail.com
    * copied by dxq613@gmail.com
    * @ignore
    */
+  var $ = require("jquery");
   var Manager = require("bui/common/component/manage"),
     UI_SET = '_uiSet',
     ATTRS = 'ATTRS',
@@ -5334,14 +5342,15 @@ define("bui/common/component/uibase/base", ["bui/common/component/manage", "bui/
   });
   module.exports = UIBase;
 });
-define("bui/common/component/uibase/align", ["bui/common/ua"], function(require, exports, module) {
+define("bui/common/component/uibase/align", ["jquery", "bui/common/ua"], function(require, exports, module) {
   /**
    * @fileOverview 跟指定的元素项对齐的方式
    * @author yiminghe@gmail.com
    * copied by dxq613@gmail.com
    * @ignore
    */
-  var UA = require("bui/common/ua"),
+  var $ = require("jquery"),
+    UA = require("bui/common/ua"),
     CLS_ALIGN_PREFIX = 'x-align-',
     win = window;
   // var ieMode = document.documentMode || UA.ie;
@@ -5751,11 +5760,12 @@ define("bui/common/component/uibase/align", ["bui/common/ua"], function(require,
   };
   module.exports = Align;
 });
-define("bui/common/component/uibase/autoshow", [], function(require, exports, module) {
+define("bui/common/component/uibase/autoshow", ["jquery"], function(require, exports, module) {
   /**
    * @fileOverview click，focus,hover等引起控件显示，并且定位
    * @ignore
    */
+  var $ = require("jquery");
   /**
    * 处理自动显示控件的扩展，一般用于显示menu,picker,tip等
    * @class BUI.Component.UIBase.AutoShow
@@ -5996,13 +6006,14 @@ define("bui/common/component/uibase/autoshow", [], function(require, exports, mo
   };
   module.exports = autoShow;
 });
-define("bui/common/component/uibase/autohide", [], function(require, exports, module) {
+define("bui/common/component/uibase/autohide", ["jquery"], function(require, exports, module) {
   /**
    * @fileOverview 点击或移出控件外部，控件隐藏
    * @author dxq613@gmail.com
    * @ignore
    */
-  var wrapBehavior = BUI.wrapBehavior,
+  var $ = require("jquery"),
+    wrapBehavior = BUI.wrapBehavior,
     getWrapBehavior = BUI.getWrapBehavior;
 
   function isExcept(self, elem) {
@@ -6176,13 +6187,14 @@ define("bui/common/component/uibase/autohide", [], function(require, exports, mo
   };
   module.exports = autoHide;
 });
-define("bui/common/component/uibase/close", [], function(require, exports, module) {
+define("bui/common/component/uibase/close", ["jquery"], function(require, exports, module) {
   /**
    * @fileOverview close 关闭或隐藏控件
    * @author yiminghe@gmail.com
    * copied and modified by dxq613@gmail.com
    * @ignore
    */
+  var $ = require("jquery");
   var CLS_PREFIX = BUI.prefix + 'ext-';
 
   function getCloseRenderBtn(self) {
@@ -6442,13 +6454,14 @@ define("bui/common/component/uibase/collapsable", [], function(require, exports,
   collapsable.View = collapsableView;
   module.exports = collapsable;
 });
-define("bui/common/component/uibase/drag", [], function(require, exports, module) {
+define("bui/common/component/uibase/drag", ["jquery"], function(require, exports, module) {
   /**
    * @fileOverview 拖拽
    * @author by dxq613@gmail.com
    * @ignore
    */
-  var dragBackId = BUI.guid('drag');
+  var $ = require("jquery"),
+    dragBackId = BUI.guid('drag');
   /**
    * 拖拽控件的扩展
    * <pre><code>
@@ -6660,12 +6673,13 @@ define("bui/common/component/uibase/drag", [], function(require, exports, module
   };
   module.exports = drag;
 });
-define("bui/common/component/uibase/keynav", ["bui/common/keycode"], function(require, exports, module) {
+define("bui/common/component/uibase/keynav", ["jquery", "bui/common/keycode"], function(require, exports, module) {
   /**
    * @fileOverview 使用键盘导航
    * @ignore
    */
-  var KeyCode = require("bui/common/keycode"),
+  var $ = require("jquery"),
+    KeyCode = require("bui/common/keycode"),
     wrapBehavior = BUI.wrapBehavior,
     getWrapBehavior = BUI.getWrapBehavior;
   /**
@@ -6805,12 +6819,13 @@ define("bui/common/component/uibase/keynav", ["bui/common/keycode"], function(re
   };
   module.exports = keyNav;
 });
-define("bui/common/component/uibase/list", ["bui/common/component/uibase/selection"], function(require, exports, module) {
+define("bui/common/component/uibase/list", ["jquery", "bui/common/component/uibase/selection"], function(require, exports, module) {
   /**
    * @fileOverview 所有子元素都是同一类的集合
    * @ignore
    */
-  var Selection = require("bui/common/component/uibase/selection");
+  var $ = require("jquery"),
+    Selection = require("bui/common/component/uibase/selection");
   /**
    * 列表一类的控件的扩展，list,menu,grid都是可以从此类扩展
    * @class BUI.Component.UIBase.List
@@ -7497,14 +7512,15 @@ define("bui/common/component/uibase/listitem", [], function(require, exports, mo
   listItem.View = listItemView;
   module.exports = listItem;
 });
-define("bui/common/component/uibase/mask", ["bui/common/ua"], function(require, exports, module) {
+define("bui/common/component/uibase/mask", ["jquery", "bui/common/ua"], function(require, exports, module) {
   /**
    * @fileOverview mask 遮罩层
    * @author yiminghe@gmail.com
    * copied and modified by dxq613@gmail.com
    * @ignore
    */
-  var UA = require("bui/common/ua"),
+  var $ = require("jquery"),
+    UA = require("bui/common/ua"),
     /**
      * 每组相同 prefixCls 的 position 共享一个遮罩
      * @ignore
@@ -7698,13 +7714,14 @@ define("bui/common/component/uibase/mask", ["bui/common/ua"], function(require, 
   Mask.View = MaskView;
   module.exports = Mask;
 });
-define("bui/common/component/uibase/position", [], function(require, exports, module) {
+define("bui/common/component/uibase/position", ["jquery"], function(require, exports, module) {
   /**
    * @fileOverview 位置，控件绝对定位
    * @author yiminghe@gmail.com
    * copied by dxq613@gmail.com
    * @ignore
    */
+  var $ = require("jquery");
   /**
    * 对齐的视图类
    * @class BUI.Component.UIBase.PositionView
@@ -7975,12 +7992,13 @@ define("bui/common/component/uibase/position", [], function(require, exports, mo
   Position.View = PositionView;
   module.exports = Position;
 });
-define("bui/common/component/uibase/selection", [], function(require, exports, module) {
+define("bui/common/component/uibase/selection", ["jquery"], function(require, exports, module) {
   /**
    * @fileOverview 单选或者多选
    * @author  dxq613@gmail.com
    * @ignore
    */
+  var $ = require("jquery");
   var SINGLE_SELECTED = 'single';
   /**
    * @class BUI.Component.UIBase.Selection
@@ -8373,13 +8391,14 @@ define("bui/common/component/uibase/selection", [], function(require, exports, m
   }
   module.exports = selection;
 });
-define("bui/common/component/uibase/stdmod", [], function(require, exports, module) {
+define("bui/common/component/uibase/stdmod", ["jquery"], function(require, exports, module) {
   /**
    * @fileOverview
    * 控件包含头部（head)、内容(content)和尾部（foot)
    * @ignore
    */
-  var CLS_PREFIX = BUI.prefix + 'stdmod-';
+  var $ = require("jquery"),
+    CLS_PREFIX = BUI.prefix + 'stdmod-';
   /**
    * 标准模块组织的视图类
    * @class BUI.Component.UIBase.StdModView
@@ -8579,12 +8598,13 @@ define("bui/common/component/uibase/stdmod", [], function(require, exports, modu
   StdMod.View = StdModView;
   module.exports = StdMod;
 });
-define("bui/common/component/uibase/decorate", ["bui/common/array", "bui/common/json", "bui/common/component/manage", "bui/common/util", "bui/common/ua"], function(require, exports, module) {
+define("bui/common/component/uibase/decorate", ["jquery", "bui/common/array", "bui/common/json", "bui/common/component/manage", "bui/common/util", "bui/common/ua"], function(require, exports, module) {
   /**
    * @fileOverview 使用wrapper
    * @ignore
    */
-  var ArrayUtil = require("bui/common/array"),
+  var $ = require("jquery"),
+    ArrayUtil = require("bui/common/array"),
     JSON = require("bui/common/json"),
     prefixCls = BUI.prefix,
     FIELD_PREFIX = 'data-',
@@ -8890,12 +8910,13 @@ define("bui/common/component/uibase/decorate", ["bui/common/array", "bui/common/
   };
   module.exports = decorate;
 });
-define("bui/common/component/uibase/tpl", [], function(require, exports, module) {
+define("bui/common/component/uibase/tpl", ["jquery"], function(require, exports, module) {
   /**
    * @fileOverview 控件模板
    * @author dxq613@gmail.com
    * @ignore
    */
+  var $ = require("jquery");
   /**
    * @private
    * 控件模板扩展类的渲染类(view)
@@ -9073,11 +9094,12 @@ define("bui/common/component/uibase/tpl", [], function(require, exports, module)
   tpl.View = tplView;
   module.exports = tpl;
 });
-define("bui/common/component/uibase/childcfg", [], function(require, exports, module) {
+define("bui/common/component/uibase/childcfg", ["jquery"], function(require, exports, module) {
   /**
    * @fileOverview 子控件的默认配置项
    * @ignore
    */
+  var $ = require("jquery");
   /**
    * @class BUI.Component.UIBase.ChildCfg
    * 子控件默认配置项的扩展类
@@ -9326,12 +9348,13 @@ define("bui/common/component/uibase/bindable", [], function(require, exports, mo
   });
   module.exports = bindable;
 });
-define("bui/common/component/uibase/depends", ["bui/common/component/manage"], function(require, exports, module) {
+define("bui/common/component/uibase/depends", ["jquery", "bui/common/component/manage"], function(require, exports, module) {
   /**
    * @fileOverview 依赖扩展，用于观察者模式中的观察者
    * @ignore
    */
-  var regexp = /^#(.*):(.*)$/,
+  var $ = require("jquery"),
+    regexp = /^#(.*):(.*)$/,
     Manager = require("bui/common/component/manage");
   //获取依赖信息
   function getDepend(name) {
@@ -9507,13 +9530,14 @@ define("bui/common/component/uibase/depends", ["bui/common/component/manage"], f
   };
   module.exports = Depends;
 });
-define("bui/common/component/loader", ["bui/common/util", "bui/common/base", "bui/common/observable"], function(require, exports, module) {
+define("bui/common/component/loader", ["jquery", "bui/common/util", "bui/common/base", "bui/common/observable", "bui/common/array"], function(require, exports, module) {
   /**
    * @fileOverview 加载控件内容
    * @ignore
    */
   'use strict';
-  var BUI = require("bui/common/util"),
+  var $ = require("jquery"),
+    BUI = require("bui/common/util"),
     Base = require("bui/common/base"),
     /**
      * @class BUI.Component.Loader
@@ -9810,7 +9834,7 @@ define("bui/common/component/loader", ["bui/common/util", "bui/common/base", "bu
         target = _self.get('target'),
         loadMask = _self.get('loadMask');
       if (target && loadMask) {
-        BUI.use('bui/mask', function(Mask) {
+        require.async('bui/mask', function(Mask) {
           var cfg = $.isPlainObject(loadMask) ? loadMask : {};
           loadMask = new Mask.LoadMask(BUI.mix({
             el: target.get('el')

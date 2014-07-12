@@ -1,0 +1,293 @@
+.calendar{
+ background:url("@{calendarPath}") no-repeat right -182px white;
+}
+
+.bui-calendar{
+  padding: 4px 0px;
+  margin: 2px 0 0;
+  width: 232px !important;
+  .box-shadow(0 5px 10px rgba(0, 0, 0, 0.2));
+  color: @grayDark;
+  background-color: @white;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  position: relative;
+
+  &:before {
+    content: '';
+    display: inline-block;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 7px solid #ccc;
+    border-top: 0;
+    border-bottom-color: rgba(0, 0, 0, 0.2);
+    position: absolute;
+    left: 5px;
+    top: -7px;
+  }
+  &:after {
+    content: '';
+    display: inline-block;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid #fff;
+    border-top: 0;
+    position: absolute;
+    left: 6px;
+    top: -6px;
+  }
+
+  //header
+  .bui-calendar-header{
+    padding: 0 4px;
+    position: relative;
+    .clearfix();
+
+    .x-datepicker-prev, .x-datepicker-next{
+      width: 32px;
+      height: 30px;
+      position: absolute;
+      top: 0;
+      cursor: pointer;
+      background-color: @white;
+      text-align: center;
+      &:hover{
+        background-color: @grayLighter;
+      }
+
+      .icon{
+        vertical-align: text-bottom;
+        background-image: url('@{iconSpritePath}');
+      }
+    }
+    .x-datepicker-prev{
+      left: 4px;
+    }
+    .x-datepicker-month{
+      height: 30px;
+      line-height: 30px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: bold;
+      &:hover{
+        background-color: @grayLighter;
+      }
+    }
+    .x-datepicker-next{
+      right: 4px;
+    }
+  }
+
+  .bui-calendar-panel{
+    padding: 0 4px;
+  
+    th{
+      padding: 4px 5px;
+      width: 22px;
+    }
+
+    td.x-datepicker-date{
+      em{
+        font-style: normal;
+      }
+      a{
+        display: block;
+        padding: 5px 0;
+        text-align: center;
+        color: @grayDark;
+        &:hover, &:focus{
+          background-color: @grayLighter;
+          text-decoration: none;
+        }
+      }
+    }
+
+    td.x-datepicker-prevday{
+      a{
+        color: @grayLight;
+      }
+    }
+
+    td.x-datepicker-disabled{
+      a{
+        color: @grayLight;
+        cursor: default;
+        &:hover, &:focus{
+          background-color: transparent;
+          // rgb(139, 154, 163)
+        }
+      }
+    }
+
+    td.x-datepicker-today{
+      a{
+        color: #000;
+        background-color: #ffdb99;
+
+        &:hover, &:focus{
+          background-color: #ffcd70;
+        }
+      }
+    }
+
+    td.x-datepicker-selected{
+      a{
+        color: @white;
+        background-color: #3276b1;
+
+        &:hover, &:focus{
+          background-color: #3276b1;
+        }
+      }
+    }
+
+
+
+  }
+
+  //footer
+  .bui-calendar-footer{
+    margin-top: 2px;
+    padding: 6px 4px 5px;
+    border-top: 1px solid #ccc;
+    text-align: center;
+
+    .bui-bar-item-button{
+      margin-right: 5px;
+    }
+
+    input.x-datepicker-time{
+      padding: 4px 10px;
+      width: 18px;
+      height:15px;
+      cursor: pointer;
+    }
+
+    .x-datepicker-second{
+      margin-right: 5px;
+    }
+  }
+  .bui-monthpicker{
+    position: absolute;
+    width: 100%;
+    top: 0px;
+    left: 0px;
+    background-color: @white;
+    border: none;
+  }
+}
+
+
+//时间选择
+.x-timepicker{
+  .bui-simple-list{
+    padding: 0px 2px;
+    // margin: -18px 0 0;
+    width: 228px;
+    color: #333333;
+    background-color: #ffffff;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    position: relative;
+  }
+  ul{
+    .clearfix();
+  }
+  li{
+    float: left;
+    width: 32px;
+    a{
+      display: block;
+      padding: 5px 0;
+      text-align: center;
+      color: @grayDark;
+      &:hover, &:focus{
+        background-color: @grayLighter;
+        text-decoration: none;
+      }
+    }
+  }
+}
+
+//月份选择
+.bui-monthpicker{
+  position: absolute;
+  width: 232px !important;
+  top: 0px;
+  left: 0px;
+  background-color: @white;
+  border: 1px solid #ccc;
+
+  .bui-calendar-month-panel, .bui-calendar-year-panel{
+    ul{
+      .clearfix();
+    }
+    li{
+      float: left;
+      margin: 4px 0 0 4px;
+      width: 50px;
+      height: 36px;
+
+      a{
+        display: block;
+        // padding: 9px 0 11px;
+        text-align: center;
+        color: @grayDark;
+        height: 36px;
+        line-height: 36px;
+        &:hover{
+          background-color: @grayLighter;
+          text-decoration: none;
+        }
+      }
+    }
+    .x-monthpicker-item-selected{
+      a{
+        color: @white;
+        background-color: #3276b1;
+        
+        &:hover{
+          background-color: #3276b1;
+        }
+      }
+    }
+  }
+  .bui-calendar-month-panel{
+    float: left;
+    padding:0 0 4px 1px;
+    width: 114px;
+    border-right: 1px solid #ccc;
+  }
+  .bui-calendar-year-panel{
+    margin-left: 118px;
+    *margin-left: 117px;
+    // clear: left;
+
+    .x-monthpicker-yearnav{
+      padding: 14px 0 0px 0;
+      // min-width: 200px;
+      height: 26px;
+
+      .x-icon{
+        margin: 0px 18px 0px 20px;
+        cursor: pointer;
+        .icon{
+          margin-top: 2px;
+        }
+      }
+    }
+    ul{
+      *padding-bottom: 4px;
+    }
+  }
+
+  .x-monthpicker-footer{
+    padding: 6px 0 4px;
+    border-top: 1px solid #ccc;
+    text-align: center;
+
+    .bui-bar-item-button{
+      margin-right: 5px;
+    }
+  }
+}

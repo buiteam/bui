@@ -56,7 +56,7 @@ gulp.task('package', function(){
   for(var name in dependencies){
     files.push(getFiles(name, dependencies[name]));
   }
-  gulp.src(files)
+  return gulp.src(files)
     // 重命名包文件的js名
     .pipe(renamePackage())
     // 去掉版本号和包名
@@ -68,13 +68,21 @@ gulp.task('package', function(){
 
 
 gulp.task('script', function() {
-  gulp.src([
+  return gulp.src([
       './src/config.js'
     ])
     .pipe(gulp.dest('./dist'))
+});
+
+gulp.task('less', function() {
+
+})
+
+gulp.task('css', function() {
+
 })
 
 gulp.task('default', ['prepare'], function() {
-  gulp.start('package', 'script');
+  return gulp.start('package', 'script');
 });
 

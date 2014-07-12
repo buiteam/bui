@@ -1,4 +1,4 @@
-define("bui/mask", ["bui/common", "bui/mask/mask", "bui/mask/loadmask"], function(require, exports, module) {
+define("bui/mask", ["jquery/1.9.1/jquery", "bui/common", "bui/mask/mask", "bui/mask/loadmask"], function(require, exports, module) {
   /**
    * @fileOverview Mask的入口文件
    * @ignore
@@ -8,13 +8,14 @@ define("bui/mask", ["bui/common", "bui/mask/mask", "bui/mask/loadmask"], functio
   Mask.LoadMask = require("bui/mask/loadmask");
   module.exports = Mask;
 });
-define("bui/mask/mask", ["bui/common"], function(require, exports, module) {
+define("bui/mask/mask", ["jquery/1.9.1/jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview Mask屏蔽层
    * @author dxq613@gmail.com
    * @ignore
    */
-  var BUI = require("bui/common"),
+  var $ = require("jquery/1.9.1/jquery"),
+    BUI = require("bui/common"),
     Mask = BUI.namespace('Mask'),
     UA = BUI.UA,
     CLS_MASK = BUI.prefix + 'ext-mask',
@@ -113,12 +114,13 @@ define("bui/mask/mask", ["bui/common"], function(require, exports, module) {
     });
   module.exports = Mask;
 });
-define("bui/mask/loadmask", ["bui/mask/mask", "bui/common"], function(require, exports, module) {
+define("bui/mask/loadmask", ["jquery/1.9.1/jquery", "bui/mask/mask", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 加载数据时屏蔽层
    * @ignore
    */
-  var Mask = require("bui/mask/mask");
+  var $ = require("jquery/1.9.1/jquery"),
+    Mask = require("bui/mask/mask");
   /**
    * 屏蔽指定元素，并显示加载信息
    * <pre><code>

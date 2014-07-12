@@ -1,4 +1,4 @@
-define("bui/list", ["bui/common", "bui/list/list", "bui/list/listitem", "bui/list/simplelist", "bui/list/listbox", "bui/list/domlist", "bui/list/keynav", "bui/list/sortable", "bui/data"], function(require, exports, module) {
+define("bui/list", ["jquery/1.9.1/jquery", "bui/common", "bui/list/list", "bui/list/listitem", "bui/list/simplelist", "bui/list/listbox", "bui/list/domlist", "bui/list/keynav", "bui/list/sortable", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview 列表模块入口文件
    * @ignore
@@ -17,12 +17,13 @@ define("bui/list", ["bui/common", "bui/list/list", "bui/list/listitem", "bui/lis
   });
   module.exports = List;
 });
-define("bui/list/list", ["bui/common"], function(require, exports, module) {
+define("bui/list/list", ["jquery/1.9.1/jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 列表
    * @ignore
    */
-  var BUI = require("bui/common"),
+  var $ = require("jquery/1.9.1/jquery"),
+    BUI = require("bui/common"),
     Component = BUI.Component,
     UIBase = Component.UIBase;
   /**
@@ -59,13 +60,14 @@ define("bui/list/list", ["bui/common"], function(require, exports, module) {
   });
   module.exports = list;
 });
-define("bui/list/listitem", ["bui/common"], function(require, exports, module) {
+define("bui/list/listitem", ["jquery/1.9.1/jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 列表项
    * @author dxq613@gmail.com
    * @ignore
    */
-  var BUI = require("bui/common"),
+  var $ = require("jquery/1.9.1/jquery"),
+    BUI = require("bui/common"),
     Component = BUI.Component,
     UIBase = Component.UIBase;
   /**
@@ -103,7 +105,7 @@ define("bui/list/listitem", ["bui/common"], function(require, exports, module) {
   item.View = itemView;
   module.exports = item;
 });
-define("bui/list/simplelist", ["bui/common", "bui/list/domlist", "bui/list/keynav", "bui/list/sortable", "bui/data"], function(require, exports, module) {
+define("bui/list/simplelist", ["jquery/1.9.1/jquery", "bui/common", "bui/list/domlist", "bui/list/keynav", "bui/list/sortable", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview 简单列表，直接使用DOM作为列表项
    * @ignore
@@ -113,7 +115,8 @@ define("bui/list/simplelist", ["bui/common", "bui/list/domlist", "bui/list/keyna
    * @namespace 列表命名空间
    * @ignore
    */
-  var BUI = require("bui/common"),
+  var $ = require("jquery/1.9.1/jquery"),
+    BUI = require("bui/common"),
     UIBase = BUI.Component.UIBase,
     UA = BUI.UA,
     DomList = require("bui/list/domlist"),
@@ -369,13 +372,14 @@ define("bui/list/simplelist", ["bui/common", "bui/list/domlist", "bui/list/keyna
   simpleList.View = simpleListView;
   module.exports = simpleList;
 });
-define("bui/list/listbox", ["bui/list/simplelist", "bui/common", "bui/list/domlist", "bui/list/keynav", "bui/list/sortable", "bui/data"], function(require, exports, module) {
+define("bui/list/listbox", ["jquery/1.9.1/jquery", "bui/list/simplelist", "bui/common", "bui/list/domlist", "bui/list/keynav", "bui/list/sortable", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview 可选择的列表
    * @author dengbin
    * @ignore
    */
-  var SimpleList = require("bui/list/simplelist");
+  var $ = require("jquery/1.9.1/jquery"),
+    SimpleList = require("bui/list/simplelist");
   /**
    * 列表选择框
    * @extends BUI.List.SimpleList
@@ -417,14 +421,15 @@ define("bui/list/listbox", ["bui/list/simplelist", "bui/common", "bui/list/domli
   });
   module.exports = listbox;
 });
-define("bui/list/domlist", ["bui/common"], function(require, exports, module) {
+define("bui/list/domlist", ["jquery/1.9.1/jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 使用DOM元素作为选项的扩展类
    * @author dxq613@gmail.com
    * @ignore
    */
   'use strict';
-  var BUI = require("bui/common"),
+  var $ = require("jquery/1.9.1/jquery"),
+    BUI = require("bui/common"),
     Selection = BUI.Component.UIBase.Selection,
     FIELD_PREFIX = 'data-',
     List = BUI.Component.UIBase.List;
@@ -1392,7 +1397,7 @@ define("bui/list/domlist", ["bui/common"], function(require, exports, module) {
   domList.View = domListView;
   module.exports = domList;
 });
-define("bui/list/keynav", ["bui/common"], function(require, exports, module) {
+define("bui/list/keynav", ["jquery/1.9.1/jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 列表选项，使用键盘导航
    * @author dxq613@gmail.com
@@ -1403,7 +1408,8 @@ define("bui/list/keynav", ["bui/common"], function(require, exports, module) {
    * @class BUI.List.KeyNav
    * 列表导航扩展类
    */
-  var BUI = require("bui/common"),
+  var $ = require("jquery/1.9.1/jquery"),
+    BUI = require("bui/common"),
     KeyNav = function() {};
   KeyNav.ATTRS = {
     /**
@@ -1648,12 +1654,13 @@ define("bui/list/keynav", ["bui/common"], function(require, exports, module) {
   });
   module.exports = KeyNav;
 });
-define("bui/list/sortable", ["bui/common", "bui/data"], function(require, exports, module) {
+define("bui/list/sortable", ["jquery/1.9.1/jquery", "bui/common", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview 列表排序
    * @ignore
    */
-  var BUI = require("bui/common"),
+  var $ = require("jquery/1.9.1/jquery"),
+    BUI = require("bui/common"),
     DataSortable = require("bui/data").Sortable;
   /**
    * @class BUI.List.Sortable

@@ -88,10 +88,19 @@ gulp.task('watch', function(){
 });
 
 gulp.task('css', ['less'], function() {
+  // gulp.src([
+  //   ])
+  // .pipe('')
+});
 
+gulp.task('image', function() {
+  return gulp.src([
+      './assets/img/*.*'
+    ])
+    .pipe(gulp.dest('./dist/img'))
 });
 
 gulp.task('default', ['prepare'], function() {
-  return gulp.start('package', 'script', 'css');
+  return gulp.start('package', 'script', 'css', 'image');
 });
 

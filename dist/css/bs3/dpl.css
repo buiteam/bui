@@ -1764,10 +1764,10 @@ fieldset[disabled] .x-icon-question.active {
   background-position: -168px -96px;
 }
 .icon-ok-circle {
-  background-position: -192px -96px;
+  background-position: -192px -95.99999999px;
 }
 .icon-ban-circle {
-  background-position: -215.99999999px -96px;
+  background-position: -216px -96px;
 }
 .icon-arrow-left {
   background-position: -240px -96px;
@@ -1959,10 +1959,10 @@ fieldset[disabled] .x-icon-question.active {
   background-position: -1px -235px;
 }
 .icon-caret-left-top {
-  background-position: -1px -244px;
+  background-position: -1px -243.99999999px;
 }
 .icon-caret-right-top {
-  background-position: -1px -252.99999999px;
+  background-position: -1px -253px;
 }
 .icon-caret-left-down {
   background-position: -1px -273px;

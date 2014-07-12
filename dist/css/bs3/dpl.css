@@ -1767,7 +1767,7 @@ fieldset[disabled] .x-icon-question.active {
   background-position: -192px -96px;
 }
 .icon-ban-circle {
-  background-position: -216px -96px;
+  background-position: -215.99999999px -96px;
 }
 .icon-arrow-left {
   background-position: -240px -96px;
@@ -1872,7 +1872,7 @@ fieldset[disabled] .x-icon-question.active {
   background-position: -72px -144px;
 }
 .icon-thumbs-up {
-  background-position: -95.99999999px -144px;
+  background-position: -96px -144px;
 }
 .icon-thumbs-down {
   background-position: -120px -144px;
@@ -1947,7 +1947,7 @@ fieldset[disabled] .x-icon-question.active {
   background-position: -120px -189px;
 }
 .icon-caret-up {
-  background-position: -1px -208.99999999px;
+  background-position: -1px -209px;
 }
 .icon-caret-down {
   background-position: -1px -218px;
@@ -1962,13 +1962,13 @@ fieldset[disabled] .x-icon-question.active {
   background-position: -1px -244px;
 }
 .icon-caret-right-top {
-  background-position: -1px -253px;
+  background-position: -1px -252.99999999px;
 }
 .icon-caret-left-down {
   background-position: -1px -273px;
 }
 .icon-caret-right-down {
-  background-position: -1px -263.99999999px;
+  background-position: -1px -264px;
 }
 .breadcrumb {
   padding: 7px 14px;

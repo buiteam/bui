@@ -2,6 +2,7 @@
 
 var gulp = require('gulp');
 var clean = require('gulp-clean');
+var less = require('gulp-less');
 var rename = require('gulp-rename');
 var through = require('through2');
 var path = require('path');
@@ -75,14 +76,22 @@ gulp.task('script', function() {
 });
 
 gulp.task('less', function() {
+  return gulp.src([
+      './assets/less/*/*.less'
+    ])
+    .pipe(less())
+    .pipe(gulp.dest('./dist/css'));
+});
 
-})
+gulp.task('watch', function(){
+  gulp.watch('./assets/**/*.less', ['less']);
+});
 
-gulp.task('css', function() {
+gulp.task('css', ['less'], function() {
 
-})
+});
 
 gulp.task('default', ['prepare'], function() {
-  return gulp.start('package', 'script');
+  return gulp.start('package', 'script', 'css');
 });
 

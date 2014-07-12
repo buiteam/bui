@@ -1,4 +1,4 @@
-define("bui/data", ["jquery/1.9.1/jquery", "bui/common", "bui/data/sortable", "bui/data/proxy", "bui/data/abstractstore", "bui/data/store", "bui/data/node", "bui/data/treestore"], function(require, exports, module) {
+define("bui/data", ["jquery", "bui/common", "bui/data/sortable", "bui/data/proxy", "bui/data/abstractstore", "bui/data/store", "bui/data/node", "bui/data/treestore"], function(require, exports, module) {
   /**
    * @fileOverview Data 命名空间的入口文件
    * @ignore
@@ -156,8 +156,8 @@ define("bui/data/sortable", [], function(require, exports, module) {
   });
   module.exports = sortable;
 });
-define("bui/data/proxy", ["jquery/1.9.1/jquery", "bui/data/sortable"], function(require, exports, module) {
-  var $ = require("jquery/1.9.1/jquery"),
+define("bui/data/proxy", ["jquery", "bui/data/sortable"], function(require, exports, module) {
+  var $ = require("jquery"),
     Sortable = require("bui/data/sortable");
   /**
    * 数据代理对象，加载数据,
@@ -552,7 +552,7 @@ define("bui/data/proxy", ["jquery/1.9.1/jquery", "bui/data/sortable"], function(
   proxy.Memery = memeryProxy;
   module.exports = proxy;
 });
-define("bui/data/abstractstore", ["jquery/1.9.1/jquery", "bui/common", "bui/data/proxy", "bui/data/sortable"], function(require, exports, module) {
+define("bui/data/abstractstore", ["jquery", "bui/common", "bui/data/proxy", "bui/data/sortable"], function(require, exports, module) {
   /**
    * @fileOverview 抽象数据缓冲类
    * @ignore
@@ -1020,13 +1020,13 @@ define("bui/data/abstractstore", ["jquery/1.9.1/jquery", "bui/common", "bui/data
   });
   module.exports = AbstractStore;
 });
-define("bui/data/store", ["jquery/1.9.1/jquery", "bui/data/proxy", "bui/data/abstractstore", "bui/data/sortable", "bui/common"], function(require, exports, module) {
+define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", "bui/data/sortable", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 数据缓冲对象
    * @author dxq613@gmail.com
    * @ignore
    */
-  var $ = require("jquery/1.9.1/jquery"),
+  var $ = require("jquery"),
     Proxy = require("bui/data/proxy"),
     AbstractStore = require("bui/data/abstractstore"),
     Sortable = require("bui/data/sortable");
@@ -1925,7 +1925,7 @@ define("bui/data/store", ["jquery/1.9.1/jquery", "bui/data/proxy", "bui/data/abs
   });
   module.exports = store;
 });
-define("bui/data/node", ["jquery/1.9.1/jquery", "bui/common"], function(require, exports, module) {
+define("bui/data/node", ["jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 树形数据结构的节点类，无法直接使用数据作为节点，所以进行一层封装
    * 可以直接作为TreeNode控件的配置项
@@ -2015,7 +2015,7 @@ define("bui/data/node", ["jquery/1.9.1/jquery", "bui/common"], function(require,
   });
   module.exports = Node;
 });
-define("bui/data/treestore", ["jquery/1.9.1/jquery", "bui/common", "bui/data/node", "bui/data/proxy", "bui/data/abstractstore", "bui/data/sortable"], function(require, exports, module) {
+define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data/proxy", "bui/data/abstractstore", "bui/data/sortable"], function(require, exports, module) {
   /**
    * @fileOverview 树形对象缓冲类
    * @ignore

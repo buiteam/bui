@@ -420,6 +420,24 @@ define("bui/common/util", ["jquery"], function(require, exports, module) {
       });
     },
     /**
+     * 将$.param的反操作
+     * jquery只提供param方法
+     * @return {[type]} [description]
+     */
+    unparam: function(str) {
+      if (typeof str != 'string' || !(str = $.trim(decodeURIComponent(str)))) {
+        return {};
+      }
+      var pairs = str.split('&'),
+        pairsArr,
+        rst = {};
+      for (var i = pairs.length - 1; i >= 0; i--) {
+        pairsArr = pairs[i].split('=');
+        rst[pairsArr[0]] = pairsArr[1];
+      }
+      return rst;
+    },
+    /**
      * 使第一个字母变成大写
      * @param  {String} s 字符串
      * @return {String} 首字母大写后的字符串

@@ -20,7 +20,7 @@ function getFiles(name, version) {
  * 重命名包文件的入口文件，因为入口文件有可能为index.js
  * 统一为{package}.js
  */
-function renamePackage() {
+function renameFile() {
   var stream = through.obj(function(file, enc, callback) {
 
     var filepath = file.path.split(path.sep),
@@ -59,7 +59,7 @@ gulp.task('package', function(){
   }
   return gulp.src(files)
     // 重命名包文件的js名
-    .pipe(renamePackage())
+    .pipe(renameFile())
     // 去掉版本号和包名
     .pipe(replace(/bui-(\w+)\/\d.\d.\d\/\w+/g, 'bui/$1'))
     // 去掉-debug的后缀

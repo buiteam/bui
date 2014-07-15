@@ -27,7 +27,7 @@
     }
   });
 
-  BUI.setDebug = function(debug){
+  BUI.setDebug = function(debug) {
     BUI.debug = debug;
     if (debug) {
       seajs.config({
@@ -36,12 +36,12 @@
         ]
       });
     }
-  }
+  };
   BUI.setDebug(debug);
 
   // 所有的模块都是依赖于jquery, 所以定义一个jquery的模块，并直接返回
-  if(window.jQuery){
-    define('jquery', [], function(){
+  if (window.jQuery) {
+    define('jquery', [], function() {
       return window.jQuery;
     });
   }

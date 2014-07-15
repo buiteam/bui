@@ -2,6 +2,7 @@
 
 var gulp = require('gulp');
 var clean = require('gulp-clean');
+var concat = require('gulp-concat');
 var less = require('gulp-less');
 var rename = require('gulp-rename');
 var through = require('through2');
@@ -33,7 +34,7 @@ function renameFile() {
   });
 
   return stream;
-};
+}
 
 //清理目录
 gulp.task('clean', function() {
@@ -67,8 +68,25 @@ gulp.task('package', function(){
     .pipe(gulp.dest('./dist'));
 });
 
+gulp.task('seed.js', ['package'], function() {
+  return gulp.src([
+      './src/config.js',
+      './dist/common.js'
+    ])
+    .pipe(concat('seed.js'))
+    .pipe(gulp.dest('./dist'));
+});
 
-gulp.task('script', function() {
+gulp.task('bui.js', ['package'], function() {
+  return gulp.src([
+      './src/config.js',
+      './dist/common.js'
+    ])
+    .pipe(concat('bui.js'))
+    .pipe(gulp.dest('./dist'));
+});
+
+gulp.task('script', ['seed.js', 'bui.js'], function() {
   return gulp.src([
       './src/config.js'
     ])
@@ -93,7 +111,7 @@ gulp.task('css', ['less'], function() {
   // .pipe('')
 });
 
-gulp.task('image', function() {
+gulp.task('images', function() {
   return gulp.src([
       './assets/img/*.*'
     ])
@@ -101,6 +119,6 @@ gulp.task('image', function() {
 });
 
 gulp.task('default', ['prepare'], function() {
-  return gulp.start('package', 'script', 'css', 'image');
+  return gulp.start('package', 'script', 'css', 'images');
 });
 

@@ -4,11 +4,11 @@
 - [文档库地址](http://www.builive.com/)
 - [应用代码](https://github.com/dxq613/bui-default)
 - [API代码](https://github.com/dxq613/bui-docs)
-- [License](https://github.com/dxq613/bui/wiki/License)
-- [提交代码流程](CONTRIBUTING.md)
+- [License](LICENSE.md)
+- [贡献组件](CONTRIBUTING.md)
 
 ## 文件结构
-
+- package.json: 项目包的配置
 - assets : css文件，基于bootstrap的css样式，可以自己在此基础上编译出新的版本
 - build : js 和 css文件打包好的目录
 - src: js 的源文件
@@ -38,7 +38,7 @@
 - [集成的应用](http://www.builive.com/application/back.php)
 
 ## 提交问题
-[提问](https://github.com/dxq613/bui/issues)
+[提问](https://github.com/buiteam/bui/issues)
 
 ## 联系我们
 

@@ -39,36 +39,12 @@
 
 1. spm默认会忽略`dist`目录，我们发到源上的包是需要`dist`目录的，所以要去掉`.spmignore`里面`dist`这一行
 2. 如果存在多个js文件，请将除入口文件之外的其他js放到src目录下面来
+3. 在spm里面添加：`"buildArgs": "--ignore jquery"`
 
 
 
-## 2. 如何使用新写的组件
+## 2. 使用新的组件
 
-1. 在我们处理完你提issues之后，就可以从master上重新pull一下，你就会发现在dist目录里面多了一个你开发的js
-
-### 如果你是自己fork出来的仓库
-1. 打开`package.json`
-2. 找到下面这个节点
-
-   ```
-   "spm": {
-     "dependencies": {
-     }
-   }
-   ```
-   
-3. 在里面添加你的包名和版本号，如  
-
-   ```
-   "spm": {
-     "dependencies": {
-       "bui-test": "1.0.1"
-     }
-   }
-   ```
-   
-4. 在项目目录下面执行`gulp`命令
-5. 你就会发现在dist目录下面多了`test.js`这个文件
-6. 尽情使用吧
+1. 在我们处理完你提issues之后，就可以从master上重新pull一下，你就会发现在dist目录里面多了一个你写的这个
 
 

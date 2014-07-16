@@ -1,0 +1,24 @@
+{
+  "--output":"../../docs",
+  "--title":"BUI docs",
+  "--external":"window,HTMLDocument,HTMLElement,DocumentFragment,XMLHttpRequest,jQuery",
+  "--":[
+    "../../dist/common.js",
+    "../../dist/bar.js",
+    "../../dist/data.js",
+    "../../dist/cookie.js",
+    "../../dist/overlay.js",
+    "../../dist/mask.js",
+    "../../dist/calendar.js",
+    "../../dist/list.js",
+    "../../dist/menu.js",
+    "../../dist/form.js",
+    "../../dist/select.js",
+    "../../dist/tab.js",
+    "../../dist/grid.js",
+    "../../dist/editor.js",
+    "../../dist/progressbar.js",
+    "../../dist/module.js",
+    "../../dist/uploader.js"
+  ]
+}

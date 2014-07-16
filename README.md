@@ -61,7 +61,7 @@ gulp
 
 ### 生成文档：
 
-- 使用jsduck 进行编译文档，tools/jsduck/run.bat
+- 使用[jsduck](https://github.com/senchalabs/jsduck) 进行编译文档，tools/jsduck/run.bat
 - 配置文件在tools/jsduck/config.json
 - 如果不想配置环境，请下载[文档API](https://github.com/dxq613/bui-docs)
 

@@ -7,7 +7,7 @@
 
 ## 1. 如何开发一个组件
 
-> bui的组件是基于[spm3](http://spmjs.io/)来进行管理和组织的，所以在开始前，最好能先稍微了解下[spm3](http://spmjs.io/)。
+> bui的组件是基于[spm3](http://spmjs.io/)来进行管理和组织的，所以在开始前，最好能先稍微了解下[spm3](http://spmjs.io/documentation)。
 
 ### 1. 准备
 
@@ -17,9 +17,11 @@
    npm install spm -g
    ```
 
-2. 通过spm初始化一个项目(项目一定要以**bui-**打头) 
+2. 通过spm初始化一个项目 
  
    ```
+   mkdir bui-test
+   cd bui-test
    spm init
    ```
    
@@ -39,7 +41,7 @@
 
 1. spm默认会忽略`dist`目录，我们发到源上的包是需要`dist`目录的，所以要去掉`.spmignore`里面`dist`这一行
 2. 如果存在多个js文件，请将除入口文件之外的其他js放到src目录下面来
-3. 在spm里面添加：`"buildArgs": "--ignore jquery"`
+3. 在spm里面添加：`"buildArgs": "--ignore jquery"`，来忽略`jquery`的版本
 
 
 

@@ -4,7 +4,7 @@
   "--external":"window,HTMLDocument,HTMLElement,DocumentFragment,XMLHttpRequest,jQuery",
   "--":[
     "../../dist/common.js",
-    "../../dist/bar.js",
+    "../../dist/toolbar.js",
     "../../dist/data.js",
     "../../dist/cookie.js",
     "../../dist/overlay.js",
@@ -16,8 +16,6 @@
     "../../dist/select.js",
     "../../dist/tab.js",
     "../../dist/grid.js",
-    "../../dist/editor.js",
-    "../../dist/progressbar.js",
     "../../dist/module.js",
     "../../dist/uploader.js"
   ]

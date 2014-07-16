@@ -11,13 +11,19 @@
 ## 文件结构
 
 ```
-├── src              // assets源文件夹
-  ├── config.js      // bui的入口文件
-├── assets           // 静态assets的目录
-├── docs             // 源文件中未提供，但是可以自己执行 tools/jsduck/run.bat文件，请不要提交此文件夹
-├── build            // 打包后最终文件的目录
-├── package.json     // bui的配置文件
-├── README.md        // 说明文档
+bui
+├── src               // assets源文件夹
+│   └── config.js     // bui的入口文件
+├── assets            // 静态assets的目录
+│   └── less          // less文件的目录
+├── docs              // 源文件中未提供，但是可以自己执行 tools/jsduck/run.bat文件，请不要提交此文件夹
+├── build             // 打包后最终文件的目录
+│   │   ├── default   // 默认样式
+│   │   └── bs3       // 基于bootstrap3重新编译的样式库
+├── tools             // 工具类文件目录
+│   │   └── jsduck    // jsduck的配置和执行文件目录
+├── package.json      // bui的配置文件
+└── README.md         // 说明文档
 ```
 
 ## 添加组件

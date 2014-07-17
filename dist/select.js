@@ -1,4 +1,4 @@
-define("bui/select", ["jquery/1.9.1/jquery", "bui/common", "bui/select/select", "bui/select/combox", "bui/select/suggest", "bui/data", "bui/list", "bui/overlay", "bui/picker", "bui/select/tag"], function(require, exports, module) {
+define("bui/select", ["jquery", "bui/common", "bui/select/select", "bui/select/combox", "bui/select/suggest", "bui/data", "bui/list", "bui/overlay", "bui/picker", "bui/select/tag"], function(require, exports, module) {
   /**
    * @fileOverview 选择框命名空间入口文件
    * @ignore
@@ -12,14 +12,14 @@ define("bui/select", ["jquery/1.9.1/jquery", "bui/common", "bui/select/select", 
   });
   module.exports = Select;
 });
-define("bui/select/select", ["jquery/1.9.1/jquery", "bui/common", "bui/data", "bui/list", "bui/overlay", "bui/picker"], function(require, exports, module) {
+define("bui/select/select", ["jquery", "bui/common", "bui/data", "bui/list", "bui/overlay", "bui/picker"], function(require, exports, module) {
   /**
    * @fileOverview 选择控件
    * @author dxq613@gmail.com
    * @ignore
    */
   'use strict';
-  var $ = require("jquery/1.9.1/jquery"),
+  var $ = require("jquery"),
     BUI = require("bui/common"),
     ListPicker = require("bui/picker").ListPicker,
     PREFIX = BUI.prefix;
@@ -468,12 +468,12 @@ define("bui/select/select", ["jquery/1.9.1/jquery", "bui/common", "bui/data", "b
     });
   module.exports = select;
 });
-define("bui/select/combox", ["jquery/1.9.1/jquery", "bui/common", "bui/select/select", "bui/select/tag", "bui/data", "bui/list", "bui/overlay", "bui/picker"], function(require, exports, module) {
+define("bui/select/combox", ["jquery", "bui/common", "bui/select/select", "bui/select/tag", "bui/data", "bui/list", "bui/overlay", "bui/picker"], function(require, exports, module) {
   /**
    * @fileOverview 组合框可用于选择输入文本
    * @ignore
    */
-  var $ = require("jquery/1.9.1/jquery"),
+  var $ = require("jquery"),
     BUI = require("bui/common"),
     Select = require("bui/select/select"),
     Tag = require("bui/select/tag"),
@@ -572,13 +572,13 @@ define("bui/select/combox", ["jquery/1.9.1/jquery", "bui/common", "bui/select/se
   });
   module.exports = combox;
 });
-define("bui/select/suggest", ["jquery/1.9.1/jquery", "bui/common", "bui/select/combox", "bui/select/select", "bui/select/tag", "bui/data", "bui/list", "bui/overlay", "bui/picker"], function(require, exports, module) {
+define("bui/select/suggest", ["jquery", "bui/common", "bui/select/combox", "bui/select/select", "bui/select/tag", "bui/data", "bui/list", "bui/overlay", "bui/picker"], function(require, exports, module) {
   /**
    * @fileOverview 组合框可用于选择输入文本
    * @ignore
    */
   'use strict';
-  var $ = require("jquery/1.9.1/jquery"),
+  var $ = require("jquery"),
     BUI = require("bui/common"),
     Combox = require("bui/select/combox"),
     TIMER_DELAY = 200,
@@ -898,12 +898,12 @@ define("bui/select/suggest", ["jquery/1.9.1/jquery", "bui/common", "bui/select/c
   });
   module.exports = suggest;
 });
-define("bui/select/tag", ["jquery/1.9.1/jquery", "bui/common", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/select/tag", ["jquery", "bui/common", "bui/data", "bui/list"], function(require, exports, module) {
   /**
    * @fileOverview 输入、选择完毕后显示tag
    * @ignore
    */
-  var $ = require("jquery/1.9.1/jquery"),
+  var $ = require("jquery"),
     BUI = require("bui/common"),
     List = require("bui/list"),
     KeyCode = BUI.KeyCode,

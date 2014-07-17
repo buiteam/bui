@@ -1,4 +1,4 @@
-define("bui/form", ["bui/common", "bui/form/tips", "bui/form/fieldcontainer", "bui/form/form", "bui/form/row", "bui/form/fieldgroup", "bui/form/hform", "bui/form/rules", "bui/form/field", "bui/overlay", "bui/form/groupvalid", "bui/form/field/base", "bui/form/field/text", "bui/form/field/date", "bui/form/field/select", "bui/form/field/hidden", "bui/form/field/number", "bui/form/field/check", "bui/form/field/radio", "bui/form/field/checkbox", "bui/form/field/plain", "bui/form/field/list", "bui/form/field/textarea", "bui/form/field/uploader", "bui/form/field/checklist", "bui/form/field/radiolist", "bui/form/valid", "bui/form/remote", "bui/form/rule", "bui/data", "bui/list", "bui/form/group/base", "bui/form/group/range", "bui/form/group/check", "bui/form/group/select"], function(require, exports, module) {
+define("bui/form", ["jquery", "bui/common", "bui/form/tips", "bui/form/fieldcontainer", "bui/form/form", "bui/form/row", "bui/form/fieldgroup", "bui/form/hform", "bui/form/rules", "bui/form/field", "bui/overlay", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/valid", "bui/form/remote", "bui/form/rule", "bui/data", "bui/list", "bui/form/group/base", "bui/form/group/range", "bui/form/group/check", "bui/form/group/select"], function(require, exports, module) {
   /**
    * @fileOverview form 命名空间入口
    * @ignore
@@ -20,13 +20,14 @@ define("bui/form", ["bui/common", "bui/form/tips", "bui/form/fieldcontainer", "b
   });
   module.exports = Form;
 });
-define("bui/form/tips", ["bui/common", "bui/overlay"], function(require, exports, module) {
+define("bui/form/tips", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
   /**
    * @fileOverview 输入提示信息
    * @author dxq613@gmail.com
    * @ignore
    */
-  var BUI = require("bui/common"),
+  var $ = require("jquery"),
+    BUI = require("bui/common"),
     prefix = BUI.prefix,
     Overlay = require("bui/overlay").Overlay,
     FIELD_TIP = 'data-tip',
@@ -232,12 +233,13 @@ define("bui/form/tips", ["bui/common", "bui/overlay"], function(require, exports
   Tips.Item = tipItem;
   module.exports = Tips;
 });
-define("bui/form/fieldcontainer", ["bui/common", "bui/form/field", "bui/form/groupvalid", "bui/form/field/base", "bui/form/field/text", "bui/form/field/date", "bui/form/field/select", "bui/form/field/hidden", "bui/form/field/number", "bui/form/field/check", "bui/form/field/radio", "bui/form/field/checkbox", "bui/form/field/plain", "bui/form/field/list", "bui/form/field/textarea", "bui/form/field/uploader", "bui/form/field/checklist", "bui/form/field/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/form/fieldcontainer", ["jquery", "bui/common", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
   /**
    * @fileOverview 表单字段的容器扩展
    * @ignore
    */
-  var BUI = require("bui/common"),
+  var $ = require("jquery"),
+    BUI = require("bui/common"),
     Field = require("bui/form/field"),
     GroupValid = require("bui/form/groupvalid"),
     PREFIX = BUI.prefix;
@@ -577,19 +579,20 @@ define("bui/form/fieldcontainer", ["bui/common", "bui/form/field", "bui/form/gro
   container.View = containerView;
   module.exports = container;
 });
-define("bui/form/form", ["bui/common", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/field/base", "bui/form/field/text", "bui/form/field/date", "bui/form/field/select", "bui/form/field/hidden", "bui/form/field/number", "bui/form/field/check", "bui/form/field/radio", "bui/form/field/checkbox", "bui/form/field/plain", "bui/form/field/list", "bui/form/field/textarea", "bui/form/field/uploader", "bui/form/field/checklist", "bui/form/field/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/form/form", ["jquery", "bui/common", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
   /**
    * @fileOverview 创建表单
    * @ignore
    */
-  var BUI = require("bui/common"),
+  var $ = require("jquery"),
+    BUI = require("bui/common"),
+    FieldContainer = require("bui/form/fieldcontainer"),
+    Component = BUI.Component,
     TYPE_SUBMIT = {
       NORMAL: 'normal',
       AJAX: 'ajax',
       IFRAME: 'iframe'
-    },
-    FieldContainer = require("bui/form/fieldcontainer"),
-    Component = BUI.Component;
+    };
   var FormView = FieldContainer.View.extend({
     _uiSetMethod: function(v) {
       this.get('el').attr('method', v);
@@ -624,7 +627,7 @@ define("bui/form/form", ["bui/common", "bui/form/fieldcontainer", "bui/form/fiel
     },
     _initButtonBar: function(cfg) {
       var _self = this;
-      BUI.use('bui/toolbar', function(Toolbar) {
+      require.async('bui-toolbar', function(Toolbar) {
         buttonBar = new Toolbar.Bar(cfg);
         _self.set('buttonBar', buttonBar);
       });
@@ -955,7 +958,7 @@ define("bui/form/form", ["bui/common", "bui/form/fieldcontainer", "bui/form/fiel
   Form.View = FormView;
   module.exports = Form;
 });
-define("bui/form/row", ["bui/common", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/field/base", "bui/form/field/text", "bui/form/field/date", "bui/form/field/select", "bui/form/field/hidden", "bui/form/field/number", "bui/form/field/check", "bui/form/field/radio", "bui/form/field/checkbox", "bui/form/field/plain", "bui/form/field/list", "bui/form/field/textarea", "bui/form/field/uploader", "bui/form/field/checklist", "bui/form/field/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/form/row", ["jquery", "bui/common", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
   /**
    * @fileOverview 表单里的一行元素
    * @ignore
@@ -993,7 +996,7 @@ define("bui/form/row", ["bui/common", "bui/form/fieldcontainer", "bui/form/field
   });
   module.exports = Row;
 });
-define("bui/form/fieldgroup", ["bui/common", "bui/form/group/base", "bui/form/group/range", "bui/form/group/check", "bui/form/group/select", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/field/base", "bui/form/field/text", "bui/form/field/date", "bui/form/field/select", "bui/form/field/hidden", "bui/form/field/number", "bui/form/field/check", "bui/form/field/radio", "bui/form/field/checkbox", "bui/form/field/plain", "bui/form/field/list", "bui/form/field/textarea", "bui/form/field/uploader", "bui/form/field/checklist", "bui/form/field/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/form/fieldgroup", ["jquery", "bui/common", "bui/form/group/base", "bui/form/group/range", "bui/form/group/check", "bui/form/group/select", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
   /**
    * @fileOverview 表单文本域组，可以包含一个至多个字段
    * @author dxq613@gmail.com
@@ -1008,12 +1011,13 @@ define("bui/form/fieldgroup", ["bui/common", "bui/form/group/base", "bui/form/gr
   });
   return Group;
 });
-define("bui/form/hform", ["bui/common", "bui/form/form", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/field/base", "bui/form/field/text", "bui/form/field/date", "bui/form/field/select", "bui/form/field/hidden", "bui/form/field/number", "bui/form/field/check", "bui/form/field/radio", "bui/form/field/checkbox", "bui/form/field/plain", "bui/form/field/list", "bui/form/field/textarea", "bui/form/field/uploader", "bui/form/field/checklist", "bui/form/field/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/form/hform", ["jquery", "bui/common", "bui/form/form", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
   /**
    * @fileOverview 垂直表单
    * @ignore
    */
-  var BUI = require("bui/common"),
+  var $ = require("jquery"),
+    BUI = require("bui/common"),
     Form = require("bui/form/form");
   /**
    * @class BUI.Form.HForm
@@ -1058,12 +1062,13 @@ define("bui/form/hform", ["bui/common", "bui/form/form", "bui/form/fieldcontaine
   });
   module.exports = Horizontal;
 });
-define("bui/form/rules", ["bui/form/rule", "bui/common"], function(require, exports, module) {
+define("bui/form/rules", ["jquery", "bui/form/rule", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 验证集合
    * @ignore
    */
-  var Rule = require("bui/form/rule");
+  var $ = require("jquery"),
+    Rule = require("bui/form/rule");
 
   function toNumber(value) {
     return parseFloat(value);
@@ -1627,37 +1632,38 @@ define("bui/form/rules", ["bui/form/rule", "bui/common"], function(require, expo
   });
   module.exports = rules;
 });
-define("bui/form/field", ["bui/common", "bui/form/field/base", "bui/form/field/text", "bui/form/field/date", "bui/form/field/select", "bui/form/field/hidden", "bui/form/field/number", "bui/form/field/check", "bui/form/field/radio", "bui/form/field/checkbox", "bui/form/field/plain", "bui/form/field/list", "bui/form/field/textarea", "bui/form/field/uploader", "bui/form/field/checklist", "bui/form/field/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/form/field", ["jquery", "bui/common", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
   /**
    * @fileOverview 表单域的入口文件
    * @ignore
    */
   var BUI = require("bui/common"),
-    Field = require("bui/form/field/base");
+    Field = require("bui/form/fields/base");
   BUI.mix(Field, {
-    Text: require("bui/form/field/text"),
-    Date: require("bui/form/field/date"),
-    Select: require("bui/form/field/select"),
-    Hidden: require("bui/form/field/hidden"),
-    Number: require("bui/form/field/number"),
-    Check: require("bui/form/field/check"),
-    Radio: require("bui/form/field/radio"),
-    Checkbox: require("bui/form/field/checkbox"),
-    Plain: require("bui/form/field/plain"),
-    List: require("bui/form/field/list"),
-    TextArea: require("bui/form/field/textarea"),
-    Uploader: require("bui/form/field/uploader"),
-    CheckList: require("bui/form/field/checklist"),
-    RadioList: require("bui/form/field/radiolist")
+    Text: require("bui/form/fields/text"),
+    Date: require("bui/form/fields/date"),
+    Select: require("bui/form/fields/select"),
+    Hidden: require("bui/form/fields/hidden"),
+    Number: require("bui/form/fields/number"),
+    Check: require("bui/form/fields/check"),
+    Radio: require("bui/form/fields/radio"),
+    Checkbox: require("bui/form/fields/checkbox"),
+    Plain: require("bui/form/fields/plain"),
+    List: require("bui/form/fields/list"),
+    TextArea: require("bui/form/fields/textarea"),
+    Uploader: require("bui/form/fields/uploader"),
+    CheckList: require("bui/form/fields/checklist"),
+    RadioList: require("bui/form/fields/radiolist")
   });
   module.exports = Field;
 });
-define("bui/form/groupvalid", ["bui/form/valid", "bui/common", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/groupvalid", ["jquery", "bui/form/valid", "bui/common", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview 表单分组验证
    * @ignore
    */
-  var CLS_ERROR = 'x-form-error',
+  var $ = require("jquery"),
+    CLS_ERROR = 'x-form-error',
     Valid = require("bui/form/valid");
   /**
    * @class BUI.Form.GroupValidView
@@ -1853,12 +1859,13 @@ define("bui/form/groupvalid", ["bui/form/valid", "bui/common", "bui/form/rules",
   GroupValid.View = GroupValidView;
   module.exports = GroupValid;
 });
-define("bui/form/field/base", ["bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/fields/base", ["jquery", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview 表单元素
    * @ignore
    */
-  var BUI = require("bui/common"),
+  var $ = require("jquery"),
+    BUI = require("bui/common"),
     Component = BUI.Component,
     TipItem = require("bui/form/tips").Item,
     Valid = require("bui/form/valid"),
@@ -2452,13 +2459,13 @@ define("bui/form/field/base", ["bui/common", "bui/form/tips", "bui/form/valid", 
   field.View = fieldView;
   module.exports = field;
 });
-define("bui/form/field/text", ["bui/form/field/base", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/fields/text", ["bui/form/fields/base", "jquery", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview 表单文本域
    * @author dxq613@gmail.com
    * @ignore
    */
-  var Field = require("bui/form/field/base");
+  var Field = require("bui/form/fields/base");
   /**
    * 表单文本域
    * @class BUI.Form.Field.Text
@@ -2469,14 +2476,15 @@ define("bui/form/field/text", ["bui/form/field/base", "bui/common", "bui/form/ti
   });
   module.exports = textField;
 });
-define("bui/form/field/date", ["bui/common", "bui/form/field/base", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/fields/date", ["jquery", "bui/common", "bui/form/fields/base", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview 表单日历域
    * @author dxq613@gmail.com
    * @ignore
    */
-  var BUI = require("bui/common"),
-    Field = require("bui/form/field/base"),
+  var $ = require("jquery"),
+    BUI = require("bui/common"),
+    Field = require("bui/form/fields/base"),
     DateUtil = BUI.Date;
   /*,
   DatePicker = require('bui-calendar').DatePicker*/
@@ -2500,7 +2508,7 @@ define("bui/form/field/date", ["bui/common", "bui/form/field/base", "bui/form/ti
     //初始化日历控件
     initDatePicker: function(datePicker) {
       var _self = this;
-      BUI.use('bui/calendar', function(Calendar) {
+      seajs.use('bui-calendar', function(Calendar) {
         datePicker.trigger = _self.getInnerControl();
         datePicker.autoRender = true;
         datePicker = new Calendar.DatePicker(datePicker);
@@ -2644,13 +2652,14 @@ define("bui/form/field/date", ["bui/common", "bui/form/field/base", "bui/form/ti
   });
   module.exports = dateField;
 });
-define("bui/form/field/select", ["bui/common", "bui/form/field/base", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/fields/select", ["jquery", "bui/common", "bui/form/fields/base", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview 模拟选择框在表单中
    * @ignore
    */
-  var BUI = require("bui/common"),
-    Field = require("bui/form/field/base");
+  var $ = require("jquery"),
+    BUI = require("bui/common"),
+    Field = require("bui/form/fields/base");
 
   function resetOptions(select, options, self) {
     select.children().remove();
@@ -2693,7 +2702,7 @@ define("bui/form/field/select", ["bui/common", "bui/form/field/base", "bui/form/
     _initSelect: function(select) {
       var _self = this,
         items = _self.get('items');
-      BUI.use('bui/select', function(Select) {
+      require.async('bui-select', function(Select) {
         select.render = _self.getControlContainer();
         select.valueField = _self.getInnerControl();
         select.autoRender = true;
@@ -2863,13 +2872,13 @@ define("bui/form/field/select", ["bui/common", "bui/form/field/base", "bui/form/
   });
   module.exports = selectField;
 });
-define("bui/form/field/hidden", ["bui/form/field/base", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/fields/hidden", ["bui/form/fields/base", "jquery", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview 隐藏字段
    * @ignore
    * @author dxq613@gmail.com
    */
-  var Field = require("bui/form/field/base");
+  var Field = require("bui/form/fields/base");
   /**
    * 表单隐藏域
    * @class BUI.Form.Field.Hidden
@@ -2893,7 +2902,7 @@ define("bui/form/field/hidden", ["bui/form/field/base", "bui/common", "bui/form/
   });
   module.exports = hiddenField;
 });
-define("bui/form/field/number", ["bui/form/field/base", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/fields/number", ["bui/form/fields/base", "jquery", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview 表单文本域
    * @author dxq613@gmail.com
@@ -2904,7 +2913,7 @@ define("bui/form/field/number", ["bui/form/field/base", "bui/common", "bui/form/
    * @class BUI.Form.Field.Number
    * @extends BUI.Form.Field
    */
-  var Field = require("bui/form/field/base"),
+  var Field = require("bui/form/fields/base"),
     numberField = Field.extend({
       /**
        * 将字符串等格式转换成数字
@@ -2990,12 +2999,13 @@ define("bui/form/field/number", ["bui/form/field/base", "bui/common", "bui/form/
     });
   module.exports = numberField;
 });
-define("bui/form/field/check", ["bui/form/field/base", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/fields/check", ["jquery", "bui/form/fields/base", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview  可勾选字段
    * @ignore
    */
-  var Field = require("bui/form/field/base");
+  var $ = require("jquery"),
+    Field = require("bui/form/fields/base");
   /**
    * 可选中菜单域
    * @class BUI.Form.Field.Check
@@ -3089,12 +3099,12 @@ define("bui/form/field/check", ["bui/form/field/base", "bui/common", "bui/form/t
   });
   module.exports = checkField;
 });
-define("bui/form/field/radio", [], function(require, exports, module) {
+define("bui/form/fields/radio", ["bui/form/fields/check", "jquery", "bui/form/fields/base", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview  单选框表单域
    * @ignore
    */
-  var CheckField = required('/check');
+  var CheckField = require("bui/form/fields/check");
   /**
    * 表单单选域
    * @class BUI.Form.Field.Radio
@@ -3142,12 +3152,12 @@ define("bui/form/field/radio", [], function(require, exports, module) {
   });
   module.exports = RadioField;
 });
-define("bui/form/field/checkbox", [], function(require, exports, module) {
+define("bui/form/fields/checkbox", ["bui/form/fields/check", "jquery", "bui/form/fields/base", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview  复选框表单域
    * @ignore
    */
-  var CheckField = required('./check');
+  var CheckField = require("bui/form/fields/check");
   /**
    * 表单复选域
    * @class BUI.Form.Field.Checkbox
@@ -3179,12 +3189,13 @@ define("bui/form/field/checkbox", [], function(require, exports, module) {
   });
   module.exports = CheckBoxField;
 });
-define("bui/form/field/plain", ["bui/form/field/base", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/fields/plain", ["jquery", "bui/form/fields/base", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview 仅仅用于显示文本，不能编辑的字段
    * @ignore
    */
-  var Field = require("bui/form/field/base");
+  var $ = require("jquery"),
+    Field = require("bui/form/fields/base");
   var PlainFieldView = Field.View.extend({
     _uiSetValue: function(v) {
       var _self = this,
@@ -3259,14 +3270,15 @@ define("bui/form/field/plain", ["bui/form/field/base", "bui/common", "bui/form/t
   });
   module.exports = PlainField;
 });
-define("bui/form/field/list", ["bui/common", "bui/data", "bui/list", "bui/form/field/base", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/fields/list", ["jquery", "bui/common", "bui/data", "bui/list", "bui/form/fields/base", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview 表单中的列表，每个列表后有个隐藏域用来存储数据
    * @ignore
    */
-  var BUI = require("bui/common"),
+  var $ = require("jquery"),
+    BUI = require("bui/common"),
     List = require("bui/list"),
-    Field = require("bui/form/field/base");
+    Field = require("bui/form/fields/base");
 
   function parseItems(items) {
     var rst = items;
@@ -3425,13 +3437,13 @@ define("bui/form/field/list", ["bui/common", "bui/data", "bui/list", "bui/form/f
   });
   module.exports = List;
 });
-define("bui/form/field/textarea", ["bui/form/field/base", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/fields/textarea", ["bui/form/fields/base", "jquery", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview 表单文本域
    * @author dxq613@gmail.com
    * @ignore
    */
-  var Field = require("bui/form/field/base");
+  var Field = require("bui/form/fields/base");
   /**
    * 表单文本域
    * @class BUI.Form.Field.TextArea
@@ -3485,14 +3497,14 @@ define("bui/form/field/textarea", ["bui/form/field/base", "bui/common", "bui/for
   });
   module.exports = TextAreaField;
 });
-define("bui/form/field/uploader", ["bui/common", "bui/form/field/base", "bui/form/rules", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/fields/uploader", ["jquery", "bui/common", "bui/form/fields/base", "bui/form/rules", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview 模拟选择框在表单中
    * @ignore
    */
   var BUI = require("bui/common"),
     JSON = BUI.JSON,
-    Field = require("bui/form/field/base"),
+    Field = require("bui/form/fields/base"),
     Rules = require("bui/form/rules");
   /**
    * 表单上传域
@@ -3623,14 +3635,14 @@ define("bui/form/field/uploader", ["bui/common", "bui/form/field/base", "bui/for
   });
   module.exports = uploaderField;
 });
-define("bui/form/field/checklist", ["bui/common", "bui/form/field/list", "bui/data", "bui/list", "bui/form/field/base", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/fields/checklist", ["jquery", "bui/common", "bui/form/fields/list", "bui/data", "bui/list", "bui/form/fields/base", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview 可勾选的列表，模拟多个checkbox
    * @ignore
    */
   'use strict';
   var BUI = require("bui/common"),
-    ListField = require("bui/form/field/list");
+    ListField = require("bui/form/fields/list");
   /**
    * @class BUI.Form.Field.CheckList
    * 可勾选的列表，模拟多个checkbox
@@ -3656,14 +3668,14 @@ define("bui/form/field/checklist", ["bui/common", "bui/form/field/list", "bui/da
   });
   module.exports = CheckList;
 });
-define("bui/form/field/radiolist", ["bui/common", "bui/form/field/list", "bui/data", "bui/list", "bui/form/field/base", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/fields/radiolist", ["jquery", "bui/common", "bui/form/fields/list", "bui/data", "bui/list", "bui/form/fields/base", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview 可勾选的列表，模拟多个radio
    * @ignore
    */
   'use strict';
   var BUI = require("bui/common"),
-    ListField = require("bui/form/field/list");
+    ListField = require("bui/form/fields/list");
   /**
    * @class BUI.Form.Field.RadioList
    * 可勾选的列表，模拟多个radio
@@ -3688,7 +3700,7 @@ define("bui/form/field/radiolist", ["bui/common", "bui/form/field/list", "bui/da
   });
   module.exports = RadioList;
 });
-define("bui/form/valid", ["bui/common", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/valid", ["jquery", "bui/common", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
   /**
    * @fileOverview 表单验证
    * @ignore
@@ -4021,12 +4033,13 @@ define("bui/form/valid", ["bui/common", "bui/form/rules", "bui/form/rule"], func
   Valid.View = ValidView;
   module.exports = Valid;
 });
-define("bui/form/remote", ["bui/common"], function(require, exports, module) {
+define("bui/form/remote", ["jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 表单异步请求，异步校验、远程获取数据
    * @ignore
    */
-  var BUI = require("bui/common");
+  var $ = require("jquery"),
+    BUI = require("bui/common");
   /**
    * @class BUI.Form.RemoteView
    * @private
@@ -4297,12 +4310,13 @@ define("bui/form/remote", ["bui/common"], function(require, exports, module) {
   Remote.View = RemoteView;
   module.exports = Remote;
 });
-define("bui/form/rule", ["bui/common"], function(require, exports, module) {
+define("bui/form/rule", ["jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 验证规则
    * @ignore
    */
-  var BUI = require("bui/common");
+  var $ = require("jquery"),
+    BUI = require("bui/common");
   /**
    * @class BUI.Form.Rule
    * 验证规则
@@ -4406,7 +4420,7 @@ define("bui/form/rule", ["bui/common"], function(require, exports, module) {
   });
   module.exports = Rule;
 });
-define("bui/form/group/base", ["bui/common", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/field/base", "bui/form/field/text", "bui/form/field/date", "bui/form/field/select", "bui/form/field/hidden", "bui/form/field/number", "bui/form/field/check", "bui/form/field/radio", "bui/form/field/checkbox", "bui/form/field/plain", "bui/form/field/list", "bui/form/field/textarea", "bui/form/field/uploader", "bui/form/field/checklist", "bui/form/field/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/form/group/base", ["jquery", "bui/common", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
   /**
    * @fileOverview 表单文本域组，可以包含一个至多个字段
    * @author dxq613@gmail.com
@@ -4437,7 +4451,7 @@ define("bui/form/group/base", ["bui/common", "bui/form/fieldcontainer", "bui/for
   });
   module.exports = Group;
 });
-define("bui/form/group/range", ["bui/form/group/base", "bui/common", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/field/base", "bui/form/field/text", "bui/form/field/date", "bui/form/field/select", "bui/form/field/hidden", "bui/form/field/number", "bui/form/field/check", "bui/form/field/radio", "bui/form/field/checkbox", "bui/form/field/plain", "bui/form/field/list", "bui/form/field/textarea", "bui/form/field/uploader", "bui/form/field/checklist", "bui/form/field/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/form/group/range", ["bui/form/group/base", "jquery", "bui/common", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
   /**
    * @fileOverview 范围的字段组，比如日期范围等
    * @ignore
@@ -4508,7 +4522,7 @@ define("bui/form/group/range", ["bui/form/group/base", "bui/common", "bui/form/f
   });
   module.exports = Range;
 });
-define("bui/form/group/check", ["bui/form/group/base", "bui/common", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/field/base", "bui/form/field/text", "bui/form/field/date", "bui/form/field/select", "bui/form/field/hidden", "bui/form/field/number", "bui/form/field/check", "bui/form/field/radio", "bui/form/field/checkbox", "bui/form/field/plain", "bui/form/field/list", "bui/form/field/textarea", "bui/form/field/uploader", "bui/form/field/checklist", "bui/form/field/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/form/group/check", ["bui/form/group/base", "jquery", "bui/common", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
   /**
    * @fileOverview 选择分组，包含，checkbox,radio
    * @ignore
@@ -4584,7 +4598,7 @@ define("bui/form/group/check", ["bui/form/group/base", "bui/common", "bui/form/f
   });
   module.exports = Check;
 });
-define("bui/form/group/select", ["bui/form/group/base", "bui/common", "bui/data", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/field/base", "bui/form/field/text", "bui/form/field/date", "bui/form/field/select", "bui/form/field/hidden", "bui/form/field/number", "bui/form/field/check", "bui/form/field/radio", "bui/form/field/checkbox", "bui/form/field/plain", "bui/form/field/list", "bui/form/field/textarea", "bui/form/field/uploader", "bui/form/field/checklist", "bui/form/field/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/list"], function(require, exports, module) {
+define("bui/form/group/select", ["bui/form/group/base", "jquery", "bui/common", "bui/data", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/list"], function(require, exports, module) {
   /**
    * @fileOverview 选择框分组
    * @ignore

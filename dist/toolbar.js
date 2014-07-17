@@ -1,4 +1,4 @@
-define("bui/toolbar", ["jquery/1.9.1/jquery", "bui/common", "bui/toolbar/baritem", "bui/toolbar/bar", "bui/toolbar/pagingbar", "bui/toolbar/numberpagingbar"], function(require, exports, module) {
+define("bui/toolbar", ["jquery", "bui/common", "bui/toolbar/baritem", "bui/toolbar/bar", "bui/toolbar/pagingbar", "bui/toolbar/numberpagingbar"], function(require, exports, module) {
   /**
    * @fileOverview 工具栏命名空间入口
    * @ignore
@@ -13,7 +13,7 @@ define("bui/toolbar", ["jquery/1.9.1/jquery", "bui/common", "bui/toolbar/baritem
   });
   module.exports = Toolbar;
 });
-define("bui/toolbar/baritem", ["jquery/1.9.1/jquery", "bui/common"], function(require, exports, module) {
+define("bui/toolbar/baritem", ["jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview buttons or controls of toolbar
    * @author dxq613@gmail.com, yiminghe@gmail.com
@@ -24,7 +24,7 @@ define("bui/toolbar/baritem", ["jquery/1.9.1/jquery", "bui/common"], function(re
    * @namespace 工具栏命名空间
    * @ignore
    */
-  var $ = require("jquery/1.9.1/jquery"),
+  var $ = require("jquery"),
     BUI = require("bui/common"),
     PREFIX = BUI.prefix,
     Component = BUI.Component,
@@ -237,13 +237,13 @@ define("bui/toolbar/baritem", ["jquery/1.9.1/jquery", "bui/common"], function(re
   };
   module.exports = BarItem;
 });
-define("bui/toolbar/bar", ["jquery/1.9.1/jquery", "bui/common"], function(require, exports, module) {
+define("bui/toolbar/bar", ["jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview A collection of commonly used function buttons or controls represented in compact visual form.
    * @author dxq613@gmail.com, yiminghe@gmail.com
    * @ignore
    */
-  var $ = require("jquery/1.9.1/jquery"),
+  var $ = require("jquery"),
     BUI = require("bui/common"),
     Component = BUI.Component,
     UIBase = Component.UIBase;
@@ -334,13 +334,13 @@ define("bui/toolbar/bar", ["jquery/1.9.1/jquery", "bui/common"], function(requir
   });
   module.exports = Bar;
 });
-define("bui/toolbar/pagingbar", ["jquery/1.9.1/jquery", "bui/common", "bui/toolbar/bar"], function(require, exports, module) {
+define("bui/toolbar/pagingbar", ["jquery", "bui/common", "bui/toolbar/bar"], function(require, exports, module) {
   /**
    * @fileOverview  a specialized toolbar that is bound to a Grid.Store and provides automatic paging control.
    * @author dxq613@gmail.com, yiminghe@gmail.com
    * @ignore
    */
-  var $ = require("jquery/1.9.1/jquery"),
+  var $ = require("jquery"),
     BUI = require("bui/common"),
     Bar = require("bui/toolbar/bar"),
     Component = BUI.Component,
@@ -812,13 +812,13 @@ define("bui/toolbar/pagingbar", ["jquery/1.9.1/jquery", "bui/common", "bui/toolb
   });
   module.exports = PagingBar;
 });
-define("bui/toolbar/numberpagingbar", ["jquery/1.9.1/jquery", "bui/common", "bui/toolbar/pagingbar", "bui/toolbar/bar"], function(require, exports, module) {
+define("bui/toolbar/numberpagingbar", ["jquery", "bui/common", "bui/toolbar/pagingbar", "bui/toolbar/bar"], function(require, exports, module) {
   /**
    * @fileOverview  a specialized toolbar that is bound to a Grid.Store and provides automatic paging control.
    * @author
    * @ignore
    */
-  var $ = require("jquery/1.9.1/jquery"),
+  var $ = require("jquery"),
     BUI = require("bui/common"),
     Component = BUI.Component,
     PBar = require("bui/toolbar/pagingbar");

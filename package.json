@@ -41,6 +41,7 @@
       "bui-tab": "1.1.0",
       "bui-toolbar": "1.1.0",
       "bui-module": "1.1.0",
+      "bui-swf": "1.1.0",
       "bui-uploader": "1.1.0"
     },
     "devDependencies": {

@@ -1,4 +1,4 @@
-define("bui/overlay", ["jquery/1.9.1/jquery", "bui/common", "bui/overlay/overlay", "bui/overlay/dialog", "bui/overlay/message"], function(require, exports, module) {
+define("bui/overlay", ["jquery", "bui/common", "bui/overlay/overlay", "bui/overlay/dialog", "bui/overlay/message"], function(require, exports, module) {
   /**
    * @fileOverview Overlay 模块的入口
    * @ignore
@@ -17,12 +17,12 @@ define("bui/overlay", ["jquery/1.9.1/jquery", "bui/common", "bui/overlay/overlay
   BUI.Message = BUI.Overlay.Message;
   module.exports = Overlay;
 });
-define("bui/overlay/overlay", ["jquery/1.9.1/jquery", "bui/common"], function(require, exports, module) {
+define("bui/overlay/overlay", ["jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 悬浮层
    * @ignore
    */
-  var $ = require("jquery/1.9.1/jquery"),
+  var $ = require("jquery"),
     BUI = require("bui/common"),
     Component = BUI.Component,
     CLS_ARROW = 'x-align-arrow',
@@ -248,13 +248,13 @@ define("bui/overlay/overlay", ["jquery/1.9.1/jquery", "bui/common"], function(re
   overlay.View = overlayView;
   module.exports = overlay;
 });
-define("bui/overlay/dialog", ["jquery/1.9.1/jquery", "bui/overlay/overlay", "bui/common"], function(require, exports, module) {
+define("bui/overlay/dialog", ["jquery", "bui/overlay/overlay", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 弹出框
    * @author dxq613@gmail.com
    * @ignore
    */
-  var $ = require("jquery/1.9.1/jquery"),
+  var $ = require("jquery"),
     Overlay = require("bui/overlay/overlay"),
     UIBase = BUI.Component.UIBase,
     CLS_TITLE = 'header-title',
@@ -582,13 +582,13 @@ define("bui/overlay/dialog", ["jquery/1.9.1/jquery", "bui/overlay/overlay", "bui
   dialog.View = dialogView;
   module.exports = dialog;
 });
-define("bui/overlay/message", ["jquery/1.9.1/jquery", "bui/overlay/dialog", "bui/overlay/overlay", "bui/common"], function(require, exports, module) {
+define("bui/overlay/message", ["jquery", "bui/overlay/dialog", "bui/overlay/overlay", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 消息框，警告、确认
    * @author dxq613@gmail.com
    * @ignore
    */
-  var $ = require("jquery/1.9.1/jquery"),
+  var $ = require("jquery"),
     Dialog = require("bui/overlay/dialog"),
     PREFIX = BUI.prefix,
     iconText = {

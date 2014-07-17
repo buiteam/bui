@@ -1,4 +1,4 @@
-define("bui/picker", ["jquery/1.9.1/jquery", "bui/common", "bui/picker/mixin", "bui/picker/picker", "bui/picker/listpicker", "bui/overlay", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/picker", ["jquery", "bui/common", "bui/picker/mixin", "bui/picker/picker", "bui/picker/listpicker", "bui/overlay", "bui/data", "bui/list"], function(require, exports, module) {
   /**
    * @fileOverview Picker的入口
    * @author dxq613@gmail.com
@@ -13,12 +13,12 @@ define("bui/picker", ["jquery/1.9.1/jquery", "bui/common", "bui/picker/mixin", "
   });
   module.exports = Picker;
 });
-define("bui/picker/mixin", ["jquery/1.9.1/jquery"], function(require, exports, module) {
+define("bui/picker/mixin", ["jquery"], function(require, exports, module) {
   /**
    * @fileOverview picker的扩展
    * @ignore
    */
-  var $ = require("jquery/1.9.1/jquery");
+  var $ = require("jquery");
   /**
    * @class BUI.Picker.Mixin
    */
@@ -268,12 +268,12 @@ define("bui/picker/mixin", ["jquery/1.9.1/jquery"], function(require, exports, m
   }
   module.exports = Mixin;
 });
-define("bui/picker/picker", ["jquery/1.9.1/jquery", "bui/common", "bui/overlay", "bui/picker/mixin"], function(require, exports, module) {
+define("bui/picker/picker", ["jquery", "bui/common", "bui/overlay", "bui/picker/mixin"], function(require, exports, module) {
   /**
    * @fileOverview 选择器
    * @ignore
    */
-  var $ = require("jquery/1.9.1/jquery"),
+  var $ = require("jquery"),
     Overlay = require("bui/overlay").Overlay,
     Mixin = require("bui/picker/mixin");
   /**
@@ -312,12 +312,12 @@ define("bui/picker/picker", ["jquery/1.9.1/jquery", "bui/common", "bui/overlay",
   });
   module.exports = picker;
 });
-define("bui/picker/listpicker", ["jquery/1.9.1/jquery", "bui/common", "bui/data", "bui/list", "bui/picker/picker", "bui/overlay", "bui/picker/mixin"], function(require, exports, module) {
+define("bui/picker/listpicker", ["jquery", "bui/common", "bui/data", "bui/list", "bui/picker/picker", "bui/overlay", "bui/picker/mixin"], function(require, exports, module) {
   /**
    * @fileOverview 列表项的选择器
    * @ignore
    */
-  var $ = require("jquery/1.9.1/jquery"),
+  var $ = require("jquery"),
     List = require("bui/list"),
     Picker = require("bui/picker/picker"),
     /**

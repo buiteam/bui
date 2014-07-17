@@ -1,10 +1,10 @@
-define("bui/module", ["jquery/1.9.1/jquery", "bui/common"], function(require, exports, module) {
+define("bui/module", ["jquery", "bui/common"], function(require, exports, module) {
   /**
    * @ignore
    * @fileOverview module
    * @author dxq613
    */
-  var $ = require("jquery/1.9.1/jquery"),
+  var $ = require("jquery"),
     BUI = require("bui/common");
   var guid = 1;
 

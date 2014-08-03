@@ -26,6 +26,7 @@
   "spm": {
     "main": "index.js",
     "dependencies": {
+      "bui-config": "1.1.0",
       "bui-common": "1.1.0",
       "bui-cookie": "1.1.0",
       "bui-data": "1.1.0",

@@ -9,6 +9,7 @@ var through = require('through2');
 var path = require('path');
 var exec = require('child_process').exec;
 var replace = require('gulp-replace');
+var uglify = require('gulp-uglify');
 
 var dependencies = require('./package.json').spm.dependencies;
 
@@ -39,14 +40,14 @@ function renameFile() {
 //清理目录
 gulp.task('clean', function() {
   return gulp.src([
-      './dist',
+      './build',
       './sea-modules'
     ], {read: false})
     .pipe(clean());
 });
 //获取依赖的package
 gulp.task('prepare', ['clean'], function(cb){
-  exec('spm install', function (err, stdout, stderr) {
+  exec('./node_modules/spm/bin/spm install', function (err, stdout, stderr) {
     cb(stderr);
   });
 });
@@ -65,32 +66,47 @@ gulp.task('package', function(){
     .pipe(replace(/bui-(\w+)\/\d.\d.\d\/\w+/g, 'bui/$1'))
     // 去掉-debug的后缀
     .pipe(replace(/-debug/g, ''))
-    .pipe(gulp.dest('./dist'));
+    .pipe(gulp.dest('./build'));
 });
 
 gulp.task('seed.js', ['package'], function() {
   return gulp.src([
-      './src/config.js',
-      './dist/common.js'
+      './build/config.js',
+      './build/common.js'
     ])
     .pipe(concat('seed.js'))
-    .pipe(gulp.dest('./dist'));
+    .pipe(gulp.dest('./build'));
 });
 
 gulp.task('bui.js', ['package'], function() {
   return gulp.src([
-      './src/config.js',
-      './dist/common.js'
+      './build/config.js',
+      './build/common.js',
+      './build/data.js',
+      './build/list.js',
+      './build/mask.js',
+      './build/overlay.js',
+      './build/picker.js',
+      './build/toolbar.js',
+      './build/calendar.js',
+      './build/select.js',
+      './build/form.js'
     ])
     .pipe(concat('bui.js'))
-    .pipe(gulp.dest('./dist'));
+    .pipe(gulp.dest('./build'));
 });
 
 gulp.task('script', ['seed.js', 'bui.js'], function() {
   return gulp.src([
-      './src/config.js'
+      './build/*.js'
     ])
-    .pipe(gulp.dest('./dist'))
+    .pipe(uglify({
+      output: {
+        ascii_only: true
+      }
+    }))
+    .pipe(rename({suffix: '-min'}))
+    .pipe(gulp.dest('./build'))
 });
 
 gulp.task('less', function() {
@@ -98,7 +114,7 @@ gulp.task('less', function() {
       './assets/less/*/*.less'
     ])
     .pipe(less())
-    .pipe(gulp.dest('./dist/css'));
+    .pipe(gulp.dest('./build/css'));
 });
 
 gulp.task('watch', function(){
@@ -115,7 +131,7 @@ gulp.task('images', function() {
   return gulp.src([
       './assets/img/*.*'
     ])
-    .pipe(gulp.dest('./dist/img'))
+    .pipe(gulp.dest('./build/img'))
 });
 
 gulp.task('default', ['prepare'], function() {

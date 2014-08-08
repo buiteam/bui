@@ -44,7 +44,9 @@
       "bui-toolbar": "1.1.0",
       "bui-module": "1.1.0",
       "bui-swf": "1.1.0",
-      "bui-uploader": "1.1.0"
+      "bui-uploader": "1.1.0",
+      "bui-tooltip": "1.1.0",
+      "bui-extensions": "1.1.0"
     },
     "devDependencies": {
       "expect.js": "0.3.1"

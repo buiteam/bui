@@ -14,8 +14,8 @@ var uglify = require('gulp-uglify');
 var dependencies = require('./package.json').spm.dependencies;
 
 // 获取包文件的路径
-function getFiles(name, version) {
-  return './sea-modules/' + name + '/' + version + '/dist/' + name + '/' + version + '/*-debug.js';
+function getPackagePath(name, version) {
+  return './sea-modules/' + name + '/' + version + '/dist/' + name + '/' + version + '/';
 }
 
 /**
@@ -57,7 +57,7 @@ gulp.task('prepare', ['clean'], function(cb){
 gulp.task('package', function(){
   var files = [];
   for(var name in dependencies){
-    files.push(getFiles(name, dependencies[name]));
+    files.push(getPackagePath(name, dependencies[name]) + '*-debug.js');
   }
   return gulp.src(files)
     // 重命名包文件的js名
@@ -141,14 +141,20 @@ gulp.task('css', ['less'], function() {
   // .pipe('')
 });
 
-gulp.task('images', function() {
-  return gulp.src([
-      './assets/img/*.*'
-    ])
-    .pipe(gulp.dest('./build/img'))
+// 图片以及一些其他静态资源
+gulp.task('assets', function() {
+  var files = [
+    '!**/*.js',
+    '!**/*.css'
+  ];
+  for(var name in dependencies){
+    files.push(getPackagePath(name, dependencies[name]) + '**/*.*');
+  }
+  return gulp.src(files)
+    .pipe(gulp.dest('./build'))
 });
 
 gulp.task('default', ['prepare'], function() {
-  return gulp.start('package', 'script', 'css', 'images');
+  return gulp.start('package', 'script', 'css', 'assets');
 });
 

@@ -27,7 +27,9 @@
   "spm": {
     "main": "index.js",
     "dependencies": {
+      "seajs": "2.2.1",
       "bui-config": "1.1.0",
+      "bui-adapter": "1.1.0",
       "bui-common": "1.1.0",
       "bui-cookie": "1.1.0",
       "bui-data": "1.1.0",

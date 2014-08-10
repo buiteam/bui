@@ -71,6 +71,7 @@ gulp.task('package', function(){
 
 gulp.task('seed.js', ['package'], function() {
   return gulp.src([
+      './sea-modules/seajs/' + dependencies.seajs + '/dist/sea-debug.js',
       './build/config.js',
       './build/common.js'
     ])
@@ -80,6 +81,7 @@ gulp.task('seed.js', ['package'], function() {
 
 gulp.task('bui.js', ['package'], function() {
   return gulp.src([
+      './sea-modules/seajs/' + dependencies.seajs + '/dist/sea-debug.js',
       './build/config.js',
       './build/common.js',
       './build/data.js',
@@ -96,7 +98,19 @@ gulp.task('bui.js', ['package'], function() {
     .pipe(gulp.dest('./build'));
 });
 
-gulp.task('script', ['seed.js', 'bui.js'], function() {
+// 适配kissy的js
+gulp.task('adapter.js', ['package'], function() {
+  return gulp.src([
+      './sea-modules/bui-adapter/' + dependencies['bui-adapter'] + '/dist/adapter-debug.js',
+    ])
+    .pipe(rename(function (path) {
+        var basename = path.basename;
+        path.basename = basename.replace(/-debug$/, '');
+    }))
+    .pipe(gulp.dest('./build'));
+});
+
+gulp.task('script', ['seed.js', 'bui.js', 'adapter.js'], function() {
   return gulp.src([
       './build/*.js'
     ])

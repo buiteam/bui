@@ -123,19 +123,7 @@ gulp.task('script', ['seed.js', 'bui.js', 'adapter.js'], function() {
     .pipe(gulp.dest('./build'))
 });
 
-gulp.task('less', function() {
-  return gulp.src([
-      './assets/less/*/*.less'
-    ])
-    .pipe(less())
-    .pipe(gulp.dest('./build/css'));
-});
-
-gulp.task('watch', function(){
-  gulp.watch('./assets/**/*.less', ['less']);
-});
-
-gulp.task('css', ['less'], function() {
+gulp.task('css', ['package'], function() {
   // gulp.src([
   //   ])
   // .pipe('')

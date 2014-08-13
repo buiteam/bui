@@ -53,7 +53,8 @@
       "bui-layout": "1.1.0",
       "bui-graphic": "1.1.0",
       "bui-imgview": "1.1.0",
-      "bui-extensions": "1.1.0"
+      "bui-extensions": "1.1.0",
+      "bui-dpl": "1.1.0"
     },
     "devDependencies": {
       "expect.js": "0.3.1"

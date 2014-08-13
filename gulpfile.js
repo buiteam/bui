@@ -132,8 +132,7 @@ gulp.task('css', ['package'], function() {
 // 图片以及一些其他静态资源
 gulp.task('assets', function() {
   var files = [
-    '!**/*.js',
-    '!**/*.css'
+    '!**/*.js'
   ];
   for(var name in dependencies){
     files.push(getPackagePath(name, dependencies[name]) + '**/*.*');

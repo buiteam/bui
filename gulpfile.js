@@ -64,6 +64,8 @@ gulp.task('package', function(){
     .pipe(renameFile())
     // 去掉版本号和包名
     .pipe(replace(/bui-(\w+)\/\d.\d.\d\/\w+/g, 'bui/$1'))
+    // require.async的时候要把bui-xxx换成bui/xxx
+    .pipe(replace(/require\.async\((\'|\")bui-/g, 'require.async($1bui/'))
     // 去掉-debug的后缀
     .pipe(replace(/-debug/g, ''))
     .pipe(gulp.dest('./build'));

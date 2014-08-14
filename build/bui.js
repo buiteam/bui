@@ -21146,7 +21146,7 @@ define("bui/form/form", ["jquery", "bui/common", "bui/form/fieldcontainer", "bui
     },
     _initButtonBar: function(cfg) {
       var _self = this;
-      require.async('bui-toolbar', function(Toolbar) {
+      require.async('bui/toolbar', function(Toolbar) {
         buttonBar = new Toolbar.Bar(cfg);
         _self.set('buttonBar', buttonBar);
       });
@@ -23221,7 +23221,7 @@ define("bui/form/fields/select", ["jquery", "bui/common", "bui/form/fields/base"
     _initSelect: function(select) {
       var _self = this,
         items = _self.get('items');
-      require.async('bui-select', function(Select) {
+      require.async('bui/select', function(Select) {
         select.render = _self.getControlContainer();
         select.valueField = _self.getInnerControl();
         select.autoRender = true;

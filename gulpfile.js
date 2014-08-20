@@ -25,11 +25,21 @@ function getPackagePath(name, version) {
 function renameFile() {
   var stream = through.obj(function(file, enc, callback) {
 
-    var filepath = file.path.split(path.sep),
-      module = filepath.slice(filepath.length - 3), // => [bui-{package}, version, {main.js}]
-      filename = module[0].split('-')[1];
+    
 
-    file.path = path.join(file.base, filename + '.js');
+    var filepath = file.path.split(path.sep),
+      module = filepath.slice(filepath.lastIndexOf('dist') + 1), // => [bui-{package}, version, [path,] {main.js}]
+      packageName = module[0].split('-')[1],
+      filename;
+
+    if (module.length === 3) {
+      filename = packageName + '.js';
+    }
+    else {
+      filename = module.slice(2).join(path.sep).replace(/-debug.js$/, '.js');
+    }
+
+    file.path = path.join(file.base, filename);
 
     return callback(null, file);
   });
@@ -57,7 +67,7 @@ gulp.task('prepare', ['clean'], function(cb){
 gulp.task('package', function(){
   var files = [];
   for(var name in dependencies){
-    files.push(getPackagePath(name, dependencies[name]) + '*-debug.js');
+    files.push(getPackagePath(name, dependencies[name]) + '**/*-debug.js');
   }
   return gulp.src(files)
     // 重命名包文件的js名

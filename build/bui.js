@@ -20517,7 +20517,7 @@ define("bui/select/tag", ["jquery", "bui/common", "bui/data", "bui/list"], funct
   });
   module.exports = Tag;
 });
-define("bui/form", ["jquery", "bui/common", "bui/form/tips", "bui/form/fieldcontainer", "bui/form/form", "bui/form/row", "bui/form/fieldgroup", "bui/form/hform", "bui/form/rules", "bui/form/field", "bui/overlay", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/valid", "bui/form/remote", "bui/form/rule", "bui/data", "bui/list", "bui/form/group/base", "bui/form/group/range", "bui/form/group/check", "bui/form/group/select"], function(require, exports, module) {
+define("bui/form", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview form 命名空间入口
    * @ignore
@@ -20545,7 +20545,7 @@ define("bui/form/tips", ["jquery", "bui/common", "bui/overlay"], function(requir
    * @author dxq613@gmail.com
    * @ignore
    */
-  var $ = require("jquery"),
+  var $ = require('jquery'),
     BUI = require("bui/common"),
     prefix = BUI.prefix,
     Overlay = require("bui/overlay").Overlay,
@@ -20752,12 +20752,12 @@ define("bui/form/tips", ["jquery", "bui/common", "bui/overlay"], function(requir
   Tips.Item = tipItem;
   module.exports = Tips;
 });
-define("bui/form/fieldcontainer", ["jquery", "bui/common", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/form/fieldcontainer", ["jquery", "bui/common", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview 表单字段的容器扩展
    * @ignore
    */
-  var $ = require("jquery"),
+  var $ = require('jquery'),
     BUI = require("bui/common"),
     Field = require("bui/form/field"),
     GroupValid = require("bui/form/groupvalid"),
@@ -21098,1060 +21098,7 @@ define("bui/form/fieldcontainer", ["jquery", "bui/common", "bui/form/field", "bu
   container.View = containerView;
   module.exports = container;
 });
-define("bui/form/form", ["jquery", "bui/common", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
-  /**
-   * @fileOverview 创建表单
-   * @ignore
-   */
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    FieldContainer = require("bui/form/fieldcontainer"),
-    Component = BUI.Component,
-    TYPE_SUBMIT = {
-      NORMAL: 'normal',
-      AJAX: 'ajax',
-      IFRAME: 'iframe'
-    };
-  var FormView = FieldContainer.View.extend({
-    _uiSetMethod: function(v) {
-      this.get('el').attr('method', v);
-    },
-    _uiSetAction: function(v) {
-      this.get('el').attr('action', v);
-    }
-  }, {
-    ATTRS: {
-      method: {},
-      action: {}
-    }
-  }, {
-    xclass: 'form-view'
-  });
-  /**
-   * @class BUI.Form.Form
-   * 表单控件,表单相关的类图：
-   * <img src="../assets/img/class-form.jpg"/>
-   * @extends BUI.Form.FieldContainer
-   */
-  var Form = FieldContainer.extend({
-    renderUI: function() {
-      var _self = this,
-        buttonBar = _self.get('buttonBar'),
-        cfg;
-      if ($.isPlainObject(buttonBar) && _self.get('buttons')) {
-        cfg = BUI.merge(_self.getDefaultButtonBarCfg(), buttonBar);
-        _self._initButtonBar(cfg);
-      }
-      _self._initSubmitMask();
-    },
-    _initButtonBar: function(cfg) {
-      var _self = this;
-      require.async('bui/toolbar', function(Toolbar) {
-        buttonBar = new Toolbar.Bar(cfg);
-        _self.set('buttonBar', buttonBar);
-      });
-    },
-    bindUI: function() {
-      var _self = this,
-        formEl = _self.get('el');
-      formEl.on('submit', function(ev) {
-        _self.valid();
-        if (!_self.isValid() || _self.onBeforeSubmit() === false) {
-          ev.preventDefault();
-          _self.focusError();
-          return;
-        }
-        if (_self.isValid() && _self.get('submitType') === TYPE_SUBMIT.AJAX) {
-          ev.preventDefault();
-          _self.ajaxSubmit();
-        }
-      });
-    },
-    /**
-     * 获取按钮栏默认的配置项
-     * @protected
-     * @return {Object}
-     */
-    getDefaultButtonBarCfg: function() {
-      var _self = this,
-        buttons = _self.get('buttons');
-      return {
-        autoRender: true,
-        elCls: 'toolbar',
-        render: _self.get('el'),
-        items: buttons,
-        defaultChildClass: 'bar-item-button'
-      };
-    },
-    /**
-     * 将焦点定位到第一个错误字段
-     */
-    focusError: function() {
-      var _self = this,
-        fields = _self.getFields();
-      BUI.each(fields, function(field) {
-        if (field.get('visible') && !field.get('disabled') && !field.isValid()) {
-          try {
-            field.focus();
-          } catch (e) {
-            BUI.log(e);
-          }
-          return false;
-        }
-      });
-    },
-    /**
-     * 表单提交，如果未通过验证，则阻止提交
-     */
-    submit: function(options) {
-      var _self = this,
-        submitType = _self.get('submitType');
-      _self.valid();
-      if (_self.isValid()) {
-        if (_self.onBeforeSubmit() == false) {
-          return;
-        }
-        if (submitType === TYPE_SUBMIT.NORMAL) {
-          _self.get('el')[0].submit();
-        } else if (submitType === TYPE_SUBMIT.AJAX) {
-          _self.ajaxSubmit(options);
-        }
-      } else {
-        _self.focusError();
-      }
-    },
-    /**
-     * 异步提交表单
-     */
-    ajaxSubmit: function(options) {
-      var _self = this,
-        method = _self.get('method'),
-        action = _self.get('action'),
-        callback = _self.get('callback'),
-        submitMask = _self.get('submitMask'),
-        data = _self.serializeToObject(), //获取表单数据
-        success,
-        ajaxParams = BUI.merge(true, { //合并请求参数
-          url: action,
-          type: method,
-          dataType: 'json',
-          data: data
-        }, options);
-      if (options && options.success) {
-        success = options.success;
-      }
-      ajaxParams.success = function(data) { //封装success方法
-        if (submitMask && submitMask.hide) {
-          submitMask.hide();
-        }
-        if (success) {
-          success(data);
-        }
-        callback && callback.call(_self, data);
-      }
-      if (submitMask && submitMask.show) {
-        submitMask.show();
-      }
-      $.ajax(ajaxParams);
-    },
-    //获取提交的屏蔽层
-    _initSubmitMask: function() {
-      var _self = this,
-        submitType = _self.get('submitType'),
-        submitMask = _self.get('submitMask');
-      if (submitType === TYPE_SUBMIT.AJAX && submitMask) {
-        BUI.use('bui/mask', function(Mask) {
-          var cfg = $.isPlainObject(submitMask) ? submitMask : {};
-          submitMask = new Mask.LoadMask(BUI.mix({
-            el: _self.get('el')
-          }, cfg));
-          _self.set('submitMask', submitMask);
-        });
-      }
-    },
-    /**
-     * 序列化表单成对象，所有的键值都是字符串
-     * @return {Object} 序列化成对象
-     */
-    serializeToObject: function() {
-      return BUI.FormHelper.serializeToObject(this.get('el')[0]);
-    },
-    /**
-     * serializeToObject 的缩写，所有的键值都是字符串
-     * @return {Object} 序列化成对象
-     */
-    toObject: function() {
-      return this.serializeToObject();
-    },
-    /**
-     * 表单提交前
-     * @protected
-     * @return {Boolean} 是否取消提交
-     */
-    onBeforeSubmit: function() {
-      return this.fire('beforesubmit');
-    },
-    /**
-     * 表单恢复初始值
-     */
-    reset: function() {
-      var _self = this,
-        initRecord = _self.get('initRecord');
-      _self.setRecord(initRecord);
-    },
-    /**
-     * 重置提示信息，因为在表单隐藏状态下，提示信息定位错误
-     * <pre><code>
-     * dialog.on('show',function(){
-     *   form.resetTips();
-     * });
-     *
-     * </code></pre>
-     */
-    resetTips: function() {
-      var _self = this,
-        fields = _self.getFields();
-      BUI.each(fields, function(field) {
-        field.resetTip();
-      });
-    },
-    /**
-     * @protected
-     * @ignore
-     */
-    destructor: function() {
-      var _self = this,
-        buttonBar = _self.get('buttonBar'),
-        submitMask = _self.get('submitMask');
-      if (buttonBar && buttonBar.destroy) {
-        buttonBar.destroy();
-      }
-      if (submitMask && submitMask.destroy) {
-        submitMask.destroy();
-      }
-    },
-    //设置表单的初始数据
-    _uiSetInitRecord: function(v) {
-      //if(v){
-      this.setRecord(v);
-      //}
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 提交的路径
-       * @type {String}
-       */
-      action: {
-        view: true,
-        value: ''
-      },
-      allowTextSelection: {
-        value: true
-      },
-      events: {
-        value: {
-          /**
-           * @event
-           * 表单提交前触发，如果返回false会阻止表单提交
-           */
-          beforesubmit: false
-        }
-      },
-      /**
-       * 提交的方式
-       * @type {String}
-       */
-      method: {
-        view: true,
-        value: 'get'
-      },
-      /**
-       * 默认的loader配置
-       * <pre>
-       * {
-       *   autoLoad : true,
-       *   property : 'record',
-       *   dataType : 'json'
-       * }
-       * </pre>
-       * @type {Object}
-       */
-      defaultLoaderCfg: {
-        value: {
-          autoLoad: true,
-          property: 'record',
-          dataType: 'json'
-        }
-      },
-      /**
-       * 异步提交表单时的屏蔽
-       * @type {BUI.Mask.LoadMask|Object}
-       */
-      submitMask: {
-        value: {
-          msg: '正在提交。。。'
-        }
-      },
-      /**
-       * 提交表单的方式
-       *
-       *  - normal 普通方式，直接提交表单
-       *  - ajax 异步提交方式，在submit指定参数
-       *  - iframe 使用iframe提交,开发中。。。
-       * @cfg {String} [submitType='normal']
-       */
-      submitType: {
-        value: 'normal'
-      },
-      /**
-       * 表单提交前，如果存在错误，是否将焦点定位到第一个错误
-       * @type {Object}
-       */
-      focusError: {
-        value: true
-      },
-      /**
-       * 表单提交成功后的回调函数，普通提交方式 submitType = 'normal'，不会调用
-       * @type {Object}
-       */
-      callback: {},
-      decorateCfgFields: {
-        value: {
-          'method': true,
-          'action': true
-        }
-      },
-      /**
-       * 默认的子控件时文本域
-       * @type {String}
-       */
-      defaultChildClass: {
-        value: 'form-field'
-      },
-      /**
-       * 使用的标签，为form
-       * @type {String}
-       */
-      elTagName: {
-        value: 'form'
-      },
-      /**
-       * 表单按钮
-       * @type {Array}
-       */
-      buttons: {},
-      /**
-       * 按钮栏
-       * @type {BUI.Toolbar.Bar}
-       */
-      buttonBar: {
-        shared: false,
-        value: {}
-      },
-      childContainer: {
-        value: '.x-form-fields'
-      },
-      /**
-       * 表单初始化的数据，用于初始化或者表单回滚
-       * @type {Object}
-       */
-      initRecord: {},
-      /**
-       * 表单默认不显示错误，不影响表单分组和表单字段
-       * @type {Boolean}
-       */
-      showError: {
-        value: false
-      },
-      xview: {
-        value: FormView
-      },
-      tpl: {
-        value: '<div class="x-form-fields"></div>'
-      }
-    }
-  }, {
-    xclass: 'form'
-  });
-  Form.View = FormView;
-  module.exports = Form;
-});
-define("bui/form/row", ["jquery", "bui/common", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单里的一行元素
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    FieldContainer = require("bui/form/fieldcontainer");
-  /**
-   * @class BUI.Form.Row
-   * 表单行
-   * @extends BUI.Form.FieldContainer
-   */
-  var Row = FieldContainer.extend({}, {
-    ATTRS: {
-      elCls: {
-        value: 'row'
-      },
-      defaultChildCfg: {
-        value: {
-          tpl: ' <label class="control-label">{label}</label>\
-              <div class="controls">\
-              </div>',
-          childContainer: '.controls',
-          showOneError: true,
-          controlContainer: '.controls',
-          elCls: 'control-group span8',
-          errorTpl: '<span class="valid-text"><span class="estate error"><span class="x-icon x-icon-mini x-icon-error">!</span><em>{error}</em></span></span>'
-        }
-      },
-      defaultChildClass: {
-        value: 'form-field-text'
-      }
-    }
-  }, {
-    xclass: 'form-row'
-  });
-  module.exports = Row;
-});
-define("bui/form/fieldgroup", ["jquery", "bui/common", "bui/form/group/base", "bui/form/group/range", "bui/form/group/check", "bui/form/group/select", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单文本域组，可以包含一个至多个字段
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    Group = require("bui/form/group/base");
-  BUI.mix(Group, {
-    Range: require("bui/form/group/range"),
-    Check: require("bui/form/group/check"),
-    Select: require("bui/form/group/select")
-  });
-  return Group;
-});
-define("bui/form/hform", ["jquery", "bui/common", "bui/form/form", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
-  /**
-   * @fileOverview 垂直表单
-   * @ignore
-   */
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    Form = require("bui/form/form");
-  /**
-   * @class BUI.Form.HForm
-   * 水平表单，字段水平排列
-   * @extends BUI.Form.Form
-   *
-   */
-  var Horizontal = Form.extend({
-    /**
-     * 获取按钮栏默认的配置项
-     * @protected
-     * @return {Object}
-     */
-    getDefaultButtonBarCfg: function() {
-      var _self = this,
-        buttons = _self.get('buttons');
-      return {
-        autoRender: true,
-        elCls: 'actions-bar toolbar row',
-        tpl: '<div class="form-actions span21 offset3"></div>',
-        childContainer: '.form-actions',
-        render: _self.get('el'),
-        items: buttons,
-        defaultChildClass: 'bar-item-button'
-      };
-    }
-  }, {
-    ATTRS: {
-      defaultChildClass: {
-        value: 'form-row'
-      },
-      errorTpl: {
-        value: '<span class="valid-text"><span class="estate error"><span class="x-icon x-icon-mini x-icon-error">!</span><em>{error}</em></span></span>'
-      },
-      elCls: {
-        value: 'form-horizontal'
-      }
-    },
-    PARSER: {}
-  }, {
-    xclass: 'form-horizontal'
-  });
-  module.exports = Horizontal;
-});
-define("bui/form/rules", ["jquery", "bui/form/rule", "bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview 验证集合
-   * @ignore
-   */
-  var $ = require("jquery"),
-    Rule = require("bui/form/rule");
-
-  function toNumber(value) {
-    return parseFloat(value);
-  }
-
-  function toDate(value) {
-    return BUI.Date.parse(value);
-  }
-  var ruleMap = {};
-  /**
-   * @class BUI.Form.Rules
-   * @singleton
-   * 表单验证的验证规则管理器
-   */
-  var rules = {
-    /**
-     * 添加验证规则
-     * @param {Object|BUI.Form.Rule} rule 验证规则配置项或者验证规则对象
-     * @param  {String} name 规则名称
-     */
-    add: function(rule) {
-      var name;
-      if ($.isPlainObject(rule)) {
-        name = rule.name;
-        ruleMap[name] = new Rule(rule);
-      } else if (rule.get) {
-        name = rule.get('name');
-        ruleMap[name] = rule;
-      }
-      return ruleMap[name];
-    },
-    /**
-     * 删除验证规则
-     * @param  {String} name 规则名称
-     */
-    remove: function(name) {
-      delete ruleMap[name];
-    },
-    /**
-     * 获取验证规则
-     * @param  {String} name 规则名称
-     * @return {BUI.Form.Rule}  验证规则
-     */
-    get: function(name) {
-      return ruleMap[name];
-    },
-    /**
-     * 验证指定的规则
-     * @param  {String} name 规则类型
-     * @param  {*} value 验证值
-     * @param  {*} [baseValue] 用于验证的基础值
-     * @param  {String} [msg] 显示错误的模板
-     * @param  {BUI.Form.Field|BUI.Form.Group} [control] 显示错误的模板
-     * @return {String} 通过验证返回 null,否则返回错误信息
-     */
-    valid: function(name, value, baseValue, msg, control) {
-      var rule = rules.get(name);
-      if (rule) {
-        return rule.valid(value, baseValue, msg, control);
-      }
-      return null;
-    },
-    /**
-     * 验证指定的规则
-     * @param  {String} name 规则类型
-     * @param  {*} values 验证值
-     * @param  {*} [baseValue] 用于验证的基础值
-     * @param  {BUI.Form.Field|BUI.Form.Group} [control] 显示错误的模板
-     * @return {Boolean} 是否通过验证
-     */
-    isValid: function(name, value, baseValue, control) {
-      return rules.valid(name, value, baseValue, control) == null;
-    }
-  };
-  /**
-   * 非空验证,会对值去除空格
-   * <ol>
-   *  <li>name: required</li>
-   *  <li>msg: 不能为空！</li>
-   *  <li>required: boolean 类型</li>
-   * </ol>
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var required = rules.add({
-    name: 'required',
-    msg: '不能为空！',
-    validator: function(value, required, formatedMsg) {
-      if (required !== false && /^\s*$/.test(value)) {
-        return formatedMsg;
-      }
-    }
-  });
-  /**
-   * 相等验证
-   * <ol>
-   *  <li>name: equalTo</li>
-   *  <li>msg: 两次输入不一致！</li>
-   *  <li>equalTo: 一个字符串，id（#id_name) 或者 name</li>
-   * </ol>
-   *         {
-   *           equalTo : '#password'
-   *         }
-   *         //或者
-   *         {
-   *           equalTo : 'password'
-   *         }
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var equalTo = rules.add({
-    name: 'equalTo',
-    msg: '两次输入不一致！',
-    validator: function(value, equalTo, formatedMsg) {
-      var el = $(equalTo);
-      if (el.length) {
-        equalTo = el.val();
-      }
-      return value === equalTo ? undefined : formatedMsg;
-    }
-  });
-  /**
-   * 不小于验证
-   * <ol>
-   *  <li>name: min</li>
-   *  <li>msg: 输入值不能小于{0}！</li>
-   *  <li>min: 数字，字符串</li>
-   * </ol>
-   *         {
-   *           min : 5
-   *         }
-   *         //字符串
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var min = rules.add({
-    name: 'min',
-    msg: '输入值不能小于{0}！',
-    validator: function(value, min, formatedMsg) {
-      if (BUI.isString(value)) {
-        value = value.replace(/\,/g, '');
-      }
-      if (value !== '' && toNumber(value) < toNumber(min)) {
-        return formatedMsg;
-      }
-    }
-  });
-  /**
-   * 不小于验证,用于数值比较
-   * <ol>
-   *  <li>name: max</li>
-   *  <li>msg: 输入值不能大于{0}！</li>
-   *  <li>max: 数字、字符串</li>
-   * </ol>
-   *         {
-   *           max : 100
-   *         }
-   *         //字符串
-   *         {
-   *           max : '100'
-   *         }
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var max = rules.add({
-    name: 'max',
-    msg: '输入值不能大于{0}！',
-    validator: function(value, max, formatedMsg) {
-      if (BUI.isString(value)) {
-        value = value.replace(/\,/g, '');
-      }
-      if (value !== '' && toNumber(value) > toNumber(max)) {
-        return formatedMsg;
-      }
-    }
-  });
-  /**
-   * 输入长度验证，必须是指定的长度
-   * <ol>
-   *  <li>name: length</li>
-   *  <li>msg: 输入值长度为{0}！</li>
-   *  <li>length: 数字</li>
-   * </ol>
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var length = rules.add({
-    name: 'length',
-    msg: '输入值长度为{0}！',
-    validator: function(value, len, formatedMsg) {
-      if (value != null) {
-        value = $.trim(value.toString());
-        if (len != value.length) {
-          return formatedMsg;
-        }
-      }
-    }
-  });
-  /**
-   * 最短长度验证,会对值去除空格
-   * <ol>
-   *  <li>name: minlength</li>
-   *  <li>msg: 输入值长度不小于{0}！</li>
-   *  <li>minlength: 数字</li>
-   * </ol>
-   *         {
-   *           minlength : 5
-   *         }
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var minlength = rules.add({
-    name: 'minlength',
-    msg: '输入值长度不小于{0}！',
-    validator: function(value, min, formatedMsg) {
-      if (value != null) {
-        value = $.trim(value.toString());
-        var len = value.length;
-        if (len < min) {
-          return formatedMsg;
-        }
-      }
-    }
-  });
-  /**
-   * 最短长度验证,会对值去除空格
-   * <ol>
-   *  <li>name: maxlength</li>
-   *  <li>msg: 输入值长度不大于{0}！</li>
-   *  <li>maxlength: 数字</li>
-   * </ol>
-   *         {
-   *           maxlength : 10
-   *         }
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var maxlength = rules.add({
-    name: 'maxlength',
-    msg: '输入值长度不大于{0}！',
-    validator: function(value, max, formatedMsg) {
-      if (value) {
-        value = $.trim(value.toString());
-        var len = value.length;
-        if (len > max) {
-          return formatedMsg;
-        }
-      }
-    }
-  });
-  /**
-   * 正则表达式验证,如果正则表达式为空，则不进行校验
-   * <ol>
-   *  <li>name: regexp</li>
-   *  <li>msg: 输入值不符合{0}！</li>
-   *  <li>regexp: 正则表达式</li>
-   * </ol>
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var regexp = rules.add({
-    name: 'regexp',
-    msg: '输入值不符合{0}！',
-    validator: function(value, regexp, formatedMsg) {
-      if (regexp) {
-        return regexp.test(value) ? undefined : formatedMsg;
-      }
-    }
-  });
-  /**
-   * 邮箱验证,会对值去除空格，无数据不进行校验
-   * <ol>
-   *  <li>name: email</li>
-   *  <li>msg: 不是有效的邮箱地址！</li>
-   * </ol>
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var email = rules.add({
-    name: 'email',
-    msg: '不是有效的邮箱地址！',
-    validator: function(value, baseValue, formatedMsg) {
-      value = $.trim(value);
-      if (value) {
-        return /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(value) ? undefined : formatedMsg;
-      }
-    }
-  });
-  /**
-   * 日期验证，会对值去除空格，无数据不进行校验，
-   * 如果传入的值不是字符串，而是数字，则认为是有效值
-   * <ol>
-   *  <li>name: date</li>
-   *  <li>msg: 不是有效的日期！</li>
-   * </ol>
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var date = rules.add({
-    name: 'date',
-    msg: '不是有效的日期！',
-    validator: function(value, baseValue, formatedMsg) {
-      if (BUI.isNumber(value)) { //数字认为是日期
-        return;
-      }
-      if (BUI.isDate(value)) {
-        return;
-      }
-      value = $.trim(value);
-      if (value) {
-        return BUI.Date.isDateString(value) ? undefined : formatedMsg;
-      }
-    }
-  });
-  /**
-   * 不小于验证
-   * <ol>
-   *  <li>name: minDate</li>
-   *  <li>msg: 输入日期不能小于{0}！</li>
-   *  <li>minDate: 日期，字符串</li>
-   * </ol>
-   *         {
-   *           minDate : '2001-01-01';
-   *         }
-   *         //字符串
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var minDate = rules.add({
-    name: 'minDate',
-    msg: '输入日期不能小于{0}！',
-    validator: function(value, minDate, formatedMsg) {
-      if (value) {
-        var date = toDate(value);
-        if (date && date < toDate(minDate)) {
-          return formatedMsg;
-        }
-      }
-    }
-  });
-  /**
-   * 不小于验证,用于数值比较
-   * <ol>
-   *  <li>name: maxDate</li>
-   *  <li>msg: 输入值不能大于{0}！</li>
-   *  <li>maxDate: 日期、字符串</li>
-   * </ol>
-   *         {
-   *           maxDate : '2001-01-01';
-   *         }
-   *         //或日期
-   *         {
-   *           maxDate : new Date('2001-01-01');
-   *         }
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var maxDate = rules.add({
-    name: 'maxDate',
-    msg: '输入日期不能大于{0}！',
-    validator: function(value, maxDate, formatedMsg) {
-      if (value) {
-        var date = toDate(value);
-        if (date && date > toDate(maxDate)) {
-          return formatedMsg;
-        }
-      }
-    }
-  });
-  /**
-   * 手机验证，11位手机数字
-   * <ol>
-   *  <li>name: mobile</li>
-   *  <li>msg: 不是有效的手机号码！</li>
-   * </ol>
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var mobile = rules.add({
-    name: 'mobile',
-    msg: '不是有效的手机号码！',
-    validator: function(value, baseValue, formatedMsg) {
-      value = $.trim(value);
-      if (value) {
-        return /^\d{11}$/.test(value) ? undefined : formatedMsg;
-      }
-    }
-  });
-  /**
-   * 数字验证，会对值去除空格，无数据不进行校验
-   * 允许千分符，例如： 12,000,000的格式
-   * <ol>
-   *  <li>name: number</li>
-   *  <li>msg: 不是有效的数字！</li>
-   * </ol>
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var number = rules.add({
-    name: 'number',
-    msg: '不是有效的数字！',
-    validator: function(value, baseValue, formatedMsg) {
-      if (BUI.isNumber(value)) {
-        return;
-      }
-      value = value.replace(/\,/g, '');
-      return !isNaN(value) ? undefined : formatedMsg;
-    }
-  });
-  //测试范围
-  function testRange(baseValue, curVal, prevVal) {
-    var allowEqual = baseValue && (baseValue.equals !== false);
-    if (allowEqual) {
-      return prevVal <= curVal;
-    }
-    return prevVal < curVal;
-  }
-
-  function isEmpty(value) {
-    return value == '' || value == null;
-  }
-  //测试是否后面的数据大于前面的
-  function rangeValid(value, baseValue, formatedMsg, group) {
-    var fields = group.getFields(),
-      valid = true;
-    for (var i = 1; i < fields.length; i++) {
-      var cur = fields[i],
-        prev = fields[i - 1],
-        curVal,
-        prevVal;
-      if (cur && prev) {
-        curVal = cur.get('value');
-        prevVal = prev.get('value');
-        if (!isEmpty(curVal) && !isEmpty(prevVal) && !testRange(baseValue, curVal, prevVal)) {
-          valid = false;
-          break;
-        }
-      }
-    }
-    if (!valid) {
-      return formatedMsg;
-    }
-    return null;
-  }
-  /**
-   * 起始结束日期验证，前面的日期不能大于后面的日期
-   * <ol>
-   *  <li>name: dateRange</li>
-   *  <li>msg: 起始日期不能大于结束日期！</li>
-   *  <li>dateRange: 可以使true或者{equals : fasle}，标示是否允许相等</li>
-   * </ol>
-   *         {
-   *           dateRange : true
-   *         }
-   *         {
-   *           dateRange : {equals : false}
-   *         }
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var dateRange = rules.add({
-    name: 'dateRange',
-    msg: '结束日期不能小于起始日期！',
-    validator: rangeValid
-  });
-  /**
-   * 数字范围
-   * <ol>
-   *  <li>name: numberRange</li>
-   *  <li>msg: 起始数字不能大于结束数字！</li>
-   *  <li>numberRange: 可以使true或者{equals : fasle}，标示是否允许相等</li>
-   * </ol>
-   *         {
-   *           numberRange : true
-   *         }
-   *         {
-   *           numberRange : {equals : false}
-   *         }
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var numberRange = rules.add({
-    name: 'numberRange',
-    msg: '结束数字不能小于开始数字！',
-    validator: rangeValid
-  });
-
-  function getFieldName(self) {
-    var firstField = self.getFieldAt(0);
-    if (firstField) {
-      return firstField.get('name');
-    }
-    return '';
-  }
-
-  function testCheckRange(value, range) {
-    if (!BUI.isArray(range)) {
-      range = [range];
-    }
-    //不存在值
-    if (!value || !range.length) {
-      return false;
-    }
-    var len = !value ? 0 : !BUI.isArray(value) ? 1 : value.length;
-    //如果只有一个限定值
-    if (range.length == 1) {
-      var number = range[0];
-      if (!number) { //range = [0],则不必选
-        return true;
-      }
-      if (number > len) {
-        return false;
-      }
-    } else {
-      var min = range[0],
-        max = range[1];
-      if (min > len || max < len) {
-        return false;
-      }
-    }
-    return true;
-  }
-  /**
-   * 勾选的范围
-   * <ol>
-   *  <li>name: checkRange</li>
-   *  <li>msg: 必须选中{0}项！</li>
-   *  <li>checkRange: 勾选的项范围</li>
-   * </ol>
-   *         //至少勾选一项
-   *         {
-   *           checkRange : 1
-   *         }
-   *         //只能勾选两项
-   *         {
-   *           checkRange : [2,2]
-   *         }
-   *         //可以勾选2-4项
-   *         {
-   *           checkRange : [2,4
-   *           ]
-   *         }
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var checkRange = rules.add({
-    name: 'checkRange',
-    msg: '必须选中{0}项！',
-    validator: function(record, baseValue, formatedMsg, group) {
-      var name = getFieldName(group),
-        value,
-        range = baseValue;
-      if (name && range) {
-        value = record[name];
-        if (!testCheckRange(value, range)) {
-          return formatedMsg;
-        }
-      }
-      return null;
-    }
-  });
-  module.exports = rules;
-});
-define("bui/form/field", ["jquery", "bui/common", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/form/field", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview 表单域的入口文件
    * @ignore
@@ -22176,214 +21123,12 @@ define("bui/form/field", ["jquery", "bui/common", "bui/form/fields/base", "bui/f
   });
   module.exports = Field;
 });
-define("bui/form/groupvalid", ["jquery", "bui/form/valid", "bui/common", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单分组验证
-   * @ignore
-   */
-  var $ = require("jquery"),
-    CLS_ERROR = 'x-form-error',
-    Valid = require("bui/form/valid");
-  /**
-   * @class BUI.Form.GroupValidView
-   * @private
-   * 表单分组验证视图
-   * @extends BUI.Form.ValidView
-   */
-  function GroupValidView() {}
-  BUI.augment(GroupValidView, Valid.View, {
-    /**
-     * 显示一条错误
-     * @private
-     * @param  {String} msg 错误信息
-     */
-    showError: function(msg, errorTpl, container) {
-      var errorMsg = BUI.substitute(errorTpl, {
-          error: msg
-        }),
-        el = $(errorMsg);
-      el.appendTo(container);
-      el.addClass(CLS_ERROR);
-    },
-    /**
-     * 清除错误
-     */
-    clearErrors: function() {
-      var _self = this,
-        errorContainer = _self.getErrorsContainer();
-      errorContainer.children('.' + CLS_ERROR).remove();
-    }
-  });
-  /**
-   * @class BUI.Form.GroupValid
-   * 表单分组验证
-   * @extends BUI.Form.Valid
-   */
-  function GroupValid() {}
-  GroupValid.ATTRS = ATTRS = BUI.merge(true, Valid.ATTRS, {
-    events: {
-      value: {
-        /**
-         * @event
-         * 验证结果发生改变，从true变成false或者相反
-         * @param {Object} ev 事件对象
-         * @param {Object} ev.target 触发事件的子控件
-         * @param {Boolean} ev.valid 是否通过验证
-         */
-        validchange: true,
-        /**
-         * @event
-         * 值改变，仅当通过验证时触发
-         * @param {Object} ev 事件对象
-         * @param {Object} ev.target 触发事件的子控件
-         */
-        change: true
-      }
-    }
-  });
-  BUI.augment(GroupValid, Valid, {
-    __bindUI: function() {
-      var _self = this,
-        validEvent = 'validchange change';
-      //当不需要显示子控件错误时，仅需要监听'change'事件即可
-      _self.on(validEvent, function(ev) {
-        var sender = ev.target;
-        if (sender != this && _self.get('showError')) {
-          var valid = sender.isValid();
-          //是否所有的子节点都进行过验证
-          if (_self._hasAllChildrenValid()) {
-            valid = valid && _self.isChildrenValid();
-            if (valid) {
-              _self.validControl(_self.getRecord());
-              valid = _self.isSelfValid();
-            }
-          }
-          if (!valid) {
-            _self.showErrors();
-          } else {
-            _self.clearErrors();
-          }
-        }
-      });
-    },
-    /**
-     * 是否通过验证
-     */
-    isValid: function() {
-      if (this.get('disabled')) { //如果被禁用，则不进行验证，并且认为true
-        return true;
-      }
-      var _self = this,
-        isValid = _self.isChildrenValid();
-      return isValid && _self.isSelfValid();
-    },
-    /**
-     * 进行验证
-     */
-    valid: function() {
-      var _self = this,
-        children = _self.get('children');
-      if (_self.get('disabled')) { //禁用时不进行验证
-        return;
-      }
-      BUI.each(children, function(item) {
-        if (!item.get('disabled')) {
-          item.valid();
-        }
-      });
-    },
-    /**
-     * 是否所有的子节点进行过校验,如果子节点
-     * @private
-     */
-    _hasAllChildrenValid: function() {
-      var _self = this,
-        children = _self.get('children'),
-        rst = true;
-      BUI.each(children, function(item) {
-        if (!item.get('disabled') && item.get('hasValid') === false) {
-          rst = false;
-          return false;
-        }
-      });
-      return rst;
-    },
-    /**
-     * 所有子控件是否通过验证
-     * @protected
-     * @return {Boolean} 所有子控件是否通过验证
-     */
-    isChildrenValid: function() {
-      var _self = this,
-        children = _self.get('children'),
-        isValid = true;
-      BUI.each(children, function(item) {
-        if (!item.get('disabled') && !item.isValid()) {
-          isValid = false;
-          return false;
-        }
-      });
-      return isValid;
-    },
-    isSelfValid: function() {
-      return !this.get('error');
-    },
-    /**
-     * 验证控件内容
-     * @protected
-     * @return {Boolean} 是否通过验证
-     */
-    validControl: function(record) {
-      var _self = this,
-        error = _self.getValidError(record);
-      _self.set('error', error);
-    },
-    /**
-     * 获取验证出错信息，包括自身和子控件的验证错误信息
-     * @return {Array} 出错信息
-     */
-    getErrors: function() {
-      var _self = this,
-        children = _self.get('children'),
-        showChildError = _self.get('showChildError'),
-        validError = null,
-        rst = [];
-      if (showChildError) {
-        BUI.each(children, function(child) {
-          if (child.getErrors) {
-            rst = rst.concat(child.getErrors());
-          }
-        });
-      }
-      //如果所有子控件通过验证，才显示自己的错误
-      if (_self._hasAllChildrenValid() && _self.isChildrenValid()) {
-        validError = _self.get('error');
-        if (validError) {
-          rst.push(validError);
-        }
-      }
-      return rst;
-    },
-    //设置错误模板时，覆盖子控件设置的错误模板
-    _uiSetErrorTpl: function(v) {
-      var _self = this,
-        children = _self.get('children');
-      BUI.each(children, function(item) {
-        if (!item.get('userConfig')['errorTpl']) { //未定义错误模板时
-          item.set('errorTpl', v);
-        }
-      });
-    }
-  });
-  GroupValid.View = GroupValidView;
-  module.exports = GroupValid;
-});
-define("bui/form/fields/base", ["jquery", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/fields/base", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
   /**
    * @fileOverview 表单元素
    * @ignore
    */
-  var $ = require("jquery"),
+  var $ = require('jquery'),
     BUI = require("bui/common"),
     Component = BUI.Component,
     TipItem = require("bui/form/tips").Item,
@@ -22978,1248 +21723,7 @@ define("bui/form/fields/base", ["jquery", "bui/common", "bui/form/tips", "bui/fo
   field.View = fieldView;
   module.exports = field;
 });
-define("bui/form/fields/text", ["bui/form/fields/base", "jquery", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单文本域
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var Field = require("bui/form/fields/base");
-  /**
-   * 表单文本域
-   * @class BUI.Form.Field.Text
-   * @extends BUI.Form.Field
-   */
-  var textField = Field.extend({}, {
-    xclass: 'form-field-text'
-  });
-  module.exports = textField;
-});
-define("bui/form/fields/date", ["jquery", "bui/common", "bui/form/fields/base", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单日历域
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    Field = require("bui/form/fields/base"),
-    DateUtil = BUI.Date;
-  /*,
-  DatePicker = require('bui-calendar').DatePicker*/
-  /**
-   * 表单文本域
-   * @class BUI.Form.Field.Date
-   * @extends BUI.Form.Field
-   */
-  var dateField = Field.extend({
-    //生成日期控件
-    renderUI: function() {
-      var _self = this,
-        datePicker = _self.get('datePicker');
-      if ($.isPlainObject(datePicker)) {
-        _self.initDatePicker(datePicker);
-      }
-      if ((datePicker.get && datePicker.get('showTime')) || datePicker.showTime) {
-        _self.getInnerControl().addClass('calendar-time');
-      }
-    },
-    //初始化日历控件
-    initDatePicker: function(datePicker) {
-      var _self = this;
-      seajs.use('bui-calendar', function(Calendar) {
-        datePicker.trigger = _self.getInnerControl();
-        datePicker.autoRender = true;
-        datePicker = new Calendar.DatePicker(datePicker);
-        _self.set('datePicker', datePicker);
-        _self.set('isCreatePicker', true);
-        _self.get('children').push(datePicker);
-      });
-    },
-    /**
-     * 设置字段的值
-     * @protected
-     * @param {Date} value 字段值
-     */
-    setControlValue: function(value) {
-      var _self = this,
-        innerControl = _self.getInnerControl();
-      if (BUI.isDate(value)) {
-        value = DateUtil.format(value, _self._getFormatMask());
-      }
-      innerControl.val(value);
-    },
-    //获取格式化函数
-    _getFormatMask: function() {
-      var _self = this,
-        datePicker = _self.get('datePicker');
-      if (datePicker.showTime || (datePicker.get && datePicker.get('showTime'))) {
-        return 'yyyy-mm-dd HH:MM:ss';
-      }
-      return 'yyyy-mm-dd';
-    },
-    /**
-     * 将字符串等格式转换成日期
-     * @protected
-     * @override
-     * @param  {String} value 原始数据
-     * @return {Date}  该字段指定的类型
-     */
-    parseValue: function(value) {
-      if (BUI.isNumber(value)) {
-        return new Date(value);
-      }
-      return DateUtil.parse(value);
-    },
-    /**
-     * @override
-     * @protected
-     * 是否当前值
-     */
-    isCurrentValue: function(value) {
-      return DateUtil.isEquals(value, this.get('value'));
-    },
-    //设置最大值
-    _uiSetMax: function(v) {
-      this.addRule('max', v);
-      var _self = this,
-        datePicker = _self.get('datePicker');
-      if (datePicker) {
-        if (datePicker.set) {
-          datePicker.set('maxDate', v);
-        } else {
-          datePicker.maxDate = v;
-        }
-      }
-    },
-    //设置最小值
-    _uiSetMin: function(v) {
-      this.addRule('min', v);
-      var _self = this,
-        datePicker = _self.get('datePicker');
-      if (datePicker) {
-        if (datePicker.set) {
-          datePicker.set('minDate', v);
-        } else {
-          datePicker.minDate = v;
-        }
-      }
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        value: '<input type="text" class="calendar"/>'
-      },
-      defaultRules: {
-        value: {
-          date: true
-        }
-      },
-      /**
-       * 最大值
-       * @type {Date|String}
-       */
-      max: {},
-      /**
-       * 最小值
-       * @type {Date|String}
-       */
-      min: {},
-      value: {
-        setter: function(v) {
-          if (BUI.isNumber(v)) { //将数字转换成日期类型
-            return new Date(v);
-          }
-          return v;
-        }
-      },
-      /**
-       * 时间选择控件
-       * @type {Object|BUI.Calendar.DatePicker}
-       */
-      datePicker: {
-        shared: false,
-        value: {}
-      },
-      /**
-       * 时间选择器是否是由此控件创建
-       * @type {Boolean}
-       * @readOnly
-       */
-      isCreatePicker: {
-        value: true
-      }
-    },
-    PARSER: {
-      datePicker: function(el) {
-        var _self = this,
-          cfg = _self.get('datePicker') || {};
-        if (el.hasClass('calendar-time')) {
-          BUI.mix(cfg, {
-            showTime: true
-          });
-        }
-        return cfg;
-      }
-    }
-  }, {
-    xclass: 'form-field-date'
-  });
-  module.exports = dateField;
-});
-define("bui/form/fields/select", ["jquery", "bui/common", "bui/form/fields/base", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
-  /**
-   * @fileOverview 模拟选择框在表单中
-   * @ignore
-   */
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    Field = require("bui/form/fields/base");
-
-  function resetOptions(select, options, self) {
-    select.children().remove();
-    var emptyText = self.get('emptyText');
-    if (emptyText && self.get('showBlank')) {
-      appendItem('', emptyText, select);
-    }
-    BUI.each(options, function(option) {
-      appendItem(option.value, option.text, select);
-    });
-  }
-
-  function appendItem(value, text, select) {
-    // var str = '<option value="' + value +'">'+text+'</option>'
-    // $(str).appendTo(select);
-    // 上面那种写法在ie6下会报一个奇怪的错误，使用new Option则不会有这个问题
-    var option = new Option(text, value),
-      options = select[0].options;
-    options[options.length] = option;
-  }
-  /**
-   * 表单选择域
-   * @class BUI.Form.Field.Select
-   * @extends BUI.Form.Field
-   */
-  var selectField = Field.extend({
-    //生成select
-    renderUI: function() {
-      var _self = this,
-        innerControl = _self.getInnerControl(),
-        select = _self.get('select');
-      if (_self.get('srcNode') && innerControl.is('select')) { //如果使用现有DOM生成，不使用自定义选择框控件
-        return;
-      }
-      //select = select || {};
-      if ($.isPlainObject(select)) {
-        _self._initSelect(select);
-      }
-    },
-    _initSelect: function(select) {
-      var _self = this,
-        items = _self.get('items');
-      require.async('bui/select', function(Select) {
-        select.render = _self.getControlContainer();
-        select.valueField = _self.getInnerControl();
-        select.autoRender = true;
-        select = new Select.Select(select);
-        _self.set('select', select);
-        _self.set('isCreate', true);
-        _self.get('children').push(select);
-        select.on('change', function(ev) {
-          var val = select.getSelectedValue();
-          _self.set('value', val);
-        });
-      })
-    },
-    /**
-     * 重新设置选项集合
-     * @param {Array} items 选项集合
-     */
-    setItems: function(items) {
-      var _self = this,
-        select = _self.get('select');
-      if ($.isPlainObject(items)) {
-        var tmp = [];
-        BUI.each(items, function(v, n) {
-          tmp.push({
-            value: n,
-            text: v
-          });
-        });
-        items = tmp;
-      }
-      var control = _self.getInnerControl();
-      if (control.is('select')) {
-        resetOptions(control, items, _self);
-        _self.setControlValue(_self.get('value'));
-        if (!_self.getControlValue()) {
-          _self.setInternal('value', '');
-        }
-      }
-      if (select) {
-        if (select.set) {
-          select.set('items', items);
-        } else {
-          select.items = items;
-        }
-      }
-    },
-    /**
-     * 设置字段的值
-     * @protected
-     * @param {*} value 字段值
-     */
-    setControlValue: function(value) {
-      var _self = this,
-        select = _self.get('select'),
-        innerControl = _self.getInnerControl();
-      innerControl.val(value);
-      if (select && select.set && select.getSelectedValue() !== value) {
-        select.setSelectedValue(value);
-      }
-    },
-    /**
-     * 获取选中的文本
-     * @return {String} 选中的文本
-     */
-    getSelectedText: function() {
-      var _self = this,
-        select = _self.get('select'),
-        innerControl = _self.getInnerControl();
-      if (innerControl.is('select')) {
-        var dom = innerControl[0],
-          item = dom.options[dom.selectedIndex];
-        return item ? item.text : '';
-      } else {
-        return select.getSelectedText();
-      }
-    },
-    /**
-     * 获取tip显示对应的元素
-     * @protected
-     * @override
-     * @return {HTMLElement}
-     */
-    getTipTigger: function() {
-      var _self = this,
-        select = _self.get('select');
-      if (select && select.rendered) {
-        return select.get('el').find('input');
-      }
-      return _self.get('el');
-    },
-    //设置选项
-    _uiSetItems: function(v) {
-      if (v) {
-        this.setItems(v);
-      }
-    },
-    /**
-     * @protected
-     * 设置内部元素宽度
-     */
-    setInnerWidth: function(width) {
-      var _self = this,
-        innerControl = _self.getInnerControl(),
-        select = _self.get('select'),
-        appendWidth = innerControl.outerWidth() - innerControl.width();
-      innerControl.width(width - appendWidth);
-      if (select && select.set) {
-        select.set('width', width);
-      }
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 选项
-       * @type {Array}
-       */
-      items: {},
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        value: '<input type="hidden"/>'
-      },
-      /**
-       * 是否显示为空的文本
-       * @type {Boolean}
-       */
-      showBlank: {
-        value: true
-      },
-      /**
-       * 选择为空时的文本
-       * @type {String}
-       */
-      emptyText: {
-        value: '请选择'
-      },
-      /**
-       * 内部的Select控件的配置项
-       * @cfg {Object} select
-       */
-      /**
-       * 内部的Select控件
-       * @type {BUI.Select.Select}
-       */
-      select: {
-        shared: false,
-        value: {}
-      }
-    },
-    PARSER: {
-      emptyText: function(el) {
-        if (!this.get('showBlank')) {
-          return '';
-        }
-        var options = el.find('option'),
-          rst = this.get('emptyText');
-        if (options.length) {
-          rst = $(options[0]).text();
-        }
-        return rst;
-      }
-    }
-  }, {
-    xclass: 'form-field-select'
-  });
-  module.exports = selectField;
-});
-define("bui/form/fields/hidden", ["bui/form/fields/base", "jquery", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
-  /**
-   * @fileOverview 隐藏字段
-   * @ignore
-   * @author dxq613@gmail.com
-   */
-  var Field = require("bui/form/fields/base");
-  /**
-   * 表单隐藏域
-   * @class BUI.Form.Field.Hidden
-   * @extends BUI.Form.Field
-   */
-  var hiddenField = Field.extend({}, {
-    ATTRS: {
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        value: '<input type="hidden"/>'
-      },
-      tpl: {
-        value: ''
-      }
-    }
-  }, {
-    xclass: 'form-field-hidden'
-  });
-  module.exports = hiddenField;
-});
-define("bui/form/fields/number", ["bui/form/fields/base", "jquery", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单文本域
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  /**
-   * 表单数字域
-   * @class BUI.Form.Field.Number
-   * @extends BUI.Form.Field
-   */
-  var Field = require("bui/form/fields/base"),
-    numberField = Field.extend({
-      /**
-       * 将字符串等格式转换成数字
-       * @protected
-       * @param  {String} value 原始数据
-       * @return {Number}  该字段指定的类型
-       */
-      parseValue: function(value) {
-        if (value == '' || value == null) {
-          return null;
-        }
-        if (BUI.isNumber(value)) {
-          return value;
-        }
-        var _self = this,
-          allowDecimals = _self.get('allowDecimals');
-        value = value.replace(/\,/g, '');
-        if (!allowDecimals) {
-          return parseInt(value, 10);
-        }
-        return parseFloat(parseFloat(value).toFixed(_self.get('decimalPrecision')));
-      },
-      _uiSetMax: function(v) {
-        this.addRule('max', v);
-      },
-      _uiSetMin: function(v) {
-        this.addRule('min', v);
-      }
-    }, {
-      ATTRS: {
-        /**
-         * 最大值
-         * @type {Number}
-         */
-        max: {},
-        /**
-         * 最小值
-         * @type {Number}
-         */
-        min: {},
-        decorateCfgFields: {
-          value: {
-            min: true,
-            max: true
-          }
-        },
-        /**
-         * 表单元素或者控件触发此事件时，触发验证
-         * @type {String}
-         */
-        validEvent: {
-          value: 'keyup change'
-        },
-        defaultRules: {
-          value: {
-            number: true
-          }
-        },
-        /**
-         * 是否允许小数，如果不允许，则最终结果转换成整数
-         * @type {Boolean}
-         */
-        allowDecimals: {
-          value: true
-        },
-        /**
-         * 允许小数时的，小数位
-         * @type {Number}
-         */
-        decimalPrecision: {
-          value: 2
-        },
-        /**
-         * 对数字进行微调时，每次增加或减小的数字
-         * @type {Object}
-         */
-        step: {
-          value: 1
-        }
-      }
-    }, {
-      xclass: 'form-field-number'
-    });
-  module.exports = numberField;
-});
-define("bui/form/fields/check", ["jquery", "bui/form/fields/base", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
-  /**
-   * @fileOverview  可勾选字段
-   * @ignore
-   */
-  var $ = require("jquery"),
-    Field = require("bui/form/fields/base");
-  /**
-   * 可选中菜单域
-   * @class BUI.Form.Field.Check
-   * @extends BUI.Form.Field
-   */
-  var checkField = Field.extend({
-    /**
-     * 验证成功后执行的操作
-     * @protected
-     */
-    onValid: function() {
-      var _self = this,
-        checked = _self._getControlChecked();
-      _self.setInternal('checked', checked);
-      _self.fire('change');
-      if (checked) {
-        _self.fire('checked');
-      } else {
-        _self.fire('unchecked');
-      }
-    },
-    //设置是否勾选
-    _setControlChecked: function(checked) {
-      var _self = this,
-        innerControl = _self.getInnerControl();
-      innerControl.attr('checked', !!checked);
-    },
-    //获取是否勾选
-    _getControlChecked: function() {
-      var _self = this,
-        innerControl = _self.getInnerControl();
-      return !!innerControl.attr('checked');
-    },
-    //覆盖 设置值的方法
-    _uiSetValue: function(v) {
-      this.setControlValue(v);
-    },
-    //覆盖不设置宽度
-    _uiSetWidth: function(v) {},
-    //设置是否勾选
-    _uiSetChecked: function(v) {
-      var _self = this;
-      _self._setControlChecked(v);
-      if (_self.get('rendered')) {
-        _self.onValid();
-      }
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 触发验证事件，进而引起change事件
-       * @override
-       * @type {String}
-       */
-      validEvent: {
-        value: 'click'
-      },
-      /**
-       * 是否选中
-       * @cfg {String} checked
-       */
-      /**
-       * 是否选中
-       * @type {String}
-       */
-      checked: {
-        value: false
-      },
-      events: {
-        value: {
-          /**
-           * @event
-           * 选中事件
-           */
-          'checked': false,
-          /**
-           * @event
-           * 取消选中事件
-           */
-          'unchecked': false
-        }
-      }
-    },
-    PARSER: {
-      checked: function(el) {
-        return !!el.attr('checked');
-      }
-    }
-  }, {
-    xclass: 'form-check-field'
-  });
-  module.exports = checkField;
-});
-define("bui/form/fields/radio", ["bui/form/fields/check", "jquery", "bui/form/fields/base", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
-  /**
-   * @fileOverview  单选框表单域
-   * @ignore
-   */
-  var CheckField = require("bui/form/fields/check");
-  /**
-   * 表单单选域
-   * @class BUI.Form.Field.Radio
-   * @extends BUI.Form.Field.Check
-   */
-  var RadioField = CheckField.extend({
-    bindUI: function() {
-      var _self = this,
-        parent = _self.get('parent'),
-        name = _self.get('name');
-      if (parent) {
-        _self.getInnerControl().on('click', function(ev) {
-          var fields = parent.getFields(name);
-          BUI.each(fields, function(field) {
-            if (field != _self) {
-              field.set('checked', false);
-            }
-          });
-        });
-      }
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        view: true,
-        value: '<input type="radio"/>'
-      },
-      /**
-       * 控件容器，如果为空直接添加在控件容器上
-       * @type {String|HTMLElement}
-       */
-      controlContainer: {
-        value: '.radio'
-      },
-      tpl: {
-        value: '<label><span class="radio"></span>{label}</label>'
-      }
-    }
-  }, {
-    xclass: 'form-field-radio'
-  });
-  module.exports = RadioField;
-});
-define("bui/form/fields/checkbox", ["bui/form/fields/check", "jquery", "bui/form/fields/base", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
-  /**
-   * @fileOverview  复选框表单域
-   * @ignore
-   */
-  var CheckField = require("bui/form/fields/check");
-  /**
-   * 表单复选域
-   * @class BUI.Form.Field.Checkbox
-   * @extends BUI.Form.Field.Check
-   */
-  var CheckBoxField = CheckField.extend({}, {
-    ATTRS: {
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        view: true,
-        value: '<input type="checkbox"/>'
-      },
-      /**
-       * 控件容器，如果为空直接添加在控件容器上
-       * @type {String|HTMLElement}
-       */
-      controlContainer: {
-        value: '.checkbox'
-      },
-      tpl: {
-        value: '<label><span class="checkbox"></span>{label}</label>'
-      }
-    }
-  }, {
-    xclass: 'form-field-checkbox'
-  });
-  module.exports = CheckBoxField;
-});
-define("bui/form/fields/plain", ["jquery", "bui/form/fields/base", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
-  /**
-   * @fileOverview 仅仅用于显示文本，不能编辑的字段
-   * @ignore
-   */
-  var $ = require("jquery"),
-    Field = require("bui/form/fields/base");
-  var PlainFieldView = Field.View.extend({
-    _uiSetValue: function(v) {
-      var _self = this,
-        textEl = _self.get('textEl'),
-        container = _self.getControlContainer(),
-        renderer = _self.get('renderer'),
-        text = renderer ? renderer(v) : v,
-        width = _self.get('width'),
-        appendWidth = 0,
-        textTpl;
-      if (textEl) {
-        textEl.remove();
-      }
-      text = text || '&nbsp;';
-      textTpl = BUI.substitute(_self.get('textTpl'), {
-        text: text
-      });
-      textEl = $(textTpl).appendTo(container);
-      appendWidth = textEl.outerWidth() - textEl.width();
-      textEl.width(width - appendWidth);
-      _self.set('textEl', textEl);
-    }
-  }, {
-    ATTRS: {
-      textEl: {},
-      value: {}
-    }
-  }, {
-    xclass: 'form-field-plain-view'
-  });
-  /**
-   * 表单文本域，不能编辑
-   * @class BUI.Form.Field.Plain
-   * @extends BUI.Form.Field
-   */
-  var PlainField = Field.extend({}, {
-    ATTRS: {
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        value: '<input type="hidden"/>'
-      },
-      /**
-       * 显示文本的模板
-       * @type {String}
-       */
-      textTpl: {
-        view: true,
-        value: '<span class="x-form-text">{text}</span>'
-      },
-      /**
-       * 将字段的值格式化输出
-       * @type {Function}
-       */
-      renderer: {
-        view: true,
-        value: function(value) {
-          return value;
-        }
-      },
-      tpl: {
-        value: ''
-      },
-      xview: {
-        value: PlainFieldView
-      }
-    }
-  }, {
-    xclass: 'form-field-plain'
-  });
-  module.exports = PlainField;
-});
-define("bui/form/fields/list", ["jquery", "bui/common", "bui/data", "bui/list", "bui/form/fields/base", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单中的列表，每个列表后有个隐藏域用来存储数据
-   * @ignore
-   */
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    List = require("bui/list"),
-    Field = require("bui/form/fields/base");
-
-  function parseItems(items) {
-    var rst = items;
-    if ($.isPlainObject(items)) {
-      rst = [];
-      BUI.each(items, function(v, k) {
-        rst.push({
-          text: v,
-          value: k
-        });
-      });
-    }
-    return rst;
-  }
-  /**
-   * @class BUI.Form.Field.List
-   * 表单中的列表
-   * @extends BUI.Form.Field
-   */
-  var List = Field.extend({
-    initializer: function() {
-      var _self = this;
-      //if(!_self.get('srcNode')){
-      _self._initList();
-      //}
-    },
-    _getList: function() {
-      var _self = this,
-        children = _self.get('children');
-      return children[0];
-    },
-    bindUI: function() {
-      var _self = this,
-        list = _self._getList();
-      if (list) {
-        list.on('selectedchange', function() {
-          var value = _self._getListValue(list);
-          _self.set('value', value);
-        });
-      }
-    },
-    //获取列表值
-    _getListValue: function(list) {
-      var _self = this;
-      list = list || _self._getList();
-      return list.getSelectionValues().join(',');
-    },
-    /**
-     * 设置字段的值
-     * @protected
-     * @param {*} value 字段值
-     */
-    setControlValue: function(value) {
-      var _self = this,
-        innerControl = _self.getInnerControl(),
-        list = _self._getList();
-      innerControl.val(value);
-      if (_self._getListValue(list) !== value && list.getCount()) {
-        if (list.get('multipleSelect')) {
-          list.clearSelection();
-        }
-        list.setSelectionByField(value.split(','));
-      }
-    },
-    //同步数据
-    syncUI: function() {
-      this.set('list', this._getList());
-    },
-    //初始化列表
-    _initList: function() {
-      var _self = this,
-        defaultListCfg = _self.get('defaultListCfg'),
-        children = _self.get('children'),
-        list = _self.get('list') || {};
-      if (children[0]) {
-        return;
-      }
-      if ($.isPlainObject(list)) {
-        BUI.mix(list, defaultListCfg);
-      }
-      children.push(list);
-    },
-    /**
-     * 设置选项
-     * @param {Array} items 选项记录
-     */
-    setItems: function(items) {
-      var _self = this,
-        value = _self.get('value'),
-        list = _self._getList();
-      list.set('items', parseItems(items));
-      list.setSelectionByField(value.split(','));
-    },
-    //设置选项集合
-    _uiSetItems: function(v) {
-      if (v) {
-        this.setItems(v);
-      }
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        value: '<input type="hidden"/>'
-      },
-      /**
-       * @protected
-       * 默认的列表配置
-       * @type {Object}
-       */
-      defaultListCfg: {
-        value: {
-          xclass: 'simple-list'
-        }
-      },
-      /**
-       * 选项
-       * @type {Array}
-       */
-      items: {
-        setter: function(v) {
-          if ($.isPlainObject(v)) {
-            var rst = [];
-            BUI.each(v, function(v, k) {
-              rst.push({
-                value: k,
-                text: v
-              });
-            });
-            v = rst;
-          }
-          return v;
-        }
-      },
-      /**
-       * 列表
-       * @type {BUI.List.SimpleList}
-       */
-      list: {}
-    },
-    PARSER: {
-      list: function(el) {
-        var listEl = el.find('.bui-simple-list');
-        if (listEl.length) {
-          return {
-            srcNode: listEl
-          };
-        }
-      }
-    }
-  }, {
-    xclass: 'form-field-list'
-  });
-  module.exports = List;
-});
-define("bui/form/fields/textarea", ["bui/form/fields/base", "jquery", "bui/common", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单文本域
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var Field = require("bui/form/fields/base");
-  /**
-   * 表单文本域
-   * @class BUI.Form.Field.TextArea
-   * @extends BUI.Form.Field
-   */
-  var TextAreaField = Field.extend({
-    //设置行
-    _uiSetRows: function(v) {
-      var _self = this,
-        innerControl = _self.getInnerControl();
-      if (v) {
-        innerControl.attr('rows', v);
-      }
-    },
-    //设置列
-    _uiSetCols: function(v) {
-      var _self = this,
-        innerControl = _self.getInnerControl();
-      if (v) {
-        innerControl.attr('cols', v);
-      }
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        value: '<textarea></textarea>'
-      },
-      /**
-       * 行
-       * @type {Number}
-       */
-      rows: {},
-      /**
-       * 列
-       * @type {Number}
-       */
-      cols: {},
-      decorateCfgFields: {
-        value: {
-          'rows': true,
-          'cols': true
-        }
-      }
-    }
-  }, {
-    xclass: 'form-field-textarea'
-  });
-  module.exports = TextAreaField;
-});
-define("bui/form/fields/uploader", ["jquery", "bui/common", "bui/form/fields/base", "bui/form/rules", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rule"], function(require, exports, module) {
-  /**
-   * @fileOverview 模拟选择框在表单中
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    JSON = BUI.JSON,
-    Field = require("bui/form/fields/base"),
-    Rules = require("bui/form/rules");
-  /**
-   * 表单上传域
-   * @class BUI.Form.Field.Upload
-   * @extends BUI.Form.Field
-   */
-  var uploaderField = Field.extend({
-    //生成upload
-    renderUI: function() {
-      var _self = this,
-        innerControl = _self.getInnerControl();
-      if (_self.get('srcNode') && innerControl.get(0).type === 'file') { //如果使用现有DOM生成，不使用上传组件
-        return;
-      }
-      _self._initControlValue();
-      _self._initUpload();
-    },
-    _initUpload: function() {
-      var _self = this,
-        children = _self.get('children'),
-        uploader = _self.get('uploader') || {};
-      BUI.use('bui/uploader', function(Uploader) {
-        uploader.render = _self.getControlContainer();
-        uploader.autoRender = true;
-        uploader = new Uploader.Uploader(uploader);
-        _self.set('uploader', uploader);
-        _self.set('isCreate', true);
-        _self.get('children').push(uploader);
-        _self._initQueue(uploader.get('queue'));
-        uploader.on('success', function(ev) {
-          var result = _self._getUploaderResult();
-          _self.setControlValue(result);
-        });
-        uploader.get('queue').on('itemremoved', function() {
-          var result = _self._getUploaderResult();
-          _self.setControlValue(result);
-        })
-      });
-    },
-    _getUploaderResult: function() {
-      var _self = this,
-        uploader = _self.get('uploader'),
-        queue = uploader.get('queue'),
-        items = queue.getItems(),
-        result = [];
-      BUI.each(items, function(item) {
-        item.result && result.push(item.result);
-      });
-      return result;
-    },
-    setControlValue: function(items) {
-      var _self = this,
-        innerControl = _self.getInnerControl();
-      // _self.fire('change');
-      innerControl.val(JSON.stringify(items));
-    },
-    _initControlValue: function() {
-      var _self = this,
-        textValue = _self.getControlValue(),
-        value;
-      if (textValue) {
-        value = BUI.JSON.parse(textValue);
-        _self.set('value', value);
-      }
-    },
-    _initQueue: function(queue) {
-      var _self = this,
-        value = _self.get('value'),
-        result = [];
-      //初始化对列默认成功
-      BUI.each(value, function(item) {
-        var newItem = BUI.cloneObject(item);
-        newItem.success = true;
-        newItem.result = item;
-        result.push(newItem);
-      });
-      queue && queue.setItems(result);
-    } //,
-    // valid: function(){
-    //   var _self = this,
-    //     uploader = _self.get('uploader');
-    //   uploaderField.superclass.valid.call(_self);
-    //   uploader.valid();
-    // }
-  }, {
-    ATTRS: {
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        value: '<input type="hidden"/>'
-      },
-      uploader: {
-        setter: function(v) {
-          var disabled = this.get('disabled');
-          v && v.isController && v.set('disabled', disabled);
-          return v;
-        }
-      },
-      disabled: {
-        setter: function(v) {
-          var _self = this,
-            uploader = _self.get('uploader');
-          uploader && uploader.isController && uploader.set('disabled', v);
-        }
-      },
-      value: {
-        shared: false,
-        value: []
-      },
-      defaultRules: function() {
-        uploader: true
-      }
-    }
-  }, {
-    xclass: 'form-field-uploader'
-  });
-  Rules.add({
-    name: 'uploader', //规则名称
-    msg: '上传文件选择有误！', //默认显示的错误信息
-    validator: function(value, baseValue, formatMsg, field) { //验证函数，验证值、基准值、格式化后的错误信息
-      var uploader = field.get('uploader');
-      if (uploader && !uploader.isValid()) {
-        return formatMsg;
-      }
-    }
-  });
-  module.exports = uploaderField;
-});
-define("bui/form/fields/checklist", ["jquery", "bui/common", "bui/form/fields/list", "bui/data", "bui/list", "bui/form/fields/base", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
-  /**
-   * @fileOverview 可勾选的列表，模拟多个checkbox
-   * @ignore
-   */
-  'use strict';
-  var BUI = require("bui/common"),
-    ListField = require("bui/form/fields/list");
-  /**
-   * @class BUI.Form.Field.CheckList
-   * 可勾选的列表，模拟多个checkbox
-   * @extends BUI.Form.Field.List
-   */
-  var CheckList = ListField.extend({}, {
-    ATTRS: {
-      /**
-       * @protected
-       * 默认的列表配置
-       * @type {Object}
-       */
-      defaultListCfg: {
-        value: {
-          itemTpl: '<li><span class="x-checkbox"></span>{text}</li>',
-          multipleSelect: true,
-          allowTextSelection: false
-        }
-      }
-    }
-  }, {
-    xclass: 'form-field-checklist'
-  });
-  module.exports = CheckList;
-});
-define("bui/form/fields/radiolist", ["jquery", "bui/common", "bui/form/fields/list", "bui/data", "bui/list", "bui/form/fields/base", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
-  /**
-   * @fileOverview 可勾选的列表，模拟多个radio
-   * @ignore
-   */
-  'use strict';
-  var BUI = require("bui/common"),
-    ListField = require("bui/form/fields/list");
-  /**
-   * @class BUI.Form.Field.RadioList
-   * 可勾选的列表，模拟多个radio
-   * @extends BUI.Form.Field.List
-   */
-  var RadioList = ListField.extend({}, {
-    ATTRS: {
-      /**
-       * @protected
-       * 默认的列表配置
-       * @type {Object}
-       */
-      defaultListCfg: {
-        value: {
-          itemTpl: '<li><span class="x-radio"></span>{text}</li>',
-          allowTextSelection: false
-        }
-      }
-    }
-  }, {
-    xclass: 'form-field-radiolist'
-  });
-  module.exports = RadioList;
-});
-define("bui/form/valid", ["jquery", "bui/common", "bui/form/rules", "bui/form/rule"], function(require, exports, module) {
+define("bui/form/valid", ["bui/common", "jquery"], function(require, exports, module) {
   /**
    * @fileOverview 表单验证
    * @ignore
@@ -24552,12 +22056,692 @@ define("bui/form/valid", ["jquery", "bui/common", "bui/form/rules", "bui/form/ru
   Valid.View = ValidView;
   module.exports = Valid;
 });
+define("bui/form/rules", ["jquery", "bui/common"], function(require, exports, module) {
+  /**
+   * @fileOverview 验证集合
+   * @ignore
+   */
+  var $ = require('jquery'),
+    Rule = require("bui/form/rule");
+
+  function toNumber(value) {
+    return parseFloat(value);
+  }
+
+  function toDate(value) {
+    return BUI.Date.parse(value);
+  }
+  var ruleMap = {};
+  /**
+   * @class BUI.Form.Rules
+   * @singleton
+   * 表单验证的验证规则管理器
+   */
+  var rules = {
+    /**
+     * 添加验证规则
+     * @param {Object|BUI.Form.Rule} rule 验证规则配置项或者验证规则对象
+     * @param  {String} name 规则名称
+     */
+    add: function(rule) {
+      var name;
+      if ($.isPlainObject(rule)) {
+        name = rule.name;
+        ruleMap[name] = new Rule(rule);
+      } else if (rule.get) {
+        name = rule.get('name');
+        ruleMap[name] = rule;
+      }
+      return ruleMap[name];
+    },
+    /**
+     * 删除验证规则
+     * @param  {String} name 规则名称
+     */
+    remove: function(name) {
+      delete ruleMap[name];
+    },
+    /**
+     * 获取验证规则
+     * @param  {String} name 规则名称
+     * @return {BUI.Form.Rule}  验证规则
+     */
+    get: function(name) {
+      return ruleMap[name];
+    },
+    /**
+     * 验证指定的规则
+     * @param  {String} name 规则类型
+     * @param  {*} value 验证值
+     * @param  {*} [baseValue] 用于验证的基础值
+     * @param  {String} [msg] 显示错误的模板
+     * @param  {BUI.Form.Field|BUI.Form.Group} [control] 显示错误的模板
+     * @return {String} 通过验证返回 null,否则返回错误信息
+     */
+    valid: function(name, value, baseValue, msg, control) {
+      var rule = rules.get(name);
+      if (rule) {
+        return rule.valid(value, baseValue, msg, control);
+      }
+      return null;
+    },
+    /**
+     * 验证指定的规则
+     * @param  {String} name 规则类型
+     * @param  {*} values 验证值
+     * @param  {*} [baseValue] 用于验证的基础值
+     * @param  {BUI.Form.Field|BUI.Form.Group} [control] 显示错误的模板
+     * @return {Boolean} 是否通过验证
+     */
+    isValid: function(name, value, baseValue, control) {
+      return rules.valid(name, value, baseValue, control) == null;
+    }
+  };
+  /**
+   * 非空验证,会对值去除空格
+   * <ol>
+   *  <li>name: required</li>
+   *  <li>msg: 不能为空！</li>
+   *  <li>required: boolean 类型</li>
+   * </ol>
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var required = rules.add({
+    name: 'required',
+    msg: '不能为空！',
+    validator: function(value, required, formatedMsg) {
+      if (required !== false && /^\s*$/.test(value)) {
+        return formatedMsg;
+      }
+    }
+  });
+  /**
+   * 相等验证
+   * <ol>
+   *  <li>name: equalTo</li>
+   *  <li>msg: 两次输入不一致！</li>
+   *  <li>equalTo: 一个字符串，id（#id_name) 或者 name</li>
+   * </ol>
+   *         {
+   *           equalTo : '#password'
+   *         }
+   *         //或者
+   *         {
+   *           equalTo : 'password'
+   *         }
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var equalTo = rules.add({
+    name: 'equalTo',
+    msg: '两次输入不一致！',
+    validator: function(value, equalTo, formatedMsg) {
+      var el = $(equalTo);
+      if (el.length) {
+        equalTo = el.val();
+      }
+      return value === equalTo ? undefined : formatedMsg;
+    }
+  });
+  /**
+   * 不小于验证
+   * <ol>
+   *  <li>name: min</li>
+   *  <li>msg: 输入值不能小于{0}！</li>
+   *  <li>min: 数字，字符串</li>
+   * </ol>
+   *         {
+   *           min : 5
+   *         }
+   *         //字符串
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var min = rules.add({
+    name: 'min',
+    msg: '输入值不能小于{0}！',
+    validator: function(value, min, formatedMsg) {
+      if (BUI.isString(value)) {
+        value = value.replace(/\,/g, '');
+      }
+      if (value !== '' && toNumber(value) < toNumber(min)) {
+        return formatedMsg;
+      }
+    }
+  });
+  /**
+   * 不小于验证,用于数值比较
+   * <ol>
+   *  <li>name: max</li>
+   *  <li>msg: 输入值不能大于{0}！</li>
+   *  <li>max: 数字、字符串</li>
+   * </ol>
+   *         {
+   *           max : 100
+   *         }
+   *         //字符串
+   *         {
+   *           max : '100'
+   *         }
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var max = rules.add({
+    name: 'max',
+    msg: '输入值不能大于{0}！',
+    validator: function(value, max, formatedMsg) {
+      if (BUI.isString(value)) {
+        value = value.replace(/\,/g, '');
+      }
+      if (value !== '' && toNumber(value) > toNumber(max)) {
+        return formatedMsg;
+      }
+    }
+  });
+  /**
+   * 输入长度验证，必须是指定的长度
+   * <ol>
+   *  <li>name: length</li>
+   *  <li>msg: 输入值长度为{0}！</li>
+   *  <li>length: 数字</li>
+   * </ol>
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var length = rules.add({
+    name: 'length',
+    msg: '输入值长度为{0}！',
+    validator: function(value, len, formatedMsg) {
+      if (value != null) {
+        value = $.trim(value.toString());
+        if (len != value.length) {
+          return formatedMsg;
+        }
+      }
+    }
+  });
+  /**
+   * 最短长度验证,会对值去除空格
+   * <ol>
+   *  <li>name: minlength</li>
+   *  <li>msg: 输入值长度不小于{0}！</li>
+   *  <li>minlength: 数字</li>
+   * </ol>
+   *         {
+   *           minlength : 5
+   *         }
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var minlength = rules.add({
+    name: 'minlength',
+    msg: '输入值长度不小于{0}！',
+    validator: function(value, min, formatedMsg) {
+      if (value != null) {
+        value = $.trim(value.toString());
+        var len = value.length;
+        if (len < min) {
+          return formatedMsg;
+        }
+      }
+    }
+  });
+  /**
+   * 最短长度验证,会对值去除空格
+   * <ol>
+   *  <li>name: maxlength</li>
+   *  <li>msg: 输入值长度不大于{0}！</li>
+   *  <li>maxlength: 数字</li>
+   * </ol>
+   *         {
+   *           maxlength : 10
+   *         }
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var maxlength = rules.add({
+    name: 'maxlength',
+    msg: '输入值长度不大于{0}！',
+    validator: function(value, max, formatedMsg) {
+      if (value) {
+        value = $.trim(value.toString());
+        var len = value.length;
+        if (len > max) {
+          return formatedMsg;
+        }
+      }
+    }
+  });
+  /**
+   * 正则表达式验证,如果正则表达式为空，则不进行校验
+   * <ol>
+   *  <li>name: regexp</li>
+   *  <li>msg: 输入值不符合{0}！</li>
+   *  <li>regexp: 正则表达式</li>
+   * </ol>
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var regexp = rules.add({
+    name: 'regexp',
+    msg: '输入值不符合{0}！',
+    validator: function(value, regexp, formatedMsg) {
+      if (regexp) {
+        return regexp.test(value) ? undefined : formatedMsg;
+      }
+    }
+  });
+  /**
+   * 邮箱验证,会对值去除空格，无数据不进行校验
+   * <ol>
+   *  <li>name: email</li>
+   *  <li>msg: 不是有效的邮箱地址！</li>
+   * </ol>
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var email = rules.add({
+    name: 'email',
+    msg: '不是有效的邮箱地址！',
+    validator: function(value, baseValue, formatedMsg) {
+      value = $.trim(value);
+      if (value) {
+        return /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(value) ? undefined : formatedMsg;
+      }
+    }
+  });
+  /**
+   * 日期验证，会对值去除空格，无数据不进行校验，
+   * 如果传入的值不是字符串，而是数字，则认为是有效值
+   * <ol>
+   *  <li>name: date</li>
+   *  <li>msg: 不是有效的日期！</li>
+   * </ol>
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var date = rules.add({
+    name: 'date',
+    msg: '不是有效的日期！',
+    validator: function(value, baseValue, formatedMsg) {
+      if (BUI.isNumber(value)) { //数字认为是日期
+        return;
+      }
+      if (BUI.isDate(value)) {
+        return;
+      }
+      value = $.trim(value);
+      if (value) {
+        return BUI.Date.isDateString(value) ? undefined : formatedMsg;
+      }
+    }
+  });
+  /**
+   * 不小于验证
+   * <ol>
+   *  <li>name: minDate</li>
+   *  <li>msg: 输入日期不能小于{0}！</li>
+   *  <li>minDate: 日期，字符串</li>
+   * </ol>
+   *         {
+   *           minDate : '2001-01-01';
+   *         }
+   *         //字符串
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var minDate = rules.add({
+    name: 'minDate',
+    msg: '输入日期不能小于{0}！',
+    validator: function(value, minDate, formatedMsg) {
+      if (value) {
+        var date = toDate(value);
+        if (date && date < toDate(minDate)) {
+          return formatedMsg;
+        }
+      }
+    }
+  });
+  /**
+   * 不小于验证,用于数值比较
+   * <ol>
+   *  <li>name: maxDate</li>
+   *  <li>msg: 输入值不能大于{0}！</li>
+   *  <li>maxDate: 日期、字符串</li>
+   * </ol>
+   *         {
+   *           maxDate : '2001-01-01';
+   *         }
+   *         //或日期
+   *         {
+   *           maxDate : new Date('2001-01-01');
+   *         }
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var maxDate = rules.add({
+    name: 'maxDate',
+    msg: '输入日期不能大于{0}！',
+    validator: function(value, maxDate, formatedMsg) {
+      if (value) {
+        var date = toDate(value);
+        if (date && date > toDate(maxDate)) {
+          return formatedMsg;
+        }
+      }
+    }
+  });
+  /**
+   * 手机验证，11位手机数字
+   * <ol>
+   *  <li>name: mobile</li>
+   *  <li>msg: 不是有效的手机号码！</li>
+   * </ol>
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var mobile = rules.add({
+    name: 'mobile',
+    msg: '不是有效的手机号码！',
+    validator: function(value, baseValue, formatedMsg) {
+      value = $.trim(value);
+      if (value) {
+        return /^\d{11}$/.test(value) ? undefined : formatedMsg;
+      }
+    }
+  });
+  /**
+   * 数字验证，会对值去除空格，无数据不进行校验
+   * 允许千分符，例如： 12,000,000的格式
+   * <ol>
+   *  <li>name: number</li>
+   *  <li>msg: 不是有效的数字！</li>
+   * </ol>
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var number = rules.add({
+    name: 'number',
+    msg: '不是有效的数字！',
+    validator: function(value, baseValue, formatedMsg) {
+      if (BUI.isNumber(value)) {
+        return;
+      }
+      value = value.replace(/\,/g, '');
+      return !isNaN(value) ? undefined : formatedMsg;
+    }
+  });
+  //测试范围
+  function testRange(baseValue, curVal, prevVal) {
+    var allowEqual = baseValue && (baseValue.equals !== false);
+    if (allowEqual) {
+      return prevVal <= curVal;
+    }
+    return prevVal < curVal;
+  }
+
+  function isEmpty(value) {
+    return value == '' || value == null;
+  }
+  //测试是否后面的数据大于前面的
+  function rangeValid(value, baseValue, formatedMsg, group) {
+    var fields = group.getFields(),
+      valid = true;
+    for (var i = 1; i < fields.length; i++) {
+      var cur = fields[i],
+        prev = fields[i - 1],
+        curVal,
+        prevVal;
+      if (cur && prev) {
+        curVal = cur.get('value');
+        prevVal = prev.get('value');
+        if (!isEmpty(curVal) && !isEmpty(prevVal) && !testRange(baseValue, curVal, prevVal)) {
+          valid = false;
+          break;
+        }
+      }
+    }
+    if (!valid) {
+      return formatedMsg;
+    }
+    return null;
+  }
+  /**
+   * 起始结束日期验证，前面的日期不能大于后面的日期
+   * <ol>
+   *  <li>name: dateRange</li>
+   *  <li>msg: 起始日期不能大于结束日期！</li>
+   *  <li>dateRange: 可以使true或者{equals : fasle}，标示是否允许相等</li>
+   * </ol>
+   *         {
+   *           dateRange : true
+   *         }
+   *         {
+   *           dateRange : {equals : false}
+   *         }
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var dateRange = rules.add({
+    name: 'dateRange',
+    msg: '结束日期不能小于起始日期！',
+    validator: rangeValid
+  });
+  /**
+   * 数字范围
+   * <ol>
+   *  <li>name: numberRange</li>
+   *  <li>msg: 起始数字不能大于结束数字！</li>
+   *  <li>numberRange: 可以使true或者{equals : fasle}，标示是否允许相等</li>
+   * </ol>
+   *         {
+   *           numberRange : true
+   *         }
+   *         {
+   *           numberRange : {equals : false}
+   *         }
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var numberRange = rules.add({
+    name: 'numberRange',
+    msg: '结束数字不能小于开始数字！',
+    validator: rangeValid
+  });
+
+  function getFieldName(self) {
+    var firstField = self.getFieldAt(0);
+    if (firstField) {
+      return firstField.get('name');
+    }
+    return '';
+  }
+
+  function testCheckRange(value, range) {
+    if (!BUI.isArray(range)) {
+      range = [range];
+    }
+    //不存在值
+    if (!value || !range.length) {
+      return false;
+    }
+    var len = !value ? 0 : !BUI.isArray(value) ? 1 : value.length;
+    //如果只有一个限定值
+    if (range.length == 1) {
+      var number = range[0];
+      if (!number) { //range = [0],则不必选
+        return true;
+      }
+      if (number > len) {
+        return false;
+      }
+    } else {
+      var min = range[0],
+        max = range[1];
+      if (min > len || max < len) {
+        return false;
+      }
+    }
+    return true;
+  }
+  /**
+   * 勾选的范围
+   * <ol>
+   *  <li>name: checkRange</li>
+   *  <li>msg: 必须选中{0}项！</li>
+   *  <li>checkRange: 勾选的项范围</li>
+   * </ol>
+   *         //至少勾选一项
+   *         {
+   *           checkRange : 1
+   *         }
+   *         //只能勾选两项
+   *         {
+   *           checkRange : [2,2]
+   *         }
+   *         //可以勾选2-4项
+   *         {
+   *           checkRange : [2,4
+   *           ]
+   *         }
+   * @member BUI.Form.Rules
+   * @type {BUI.Form.Rule}
+   */
+  var checkRange = rules.add({
+    name: 'checkRange',
+    msg: '必须选中{0}项！',
+    validator: function(record, baseValue, formatedMsg, group) {
+      var name = getFieldName(group),
+        value,
+        range = baseValue;
+      if (name && range) {
+        value = record[name];
+        if (!testCheckRange(value, range)) {
+          return formatedMsg;
+        }
+      }
+      return null;
+    }
+  });
+  module.exports = rules;
+});
+define("bui/form/rule", ["jquery", "bui/common"], function(require, exports, module) {
+  /**
+   * @fileOverview 验证规则
+   * @ignore
+   */
+  var $ = require('jquery'),
+    BUI = require("bui/common");
+  /**
+   * @class BUI.Form.Rule
+   * 验证规则
+   * @extends BUI.Base
+   */
+  var Rule = function(config) {
+    Rule.superclass.constructor.call(this, config);
+  }
+  BUI.extend(Rule, BUI.Base);
+  Rule.ATTRS = {
+    /**
+     * 规则名称
+     * @type {String}
+     */
+    name: {},
+    /**
+     * 验证失败信息
+     * @type {String}
+     */
+    msg: {},
+    /**
+     * 验证函数
+     * @type {Function}
+     */
+    validator: {
+      value: function(value, baseValue, formatedMsg, control) {}
+    }
+  }
+  //是否通过验证
+  function valid(self, value, baseValue, msg, control) {
+    if (BUI.isArray(baseValue) && BUI.isString(baseValue[1])) {
+      if (baseValue[1]) {
+        msg = baseValue[1];
+      }
+      baseValue = baseValue[0];
+    }
+    var _self = self,
+      validator = _self.get('validator'),
+      formatedMsg = formatError(self, baseValue, msg),
+      valid = true;
+    value = value == null ? '' : value;
+    return validator.call(_self, value, baseValue, formatedMsg, control);
+  }
+
+  function parseParams(values) {
+    if (values == null) {
+      return {};
+    }
+    if ($.isPlainObject(values)) {
+      return values;
+    }
+    var ars = values,
+      rst = {};
+    if (BUI.isArray(values)) {
+      for (var i = 0; i < ars.length; i++) {
+        rst[i] = ars[i];
+      }
+      return rst;
+    }
+    return {
+      '0': values
+    };
+  }
+
+  function formatError(self, values, msg) {
+    var ars = parseParams(values);
+    msg = msg || self.get('msg');
+    return BUI.substitute(msg, ars);
+  }
+  BUI.augment(Rule, {
+    /**
+     * 是否通过验证，该函数可以接收多个参数
+     * @param  {*}  [value] 验证的值
+     * @param  {*} [baseValue] 跟传入值相比较的值
+     * @param {String} [msg] 验证失败后的错误信息，显示的错误中可以显示 baseValue中的信息
+     * @param {BUI.Form.Field|BUI.Form.Group} [control] 发生验证的控件
+     * @return {String}   通过验证返回 null ,未通过验证返回错误信息
+     *
+     *         var msg = '输入数据必须在{0}和{1}之间！',
+     *           rangeRule = new Rule({
+     *             name : 'range',
+     *             msg : msg,
+     *             validator :function(value,range,msg){
+     *               var min = range[0], //此处我们把range定义为数组，也可以定义为{min:0,max:200},那么在传入校验时跟此处一致即可
+     *                 max = range[1];   //在错误信息中，使用用 '输入数据必须在{min}和{max}之间！',验证函数中的字符串已经进行格式化
+     *               if(value < min || value > max){
+     *                 return false;
+     *               }
+     *               return true;
+     *             }
+     *           });
+     *         var range = [0,200],
+     *           val = 100,
+     *           error = rangeRule.valid(val,range);//msg可以在此处重新传入
+     *
+     */
+    valid: function(value, baseValue, msg, control) {
+      var _self = this;
+      return valid(_self, value, baseValue, msg, control);
+    }
+  });
+  module.exports = Rule;
+});
 define("bui/form/remote", ["jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 表单异步请求，异步校验、远程获取数据
    * @ignore
    */
-  var $ = require("jquery"),
+  var $ = require('jquery'),
     BUI = require("bui/common");
   /**
    * @class BUI.Form.RemoteView
@@ -24829,117 +23013,1882 @@ define("bui/form/remote", ["jquery", "bui/common"], function(require, exports, m
   Remote.View = RemoteView;
   module.exports = Remote;
 });
-define("bui/form/rule", ["jquery", "bui/common"], function(require, exports, module) {
+define("bui/form/fields/text", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
   /**
-   * @fileOverview 验证规则
+   * @fileOverview 表单文本域
+   * @author dxq613@gmail.com
    * @ignore
    */
-  var $ = require("jquery"),
-    BUI = require("bui/common");
+  var Field = require("bui/form/fields/base");
   /**
-   * @class BUI.Form.Rule
-   * 验证规则
-   * @extends BUI.Base
+   * 表单文本域
+   * @class BUI.Form.Field.Text
+   * @extends BUI.Form.Field
    */
-  var Rule = function(config) {
-    Rule.superclass.constructor.call(this, config);
-  }
-  BUI.extend(Rule, BUI.Base);
-  Rule.ATTRS = {
-    /**
-     * 规则名称
-     * @type {String}
-     */
-    name: {},
-    /**
-     * 验证失败信息
-     * @type {String}
-     */
-    msg: {},
-    /**
-     * 验证函数
-     * @type {Function}
-     */
-    validator: {
-      value: function(value, baseValue, formatedMsg, control) {}
-    }
-  }
-  //是否通过验证
-  function valid(self, value, baseValue, msg, control) {
-    if (BUI.isArray(baseValue) && BUI.isString(baseValue[1])) {
-      if (baseValue[1]) {
-        msg = baseValue[1];
+  var textField = Field.extend({}, {
+    xclass: 'form-field-text'
+  });
+  module.exports = textField;
+});
+define("bui/form/fields/date", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
+  /**
+   * @fileOverview 表单日历域
+   * @author dxq613@gmail.com
+   * @ignore
+   */
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
+    Field = require("bui/form/fields/base"),
+    DateUtil = BUI.Date;
+  /*,
+  DatePicker = require('bui-calendar').DatePicker*/
+  /**
+   * 表单文本域
+   * @class BUI.Form.Field.Date
+   * @extends BUI.Form.Field
+   */
+  var dateField = Field.extend({
+    //生成日期控件
+    renderUI: function() {
+      var _self = this,
+        datePicker = _self.get('datePicker');
+      if ($.isPlainObject(datePicker)) {
+        _self.initDatePicker(datePicker);
       }
-      baseValue = baseValue[0];
-    }
-    var _self = self,
-      validator = _self.get('validator'),
-      formatedMsg = formatError(self, baseValue, msg),
-      valid = true;
-    value = value == null ? '' : value;
-    return validator.call(_self, value, baseValue, formatedMsg, control);
-  }
-
-  function parseParams(values) {
-    if (values == null) {
-      return {};
-    }
-    if ($.isPlainObject(values)) {
-      return values;
-    }
-    var ars = values,
-      rst = {};
-    if (BUI.isArray(values)) {
-      for (var i = 0; i < ars.length; i++) {
-        rst[i] = ars[i];
+      if ((datePicker.get && datePicker.get('showTime')) || datePicker.showTime) {
+        _self.getInnerControl().addClass('calendar-time');
       }
-      return rst;
-    }
-    return {
-      '0': values
-    };
-  }
-
-  function formatError(self, values, msg) {
-    var ars = parseParams(values);
-    msg = msg || self.get('msg');
-    return BUI.substitute(msg, ars);
-  }
-  BUI.augment(Rule, {
-    /**
-     * 是否通过验证，该函数可以接收多个参数
-     * @param  {*}  [value] 验证的值
-     * @param  {*} [baseValue] 跟传入值相比较的值
-     * @param {String} [msg] 验证失败后的错误信息，显示的错误中可以显示 baseValue中的信息
-     * @param {BUI.Form.Field|BUI.Form.Group} [control] 发生验证的控件
-     * @return {String}   通过验证返回 null ,未通过验证返回错误信息
-     *
-     *         var msg = '输入数据必须在{0}和{1}之间！',
-     *           rangeRule = new Rule({
-     *             name : 'range',
-     *             msg : msg,
-     *             validator :function(value,range,msg){
-     *               var min = range[0], //此处我们把range定义为数组，也可以定义为{min:0,max:200},那么在传入校验时跟此处一致即可
-     *                 max = range[1];   //在错误信息中，使用用 '输入数据必须在{min}和{max}之间！',验证函数中的字符串已经进行格式化
-     *               if(value < min || value > max){
-     *                 return false;
-     *               }
-     *               return true;
-     *             }
-     *           });
-     *         var range = [0,200],
-     *           val = 100,
-     *           error = rangeRule.valid(val,range);//msg可以在此处重新传入
-     *
-     */
-    valid: function(value, baseValue, msg, control) {
+    },
+    //初始化日历控件
+    initDatePicker: function(datePicker) {
       var _self = this;
-      return valid(_self, value, baseValue, msg, control);
+      require.async('bui/calendar', function(Calendar) {
+        datePicker.trigger = _self.getInnerControl();
+        datePicker.autoRender = true;
+        datePicker = new Calendar.DatePicker(datePicker);
+        _self.set('datePicker', datePicker);
+        _self.set('isCreatePicker', true);
+        _self.get('children').push(datePicker);
+      });
+    },
+    /**
+     * 设置字段的值
+     * @protected
+     * @param {Date} value 字段值
+     */
+    setControlValue: function(value) {
+      var _self = this,
+        innerControl = _self.getInnerControl();
+      if (BUI.isDate(value)) {
+        value = DateUtil.format(value, _self._getFormatMask());
+      }
+      innerControl.val(value);
+    },
+    //获取格式化函数
+    _getFormatMask: function() {
+      var _self = this,
+        datePicker = _self.get('datePicker');
+      if (datePicker.showTime || (datePicker.get && datePicker.get('showTime'))) {
+        return 'yyyy-mm-dd HH:MM:ss';
+      }
+      return 'yyyy-mm-dd';
+    },
+    /**
+     * 将字符串等格式转换成日期
+     * @protected
+     * @override
+     * @param  {String} value 原始数据
+     * @return {Date}  该字段指定的类型
+     */
+    parseValue: function(value) {
+      if (BUI.isNumber(value)) {
+        return new Date(value);
+      }
+      return DateUtil.parse(value);
+    },
+    /**
+     * @override
+     * @protected
+     * 是否当前值
+     */
+    isCurrentValue: function(value) {
+      return DateUtil.isEquals(value, this.get('value'));
+    },
+    //设置最大值
+    _uiSetMax: function(v) {
+      this.addRule('max', v);
+      var _self = this,
+        datePicker = _self.get('datePicker');
+      if (datePicker) {
+        if (datePicker.set) {
+          datePicker.set('maxDate', v);
+        } else {
+          datePicker.maxDate = v;
+        }
+      }
+    },
+    //设置最小值
+    _uiSetMin: function(v) {
+      this.addRule('min', v);
+      var _self = this,
+        datePicker = _self.get('datePicker');
+      if (datePicker) {
+        if (datePicker.set) {
+          datePicker.set('minDate', v);
+        } else {
+          datePicker.minDate = v;
+        }
+      }
+    }
+  }, {
+    ATTRS: {
+      /**
+       * 内部表单元素的容器
+       * @type {String}
+       */
+      controlTpl: {
+        value: '<input type="text" class="calendar"/>'
+      },
+      defaultRules: {
+        value: {
+          date: true
+        }
+      },
+      /**
+       * 最大值
+       * @type {Date|String}
+       */
+      max: {},
+      /**
+       * 最小值
+       * @type {Date|String}
+       */
+      min: {},
+      value: {
+        setter: function(v) {
+          if (BUI.isNumber(v)) { //将数字转换成日期类型
+            return new Date(v);
+          }
+          return v;
+        }
+      },
+      /**
+       * 时间选择控件
+       * @type {Object|BUI.Calendar.DatePicker}
+       */
+      datePicker: {
+        shared: false,
+        value: {}
+      },
+      /**
+       * 时间选择器是否是由此控件创建
+       * @type {Boolean}
+       * @readOnly
+       */
+      isCreatePicker: {
+        value: true
+      }
+    },
+    PARSER: {
+      datePicker: function(el) {
+        var _self = this,
+          cfg = _self.get('datePicker') || {};
+        if (el.hasClass('calendar-time')) {
+          BUI.mix(cfg, {
+            showTime: true
+          });
+        }
+        return cfg;
+      }
+    }
+  }, {
+    xclass: 'form-field-date'
+  });
+  module.exports = dateField;
+});
+define("bui/form/fields/select", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
+  /**
+   * @fileOverview 模拟选择框在表单中
+   * @ignore
+   */
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
+    Field = require("bui/form/fields/base");
+
+  function resetOptions(select, options, self) {
+    select.children().remove();
+    var emptyText = self.get('emptyText');
+    if (emptyText && self.get('showBlank')) {
+      appendItem('', emptyText, select);
+    }
+    BUI.each(options, function(option) {
+      appendItem(option.value, option.text, select);
+    });
+  }
+
+  function appendItem(value, text, select) {
+    // var str = '<option value="' + value +'">'+text+'</option>'
+    // $(str).appendTo(select);
+    // 上面那种写法在ie6下会报一个奇怪的错误，使用new Option则不会有这个问题
+    var option = new Option(text, value),
+      options = select[0].options;
+    options[options.length] = option;
+  }
+  /**
+   * 表单选择域
+   * @class BUI.Form.Field.Select
+   * @extends BUI.Form.Field
+   */
+  var selectField = Field.extend({
+    //生成select
+    renderUI: function() {
+      var _self = this,
+        innerControl = _self.getInnerControl(),
+        select = _self.get('select');
+      if (_self.get('srcNode') && innerControl.is('select')) { //如果使用现有DOM生成，不使用自定义选择框控件
+        return;
+      }
+      //select = select || {};
+      if ($.isPlainObject(select)) {
+        _self._initSelect(select);
+      }
+    },
+    _initSelect: function(select) {
+      var _self = this,
+        items = _self.get('items');
+      require.async('bui/select', function(Select) {
+        select.render = _self.getControlContainer();
+        select.valueField = _self.getInnerControl();
+        select.autoRender = true;
+        select = new Select.Select(select);
+        _self.set('select', select);
+        _self.set('isCreate', true);
+        _self.get('children').push(select);
+        select.on('change', function(ev) {
+          var val = select.getSelectedValue();
+          _self.set('value', val);
+        });
+      })
+    },
+    /**
+     * 重新设置选项集合
+     * @param {Array} items 选项集合
+     */
+    setItems: function(items) {
+      var _self = this,
+        select = _self.get('select');
+      if ($.isPlainObject(items)) {
+        var tmp = [];
+        BUI.each(items, function(v, n) {
+          tmp.push({
+            value: n,
+            text: v
+          });
+        });
+        items = tmp;
+      }
+      var control = _self.getInnerControl();
+      if (control.is('select')) {
+        resetOptions(control, items, _self);
+        _self.setControlValue(_self.get('value'));
+        if (!_self.getControlValue()) {
+          _self.setInternal('value', '');
+        }
+      }
+      if (select) {
+        if (select.set) {
+          select.set('items', items);
+        } else {
+          select.items = items;
+        }
+      }
+    },
+    /**
+     * 设置字段的值
+     * @protected
+     * @param {*} value 字段值
+     */
+    setControlValue: function(value) {
+      var _self = this,
+        select = _self.get('select'),
+        innerControl = _self.getInnerControl();
+      innerControl.val(value);
+      if (select && select.set && select.getSelectedValue() !== value) {
+        select.setSelectedValue(value);
+      }
+    },
+    /**
+     * 获取选中的文本
+     * @return {String} 选中的文本
+     */
+    getSelectedText: function() {
+      var _self = this,
+        select = _self.get('select'),
+        innerControl = _self.getInnerControl();
+      if (innerControl.is('select')) {
+        var dom = innerControl[0],
+          item = dom.options[dom.selectedIndex];
+        return item ? item.text : '';
+      } else {
+        return select.getSelectedText();
+      }
+    },
+    /**
+     * 获取tip显示对应的元素
+     * @protected
+     * @override
+     * @return {HTMLElement}
+     */
+    getTipTigger: function() {
+      var _self = this,
+        select = _self.get('select');
+      if (select && select.rendered) {
+        return select.get('el').find('input');
+      }
+      return _self.get('el');
+    },
+    //设置选项
+    _uiSetItems: function(v) {
+      if (v) {
+        this.setItems(v);
+      }
+    },
+    /**
+     * @protected
+     * 设置内部元素宽度
+     */
+    setInnerWidth: function(width) {
+      var _self = this,
+        innerControl = _self.getInnerControl(),
+        select = _self.get('select'),
+        appendWidth = innerControl.outerWidth() - innerControl.width();
+      innerControl.width(width - appendWidth);
+      if (select && select.set) {
+        select.set('width', width);
+      }
+    }
+  }, {
+    ATTRS: {
+      /**
+       * 选项
+       * @type {Array}
+       */
+      items: {},
+      /**
+       * 内部表单元素的容器
+       * @type {String}
+       */
+      controlTpl: {
+        value: '<input type="hidden"/>'
+      },
+      /**
+       * 是否显示为空的文本
+       * @type {Boolean}
+       */
+      showBlank: {
+        value: true
+      },
+      /**
+       * 选择为空时的文本
+       * @type {String}
+       */
+      emptyText: {
+        value: '请选择'
+      },
+      /**
+       * 内部的Select控件的配置项
+       * @cfg {Object} select
+       */
+      /**
+       * 内部的Select控件
+       * @type {BUI.Select.Select}
+       */
+      select: {
+        shared: false,
+        value: {}
+      }
+    },
+    PARSER: {
+      emptyText: function(el) {
+        if (!this.get('showBlank')) {
+          return '';
+        }
+        var options = el.find('option'),
+          rst = this.get('emptyText');
+        if (options.length) {
+          rst = $(options[0]).text();
+        }
+        return rst;
+      }
+    }
+  }, {
+    xclass: 'form-field-select'
+  });
+  module.exports = selectField;
+});
+define("bui/form/fields/hidden", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
+  /**
+   * @fileOverview 隐藏字段
+   * @ignore
+   * @author dxq613@gmail.com
+   */
+  var Field = require("bui/form/fields/base");
+  /**
+   * 表单隐藏域
+   * @class BUI.Form.Field.Hidden
+   * @extends BUI.Form.Field
+   */
+  var hiddenField = Field.extend({}, {
+    ATTRS: {
+      /**
+       * 内部表单元素的容器
+       * @type {String}
+       */
+      controlTpl: {
+        value: '<input type="hidden"/>'
+      },
+      tpl: {
+        value: ''
+      }
+    }
+  }, {
+    xclass: 'form-field-hidden'
+  });
+  module.exports = hiddenField;
+});
+define("bui/form/fields/number", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
+  /**
+   * @fileOverview 表单文本域
+   * @author dxq613@gmail.com
+   * @ignore
+   */
+  /**
+   * 表单数字域
+   * @class BUI.Form.Field.Number
+   * @extends BUI.Form.Field
+   */
+  var Field = require("bui/form/fields/base"),
+    numberField = Field.extend({
+      /**
+       * 将字符串等格式转换成数字
+       * @protected
+       * @param  {String} value 原始数据
+       * @return {Number}  该字段指定的类型
+       */
+      parseValue: function(value) {
+        if (value == '' || value == null) {
+          return null;
+        }
+        if (BUI.isNumber(value)) {
+          return value;
+        }
+        var _self = this,
+          allowDecimals = _self.get('allowDecimals');
+        value = value.replace(/\,/g, '');
+        if (!allowDecimals) {
+          return parseInt(value, 10);
+        }
+        return parseFloat(parseFloat(value).toFixed(_self.get('decimalPrecision')));
+      },
+      _uiSetMax: function(v) {
+        this.addRule('max', v);
+      },
+      _uiSetMin: function(v) {
+        this.addRule('min', v);
+      }
+    }, {
+      ATTRS: {
+        /**
+         * 最大值
+         * @type {Number}
+         */
+        max: {},
+        /**
+         * 最小值
+         * @type {Number}
+         */
+        min: {},
+        decorateCfgFields: {
+          value: {
+            min: true,
+            max: true
+          }
+        },
+        /**
+         * 表单元素或者控件触发此事件时，触发验证
+         * @type {String}
+         */
+        validEvent: {
+          value: 'keyup change'
+        },
+        defaultRules: {
+          value: {
+            number: true
+          }
+        },
+        /**
+         * 是否允许小数，如果不允许，则最终结果转换成整数
+         * @type {Boolean}
+         */
+        allowDecimals: {
+          value: true
+        },
+        /**
+         * 允许小数时的，小数位
+         * @type {Number}
+         */
+        decimalPrecision: {
+          value: 2
+        },
+        /**
+         * 对数字进行微调时，每次增加或减小的数字
+         * @type {Object}
+         */
+        step: {
+          value: 1
+        }
+      }
+    }, {
+      xclass: 'form-field-number'
+    });
+  module.exports = numberField;
+});
+define("bui/form/fields/check", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
+  /**
+   * @fileOverview  可勾选字段
+   * @ignore
+   */
+  var $ = require('jquery'),
+    Field = require("bui/form/fields/base");
+  /**
+   * 可选中菜单域
+   * @class BUI.Form.Field.Check
+   * @extends BUI.Form.Field
+   */
+  var checkField = Field.extend({
+    /**
+     * 验证成功后执行的操作
+     * @protected
+     */
+    onValid: function() {
+      var _self = this,
+        checked = _self._getControlChecked();
+      _self.setInternal('checked', checked);
+      _self.fire('change');
+      if (checked) {
+        _self.fire('checked');
+      } else {
+        _self.fire('unchecked');
+      }
+    },
+    //设置是否勾选
+    _setControlChecked: function(checked) {
+      var _self = this,
+        innerControl = _self.getInnerControl();
+      innerControl.attr('checked', !!checked);
+    },
+    //获取是否勾选
+    _getControlChecked: function() {
+      var _self = this,
+        innerControl = _self.getInnerControl();
+      return !!innerControl.attr('checked');
+    },
+    //覆盖 设置值的方法
+    _uiSetValue: function(v) {
+      this.setControlValue(v);
+    },
+    //覆盖不设置宽度
+    _uiSetWidth: function(v) {},
+    //设置是否勾选
+    _uiSetChecked: function(v) {
+      var _self = this;
+      _self._setControlChecked(v);
+      if (_self.get('rendered')) {
+        _self.onValid();
+      }
+    }
+  }, {
+    ATTRS: {
+      /**
+       * 触发验证事件，进而引起change事件
+       * @override
+       * @type {String}
+       */
+      validEvent: {
+        value: 'click'
+      },
+      /**
+       * 是否选中
+       * @cfg {String} checked
+       */
+      /**
+       * 是否选中
+       * @type {String}
+       */
+      checked: {
+        value: false
+      },
+      events: {
+        value: {
+          /**
+           * @event
+           * 选中事件
+           */
+          'checked': false,
+          /**
+           * @event
+           * 取消选中事件
+           */
+          'unchecked': false
+        }
+      }
+    },
+    PARSER: {
+      checked: function(el) {
+        return !!el.attr('checked');
+      }
+    }
+  }, {
+    xclass: 'form-check-field'
+  });
+  module.exports = checkField;
+});
+define("bui/form/fields/radio", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
+  /**
+   * @fileOverview  单选框表单域
+   * @ignore
+   */
+  var CheckField = require("bui/form/fields/check");
+  /**
+   * 表单单选域
+   * @class BUI.Form.Field.Radio
+   * @extends BUI.Form.Field.Check
+   */
+  var RadioField = CheckField.extend({
+    bindUI: function() {
+      var _self = this,
+        parent = _self.get('parent'),
+        name = _self.get('name');
+      if (parent) {
+        _self.getInnerControl().on('click', function(ev) {
+          var fields = parent.getFields(name);
+          BUI.each(fields, function(field) {
+            if (field != _self) {
+              field.set('checked', false);
+            }
+          });
+        });
+      }
+    }
+  }, {
+    ATTRS: {
+      /**
+       * 内部表单元素的容器
+       * @type {String}
+       */
+      controlTpl: {
+        view: true,
+        value: '<input type="radio"/>'
+      },
+      /**
+       * 控件容器，如果为空直接添加在控件容器上
+       * @type {String|HTMLElement}
+       */
+      controlContainer: {
+        value: '.radio'
+      },
+      tpl: {
+        value: '<label><span class="radio"></span>{label}</label>'
+      }
+    }
+  }, {
+    xclass: 'form-field-radio'
+  });
+  module.exports = RadioField;
+});
+define("bui/form/fields/checkbox", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
+  /**
+   * @fileOverview  复选框表单域
+   * @ignore
+   */
+  var CheckField = require("bui/form/fields/check");
+  /**
+   * 表单复选域
+   * @class BUI.Form.Field.Checkbox
+   * @extends BUI.Form.Field.Check
+   */
+  var CheckBoxField = CheckField.extend({}, {
+    ATTRS: {
+      /**
+       * 内部表单元素的容器
+       * @type {String}
+       */
+      controlTpl: {
+        view: true,
+        value: '<input type="checkbox"/>'
+      },
+      /**
+       * 控件容器，如果为空直接添加在控件容器上
+       * @type {String|HTMLElement}
+       */
+      controlContainer: {
+        value: '.checkbox'
+      },
+      tpl: {
+        value: '<label><span class="checkbox"></span>{label}</label>'
+      }
+    }
+  }, {
+    xclass: 'form-field-checkbox'
+  });
+  module.exports = CheckBoxField;
+});
+define("bui/form/fields/plain", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
+  /**
+   * @fileOverview 仅仅用于显示文本，不能编辑的字段
+   * @ignore
+   */
+  var $ = require('jquery'),
+    Field = require("bui/form/fields/base");
+  var PlainFieldView = Field.View.extend({
+    _uiSetValue: function(v) {
+      var _self = this,
+        textEl = _self.get('textEl'),
+        container = _self.getControlContainer(),
+        renderer = _self.get('renderer'),
+        text = renderer ? renderer(v) : v,
+        width = _self.get('width'),
+        appendWidth = 0,
+        textTpl;
+      if (textEl) {
+        textEl.remove();
+      }
+      text = text || '&nbsp;';
+      textTpl = BUI.substitute(_self.get('textTpl'), {
+        text: text
+      });
+      textEl = $(textTpl).appendTo(container);
+      appendWidth = textEl.outerWidth() - textEl.width();
+      textEl.width(width - appendWidth);
+      _self.set('textEl', textEl);
+    }
+  }, {
+    ATTRS: {
+      textEl: {},
+      value: {}
+    }
+  }, {
+    xclass: 'form-field-plain-view'
+  });
+  /**
+   * 表单文本域，不能编辑
+   * @class BUI.Form.Field.Plain
+   * @extends BUI.Form.Field
+   */
+  var PlainField = Field.extend({}, {
+    ATTRS: {
+      /**
+       * 内部表单元素的容器
+       * @type {String}
+       */
+      controlTpl: {
+        value: '<input type="hidden"/>'
+      },
+      /**
+       * 显示文本的模板
+       * @type {String}
+       */
+      textTpl: {
+        view: true,
+        value: '<span class="x-form-text">{text}</span>'
+      },
+      /**
+       * 将字段的值格式化输出
+       * @type {Function}
+       */
+      renderer: {
+        view: true,
+        value: function(value) {
+          return value;
+        }
+      },
+      tpl: {
+        value: ''
+      },
+      xview: {
+        value: PlainFieldView
+      }
+    }
+  }, {
+    xclass: 'form-field-plain'
+  });
+  module.exports = PlainField;
+});
+define("bui/form/fields/list", ["jquery", "bui/common", "bui/list", "bui/data", "bui/overlay"], function(require, exports, module) {
+  /**
+   * @fileOverview 表单中的列表，每个列表后有个隐藏域用来存储数据
+   * @ignore
+   */
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
+    List = require("bui/list"),
+    Field = require("bui/form/fields/base");
+
+  function parseItems(items) {
+    var rst = items;
+    if ($.isPlainObject(items)) {
+      rst = [];
+      BUI.each(items, function(v, k) {
+        rst.push({
+          text: v,
+          value: k
+        });
+      });
+    }
+    return rst;
+  }
+  /**
+   * @class BUI.Form.Field.List
+   * 表单中的列表
+   * @extends BUI.Form.Field
+   */
+  var List = Field.extend({
+    initializer: function() {
+      var _self = this;
+      //if(!_self.get('srcNode')){
+      _self._initList();
+      //}
+    },
+    _getList: function() {
+      var _self = this,
+        children = _self.get('children');
+      return children[0];
+    },
+    bindUI: function() {
+      var _self = this,
+        list = _self._getList();
+      if (list) {
+        list.on('selectedchange', function() {
+          var value = _self._getListValue(list);
+          _self.set('value', value);
+        });
+      }
+    },
+    //获取列表值
+    _getListValue: function(list) {
+      var _self = this;
+      list = list || _self._getList();
+      return list.getSelectionValues().join(',');
+    },
+    /**
+     * 设置字段的值
+     * @protected
+     * @param {*} value 字段值
+     */
+    setControlValue: function(value) {
+      var _self = this,
+        innerControl = _self.getInnerControl(),
+        list = _self._getList();
+      innerControl.val(value);
+      if (_self._getListValue(list) !== value && list.getCount()) {
+        if (list.get('multipleSelect')) {
+          list.clearSelection();
+        }
+        list.setSelectionByField(value.split(','));
+      }
+    },
+    //同步数据
+    syncUI: function() {
+      this.set('list', this._getList());
+    },
+    //初始化列表
+    _initList: function() {
+      var _self = this,
+        defaultListCfg = _self.get('defaultListCfg'),
+        children = _self.get('children'),
+        list = _self.get('list') || {};
+      if (children[0]) {
+        return;
+      }
+      if ($.isPlainObject(list)) {
+        BUI.mix(list, defaultListCfg);
+      }
+      children.push(list);
+    },
+    /**
+     * 设置选项
+     * @param {Array} items 选项记录
+     */
+    setItems: function(items) {
+      var _self = this,
+        value = _self.get('value'),
+        list = _self._getList();
+      list.set('items', parseItems(items));
+      list.setSelectionByField(value.split(','));
+    },
+    //设置选项集合
+    _uiSetItems: function(v) {
+      if (v) {
+        this.setItems(v);
+      }
+    }
+  }, {
+    ATTRS: {
+      /**
+       * 内部表单元素的容器
+       * @type {String}
+       */
+      controlTpl: {
+        value: '<input type="hidden"/>'
+      },
+      /**
+       * @protected
+       * 默认的列表配置
+       * @type {Object}
+       */
+      defaultListCfg: {
+        value: {
+          xclass: 'simple-list'
+        }
+      },
+      /**
+       * 选项
+       * @type {Array}
+       */
+      items: {
+        setter: function(v) {
+          if ($.isPlainObject(v)) {
+            var rst = [];
+            BUI.each(v, function(v, k) {
+              rst.push({
+                value: k,
+                text: v
+              });
+            });
+            v = rst;
+          }
+          return v;
+        }
+      },
+      /**
+       * 列表
+       * @type {BUI.List.SimpleList}
+       */
+      list: {}
+    },
+    PARSER: {
+      list: function(el) {
+        var listEl = el.find('.bui-simple-list');
+        if (listEl.length) {
+          return {
+            srcNode: listEl
+          };
+        }
+      }
+    }
+  }, {
+    xclass: 'form-field-list'
+  });
+  module.exports = List;
+});
+define("bui/form/fields/textarea", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
+  /**
+   * @fileOverview 表单文本域
+   * @author dxq613@gmail.com
+   * @ignore
+   */
+  var Field = require("bui/form/fields/base");
+  /**
+   * 表单文本域
+   * @class BUI.Form.Field.TextArea
+   * @extends BUI.Form.Field
+   */
+  var TextAreaField = Field.extend({
+    //设置行
+    _uiSetRows: function(v) {
+      var _self = this,
+        innerControl = _self.getInnerControl();
+      if (v) {
+        innerControl.attr('rows', v);
+      }
+    },
+    //设置列
+    _uiSetCols: function(v) {
+      var _self = this,
+        innerControl = _self.getInnerControl();
+      if (v) {
+        innerControl.attr('cols', v);
+      }
+    }
+  }, {
+    ATTRS: {
+      /**
+       * 内部表单元素的容器
+       * @type {String}
+       */
+      controlTpl: {
+        value: '<textarea></textarea>'
+      },
+      /**
+       * 行
+       * @type {Number}
+       */
+      rows: {},
+      /**
+       * 列
+       * @type {Number}
+       */
+      cols: {},
+      decorateCfgFields: {
+        value: {
+          'rows': true,
+          'cols': true
+        }
+      }
+    }
+  }, {
+    xclass: 'form-field-textarea'
+  });
+  module.exports = TextAreaField;
+});
+define("bui/form/fields/uploader", ["bui/common", "jquery", "bui/overlay"], function(require, exports, module) {
+  /**
+   * @fileOverview 模拟选择框在表单中
+   * @ignore
+   */
+  var BUI = require("bui/common"),
+    JSON = BUI.JSON,
+    Field = require("bui/form/fields/base"),
+    Rules = require("bui/form/rules");
+  /**
+   * 表单上传域
+   * @class BUI.Form.Field.Upload
+   * @extends BUI.Form.Field
+   */
+  var uploaderField = Field.extend({
+    //生成upload
+    renderUI: function() {
+      var _self = this,
+        innerControl = _self.getInnerControl();
+      if (_self.get('srcNode') && innerControl.get(0).type === 'file') { //如果使用现有DOM生成，不使用上传组件
+        return;
+      }
+      _self._initControlValue();
+      _self._initUpload();
+    },
+    _initUpload: function() {
+      var _self = this,
+        children = _self.get('children'),
+        uploader = _self.get('uploader') || {};
+      require.async('bui/uploader', function(Uploader) {
+        uploader.render = _self.getControlContainer();
+        uploader.autoRender = true;
+        uploader = new Uploader.Uploader(uploader);
+        _self.set('uploader', uploader);
+        _self.set('isCreate', true);
+        _self.get('children').push(uploader);
+        _self._initQueue(uploader.get('queue'));
+        uploader.on('success', function(ev) {
+          var result = _self._getUploaderResult();
+          _self.setControlValue(result);
+        });
+        uploader.get('queue').on('itemremoved', function() {
+          var result = _self._getUploaderResult();
+          _self.setControlValue(result);
+        })
+      });
+    },
+    _getUploaderResult: function() {
+      var _self = this,
+        uploader = _self.get('uploader'),
+        queue = uploader.get('queue'),
+        items = queue.getItems(),
+        result = [];
+      BUI.each(items, function(item) {
+        item.result && result.push(item.result);
+      });
+      return result;
+    },
+    setControlValue: function(items) {
+      var _self = this,
+        innerControl = _self.getInnerControl();
+      // _self.fire('change');
+      innerControl.val(JSON.stringify(items));
+    },
+    _initControlValue: function() {
+      var _self = this,
+        textValue = _self.getControlValue(),
+        value;
+      if (textValue) {
+        value = BUI.JSON.parse(textValue);
+        _self.set('value', value);
+      }
+    },
+    _initQueue: function(queue) {
+      var _self = this,
+        value = _self.get('value'),
+        result = [];
+      //初始化对列默认成功
+      BUI.each(value, function(item) {
+        var newItem = BUI.cloneObject(item);
+        newItem.success = true;
+        newItem.result = item;
+        result.push(newItem);
+      });
+      queue && queue.setItems(result);
+    } //,
+    // valid: function(){
+    //   var _self = this,
+    //     uploader = _self.get('uploader');
+    //   uploaderField.superclass.valid.call(_self);
+    //   uploader.valid();
+    // }
+  }, {
+    ATTRS: {
+      /**
+       * 内部表单元素的容器
+       * @type {String}
+       */
+      controlTpl: {
+        value: '<input type="hidden"/>'
+      },
+      uploader: {
+        setter: function(v) {
+          var disabled = this.get('disabled');
+          v && v.isController && v.set('disabled', disabled);
+          return v;
+        }
+      },
+      disabled: {
+        setter: function(v) {
+          var _self = this,
+            uploader = _self.get('uploader');
+          uploader && uploader.isController && uploader.set('disabled', v);
+        }
+      },
+      value: {
+        shared: false,
+        value: []
+      },
+      defaultRules: function() {
+        uploader: true
+      }
+    }
+  }, {
+    xclass: 'form-field-uploader'
+  });
+  Rules.add({
+    name: 'uploader', //规则名称
+    msg: '上传文件选择有误！', //默认显示的错误信息
+    validator: function(value, baseValue, formatMsg, field) { //验证函数，验证值、基准值、格式化后的错误信息
+      var uploader = field.get('uploader');
+      if (uploader && !uploader.isValid()) {
+        return formatMsg;
+      }
     }
   });
-  module.exports = Rule;
+  module.exports = uploaderField;
 });
-define("bui/form/group/base", ["jquery", "bui/common", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/form/fields/checklist", ["bui/common", "jquery", "bui/list", "bui/data", "bui/overlay"], function(require, exports, module) {
+  /**
+   * @fileOverview 可勾选的列表，模拟多个checkbox
+   * @ignore
+   */
+  'use strict';
+  var BUI = require("bui/common"),
+    ListField = require("bui/form/fields/list");
+  /**
+   * @class BUI.Form.Field.CheckList
+   * 可勾选的列表，模拟多个checkbox
+   * @extends BUI.Form.Field.List
+   */
+  var CheckList = ListField.extend({}, {
+    ATTRS: {
+      /**
+       * @protected
+       * 默认的列表配置
+       * @type {Object}
+       */
+      defaultListCfg: {
+        value: {
+          itemTpl: '<li><span class="x-checkbox"></span>{text}</li>',
+          multipleSelect: true,
+          allowTextSelection: false
+        }
+      }
+    }
+  }, {
+    xclass: 'form-field-checklist'
+  });
+  module.exports = CheckList;
+});
+define("bui/form/fields/radiolist", ["bui/common", "jquery", "bui/list", "bui/data", "bui/overlay"], function(require, exports, module) {
+  /**
+   * @fileOverview 可勾选的列表，模拟多个radio
+   * @ignore
+   */
+  'use strict';
+  var BUI = require("bui/common"),
+    ListField = require("bui/form/fields/list");
+  /**
+   * @class BUI.Form.Field.RadioList
+   * 可勾选的列表，模拟多个radio
+   * @extends BUI.Form.Field.List
+   */
+  var RadioList = ListField.extend({}, {
+    ATTRS: {
+      /**
+       * @protected
+       * 默认的列表配置
+       * @type {Object}
+       */
+      defaultListCfg: {
+        value: {
+          itemTpl: '<li><span class="x-radio"></span>{text}</li>',
+          allowTextSelection: false
+        }
+      }
+    }
+  }, {
+    xclass: 'form-field-radiolist'
+  });
+  module.exports = RadioList;
+});
+define("bui/form/groupvalid", ["jquery", "bui/common"], function(require, exports, module) {
+  /**
+   * @fileOverview 表单分组验证
+   * @ignore
+   */
+  var $ = require('jquery'),
+    CLS_ERROR = 'x-form-error',
+    Valid = require("bui/form/valid");
+  /**
+   * @class BUI.Form.GroupValidView
+   * @private
+   * 表单分组验证视图
+   * @extends BUI.Form.ValidView
+   */
+  function GroupValidView() {}
+  BUI.augment(GroupValidView, Valid.View, {
+    /**
+     * 显示一条错误
+     * @private
+     * @param  {String} msg 错误信息
+     */
+    showError: function(msg, errorTpl, container) {
+      var errorMsg = BUI.substitute(errorTpl, {
+          error: msg
+        }),
+        el = $(errorMsg);
+      el.appendTo(container);
+      el.addClass(CLS_ERROR);
+    },
+    /**
+     * 清除错误
+     */
+    clearErrors: function() {
+      var _self = this,
+        errorContainer = _self.getErrorsContainer();
+      errorContainer.children('.' + CLS_ERROR).remove();
+    }
+  });
+  /**
+   * @class BUI.Form.GroupValid
+   * 表单分组验证
+   * @extends BUI.Form.Valid
+   */
+  function GroupValid() {}
+  GroupValid.ATTRS = ATTRS = BUI.merge(true, Valid.ATTRS, {
+    events: {
+      value: {
+        /**
+         * @event
+         * 验证结果发生改变，从true变成false或者相反
+         * @param {Object} ev 事件对象
+         * @param {Object} ev.target 触发事件的子控件
+         * @param {Boolean} ev.valid 是否通过验证
+         */
+        validchange: true,
+        /**
+         * @event
+         * 值改变，仅当通过验证时触发
+         * @param {Object} ev 事件对象
+         * @param {Object} ev.target 触发事件的子控件
+         */
+        change: true
+      }
+    }
+  });
+  BUI.augment(GroupValid, Valid, {
+    __bindUI: function() {
+      var _self = this,
+        validEvent = 'validchange change';
+      //当不需要显示子控件错误时，仅需要监听'change'事件即可
+      _self.on(validEvent, function(ev) {
+        var sender = ev.target;
+        if (sender != this && _self.get('showError')) {
+          var valid = sender.isValid();
+          //是否所有的子节点都进行过验证
+          if (_self._hasAllChildrenValid()) {
+            valid = valid && _self.isChildrenValid();
+            if (valid) {
+              _self.validControl(_self.getRecord());
+              valid = _self.isSelfValid();
+            }
+          }
+          if (!valid) {
+            _self.showErrors();
+          } else {
+            _self.clearErrors();
+          }
+        }
+      });
+    },
+    /**
+     * 是否通过验证
+     */
+    isValid: function() {
+      if (this.get('disabled')) { //如果被禁用，则不进行验证，并且认为true
+        return true;
+      }
+      var _self = this,
+        isValid = _self.isChildrenValid();
+      return isValid && _self.isSelfValid();
+    },
+    /**
+     * 进行验证
+     */
+    valid: function() {
+      var _self = this,
+        children = _self.get('children');
+      if (_self.get('disabled')) { //禁用时不进行验证
+        return;
+      }
+      BUI.each(children, function(item) {
+        if (!item.get('disabled')) {
+          item.valid();
+        }
+      });
+    },
+    /**
+     * 是否所有的子节点进行过校验,如果子节点
+     * @private
+     */
+    _hasAllChildrenValid: function() {
+      var _self = this,
+        children = _self.get('children'),
+        rst = true;
+      BUI.each(children, function(item) {
+        if (!item.get('disabled') && item.get('hasValid') === false) {
+          rst = false;
+          return false;
+        }
+      });
+      return rst;
+    },
+    /**
+     * 所有子控件是否通过验证
+     * @protected
+     * @return {Boolean} 所有子控件是否通过验证
+     */
+    isChildrenValid: function() {
+      var _self = this,
+        children = _self.get('children'),
+        isValid = true;
+      BUI.each(children, function(item) {
+        if (!item.get('disabled') && !item.isValid()) {
+          isValid = false;
+          return false;
+        }
+      });
+      return isValid;
+    },
+    isSelfValid: function() {
+      return !this.get('error');
+    },
+    /**
+     * 验证控件内容
+     * @protected
+     * @return {Boolean} 是否通过验证
+     */
+    validControl: function(record) {
+      var _self = this,
+        error = _self.getValidError(record);
+      _self.set('error', error);
+    },
+    /**
+     * 获取验证出错信息，包括自身和子控件的验证错误信息
+     * @return {Array} 出错信息
+     */
+    getErrors: function() {
+      var _self = this,
+        children = _self.get('children'),
+        showChildError = _self.get('showChildError'),
+        validError = null,
+        rst = [];
+      if (showChildError) {
+        BUI.each(children, function(child) {
+          if (child.getErrors) {
+            rst = rst.concat(child.getErrors());
+          }
+        });
+      }
+      //如果所有子控件通过验证，才显示自己的错误
+      if (_self._hasAllChildrenValid() && _self.isChildrenValid()) {
+        validError = _self.get('error');
+        if (validError) {
+          rst.push(validError);
+        }
+      }
+      return rst;
+    },
+    //设置错误模板时，覆盖子控件设置的错误模板
+    _uiSetErrorTpl: function(v) {
+      var _self = this,
+        children = _self.get('children');
+      BUI.each(children, function(item) {
+        if (!item.get('userConfig')['errorTpl']) { //未定义错误模板时
+          item.set('errorTpl', v);
+        }
+      });
+    }
+  });
+  GroupValid.View = GroupValidView;
+  module.exports = GroupValid;
+});
+define("bui/form/form", ["jquery", "bui/common", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
+  /**
+   * @fileOverview 创建表单
+   * @ignore
+   */
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
+    FieldContainer = require("bui/form/fieldcontainer"),
+    Component = BUI.Component,
+    TYPE_SUBMIT = {
+      NORMAL: 'normal',
+      AJAX: 'ajax',
+      IFRAME: 'iframe'
+    };
+  var FormView = FieldContainer.View.extend({
+    _uiSetMethod: function(v) {
+      this.get('el').attr('method', v);
+    },
+    _uiSetAction: function(v) {
+      this.get('el').attr('action', v);
+    }
+  }, {
+    ATTRS: {
+      method: {},
+      action: {}
+    }
+  }, {
+    xclass: 'form-view'
+  });
+  /**
+   * @class BUI.Form.Form
+   * 表单控件,表单相关的类图：
+   * <img src="../assets/img/class-form.jpg"/>
+   * @extends BUI.Form.FieldContainer
+   */
+  var Form = FieldContainer.extend({
+    renderUI: function() {
+      var _self = this,
+        buttonBar = _self.get('buttonBar'),
+        cfg;
+      if ($.isPlainObject(buttonBar) && _self.get('buttons')) {
+        cfg = BUI.merge(_self.getDefaultButtonBarCfg(), buttonBar);
+        _self._initButtonBar(cfg);
+      }
+      _self._initSubmitMask();
+    },
+    _initButtonBar: function(cfg) {
+      var _self = this;
+      require.async('bui/toolbar', function(Toolbar) {
+        buttonBar = new Toolbar.Bar(cfg);
+        _self.set('buttonBar', buttonBar);
+      });
+    },
+    bindUI: function() {
+      var _self = this,
+        formEl = _self.get('el');
+      formEl.on('submit', function(ev) {
+        _self.valid();
+        if (!_self.isValid() || _self.onBeforeSubmit() === false) {
+          ev.preventDefault();
+          _self.focusError();
+          return;
+        }
+        if (_self.isValid() && _self.get('submitType') === TYPE_SUBMIT.AJAX) {
+          ev.preventDefault();
+          _self.ajaxSubmit();
+        }
+      });
+    },
+    /**
+     * 获取按钮栏默认的配置项
+     * @protected
+     * @return {Object}
+     */
+    getDefaultButtonBarCfg: function() {
+      var _self = this,
+        buttons = _self.get('buttons');
+      return {
+        autoRender: true,
+        elCls: 'toolbar',
+        render: _self.get('el'),
+        items: buttons,
+        defaultChildClass: 'bar-item-button'
+      };
+    },
+    /**
+     * 将焦点定位到第一个错误字段
+     */
+    focusError: function() {
+      var _self = this,
+        fields = _self.getFields();
+      BUI.each(fields, function(field) {
+        if (field.get('visible') && !field.get('disabled') && !field.isValid()) {
+          try {
+            field.focus();
+          } catch (e) {
+            BUI.log(e);
+          }
+          return false;
+        }
+      });
+    },
+    /**
+     * 表单提交，如果未通过验证，则阻止提交
+     */
+    submit: function(options) {
+      var _self = this,
+        submitType = _self.get('submitType');
+      _self.valid();
+      if (_self.isValid()) {
+        if (_self.onBeforeSubmit() == false) {
+          return;
+        }
+        if (submitType === TYPE_SUBMIT.NORMAL) {
+          _self.get('el')[0].submit();
+        } else if (submitType === TYPE_SUBMIT.AJAX) {
+          _self.ajaxSubmit(options);
+        }
+      } else {
+        _self.focusError();
+      }
+    },
+    /**
+     * 异步提交表单
+     */
+    ajaxSubmit: function(options) {
+      var _self = this,
+        method = _self.get('method'),
+        action = _self.get('action'),
+        callback = _self.get('callback'),
+        submitMask = _self.get('submitMask'),
+        data = _self.serializeToObject(), //获取表单数据
+        success,
+        ajaxParams = BUI.merge(true, { //合并请求参数
+          url: action,
+          type: method,
+          dataType: 'json',
+          data: data
+        }, options);
+      if (options && options.success) {
+        success = options.success;
+      }
+      ajaxParams.success = function(data) { //封装success方法
+        if (submitMask && submitMask.hide) {
+          submitMask.hide();
+        }
+        if (success) {
+          success(data);
+        }
+        callback && callback.call(_self, data);
+      }
+      if (submitMask && submitMask.show) {
+        submitMask.show();
+      }
+      $.ajax(ajaxParams);
+    },
+    //获取提交的屏蔽层
+    _initSubmitMask: function() {
+      var _self = this,
+        submitType = _self.get('submitType'),
+        submitMask = _self.get('submitMask');
+      if (submitType === TYPE_SUBMIT.AJAX && submitMask) {
+        require.async('bui/mask', function(Mask) {
+          var cfg = $.isPlainObject(submitMask) ? submitMask : {};
+          submitMask = new Mask.LoadMask(BUI.mix({
+            el: _self.get('el')
+          }, cfg));
+          _self.set('submitMask', submitMask);
+        });
+      }
+    },
+    /**
+     * 序列化表单成对象，所有的键值都是字符串
+     * @return {Object} 序列化成对象
+     */
+    serializeToObject: function() {
+      return BUI.FormHelper.serializeToObject(this.get('el')[0]);
+    },
+    /**
+     * serializeToObject 的缩写，所有的键值都是字符串
+     * @return {Object} 序列化成对象
+     */
+    toObject: function() {
+      return this.serializeToObject();
+    },
+    /**
+     * 表单提交前
+     * @protected
+     * @return {Boolean} 是否取消提交
+     */
+    onBeforeSubmit: function() {
+      return this.fire('beforesubmit');
+    },
+    /**
+     * 表单恢复初始值
+     */
+    reset: function() {
+      var _self = this,
+        initRecord = _self.get('initRecord');
+      _self.setRecord(initRecord);
+    },
+    /**
+     * 重置提示信息，因为在表单隐藏状态下，提示信息定位错误
+     * <pre><code>
+     * dialog.on('show',function(){
+     *   form.resetTips();
+     * });
+     *
+     * </code></pre>
+     */
+    resetTips: function() {
+      var _self = this,
+        fields = _self.getFields();
+      BUI.each(fields, function(field) {
+        field.resetTip();
+      });
+    },
+    /**
+     * @protected
+     * @ignore
+     */
+    destructor: function() {
+      var _self = this,
+        buttonBar = _self.get('buttonBar'),
+        submitMask = _self.get('submitMask');
+      if (buttonBar && buttonBar.destroy) {
+        buttonBar.destroy();
+      }
+      if (submitMask && submitMask.destroy) {
+        submitMask.destroy();
+      }
+    },
+    //设置表单的初始数据
+    _uiSetInitRecord: function(v) {
+      //if(v){
+      this.setRecord(v);
+      //}
+    }
+  }, {
+    ATTRS: {
+      /**
+       * 提交的路径
+       * @type {String}
+       */
+      action: {
+        view: true,
+        value: ''
+      },
+      allowTextSelection: {
+        value: true
+      },
+      events: {
+        value: {
+          /**
+           * @event
+           * 表单提交前触发，如果返回false会阻止表单提交
+           */
+          beforesubmit: false
+        }
+      },
+      /**
+       * 提交的方式
+       * @type {String}
+       */
+      method: {
+        view: true,
+        value: 'get'
+      },
+      /**
+       * 默认的loader配置
+       * <pre>
+       * {
+       *   autoLoad : true,
+       *   property : 'record',
+       *   dataType : 'json'
+       * }
+       * </pre>
+       * @type {Object}
+       */
+      defaultLoaderCfg: {
+        value: {
+          autoLoad: true,
+          property: 'record',
+          dataType: 'json'
+        }
+      },
+      /**
+       * 异步提交表单时的屏蔽
+       * @type {BUI.Mask.LoadMask|Object}
+       */
+      submitMask: {
+        value: {
+          msg: '正在提交。。。'
+        }
+      },
+      /**
+       * 提交表单的方式
+       *
+       *  - normal 普通方式，直接提交表单
+       *  - ajax 异步提交方式，在submit指定参数
+       *  - iframe 使用iframe提交,开发中。。。
+       * @cfg {String} [submitType='normal']
+       */
+      submitType: {
+        value: 'normal'
+      },
+      /**
+       * 表单提交前，如果存在错误，是否将焦点定位到第一个错误
+       * @type {Object}
+       */
+      focusError: {
+        value: true
+      },
+      /**
+       * 表单提交成功后的回调函数，普通提交方式 submitType = 'normal'，不会调用
+       * @type {Object}
+       */
+      callback: {},
+      decorateCfgFields: {
+        value: {
+          'method': true,
+          'action': true
+        }
+      },
+      /**
+       * 默认的子控件时文本域
+       * @type {String}
+       */
+      defaultChildClass: {
+        value: 'form-field'
+      },
+      /**
+       * 使用的标签，为form
+       * @type {String}
+       */
+      elTagName: {
+        value: 'form'
+      },
+      /**
+       * 表单按钮
+       * @type {Array}
+       */
+      buttons: {},
+      /**
+       * 按钮栏
+       * @type {BUI.Toolbar.Bar}
+       */
+      buttonBar: {
+        shared: false,
+        value: {}
+      },
+      childContainer: {
+        value: '.x-form-fields'
+      },
+      /**
+       * 表单初始化的数据，用于初始化或者表单回滚
+       * @type {Object}
+       */
+      initRecord: {},
+      /**
+       * 表单默认不显示错误，不影响表单分组和表单字段
+       * @type {Boolean}
+       */
+      showError: {
+        value: false
+      },
+      xview: {
+        value: FormView
+      },
+      tpl: {
+        value: '<div class="x-form-fields"></div>'
+      }
+    }
+  }, {
+    xclass: 'form'
+  });
+  Form.View = FormView;
+  module.exports = Form;
+});
+define("bui/form/row", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
+  /**
+   * @fileOverview 表单里的一行元素
+   * @ignore
+   */
+  var BUI = require("bui/common"),
+    FieldContainer = require("bui/form/fieldcontainer");
+  /**
+   * @class BUI.Form.Row
+   * 表单行
+   * @extends BUI.Form.FieldContainer
+   */
+  var Row = FieldContainer.extend({}, {
+    ATTRS: {
+      elCls: {
+        value: 'row'
+      },
+      defaultChildCfg: {
+        value: {
+          tpl: ' <label class="control-label">{label}</label>\
+              <div class="controls">\
+              </div>',
+          childContainer: '.controls',
+          showOneError: true,
+          controlContainer: '.controls',
+          elCls: 'control-group span8',
+          errorTpl: '<span class="valid-text"><span class="estate error"><span class="x-icon x-icon-mini x-icon-error">!</span><em>{error}</em></span></span>'
+        }
+      },
+      defaultChildClass: {
+        value: 'form-field-text'
+      }
+    }
+  }, {
+    xclass: 'form-row'
+  });
+  module.exports = Row;
+});
+define("bui/form/fieldgroup", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
+  /**
+   * @fileOverview 表单文本域组，可以包含一个至多个字段
+   * @author dxq613@gmail.com
+   * @ignore
+   */
+  var BUI = require("bui/common"),
+    Group = require("bui/form/group/base");
+  BUI.mix(Group, {
+    Range: require("bui/form/group/range"),
+    Check: require("bui/form/group/check"),
+    Select: require("bui/form/group/select")
+  });
+  return Group;
+});
+define("bui/form/group/base", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview 表单文本域组，可以包含一个至多个字段
    * @author dxq613@gmail.com
@@ -24970,7 +24919,7 @@ define("bui/form/group/base", ["jquery", "bui/common", "bui/form/fieldcontainer"
   });
   module.exports = Group;
 });
-define("bui/form/group/range", ["bui/form/group/base", "jquery", "bui/common", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/form/group/range", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview 范围的字段组，比如日期范围等
    * @ignore
@@ -25041,7 +24990,7 @@ define("bui/form/group/range", ["bui/form/group/base", "jquery", "bui/common", "
   });
   module.exports = Range;
 });
-define("bui/form/group/check", ["bui/form/group/base", "jquery", "bui/common", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/form/group/check", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview 选择分组，包含，checkbox,radio
    * @ignore
@@ -25117,7 +25066,7 @@ define("bui/form/group/check", ["bui/form/group/base", "jquery", "bui/common", "
   });
   module.exports = Check;
 });
-define("bui/form/group/select", ["bui/form/group/base", "jquery", "bui/common", "bui/data", "bui/form/fieldcontainer", "bui/form/field", "bui/form/groupvalid", "bui/form/fields/base", "bui/form/fields/text", "bui/form/fields/date", "bui/form/fields/select", "bui/form/fields/hidden", "bui/form/fields/number", "bui/form/fields/check", "bui/form/fields/radio", "bui/form/fields/checkbox", "bui/form/fields/plain", "bui/form/fields/list", "bui/form/fields/textarea", "bui/form/fields/uploader", "bui/form/fields/checklist", "bui/form/fields/radiolist", "bui/form/tips", "bui/form/valid", "bui/form/remote", "bui/overlay", "bui/form/rules", "bui/form/rule", "bui/list"], function(require, exports, module) {
+define("bui/form/group/select", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview 选择框分组
    * @ignore
@@ -25258,4 +25207,55 @@ define("bui/form/group/select", ["bui/form/group/base", "jquery", "bui/common", 
     }
   });
   module.exports = Select;
+});
+define("bui/form/hform", ["jquery", "bui/common", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
+  /**
+   * @fileOverview 垂直表单
+   * @ignore
+   */
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
+    Form = require("bui/form/form");
+  /**
+   * @class BUI.Form.HForm
+   * 水平表单，字段水平排列
+   * @extends BUI.Form.Form
+   *
+   */
+  var Horizontal = Form.extend({
+    /**
+     * 获取按钮栏默认的配置项
+     * @protected
+     * @return {Object}
+     */
+    getDefaultButtonBarCfg: function() {
+      var _self = this,
+        buttons = _self.get('buttons');
+      return {
+        autoRender: true,
+        elCls: 'actions-bar toolbar row',
+        tpl: '<div class="form-actions span21 offset3"></div>',
+        childContainer: '.form-actions',
+        render: _self.get('el'),
+        items: buttons,
+        defaultChildClass: 'bar-item-button'
+      };
+    }
+  }, {
+    ATTRS: {
+      defaultChildClass: {
+        value: 'form-row'
+      },
+      errorTpl: {
+        value: '<span class="valid-text"><span class="estate error"><span class="x-icon x-icon-mini x-icon-error">!</span><em>{error}</em></span></span>'
+      },
+      elCls: {
+        value: 'form-horizontal'
+      }
+    },
+    PARSER: {}
+  }, {
+    xclass: 'form-horizontal'
+  });
+  module.exports = Horizontal;
 });

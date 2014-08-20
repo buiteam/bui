@@ -1,4 +1,4 @@
-define("bui/grid", ["bui/common", "bui/grid/simplegrid", "bui/grid/grid", "bui/grid/column", "bui/grid/header", "bui/grid/format", "bui/grid/plugins/base", "bui/data", "bui/list", "bui/mask", "bui/toolbar", "bui/grid/plugins/selection", "bui/grid/plugins/cascade", "bui/grid/plugins/cellediting", "bui/grid/plugins/rowediting", "bui/grid/plugins/dialog", "bui/grid/plugins/autofit", "bui/grid/plugins/gridmenu", "bui/grid/plugins/summary", "bui/grid/plugins/rownumber", "bui/grid/plugins/columngroup", "bui/grid/plugins/rowgroup", "bui/grid/plugins/columnresize", "bui/grid/plugins/editing", "bui/menu"], function(require, exports, module) {
+define("bui/grid", ["bui/common", "jquery", "bui/list", "bui/data", "bui/mask", "bui/toolbar", "bui/menu"], function(require, exports, module) {
   /**
    * @fileOverview 表格命名空间入口
    * @ignore
@@ -15,13 +15,14 @@ define("bui/grid", ["bui/common", "bui/grid/simplegrid", "bui/grid/grid", "bui/g
   });
   module.exports = Grid;
 });
-define("bui/grid/simplegrid", ["bui/common", "bui/data", "bui/list"], function(require, exports, module) {
+define("bui/grid/simplegrid", ["jquery", "bui/common", "bui/list", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview 简单表格,仅用于展示数据
    * @author dxq613@gmail.com
    * @ignore
    */
-  var BUI = require("bui/common"),
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
     List = require("bui/list"),
     Component = BUI.Component,
     UIBase = Component.UIBase,
@@ -354,13 +355,14 @@ define("bui/grid/simplegrid", ["bui/common", "bui/data", "bui/list"], function(r
   simpleGrid.View = simpleGridView;
   module.exports = simpleGrid;
 });
-define("bui/grid/grid", ["bui/common", "bui/mask", "bui/toolbar", "bui/data", "bui/list", "bui/grid/header", "bui/grid/column"], function(require, exports, module) {
+define("bui/grid/grid", ["jquery", "bui/common", "bui/mask", "bui/toolbar", "bui/list", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview 表格
    * @ignore
    * @author dxq613@gmail.com
    */
-  var BUI = require("bui/common"),
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
     Mask = require("bui/mask"),
     UA = BUI.UA,
     Component = BUI.Component,
@@ -1664,486 +1666,14 @@ define("bui/grid/grid", ["bui/common", "bui/mask", "bui/toolbar", "bui/data", "b
    *   同时将selection 统一
    */
 });
-define("bui/grid/column", ["bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview This class specifies the definition for a column of a grid.
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    PREFIX = BUI.prefix,
-    CLS_HD_TITLE = PREFIX + 'grid-hd-title',
-    CLS_OPEN = PREFIX + 'grid-hd-open',
-    SORT_PREFIX = 'sort-',
-    SORT_ASC = 'ASC',
-    SORT_DESC = 'DESC',
-    CLS_TRIGGER = PREFIX + 'grid-hd-menu-trigger',
-    CLS_HD_TRIGGER = 'grid-hd-menu-trigger';
-  /**
-   * 表格列的视图类
-   * @class BUI.Grid.ColumnView
-   * @extends BUI.Component.View
-   * @private
-   */
-  var columnView = BUI.Component.View.extend({
-    /**
-     * @protected
-     * @ignore
-     */
-    setTplContent: function(attrs) {
-      var _self = this,
-        sortTpl = _self.get('sortTpl'),
-        triggerTpl = _self.get('triggerTpl'),
-        el = _self.get('el'),
-        titleEl;
-      columnView.superclass.setTplContent.call(_self, attrs);
-      titleEl = el.find('.' + CLS_HD_TITLE);
-      $(sortTpl).insertAfter(titleEl);
-      $(triggerTpl).insertAfter(titleEl);
-    },
-    //use template to fill the column
-    _setContent: function() {
-      this.setTplContent();
-    },
-    _uiSetShowMenu: function(v) {
-      var _self = this,
-        triggerTpl = _self.get('triggerTpl'),
-        el = _self.get('el'),
-        titleEl = el.find('.' + CLS_HD_TITLE);
-      if (v) {
-        $(triggerTpl).insertAfter(titleEl);
-      } else {
-        el.find('.' + CLS_TRIGGER).remove();
-      }
-    },
-    //set the title of column
-    _uiSetTitle: function(title) {
-      if (!this.get('rendered')) {
-        return;
-      }
-      this._setContent();
-    },
-    //set the draggable of column
-    _uiSetDraggable: function(v) {
-      if (!this.get('rendered')) {
-        return;
-      }
-      this._setContent();
-    },
-    //set the sortableof column
-    _uiSetSortable: function(v) {
-      if (!this.get('rendered')) {
-        return;
-      }
-      this._setContent();
-    },
-    //set the template of column
-    _uiSetTpl: function(v) {
-      if (!this.get('rendered')) {
-        return;
-      }
-      this._setContent();
-    },
-    //set the sort state of column
-    _uiSetSortState: function(v) {
-      var _self = this,
-        el = _self.get('el'),
-        method = v ? 'addClass' : 'removeClass',
-        ascCls = SORT_PREFIX + 'asc',
-        desCls = SORT_PREFIX + 'desc';
-      el.removeClass(ascCls + ' ' + desCls);
-      if (v === 'ASC') {
-        el.addClass(ascCls);
-      } else if (v === 'DESC') {
-        el.addClass(desCls);
-      }
-    },
-    //展开表头
-    _uiSetOpen: function(v) {
-      var _self = this,
-        el = _self.get('el');
-      if (v) {
-        el.addClass(CLS_OPEN);
-      } else {
-        el.removeClass(CLS_OPEN);
-      }
-    }
-  }, {
-    ATTRS: {
-      /**
-       * @private
-       */
-      sortTpl: {
-        view: true,
-        getter: function() {
-          var _self = this,
-            sortable = _self.get('sortable');
-          if (sortable) {
-            return '<span class="' + PREFIX + 'grid-sort-icon">&nbsp;</span>';
-          }
-          return '';
-        }
-      },
-      tpl: {}
-    }
-  });
-  /**
-   * 表格的列对象，存储列信息，此对象不会由用户创建，而是配置在Grid中
-   * xclass:'grid-column'
-   * <pre><code>
-   * columns = [{
-   *        title : '表头1',
-   *        dataIndex :'a',
-   *        width:100
-   *      },{
-   *        title : '表头2',
-   *        dataIndex :'b',
-   *        visible : false, //隐藏
-   *        width:200
-   *      },{
-   *        title : '表头3',
-   *        dataIndex : 'c',
-   *        width:200
-   *    }];
-   * </code></pre>
-   * @class BUI.Grid.Column
-   * @extends BUI.Component.Controller
-   */
-  var column = BUI.Component.Controller.extend({ //toggle sort state of this column ,if no sort state set 'ASC',else toggle 'ASC' and 'DESC'
-    _toggleSortState: function() {
-      var _self = this,
-        sortState = _self.get('sortState'),
-        v = sortState ? (sortState === SORT_ASC ? SORT_DESC : SORT_ASC) : SORT_ASC;
-      _self.set('sortState', v);
-    },
-    /**
-     * {BUI.Component.Controller#performActionInternal}
-     * @ignore
-     */
-    performActionInternal: function(ev) {
-      var _self = this,
-        sender = $(ev.target),
-        prefix = _self.get('prefixCls');
-      if (sender.hasClass(prefix + CLS_HD_TRIGGER)) {} else {
-        if (_self.get('sortable')) {
-          _self._toggleSortState();
-        }
-      }
-      //_self.fire('click',{domTarget:ev.target});
-    },
-    _uiSetWidth: function(v) {
-      if (v) {
-        this.set('originWidth', v);
-      }
-    }
-  }, {
-    ATTRS: {
-      /**
-       * The tag name of the rendered column
-       * @private
-       */
-      elTagName: {
-        value: 'th'
-      },
-      /**
-       * 表头展开显示菜单，
-       * @type {Boolean}
-       * @protected
-       */
-      open: {
-        view: true,
-        value: false
-      },
-      /**
-       * 此列对应显示数据的字段名称
-       * <pre><code>
-       * {
-       *     title : '表头1',
-       *     dataIndex :'a', //对应的数据的字段名称，如 ： {a:'123',b:'456'}
-       *     width:100
-       * }
-       * </code></pre>
-       * @cfg {String} dataIndex
-       */
-      /**
-       * 此列对应显示数据的字段名称
-       * @type {String}
-       * @default {String} empty string
-       */
-      dataIndex: {
-        view: true,
-        value: ''
-      },
-      /**
-       * 是否可拖拽，暂时未支持
-       * @private
-       * @type {Boolean}
-       * @defalut true
-       */
-      draggable: {
-        sync: false,
-        view: true,
-        value: true
-      },
-      /**
-       * 编辑器,用于可编辑表格中<br>
-       * ** 常用编辑器 **
-       *  - xtype 指的是表单字段的类型 {@link BUI.Form.Field}
-       *  - 其他的配置项对应于表单字段的配置项
-       * <pre><code>
-       * columns = [
-       *   {title : '文本',dataIndex :'a',editor : {xtype : 'text'}},
-       *   {title : '数字', dataIndex :'b',editor : {xtype : 'number',rules : {required : true}}},
-       *   {title : '日期',dataIndex :'c', editor : {xtype : 'date'},renderer : Grid.Format.dateRenderer},
-       *   {title : '单选',dataIndex : 'd', editor : {xtype :'select',items : enumObj},renderer : Grid.Format.enumRenderer(enumObj)},
-       *   {title : '多选',dataIndex : 'e', editor : {xtype :'select',select:{multipleSelect : true},items : enumObj},
-       *       renderer : Grid.Format.multipleItemsRenderer(enumObj)
-       *   }
-       * ]
-       * </code></pre>
-       * @type {Object}
-       */
-      editor: {},
-      /**
-       * 是否可以获取焦点
-       * @protected
-       */
-      focusable: {
-        value: false
-      },
-      /**
-       * 固定列,主要用于在首行显示一些特殊内容，如单选框，复选框，序号等。插件不能对此列进行特殊操作，如：移动位置，隐藏等
-       * @cfg {Boolean} fixed
-       */
-      fixed: {
-        value: false
-      },
-      /**
-       * 控件的编号
-       * @cfg {String} id
-       */
-      id: {},
-      /**
-       * 渲染表格单元格的格式化函数
-       * "function(value,obj,index){return value;}"
-       * <pre><code>
-       * {title : '操作',renderer : function(){
-       *     return '<span class="grid-command btn-edit">编辑</span>'
-       *   }}
-       * </code></pre>
-       * @cfg {Function} renderer
-       */
-      renderer: {},
-      /**
-       * 是否可以调整宽度，应用于拖拽或者自适应宽度时
-       * @type {Boolean}
-       * @protected
-       * @default true
-       */
-      resizable: {
-        value: true
-      },
-      /**
-       * 是否可以按照此列排序，如果设置true,那么点击列头时
-       * <pre><code>
-       *     {title : '数字', dataIndex :'b',sortable : false},
-       * </code></pre>
-       * @cfg {Boolean} [sortable=true]
-       */
-      sortable: {
-        sync: false,
-        view: true,
-        value: true
-      },
-      /**
-       * 排序状态，当前排序是按照升序、降序。有3种值 null, 'ASC','DESC'
-       * @type {String}
-       * @protected
-       * @default null
-       */
-      sortState: {
-        view: true,
-        value: null
-      },
-      /**
-       * 列标题
-       * @cfg {String} [title=&#160;]
-       */
-      /**
-       * 列标题
-       * <pre><code>
-       * var column = grid.findColumn('id');
-       * column.get('title');
-       * </code></pre>
-       * Note: to have a clickable header with no text displayed you can use the default of &#160; aka &nbsp;.
-       * @type {String}
-       * @default {String} &#160;
-       */
-      title: {
-        sync: false,
-        view: true,
-        value: '&#160;'
-      },
-      /**
-       * 列的宽度,可以使数字或者百分比,不要使用 width : '100'或者width : '100px'
-       * <pre><code>
-       *  {title : '文本',width:100,dataIndex :'a',editor : {xtype : 'text'}}
-       *
-       *  {title : '文本',width:'10%',dataIndex :'a',editor : {xtype : 'text'}}
-       * </code></pre>
-       * @cfg {Number} [width = 80]
-       */
-      /**
-       * 列宽度
-       * <pre><code>
-       *  grid.findColumn(id).set('width',200);
-       * </code></pre>
-       *
-       * @type {Number}
-       */
-      width: {
-        value: 100
-      },
-      /**
-       * 是否显示菜单
-       * @cfg {Boolean} [showMenu=false]
-       */
-      /**
-       * 是否显示菜单
-       * @type {Boolean}
-       * @default false
-       */
-      showMenu: {
-        view: true,
-        value: false
-      },
-      /**
-       * @private
-       * @type {Object}
-       */
-      triggerTpl: {
-        view: true,
-        value: '<span class="' + CLS_TRIGGER + '"></span>'
-      },
-      /**
-       * An template used to create the internal structure inside this Component's encapsulating Element.
-       * User can use the syntax of KISSY 's template component.
-       * Only in the configuration of the column can set this property.
-       * @type {String}
-       */
-      tpl: {
-        sync: false,
-        view: true,
-        value: '<div class="' + PREFIX + 'grid-hd-inner">' + '<span class="' + CLS_HD_TITLE + '">{title}</span>' + '</div>'
-      },
-      /**
-       * 单元格的模板，在列上设置单元格的模板，可以在渲染单元格时使用，更改单元格的内容
-       * @cfg {String} cellTpl
-       */
-      /**
-       * 单元格的模板，在列上设置单元格的模板，可以在渲染单元格时使用，更改单元格的内容
-       * @type {String}
-       */
-      cellTpl: {
-        value: ''
-      },
-      /**
-       * the collection of column's events
-       * @protected
-       * @type {Array}
-       */
-      events: {
-        value: {
-          /**
-           * @event
-           * Fires when this column's width changed
-           * @param {jQuery.Event} e the event object
-           * @param {BUI.Grid.Column} target
-           */
-          'afterWidthChange': true,
-          /**
-           * @event
-           * Fires when this column's sort changed
-           * @param {jQuery.Event} e the event object
-           * @param {BUI.Grid.Column} e.target
-           */
-          'afterSortStateChange': true,
-          /**
-           * @event
-           * Fires when this column's hide or show
-           * @param {jQuery.Event} e the event object
-           * @param {BUI.Grid.Column} e.target
-           */
-          'afterVisibleChange': true,
-          /**
-           * @event
-           * Fires when use clicks the column
-           * @param {jQuery.Event} e the event object
-           * @param {BUI.Grid.Column} e.target
-           * @param {HTMLElement} domTarget the dom target of this event
-           */
-          'click': true,
-          /**
-           * @event
-           * Fires after the component is resized.
-           * @param {BUI.Grid.Column} target
-           * @param {Number} adjWidth The box-adjusted width that was set
-           * @param {Number} adjHeight The box-adjusted height that was set
-           */
-          'resize': true,
-          /**
-           * @event
-           * Fires after the component is moved.
-           * @param {jQuery.Event} e the event object
-           * @param {BUI.Grid.Column} e.target
-           * @param {Number} x The new x position
-           * @param {Number} y The new y position
-           */
-          'move': true
-        }
-      },
-      /**
-       * @private
-       */
-      xview: {
-        value: columnView
-      }
-    }
-  }, {
-    xclass: 'grid-hd',
-    priority: 1
-  });
-  column.Empty = column.extend({}, {
-    ATTRS: {
-      type: {
-        value: 'empty'
-      },
-      sortable: {
-        view: true,
-        value: false
-      },
-      width: {
-        view: true,
-        value: null
-      },
-      tpl: {
-        view: true,
-        value: '<div class="' + PREFIX + 'grid-hd-inner"></div>'
-      }
-    }
-  }, {
-    xclass: 'grid-hd-empty',
-    priority: 1
-  });
-  module.exports = column;
-});
-define("bui/grid/header", ["bui/common", "bui/grid/column"], function(require, exports, module) {
+define("bui/grid/header", ["jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 表格的头部
    * @author dxq613@gmail.com, yiminghe@gmail.com
    * @ignore
    */
-  var BUI = require("bui/common"),
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
     PREFIX = BUI.prefix,
     Grid = BUI.namespace('Grid'),
     Column = require("bui/grid/column"),
@@ -2612,12 +2142,488 @@ define("bui/grid/header", ["bui/common", "bui/grid/column"], function(require, e
   });
   module.exports = header;
 });
-define("bui/grid/format", [], function(require, exports, module) {
+define("bui/grid/column", ["jquery", "bui/common"], function(require, exports, module) {
+  /**
+   * @fileOverview This class specifies the definition for a column of a grid.
+   * @author dxq613@gmail.com
+   * @ignore
+   */
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
+    PREFIX = BUI.prefix,
+    CLS_HD_TITLE = PREFIX + 'grid-hd-title',
+    CLS_OPEN = PREFIX + 'grid-hd-open',
+    SORT_PREFIX = 'sort-',
+    SORT_ASC = 'ASC',
+    SORT_DESC = 'DESC',
+    CLS_TRIGGER = PREFIX + 'grid-hd-menu-trigger',
+    CLS_HD_TRIGGER = 'grid-hd-menu-trigger';
+  /**
+   * 表格列的视图类
+   * @class BUI.Grid.ColumnView
+   * @extends BUI.Component.View
+   * @private
+   */
+  var columnView = BUI.Component.View.extend({
+    /**
+     * @protected
+     * @ignore
+     */
+    setTplContent: function(attrs) {
+      var _self = this,
+        sortTpl = _self.get('sortTpl'),
+        triggerTpl = _self.get('triggerTpl'),
+        el = _self.get('el'),
+        titleEl;
+      columnView.superclass.setTplContent.call(_self, attrs);
+      titleEl = el.find('.' + CLS_HD_TITLE);
+      $(sortTpl).insertAfter(titleEl);
+      $(triggerTpl).insertAfter(titleEl);
+    },
+    //use template to fill the column
+    _setContent: function() {
+      this.setTplContent();
+    },
+    _uiSetShowMenu: function(v) {
+      var _self = this,
+        triggerTpl = _self.get('triggerTpl'),
+        el = _self.get('el'),
+        titleEl = el.find('.' + CLS_HD_TITLE);
+      if (v) {
+        $(triggerTpl).insertAfter(titleEl);
+      } else {
+        el.find('.' + CLS_TRIGGER).remove();
+      }
+    },
+    //set the title of column
+    _uiSetTitle: function(title) {
+      if (!this.get('rendered')) {
+        return;
+      }
+      this._setContent();
+    },
+    //set the draggable of column
+    _uiSetDraggable: function(v) {
+      if (!this.get('rendered')) {
+        return;
+      }
+      this._setContent();
+    },
+    //set the sortableof column
+    _uiSetSortable: function(v) {
+      if (!this.get('rendered')) {
+        return;
+      }
+      this._setContent();
+    },
+    //set the template of column
+    _uiSetTpl: function(v) {
+      if (!this.get('rendered')) {
+        return;
+      }
+      this._setContent();
+    },
+    //set the sort state of column
+    _uiSetSortState: function(v) {
+      var _self = this,
+        el = _self.get('el'),
+        method = v ? 'addClass' : 'removeClass',
+        ascCls = SORT_PREFIX + 'asc',
+        desCls = SORT_PREFIX + 'desc';
+      el.removeClass(ascCls + ' ' + desCls);
+      if (v === 'ASC') {
+        el.addClass(ascCls);
+      } else if (v === 'DESC') {
+        el.addClass(desCls);
+      }
+    },
+    //展开表头
+    _uiSetOpen: function(v) {
+      var _self = this,
+        el = _self.get('el');
+      if (v) {
+        el.addClass(CLS_OPEN);
+      } else {
+        el.removeClass(CLS_OPEN);
+      }
+    }
+  }, {
+    ATTRS: {
+      /**
+       * @private
+       */
+      sortTpl: {
+        view: true,
+        getter: function() {
+          var _self = this,
+            sortable = _self.get('sortable');
+          if (sortable) {
+            return '<span class="' + PREFIX + 'grid-sort-icon">&nbsp;</span>';
+          }
+          return '';
+        }
+      },
+      tpl: {}
+    }
+  });
+  /**
+   * 表格的列对象，存储列信息，此对象不会由用户创建，而是配置在Grid中
+   * xclass:'grid-column'
+   * <pre><code>
+   * columns = [{
+   *        title : '表头1',
+   *        dataIndex :'a',
+   *        width:100
+   *      },{
+   *        title : '表头2',
+   *        dataIndex :'b',
+   *        visible : false, //隐藏
+   *        width:200
+   *      },{
+   *        title : '表头3',
+   *        dataIndex : 'c',
+   *        width:200
+   *    }];
+   * </code></pre>
+   * @class BUI.Grid.Column
+   * @extends BUI.Component.Controller
+   */
+  var column = BUI.Component.Controller.extend({ //toggle sort state of this column ,if no sort state set 'ASC',else toggle 'ASC' and 'DESC'
+    _toggleSortState: function() {
+      var _self = this,
+        sortState = _self.get('sortState'),
+        v = sortState ? (sortState === SORT_ASC ? SORT_DESC : SORT_ASC) : SORT_ASC;
+      _self.set('sortState', v);
+    },
+    /**
+     * {BUI.Component.Controller#performActionInternal}
+     * @ignore
+     */
+    performActionInternal: function(ev) {
+      var _self = this,
+        sender = $(ev.target),
+        prefix = _self.get('prefixCls');
+      if (sender.hasClass(prefix + CLS_HD_TRIGGER)) {} else {
+        if (_self.get('sortable')) {
+          _self._toggleSortState();
+        }
+      }
+      //_self.fire('click',{domTarget:ev.target});
+    },
+    _uiSetWidth: function(v) {
+      if (v) {
+        this.set('originWidth', v);
+      }
+    }
+  }, {
+    ATTRS: {
+      /**
+       * The tag name of the rendered column
+       * @private
+       */
+      elTagName: {
+        value: 'th'
+      },
+      /**
+       * 表头展开显示菜单，
+       * @type {Boolean}
+       * @protected
+       */
+      open: {
+        view: true,
+        value: false
+      },
+      /**
+       * 此列对应显示数据的字段名称
+       * <pre><code>
+       * {
+       *     title : '表头1',
+       *     dataIndex :'a', //对应的数据的字段名称，如 ： {a:'123',b:'456'}
+       *     width:100
+       * }
+       * </code></pre>
+       * @cfg {String} dataIndex
+       */
+      /**
+       * 此列对应显示数据的字段名称
+       * @type {String}
+       * @default {String} empty string
+       */
+      dataIndex: {
+        view: true,
+        value: ''
+      },
+      /**
+       * 是否可拖拽，暂时未支持
+       * @private
+       * @type {Boolean}
+       * @defalut true
+       */
+      draggable: {
+        sync: false,
+        view: true,
+        value: true
+      },
+      /**
+       * 编辑器,用于可编辑表格中<br>
+       * ** 常用编辑器 **
+       *  - xtype 指的是表单字段的类型 {@link BUI.Form.Field}
+       *  - 其他的配置项对应于表单字段的配置项
+       * <pre><code>
+       * columns = [
+       *   {title : '文本',dataIndex :'a',editor : {xtype : 'text'}},
+       *   {title : '数字', dataIndex :'b',editor : {xtype : 'number',rules : {required : true}}},
+       *   {title : '日期',dataIndex :'c', editor : {xtype : 'date'},renderer : Grid.Format.dateRenderer},
+       *   {title : '单选',dataIndex : 'd', editor : {xtype :'select',items : enumObj},renderer : Grid.Format.enumRenderer(enumObj)},
+       *   {title : '多选',dataIndex : 'e', editor : {xtype :'select',select:{multipleSelect : true},items : enumObj},
+       *       renderer : Grid.Format.multipleItemsRenderer(enumObj)
+       *   }
+       * ]
+       * </code></pre>
+       * @type {Object}
+       */
+      editor: {},
+      /**
+       * 是否可以获取焦点
+       * @protected
+       */
+      focusable: {
+        value: false
+      },
+      /**
+       * 固定列,主要用于在首行显示一些特殊内容，如单选框，复选框，序号等。插件不能对此列进行特殊操作，如：移动位置，隐藏等
+       * @cfg {Boolean} fixed
+       */
+      fixed: {
+        value: false
+      },
+      /**
+       * 控件的编号
+       * @cfg {String} id
+       */
+      id: {},
+      /**
+       * 渲染表格单元格的格式化函数
+       * "function(value,obj,index){return value;}"
+       * <pre><code>
+       * {title : '操作',renderer : function(){
+       *     return '<span class="grid-command btn-edit">编辑</span>'
+       *   }}
+       * </code></pre>
+       * @cfg {Function} renderer
+       */
+      renderer: {},
+      /**
+       * 是否可以调整宽度，应用于拖拽或者自适应宽度时
+       * @type {Boolean}
+       * @protected
+       * @default true
+       */
+      resizable: {
+        value: true
+      },
+      /**
+       * 是否可以按照此列排序，如果设置true,那么点击列头时
+       * <pre><code>
+       *     {title : '数字', dataIndex :'b',sortable : false},
+       * </code></pre>
+       * @cfg {Boolean} [sortable=true]
+       */
+      sortable: {
+        sync: false,
+        view: true,
+        value: true
+      },
+      /**
+       * 排序状态，当前排序是按照升序、降序。有3种值 null, 'ASC','DESC'
+       * @type {String}
+       * @protected
+       * @default null
+       */
+      sortState: {
+        view: true,
+        value: null
+      },
+      /**
+       * 列标题
+       * @cfg {String} [title=&#160;]
+       */
+      /**
+       * 列标题
+       * <pre><code>
+       * var column = grid.findColumn('id');
+       * column.get('title');
+       * </code></pre>
+       * Note: to have a clickable header with no text displayed you can use the default of &#160; aka &nbsp;.
+       * @type {String}
+       * @default {String} &#160;
+       */
+      title: {
+        sync: false,
+        view: true,
+        value: '&#160;'
+      },
+      /**
+       * 列的宽度,可以使数字或者百分比,不要使用 width : '100'或者width : '100px'
+       * <pre><code>
+       *  {title : '文本',width:100,dataIndex :'a',editor : {xtype : 'text'}}
+       *
+       *  {title : '文本',width:'10%',dataIndex :'a',editor : {xtype : 'text'}}
+       * </code></pre>
+       * @cfg {Number} [width = 80]
+       */
+      /**
+       * 列宽度
+       * <pre><code>
+       *  grid.findColumn(id).set('width',200);
+       * </code></pre>
+       *
+       * @type {Number}
+       */
+      width: {
+        value: 100
+      },
+      /**
+       * 是否显示菜单
+       * @cfg {Boolean} [showMenu=false]
+       */
+      /**
+       * 是否显示菜单
+       * @type {Boolean}
+       * @default false
+       */
+      showMenu: {
+        view: true,
+        value: false
+      },
+      /**
+       * @private
+       * @type {Object}
+       */
+      triggerTpl: {
+        view: true,
+        value: '<span class="' + CLS_TRIGGER + '"></span>'
+      },
+      /**
+       * An template used to create the internal structure inside this Component's encapsulating Element.
+       * User can use the syntax of KISSY 's template component.
+       * Only in the configuration of the column can set this property.
+       * @type {String}
+       */
+      tpl: {
+        sync: false,
+        view: true,
+        value: '<div class="' + PREFIX + 'grid-hd-inner">' + '<span class="' + CLS_HD_TITLE + '">{title}</span>' + '</div>'
+      },
+      /**
+       * 单元格的模板，在列上设置单元格的模板，可以在渲染单元格时使用，更改单元格的内容
+       * @cfg {String} cellTpl
+       */
+      /**
+       * 单元格的模板，在列上设置单元格的模板，可以在渲染单元格时使用，更改单元格的内容
+       * @type {String}
+       */
+      cellTpl: {
+        value: ''
+      },
+      /**
+       * the collection of column's events
+       * @protected
+       * @type {Array}
+       */
+      events: {
+        value: {
+          /**
+           * @event
+           * Fires when this column's width changed
+           * @param {jQuery.Event} e the event object
+           * @param {BUI.Grid.Column} target
+           */
+          'afterWidthChange': true,
+          /**
+           * @event
+           * Fires when this column's sort changed
+           * @param {jQuery.Event} e the event object
+           * @param {BUI.Grid.Column} e.target
+           */
+          'afterSortStateChange': true,
+          /**
+           * @event
+           * Fires when this column's hide or show
+           * @param {jQuery.Event} e the event object
+           * @param {BUI.Grid.Column} e.target
+           */
+          'afterVisibleChange': true,
+          /**
+           * @event
+           * Fires when use clicks the column
+           * @param {jQuery.Event} e the event object
+           * @param {BUI.Grid.Column} e.target
+           * @param {HTMLElement} domTarget the dom target of this event
+           */
+          'click': true,
+          /**
+           * @event
+           * Fires after the component is resized.
+           * @param {BUI.Grid.Column} target
+           * @param {Number} adjWidth The box-adjusted width that was set
+           * @param {Number} adjHeight The box-adjusted height that was set
+           */
+          'resize': true,
+          /**
+           * @event
+           * Fires after the component is moved.
+           * @param {jQuery.Event} e the event object
+           * @param {BUI.Grid.Column} e.target
+           * @param {Number} x The new x position
+           * @param {Number} y The new y position
+           */
+          'move': true
+        }
+      },
+      /**
+       * @private
+       */
+      xview: {
+        value: columnView
+      }
+    }
+  }, {
+    xclass: 'grid-hd',
+    priority: 1
+  });
+  column.Empty = column.extend({}, {
+    ATTRS: {
+      type: {
+        value: 'empty'
+      },
+      sortable: {
+        view: true,
+        value: false
+      },
+      width: {
+        view: true,
+        value: null
+      },
+      tpl: {
+        view: true,
+        value: '<div class="' + PREFIX + 'grid-hd-inner"></div>'
+      }
+    }
+  }, {
+    xclass: 'grid-hd-empty',
+    priority: 1
+  });
+  module.exports = column;
+});
+define("bui/grid/format", ["jquery"], function(require, exports, module) {
   /**
    * @fileOverview this class details some util tools of grid,like loadMask, formatter for grid's cell render
    * @author dxq613@gmail.com, yiminghe@gmail.com
    * @ignore
    */
+  var $ = require('jquery');
+
   function formatTimeUnit(v) {
     if (v < 10) {
       return '0' + v;
@@ -2752,7 +2758,7 @@ define("bui/grid/format", [], function(require, exports, module) {
   };
   module.exports = Format;
 });
-define("bui/grid/plugins/base", ["bui/common", "bui/grid/plugins/selection", "bui/grid/plugins/cascade", "bui/grid/plugins/cellediting", "bui/grid/plugins/rowediting", "bui/grid/plugins/dialog", "bui/grid/plugins/autofit", "bui/grid/plugins/gridmenu", "bui/grid/plugins/summary", "bui/grid/plugins/rownumber", "bui/grid/plugins/columngroup", "bui/grid/plugins/rowgroup", "bui/grid/plugins/columnresize", "bui/grid/plugins/editing", "bui/menu"], function(require, exports, module) {
+define("bui/grid/plugins/base", ["bui/common", "jquery", "bui/menu"], function(require, exports, module) {
   /**
    * @fileOverview 表格插件的入口
    * @author dxq613@gmail.com, yiminghe@gmail.com
@@ -2778,12 +2784,13 @@ define("bui/grid/plugins/base", ["bui/common", "bui/grid/plugins/selection", "bu
   });
   module.exports = Plugins;
 });
-define("bui/grid/plugins/selection", ["bui/common"], function(require, exports, module) {
+define("bui/grid/plugins/selection", ["jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 选择的插件
    * @ignore
    */
-  var BUI = require("bui/common"),
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
     PREFIX = BUI.prefix,
     CLS_CHECKBOX = PREFIX + 'grid-checkBox',
     CLS_CHECK_ICON = 'x-grid-checkbox',
@@ -2950,12 +2957,13 @@ define("bui/grid/plugins/selection", ["bui/common"], function(require, exports, 
   };
   module.exports = Selection;
 });
-define("bui/grid/plugins/cascade", ["bui/common"], function(require, exports, module) {
+define("bui/grid/plugins/cascade", ["jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview 级联表格
    * @ignore
    */
-  var BUI = require("bui/common"),
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
     PREFIX = BUI.prefix,
     CLS_GRID_CASCADE = '',
     DATA_RECORD = 'data-record',
@@ -3315,12 +3323,13 @@ define("bui/grid/plugins/cascade", ["bui/common"], function(require, exports, mo
   });
   module.exports = cascade;
 });
-define("bui/grid/plugins/cellediting", ["bui/grid/plugins/editing"], function(require, exports, module) {
+define("bui/grid/plugins/cellediting", ["jquery"], function(require, exports, module) {
   /**
    * @fileOverview 表格单元格编辑
    * @ignore
    */
-  var Editing = require("bui/grid/plugins/editing"),
+  var $ = require('jquery'),
+    Editing = require("bui/grid/plugins/editing"),
     CLS_BODY = BUI.prefix + 'grid-body',
     CLS_CELL = BUI.prefix + 'grid-cell';
   /**
@@ -3478,1531 +3487,13 @@ define("bui/grid/plugins/cellediting", ["bui/grid/plugins/editing"], function(re
   });
   module.exports = CellEditing;
 });
-define("bui/grid/plugins/rowediting", ["bui/common", "bui/grid/plugins/editing"], function(require, exports, module) {
-  /**
-   * @fileOverview 表格行编辑
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    Editing = require("bui/grid/plugins/editing"),
-    CLS_ROW = BUI.prefix + 'grid-row';
-  /**
-   * @class BUI.Grid.Plugins.RowEditing
-   * @extends BUI.Grid.Plugins.Editing
-   * 单元格编辑插件
-   *
-   *  ** 注意 **
-   *
-   *  - 编辑器的定义在columns中，editor属性
-   *  - editor里面的定义对应form-field的定义，xtype代表 form-field + xtype
-   *  - validator 函数的函数原型 function(value,newRecord,originRecord){} //编辑的当前值，正在编辑的记录，原始记录
-   */
-  var RowEditing = function(config) {
-    RowEditing.superclass.constructor.call(this, config);
-  };
-  RowEditing.ATTRS = {
-    /**
-     * 是否自动保存数据到数据源，通过store的save方法实现
-     * @cfg {Object} [autoSave=false]
-     */
-    autoSave: {
-      value: false
-    },
-    /**
-     * @protected
-     * 编辑器的对齐设置
-     * @type {Object}
-     */
-    align: {
-      value: {
-        points: ['tl', 'tl'],
-        offset: [-2, 0]
-      }
-    },
-    /**
-     * 触发编辑样式，为空时默认点击整行都会触发编辑
-     * @cfg {String} [triggerCls = 'bui-grid-row']
-     */
-    triggerCls: {
-      value: CLS_ROW
-    },
-    /**
-     * 编辑器的默认配置信息
-     * @type {Object}
-     */
-    editor: {}
-  };
-  BUI.extend(RowEditing, Editing);
-  BUI.augment(RowEditing, {
-    /**
-     * @protected
-     * 获取编辑器的配置项
-     * @param  {Array} fields 字段配置
-     */
-    getEditorCfgs: function(fields) {
-      var _self = this,
-        editor = _self.get('editor'),
-        rst = [],
-        cfg = BUI.mix(true, {
-          changeSourceEvent: null,
-          autoUpdate: false,
-          form: {
-            children: fields,
-            buttonBar: {
-              elCls: 'centered toolbar'
-            }
-          }
-        }, editor);
-      rst.push(cfg);
-      return rst;
-    },
-    /**
-     * 封装验证方法
-     * @protected
-     */
-    wrapValidator: function(validator) {
-      var _self = this;
-      return function(value) {
-        var editor = _self.get('curEditor'),
-          origin = _self.get('record'),
-          record = editor ? editor.getValue() : origin;
-        if (record) {
-          return validator(value, record, origin);
-        }
-      };
-    },
-    /**
-     * @protected
-     * 编辑器字段定位
-     */
-    focusEditor: function(editor, field) {
-      var form = editor.get('form'),
-        control = form.getField(field);
-      if (control) {
-        control.focus();
-      }
-    },
-    /**
-     * @protected
-     * 获取列定义中的字段定义信息
-     * @param  {BUI.Grid.Column} column 列定义
-     * @return {Object}  字段定义
-     */
-    getFieldConfig: function(column) {
-      var editor = column.get('editor');
-      if (editor) {
-        if (editor.xtype === 'checkbox') {
-          editor.innerValueField = 'checked';
-        }
-        return editor;
-      }
-      var cfg = {
-        xtype: 'plain'
-      };
-      if (column.get('dataIndex') && column.get('renderer')) {
-        cfg.renderer = column.get('renderer');
-        //cfg.id = column.get('id');
-      }
-      return cfg;
-    },
-    /**
-     * 更新数据
-     * @protected
-     * @param  {Object} record 编辑的数据
-     * @param  {*} value  编辑值
-     */
-    updateRecord: function(store, record, editor) {
-      var _self = this,
-        value = editor.getValue();
-      BUI.each(value, function(v, k) {
-        if (BUI.isDate(v)) {
-          value[k] = v.getTime();
-        }
-      });
-      BUI.mix(record, value);
-      store.update(record);
-      if (_self.get('autoSave')) {
-        store.save(record);
-      }
-    },
-    /**
-     * 获取编辑此行的编辑器
-     * @protected
-     * @param  {String} field 点击单元格的字段
-     * @return {BUI.Editor.Editor}  编辑器
-     */
-    getEditor: function(field) {
-      var _self = this,
-        editors = _self.get('editors');
-      return editors[0];
-    },
-    /**
-     * @override
-     * 列发生改变
-     */
-    onColumnVisibleChange: function(column) {
-      var _self = this,
-        id = column.get('id'),
-        editor = _self.getEditor(),
-        field = editor.getChild(id, true);
-      if (field) {
-        field.set('visible', column.get('visible'));
-      }
-    },
-    /**
-     * 显示编辑器前
-     * @protected
-     * @template
-     * @param  {BUI.Editor.Editor} editor
-     * @param  {Object} options
-     */
-    beforeShowEditor: function(editor, options) {
-      var _self = this,
-        grid = _self.get('grid'),
-        columns = grid.get('columns'),
-        form = editor.get('form'),
-        row = $(options.row);
-      editor.set('width', row.width());
-      BUI.each(columns, function(column) {
-        var fieldName = column.get('dataIndex'),
-          field = form.getField(fieldName)
-        if (!column.get('visible')) {
-          field && field.set('visible', false);
-        } else {
-          var width = column.get('el').outerWidth() - field.getAppendWidth();
-          field.set('width', width);
-        }
-      });
-    },
-    /**
-     * @protected
-     * 获取要编辑的值
-     * @param  {Object} options 点击单元格的事件对象
-     * @return {*}   编辑的值
-     */
-    getEditValue: function(options) {
-      return options.record;
-    },
-    /**
-     * 获取编辑器的构造函数
-     * @param  {Object} Editor 命名空间
-     * @return {Function}       构造函数
-     */
-    getEditorConstructor: function(Editor) {
-      return Editor.RecordEditor;
-    },
-    /**
-     * @protected
-     * 获取对齐的节点
-     * @override
-     * @param  {Object} options 点击单元格的事件对象
-     * @return {jQuery}
-     */
-    getAlignNode: function(options) {
-      return $(options.row);
-    },
-    /**
-     * 获取编辑的字段
-     * @protected
-     * @return {Array}  字段集合
-     */
-    getFields: function() {
-      var _self = this,
-        editors = _self.get('editors');
-      return editors[0].get('form').get('children');
-    }
-  });
-  module.exports = RowEditing;
-});
-define("bui/grid/plugins/dialog", ["bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview 表格跟表单联用
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    TYPE_ADD = 'add',
-    TYPE_EDIT = 'edit';
-  /**
-   * 表格的编辑插件
-   * @class BUI.Grid.Plugins.DialogEditing
-   */
-  function Dialog(config) {
-    Dialog.superclass.constructor.call(this, config);
-  }
-  Dialog.ATTRS = {
-    /**
-     * 是否自动保存数据到数据源，通过store的save方法实现
-     * @cfg {Object} [autoSave=false]
-     */
-    autoSave: {
-      value: false
-    },
-    /**
-     * 编辑的记录
-     * @type {Object}
-     * @readOnly
-     */
-    record: {},
-    /**
-     * @private
-     * 编辑记录的index
-     * @type {Object}
-     */
-    curIndex: {},
-    /**
-     * Dialog的内容，内部包含表单(form)
-     * @cfg {String} contentId
-     */
-    /**
-     * Dialog的内容，内部包含表单(form)
-     * @type {String}
-     */
-    contentId: {},
-    /**
-     * 编辑器
-     * @type {BUI.Editor.DialogEditor}
-     * @readOnly
-     */
-    editor: {},
-    /**
-     * Dialog中的表单
-     * @type {BUI.Form.Form}
-     * @readOnly
-     */
-    form: {},
-    events: {
-      value: {
-        /**
-         * @event
-         * 编辑的记录发生更改
-         * @param {Object} e 事件对象
-         * @param {Object} e.record 记录
-         * @param {Object} e.editType 编辑的类型 add 或者 edit
-         */
-        recordchange: false
-        /**
-         * @event accept
-         * 确认编辑
-         * @param {Object} ev 事件对象
-         * @param {Object} ev.record 编辑的数据
-         * @param {BUI.Form.Form} form 表单
-         * @param {BUI.Editor.Editor} ev.editor 编辑器
-         */
-        /**
-         * @event cancel
-         * 取消编辑
-         * @param {Object} ev 事件对象
-         * @param {Object} ev.record 编辑的数据
-         * @param {BUI.Form.Form} form 表单
-         * @param {BUI.Editor.Editor} ev.editor 编辑器
-         */
-        /**
-         * @event editorshow
-         * editor 显示
-         * @param {Object} ev 事件对象
-         * @param {Object} ev.record 编辑的数据
-         * @param {BUI.Editor.Editor} ev.editor 编辑器
-         */
-        /**
-         * @event editorready
-         * editor 创建完成，因为editor延迟创建，所以创建完成grid，等待editor创建成功
-         */
-      }
-    },
-    editType: {}
-  };
-  BUI.extend(Dialog, BUI.Base);
-  BUI.augment(Dialog, {
-    /**
-     * 初始化
-     * @protected
-     */
-    initializer: function(grid) {
-      var _self = this;
-      _self.set('grid', grid);
-      //延迟加载 editor模块
-      BUI.use('bui/editor', function(Editor) {
-        _self._initEditor(Editor);
-        _self.fire('editorready');
-      });
-    },
-    bindUI: function(grid) {
-      var _self = this,
-        triggerCls = _self.get('triggerCls');
-      if (triggerCls) {
-        grid.on('cellclick', function(ev) {
-          var sender = $(ev.domTarget),
-            editor = _self.get('editor');
-          if (sender.hasClass(triggerCls) && editor) {
-            _self.edit(ev.record);
-            if (grid.get('multipleSelect')) {
-              return false;
-            }
-          }
-        });
-      }
-    },
-    //初始化编辑器
-    _initEditor: function(Editor) {
-      var _self = this,
-        contentId = _self.get('contentId'),
-        formNode = $('#' + contentId).find('form'),
-        editor = _self.get('editor'),
-        cfg = BUI.merge(editor, {
-          contentId: contentId,
-          form: {
-            srcNode: formNode
-          }
-        });
-      editor = new Editor.DialogEditor(cfg);
-      _self._bindEditor(editor);
-      _self.set('editor', editor);
-      _self.set('form', editor.get('form'));
-    },
-    //绑定编辑器事件
-    _bindEditor: function(editor) {
-      var _self = this;
-      editor.on('accept', function() {
-        var form = editor.get('form'),
-          record = form.serializeToObject();
-        _self.saveRecord(record);
-        _self.fire('accept', {
-          editor: editor,
-          record: _self.get('record'),
-          form: form
-        });
-      });
-      editor.on('cancel', function() {
-        _self.fire('cancel', {
-          editor: editor,
-          record: _self.get('record'),
-          form: editor.get('form')
-        });
-      });
-    },
-    /**
-     * 编辑记录
-     * @param  {Object} record 记录
-     */
-    edit: function(record) {
-      var _self = this;
-      _self.set('editType', TYPE_EDIT);
-      _self.showEditor(record);
-    },
-    /**
-     * 添加记录
-     * @param  {Object} record 记录
-     * @param {Number} [index] 添加到的位置，默认添加在最后
-     */
-    add: function(record, index) {
-      var _self = this;
-      _self.set('editType', TYPE_ADD);
-      _self.set('curIndex', index);
-      _self.showEditor(record);
-    },
-    /**
-     * @private
-     * 保存记录
-     */
-    saveRecord: function(record) {
-      var _self = this,
-        grid = _self.get('grid'),
-        editType = _self.get('editType'),
-        curIndex = _self.get('curIndex'),
-        store = grid.get('store'),
-        curRecord = _self.get('record');
-      BUI.mix(curRecord, record);
-      if (editType == TYPE_ADD) {
-        if (curIndex != null) {
-          store.addAt(curRecord, curIndex);
-        } else {
-          store.add(curRecord);
-        }
-      } else {
-        store.update(curRecord);
-      }
-      if (_self.get('autoSave')) {
-        store.save(curRecord);
-      }
-    },
-    /**
-     * @private
-     * 显示编辑器
-     */
-    showEditor: function(record) {
-      var _self = this,
-        editor = _self.get('editor');
-      _self.set('record', record);
-      editor.show();
-      editor.setValue(record, true); //设置值，并且隐藏错误
-      _self.fire('recordchange', {
-        record: record,
-        editType: _self.get('editType')
-      });
-      _self.fire('editorshow', {
-        eidtor: editor,
-        editType: _self.get('editType')
-      });
-    },
-    /**
-     * 取消编辑
-     */
-    cancel: function() {
-      var _self = this,
-        editor = _self.get('editor');
-      editor.cancel();
-    },
-    destructor: function() {
-      var _self = this,
-        editor = _self.get('editor');
-      editor && editor.destroy();
-      _self.off();
-      _self.clearAttrVals();
-    }
-  });
-  module.exports = Dialog;
-});
-define("bui/grid/plugins/autofit", ["bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview 自动适应表格宽度的扩展
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    UA = BUI.UA;
-  /**
-   * 表格自适应宽度
-   * @class BUI.Grid.Plugins.AutoFit
-   * @extends BUI.Base
-   */
-  var AutoFit = function(cfg) {
-    AutoFit.superclass.constructor.call(this, cfg);
-  };
-  BUI.extend(AutoFit, BUI.Base);
-  AutoFit.ATTRS = {};
-  BUI.augment(AutoFit, {
-    //绑定事件
-    bindUI: function(grid) {
-      var _self = this,
-        handler;
-      $(window).on('resize', function() {
-        function autoFit() {
-          clearTimeout(handler); //防止resize短时间内反复调用
-          handler = setTimeout(function() {
-            _self._autoFit(grid);
-          }, 100);
-          _self.set('handler', handler);
-        }
-        autoFit();
-      });
-    },
-    //自适应宽度
-    _autoFit: function(grid) {
-      var _self = this,
-        render = $(grid.get('render')),
-        docWidth = $(window).width(), //窗口宽度
-        width,
-        appendWidth = 0,
-        parent = grid.get('el').parent();
-      while (parent[0] && parent[0] != $('body')[0]) {
-        appendWidth += parent.outerWidth() - parent.width();
-        parent = parent.parent();
-      }
-      grid.set('width', docWidth - appendWidth);
-    }
-  });
-  module.exports = AutoFit;
-});
-define("bui/grid/plugins/gridmenu", ["bui/common", "bui/menu"], function(require, exports, module) {
-  /**
-   * @fileOverview Grid 菜单
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    Menu = require("bui/menu"),
-    PREFIX = BUI.prefix,
-    ID_SORT_ASC = 'sort-asc',
-    ID_SORT_DESC = 'sort-desc',
-    ID_COLUMNS_SET = 'column-setting',
-    CLS_COLUMN_CHECKED = 'icon-check';
-  /**
-   * @class BUI.Grid.Plugins.GridMenu
-   * @extends BUI.Base
-   * 表格菜单插件
-   */
-  var gridMenu = function(config) {
-    gridMenu.superclass.constructor.call(this, config);
-  };
-  BUI.extend(gridMenu, BUI.Base);
-  gridMenu.ATTRS = {
-    /**
-     * 弹出菜单
-     * @type {BUI.Menu.ContextMenu}
-     */
-    menu: {},
-    /**
-     * @private
-     */
-    activedColumn: {},
-    triggerCls: {
-      value: PREFIX + 'grid-hd-menu-trigger'
-    },
-    /**
-     * 菜单的配置项
-     * @type {Array}
-     */
-    items: {
-      value: [{
-        id: ID_SORT_ASC,
-        text: '升序',
-        iconCls: 'icon-arrow-up'
-      }, {
-        id: ID_SORT_DESC,
-        text: '降序',
-        iconCls: 'icon-arrow-down'
-      }, {
-        xclass: 'menu-item-sparator'
-      }, {
-        id: ID_COLUMNS_SET,
-        text: '设置列',
-        iconCls: 'icon-list-alt'
-      }]
-    }
-  };
-  BUI.augment(gridMenu, {
-    /**
-     * 初始化
-     * @protected
-     */
-    initializer: function(grid) {
-      var _self = this;
-      _self.set('grid', grid);
-    },
-    /**
-     * 渲染DOM
-     */
-    renderUI: function(grid) {
-      var _self = this,
-        columns = grid.get('columns');
-      BUI.each(columns, function(column) {
-        _self._addShowMenu(column);
-      });
-    },
-    /**
-     * 绑定表格
-     * @protected
-     */
-    bindUI: function(grid) {
-      var _self = this;
-      grid.on('columnadd', function(ev) {
-        _self._addShowMenu(ev.column);
-      });
-      grid.on('columnclick', function(ev) {
-        var sender = $(ev.domTarget),
-          column = ev.column,
-          menu;
-        _self.set('activedColumn', column);
-        if (sender.hasClass(_self.get('triggerCls'))) {
-          menu = _self.get('menu') || _self._initMenu();
-          menu.set('align', {
-            node: sender, // 参考元素, falsy 或 window 为可视区域, 'trigger' 为触发元素, 其他为指定元素
-            points: ['bl', 'tl'], // ['tr', 'tl'] 表示 overlay 的 tl 与参考节点的 tr 对齐
-            offset: [0, 0]
-          });
-          menu.show();
-          _self._afterShow(column, menu);
-        }
-      });
-    },
-    _addShowMenu: function(column) {
-      if (!column.get('fixed')) {
-        column.set('showMenu', true);
-      }
-    },
-    //菜单显示后
-    _afterShow: function(column, menu) {
-      var _self = this,
-        grid = _self.get('grid');
-      menu = menu || _self.get('menu');
-      _self._resetSortMenuItems(column, menu);
-      _self._resetColumnsVisible(menu);
-    },
-    //设置菜单项是否选中
-    _resetColumnsVisible: function(menu) {
-      var _self = this,
-        settingItem = menu.findItemById(ID_COLUMNS_SET),
-        subMenu = settingItem.get('subMenu') || _self._initColumnsMenu(settingItem),
-        columns = _self.get('grid').get('columns');
-      subMenu.removeChildren(true);
-      $.each(columns, function(index, column) {
-        if (!column.get('fixed')) {
-          var config = {
-              xclass: 'context-menu-item',
-              text: column.get('title'),
-              column: column,
-              iconCls: 'icon'
-            },
-            menuItem = subMenu.addChild(config);
-          if (column.get('visible')) {
-            menuItem.set('selected', true);
-          }
-        }
-      });
-    },
-    //设置排序菜单项是否可用
-    _resetSortMenuItems: function(column, menu) {
-      var ascItem = menu.findItemById(ID_SORT_ASC),
-        descItem = menu.findItemById(ID_SORT_DESC);
-      if (column.get('sortable')) {
-        ascItem.set('disabled', false);
-        descItem.set('disabled', false);
-      } else {
-        ascItem.set('disabled', true);
-        descItem.set('disabled', true);
-      }
-    },
-    //初始化菜单
-    _initMenu: function() {
-      var _self = this,
-        menu = _self.get('menu'),
-        menuItems;
-      if (!menu) {
-        menuItems = _self.get('items');
-        $.each(menuItems, function(index, item) {
-          if (!item.xclass) {
-            item.xclass = 'context-menu-item'
-          }
-        });
-        menu = new Menu.ContextMenu({
-          children: menuItems,
-          elCls: 'grid-menu'
-        });
-        _self._initMenuEvent(menu);
-        _self.set('menu', menu)
-      }
-      return menu;
-    },
-    _initMenuEvent: function(menu) {
-      var _self = this;
-      menu.on('itemclick', function(ev) {
-        var item = ev.item,
-          id = item.get('id'),
-          activedColumn = _self.get('activedColumn');
-        if (id === ID_SORT_ASC) {
-          activedColumn.set('sortState', 'ASC');
-        } else if (id === ID_SORT_DESC) {
-          activedColumn.set('sortState', 'DESC');
-        }
-      });
-      menu.on('afterVisibleChange', function(ev) {
-        var visible = ev.newVal,
-          activedColumn = _self.get('activedColumn');
-        if (visible && activedColumn) {
-          activedColumn.set('open', true);
-        } else {
-          activedColumn.set('open', false);
-        }
-      });
-    },
-    _initColumnsMenu: function(settingItem) {
-      var subMenu = new Menu.ContextMenu({
-        multipleSelect: true,
-        elCls: 'grid-column-menu'
-      });
-      settingItem.set('subMenu', subMenu);
-      subMenu.on('itemclick', function(ev) {
-        var item = ev.item,
-          column = item.get('column'),
-          selected = item.get('selected');
-        if (selected) {
-          column.set('visible', true);
-        } else {
-          column.set('visible', false);
-        }
-      });
-      return subMenu;
-    },
-    destructor: function() {
-      var _self = this,
-        menu = _self.get('menu');
-      if (menu) {
-        menu.destroy();
-      }
-      _self.off();
-      _self.clearAttrVals();
-    }
-  });
-  module.exports = gridMenu;
-});
-define("bui/grid/plugins/summary", ["bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview 表格数据汇总
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    PREFIX = BUI.prefix,
-    CLS_GRID_ROW = PREFIX + 'grid-row',
-    CLS_GRID_BODY = PREFIX + 'grid-body',
-    CLS_SUMMARY_ROW = PREFIX + 'grid-summary-row',
-    CLS_GRID_CELL_INNER = PREFIX + 'grid-cell-inner',
-    CLS_COLUMN_PREFIX = 'grid-td-',
-    CLS_GRID_CELL_TEXT = PREFIX + 'grid-cell-text',
-    CLS_GRID_CELL = PREFIX + 'grid-cell';
-  /**
-   * @private
-   * @ignore
-   */
-  function getEmptyCellTemplate(colspan) {
-    if (colspan > 0) {
-      return '<td class="' + CLS_GRID_CELL + '" colspan="' + colspan + '">&nbsp;</td>';
-    }
-    return '';
-  }
-  /**
-   * @private
-   * @ignore
-   */
-  function getCellTemplate(text, id) {
-    return '<td class="' + CLS_GRID_CELL + ' ' + CLS_COLUMN_PREFIX + id + '">' + getInnerTemplate(text) + '</td>';
-  }
-  /**
-   * @private
-   * @ignore
-   */
-  function getInnerTemplate(text) {
-    return '<div class="' + CLS_GRID_CELL_INNER + '" >' + '<span class="' + CLS_GRID_CELL_TEXT + ' ">' + text + '</span>' + '</div>';
-  }
-  /**
-   * @private
-   * @ignore
-   */
-  function getLastEmptyCell() {
-    return '<td class="' + CLS_GRID_CELL + ' ' + CLS_GRID_CELL + '-empty">&nbsp;</td>';
-  }
-  /**
-   * 表格菜单插件
-   * <pre><code>
-   * var store = new Store({
-   *      url : 'data/summary.json',
-   *      pageSize : 10,
-   *      autoLoad:true
-   *    }),
-   *    grid = new Grid.Grid({
-   *      render:'#grid',
-   *      columns : columns,
-   *      store: store,
-   *      bbar : {pagingBar : true},
-   *      plugins : [Grid.Plugins.Summary] // 插件形式引入单选表格
-   *    });
-   *
-   *  grid.render();
-   * </code></pre>
-   * @class BUI.Grid.Plugins.Summary
-   */
-  var summary = function(config) {
-    summary.superclass.constructor.call(this, config);
-  };
-  summary.ATTRS = {
-    footerTpl: {
-      value: '<tfoot></tfoot>'
-    },
-    footerEl: {},
-    /**
-     * 总汇总行的标题
-     * @type {String}
-     * @default '总汇总'
-     */
-    summaryTitle: {
-      value: '查询合计'
-    },
-    /**
-     * 本页汇总的标题
-     * @type {String}
-     */
-    pageSummaryTitle: {
-      value: '本页合计'
-    },
-    /**
-     * 在列对象中配置的字段
-     * @type {String}
-     * @default 'summary'
-     */
-    field: {
-      value: 'summary'
-    },
-    /**
-     * 本页汇总值的记录
-     * @type {String}
-     */
-    pageSummaryField: {
-      value: 'pageSummary'
-    },
-    /**
-     * 总汇总值的记录
-     * @type {String}
-     */
-    summaryField: {
-      value: 'summary'
-    },
-    /**
-     * @private
-     * 本页汇总值
-     * @type {Object}
-     */
-    pageSummary: {},
-    /**
-     * @private
-     * 总汇总
-     * @type {Object}
-     */
-    summary: {}
-  };
-  BUI.extend(summary, BUI.Base);
-  BUI.augment(summary, {
-    //初始化
-    initializer: function(grid) {
-      var _self = this;
-      _self.set('grid', grid);
-    },
-    //添加DOM结构
-    renderUI: function(grid) {
-      var _self = this,
-        bodyEl = grid.get('el').find('.' + CLS_GRID_BODY),
-        bodyTable = bodyEl.find('table'),
-        footerEl = $(_self.get('footerTpl')).appendTo(bodyTable);
-      _self.set('footerEl', footerEl);
-    },
-    //绑定事件
-    bindUI: function(grid) {
-      //绑定获取数据
-      var _self = this,
-        store = grid.get('store');
-      if (store) {
-        store.on('beforeprocessload', function(ev) {
-          _self._processSummary(ev.data);
-        });
-        store.on('add', function() {
-          _self.resetPageSummary();
-        });
-        store.on('remove', function() {
-          _self.resetPageSummary();
-        });
-        store.on('update', function() {
-          _self.resetPageSummary();
-        });
-      }
-      grid.on('aftershow', function() {
-        _self.resetSummary();
-      });
-      grid.get('header').on('afterVisibleChange', function() {
-        _self.resetSummary();
-      });
-    },
-    //处理汇总数据
-    _processSummary: function(data) {
-      var _self = this,
-        footerEl = _self.get('footerEl');
-      footerEl.empty();
-      if (!data) {
-        return;
-      }
-      var pageSummary = data[_self.get('pageSummaryField')],
-        summary = data[_self.get('summaryField')];
-      _self.set('pageSummary', pageSummary);
-      _self.set('summary', summary);
-    },
-    /**
-     * 重新设置本页汇总
-     */
-    resetPageSummary: function() {
-      var _self = this,
-        grid = _self.get('grid'),
-        columns = grid.get('columns'),
-        pageSummary = _self._calculatePageSummary(),
-        pageEl = _self.get('pageEl');
-      _self.set('pageSummary', pageSummary);
-      if (pageEl) {
-        BUI.each(columns, function(column) {
-          if (column.get('summary') && column.get('visible')) {
-            var id = column.get('id'),
-              cellEl = pageEl.find('.' + CLS_COLUMN_PREFIX + id),
-              text = _self._getSummaryCellText(column, pageSummary);
-            cellEl.find('.' + CLS_GRID_CELL_TEXT).text(text);
-          }
-        });
-        _self._updateFirstRow(pageEl, _self.get('pageSummaryTitle'));
-      }
-    },
-    //重置汇总数据
-    resetSummary: function(pageSummary, summary) {
-      var _self = this,
-        footerEl = _self.get('footerEl'),
-        pageEl = null;
-      footerEl.empty();
-      pageSummary = pageSummary || _self.get('pageSummary');
-      if (!pageSummary) {
-        pageSummary = _self._calculatePageSummary();
-        _self.set('pageSummary', pageSummary);
-      }
-      summary = summary || _self.get('summary');
-      pageEl = _self._creatSummaryRow(pageSummary, _self.get('pageSummaryTitle'));
-      _self.set('pageEl', pageEl);
-      _self._creatSummaryRow(summary, _self.get('summaryTitle'));
-    },
-    //创建汇总
-    _creatSummaryRow: function(summary, title) {
-      if (!summary) {
-        return null;
-      }
-      var _self = this,
-        footerEl = _self.get('footerEl'),
-        tpl = _self._getSummaryTpl(summary),
-        rowEl = $(tpl).appendTo(footerEl);
-      _self._updateFirstRow(rowEl, title);
-      return rowEl;
-    },
-    _updateFirstRow: function(rowEl, title) {
-      var firstCell = rowEl.find('td').first(),
-        textEl = firstCell.find('.' + CLS_GRID_CELL_INNER);
-      if (textEl.length) {
-        var textPrefix = title + ': ';
-        text = textEl.text();
-        if (text.indexOf(textPrefix) === -1) {
-          text = textPrefix + text;
-        }
-        firstCell.html(getInnerTemplate(text));
-      } else {
-        firstCell.html(getInnerTemplate(title + ':'));
-      }
-    },
-    //获取汇总模板
-    _getSummaryTpl: function(summary) {
-      var _self = this,
-        grid = _self.get('grid'),
-        columns = grid.get('columns'),
-        cellTempArray = [],
-        prePosition = -1, //上次汇总列的位置
-        currentPosition = -1, //当前位置
-        rowTemplate = null;
-      $.each(columns, function(colindex, column) {
-        if (column.get('visible')) {
-          currentPosition += 1;
-          if (column.get('summary')) {
-            cellTempArray.push(getEmptyCellTemplate(currentPosition - prePosition - 1));
-            var text = _self._getSummaryCellText(column, summary),
-              temp = getCellTemplate(text, column.get('id'));
-            cellTempArray.push(temp);
-            prePosition = currentPosition;
-          }
-        }
-      });
-      if (prePosition !== currentPosition) {
-        cellTempArray.push(getEmptyCellTemplate(currentPosition - prePosition));
-      }
-      rowTemplate = ['<tr class="', CLS_SUMMARY_ROW, ' ', CLS_GRID_ROW, '">', cellTempArray.join(''), getLastEmptyCell(), '</tr>'].join('');
-      return rowTemplate;
-    },
-    //获取汇总单元格内容
-    _getSummaryCellText: function(column, summary) {
-      var _self = this,
-        val = summary[column.get('dataIndex')],
-        value = val == null ? '' : val,
-        renderer = column.get('renderer'),
-        text = renderer ? renderer(value, summary) : value;
-      return text;
-    },
-    _calculatePageSummary: function() {
-      var _self = this,
-        grid = _self.get('grid'),
-        store = grid.get('store'),
-        columns = grid.get('columns'),
-        rst = {};
-      BUI.each(columns, function(column) {
-        if (column.get('summary')) {
-          var dataIndex = column.get('dataIndex');
-          rst[dataIndex] = store.sum(dataIndex);
-        }
-      });
-      return rst;
-    }
-  });
-  module.exports = summary;
-});
-define("bui/grid/plugins/rownumber", [], function(require, exports, module) {
-  var CLS_NUMBER = 'x-grid-rownumber';
-  /**
-   * @class BUI.Grid.Plugins.RowNumber
-   * 表格显示行序号的插件
-   */
-  function RowNumber(config) {
-    RowNumber.superclass.constructor.call(this, config);
-  }
-  BUI.extend(RowNumber, BUI.Base);
-  RowNumber.ATTRS = {
-    /**
-     * column's width which contains the row number
-     */
-    width: {
-      value: 40
-    },
-    /**
-     * @private
-     */
-    column: {}
-  };
-  BUI.augment(RowNumber, {
-    //创建行
-    createDom: function(grid) {
-      var _self = this;
-      var cfg = {
-          title: '',
-          width: _self.get('width'),
-          fixed: true,
-          resizable: false,
-          sortable: false,
-          renderer: function(value, obj, index) {
-            return index + 1;
-          },
-          elCls: CLS_NUMBER
-        },
-        column = grid.addColumn(cfg, 0);
-      _self.set('column', column);
-    }
-  });
-  module.exports = RowNumber;
-});
-define("bui/grid/plugins/columngroup", ["bui/common"], function(require, exports, module) {
-  var BUI = require("bui/common"),
-    PREFIX = BUI.prefix,
-    CLS_HD_TITLE = PREFIX + 'grid-hd-title',
-    CLS_GROUP = PREFIX + 'grid-column-group',
-    CLS_GROUP_HEADER = PREFIX + 'grid-group-header',
-    CLS_DOUBLE = PREFIX + 'grid-db-hd';
-  /**
-   * 表头列分组功能
-   * @class BUI.Grid.Plugins.ColumnGroup
-   * @extends BUI.Base
-   */
-  var Group = function(cfg) {
-    Group.superclass.constructor.call(this, cfg);
-  };
-  Group.ATTRS = {
-    /**
-     * 分组
-     * @type {Array}
-     */
-    groups: {
-      value: []
-    },
-    /**
-     * 列模板
-     * @type {String}
-     */
-    columnTpl: {
-      value: '<th class="bui-grid-hd center" colspan="{colspan}"><div class="' + PREFIX + 'grid-hd-inner">' + '<span class="' + CLS_HD_TITLE + '">{title}</span>' + '</div></th>'
-    }
-  };
-  BUI.extend(Group, BUI.Base);
-  BUI.augment(Group, {
-    renderUI: function(grid) {
-      var _self = this,
-        groups = _self.get('groups'),
-        header = grid.get('header'),
-        headerEl = header.get('el'),
-        columns = header.get('children'),
-        wraperEl = $('<tr class="' + CLS_GROUP + '"></tr>').prependTo(headerEl.find('thead'));
-      headerEl.addClass(CLS_GROUP_HEADER);
-      //遍历分组，标志分组
-      BUI.each(groups, function(group) {
-        var tpl = _self._getGroupTpl(group),
-          gEl = $(tpl).appendTo(wraperEl);
-        group.el = gEl;
-        for (var i = group.from; i <= group.to; i++) {
-          var column = columns[i];
-          if (column) {
-            column.set('group', group);
-          }
-        }
-      });
-      var afterEl;
-      //修改未分组的rowspan和调整位置
-      for (var i = columns.length - 1; i >= 0; i--) {
-        var column = columns[i],
-          group = column.get('group');
-        if (group) {
-          afterEl = group.el;
-        } else {
-          var cEl = column.get('el'); //$(_self.get('emptyTpl'));
-          cEl.addClass(CLS_DOUBLE);
-          cEl.attr('rowspan', 2);
-          if (afterEl) {
-            cEl.insertBefore(afterEl);
-          } else {
-            cEl.appendTo(wraperEl);
-          }
-          afterEl = cEl;
-        }
-      }
-      if (groups[0].from !== 0) { //处理第一个单元格边框问题
-        var firstCol = columns[groups[0].from];
-        if (firstCol) {
-          firstCol.get('el').css('border-left-width', 1);
-        }
-      }
-      //移除空白列
-    },
-    _getGroupTpl: function(group) {
-      var _self = this,
-        columnTpl = _self.get('columnTpl'),
-        colspan = group.to - group.from + 1;
-      return BUI.substitute(columnTpl, {
-        colspan: colspan,
-        title: group.title
-      });
-    }
-  });
-  module.exports = Group;
-});
-define("bui/grid/plugins/rowgroup", ["bui/common"], function(require, exports, module) {
-  var BUI = require("bui/common"),
-    DATA_GROUP = 'data-group',
-    PREFIX = BUI.prefix,
-    CLS_GROUP = PREFIX + 'grid-row-group',
-    CLS_TRIGGER = PREFIX + 'grid-cascade',
-    CLS_EXPAND = PREFIX + 'grid-cascade-expand';
-  //新的分组
-  function newGroup(value, text) {
-    return {
-      items: [],
-      value: value,
-      text: text
-    };
-  }
-  /**
-   * 表头列分组功能，仅处理数据展示，排序，不处理这个过程中的增删改，添加删除列
-   * @class BUI.Grid.Plugins.RowGroup
-   * @extends BUI.Base
-   */
-  var Group = function(cfg) {
-    Group.superclass.constructor.call(this, cfg);
-  };
-  Group.ATTRS = {
-    groups: {
-      shared: false,
-      value: []
-    },
-    /**
-     * 渲染分组内容，函数原型 function(text,group){}
-     *
-     *  - text 是分组字段格式化后的文本
-     *  - group 是当前分组，包括,text(文本）,value（值）,items（分组包含的项）
-     * @type {Function}
-     */
-    renderer: {}
-  };
-  BUI.extend(Group, BUI.Base);
-  BUI.augment(Group, {
-    renderUI: function(grid) {
-      var _self = this,
-        tbodyEl = grid.get('el').find('tbody');
-      _self.set('grid', grid);
-      _self.set('tbodyEl', tbodyEl);
-    },
-    bindUI: function(grid) {
-      var _self = this,
-        groups = [];
-      //显示完成记录时
-      grid.on('aftershow', function() {
-        var items = grid.getItems(),
-          column = _self._getSortColumn();
-        _self._clear();
-        if (column) {
-          grid.get('view').getAllElements().hide();
-          var field = column.get('dataIndex');
-          BUI.each(items, function(item, index) {
-            var last = groups[groups.length - 1],
-              renderer = column.get('renderer'),
-              value = item[field],
-              text;
-            if (!last || value != last.value) {
-              text = renderer ? renderer(value, item) : value;
-              var current = newGroup(value, text);
-              current.begin = index;
-              groups.push(current);
-              last && _self._createGroup(last);
-              last = current;
-            }
-            last.items.push(item);
-          });
-          var last = groups[groups.length - 1];
-          last && _self._createGroup(last);
-          _self.set('groups', groups);
-        }
-      });
-      //清除所有记录时
-      grid.on('clear', function() {
-        _self._clear();
-      });
-      _self.get('tbodyEl').delegate('.' + CLS_TRIGGER, 'click', function(ev) {
-        var sender = $(ev.currentTarget),
-          group = _self._getGroupData(sender);
-        if (sender.hasClass(CLS_EXPAND)) {
-          _self._collapse(group);
-          sender.removeClass(CLS_EXPAND);
-        } else {
-          _self._expand(group);
-          sender.addClass(CLS_EXPAND);
-        }
-      });
-    },
-    //获取排序的字段对应的列
-    _getSortColumn: function() {
-      var _self = this,
-        grid = _self.get('grid'),
-        store = grid.get('store'),
-        field = store.get('sortField');
-      return grid.findColumnByField(field);
-    },
-    //获取分组的数据
-    _getGroupData: function(el) {
-      var _self = this,
-        groupEl = el.closest('.' + CLS_GROUP);
-      return groupEl.data(DATA_GROUP);
-    },
-    _createGroup: function(group) {
-      var _self = this,
-        grid = _self.get('grid'),
-        item = group.items[0],
-        firstEl = grid.findElement(item),
-        count = grid.get('columns').length,
-        renderer = _self.get('renderer'),
-        text = renderer ? renderer(group.text, group) : group.text,
-        tpl = '<tr class="' + CLS_GROUP + '"><td colspan="' + (count + 1) + '"><div class="bui-grid-cell-inner"><span class="bui-grid-cell-text"><span class="bui-grid-cascade"><i class="bui-grid-cascade-icon"></i></span> ' + text + '</span></div></td></tr>',
-        node = $(tpl).insertBefore(firstEl);
-      node.data(DATA_GROUP, group);
-    },
-    _getGroupedElements: function(group) {
-      var _self = this,
-        grid = _self.get('grid'),
-        elements = grid.get('view').getAllElements(),
-        begin = group.begin,
-        end = group.items.length + begin,
-        rst = [];
-      for (var i = begin; i < end; i++) {
-        rst.push(elements[i]);
-      }
-      return $(rst);
-    },
-    _expand: function(group) {
-      var _self = this,
-        subEls = _self._getGroupedElements(group);
-      subEls.show();
-    },
-    _collapse: function(group) {
-      var _self = this,
-        subEls = _self._getGroupedElements(group);
-      subEls.hide();
-    },
-    _clear: function() {
-      var _self = this,
-        groups = _self.get('groups'),
-        tbodyEl = _self.get('tbodyEl');
-      BUI.Array.empty(groups);
-      tbodyEl.find('.' + CLS_GROUP).remove();
-    }
-  });
-  module.exports = Group;
-});
-define("bui/grid/plugins/columnresize", ["bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview 拖拽改变列的宽度
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    NUM_DIS = 15,
-    NUM_MIN = 30,
-    STYLE_CURSOR = 'col-resize';
-  var Resize = function(cfg) {
-    Resize.superclass.constructor.call(this, cfg);
-  };
-  Resize.ATTRS = {
-    /**
-     * @private
-     * 是否正在拖拽
-     * @type {Boolean}
-     */
-    resizing: {
-      value: false
-    },
-    //拖拽属性
-    draging: {}
-  };
-  BUI.extend(Resize, BUI.Base);
-  BUI.augment(Resize, {
-    renderUI: function(grid) {
-      this.set('grid', grid);
-    },
-    bindUI: function(grid) {
-      var _self = this,
-        header = grid.get('header'),
-        curCol,
-        preCol,
-        direction;
-      header.get('el').delegate('.bui-grid-hd', 'mouseenter', function(ev) {
-        var resizing = _self.get('resizing');
-        if (!resizing) {
-          var sender = ev.currentTarget;
-          curCol = _self._getColumn(sender);
-          preCol = _self._getPreCol(curCol);
-        }
-      }).delegate('.bui-grid-hd', 'mouseleave', function(ev) {
-        var resizing = _self.get('resizing');
-        if (!resizing && curCol) {
-          curCol.get('el').css('cursor', '');
-          curCol = null;
-        }
-      }).delegate('.bui-grid-hd', 'mousemove', function(ev) {
-        var resizing = _self.get('resizing');
-        if (!resizing && curCol) {
-          var el = curCol.get('el'),
-            pageX = ev.pageX,
-            offset = el.offset(),
-            left = offset.left,
-            width = el.width();
-          if (pageX - left < NUM_DIS && preCol) {
-            el.css('cursor', STYLE_CURSOR);
-            direction = -1;
-          } else if ((left + width) - pageX < NUM_DIS) {
-            direction = 1;
-            el.css('cursor', STYLE_CURSOR);
-          } else {
-            curCol.get('el').css('cursor', '');
-          }
-        }
-        if (resizing) {
-          ev.preventDefault();
-          var draging = _self.get('draging'),
-            start = draging.start,
-            pageX = ev.pageX,
-            dif = pageX - start,
-            width = direction > 0 ? curCol.get('width') : preCol.get('width'),
-            toWidth = width + dif;
-          if (toWidth > NUM_MIN && toWidth < grid.get('el').width()) {
-            draging.end = pageX;
-            _self.moveDrag(pageX);
-          }
-        }
-      }).delegate('.bui-grid-hd', 'mousedown', function(ev) {
-        var resizing = _self.get('resizing');
-        if (!resizing && curCol && curCol.get('el').css('cursor') == STYLE_CURSOR) {
-          ev.preventDefault();
-          _self.showDrag(ev.pageX);
-          bindDraging();
-        }
-      });
-
-      function callback(ev) {
-        var draging = _self.get('draging')
-        if (curCol && draging) {
-          var col = direction > 0 ? curCol : preCol,
-            width = col.get('width'),
-            dif = draging.end - draging.start;
-          _self.hideDrag();
-          if (grid.get('forceFit')) {
-            var originWidth = col.get('originWidth'),
-              factor = width / originWidth,
-              toWidth = (width + dif) / factor;
-            // console.log(originWidth + ' ,'+width);
-            col.set('originWidth', toWidth);
-            col.set('width', toWidth);
-            //
-          } else {
-            col.set('width', width + dif);
-          }
-        }
-        $(document).off('mouseup', callback);
-      }
-
-      function bindDraging() {
-        $(document).on('mouseup', callback);
-      }
-    },
-    //显示拖拽
-    showDrag: function(pageX) {
-      var _self = this,
-        grid = _self.get('grid'),
-        header = grid.get('header'),
-        bodyEl = grid.get('el').find('.bui-grid-body'),
-        height = header.get('el').height() + bodyEl.height(),
-        offset = header.get('el').offset(),
-        dragEl = _self.get('dragEl');
-      if (!dragEl) {
-        var tpl = '<div class="bui-drag-line"></div>';
-        dragEl = $(tpl).appendTo('body');
-        _self.set('dragEl', dragEl);
-      }
-      dragEl.css({
-        top: offset.top,
-        left: pageX,
-        height: height
-      });
-      _self.set('resizing', true);
-      _self.set('draging', {
-        start: pageX,
-        end: pageX
-      });
-      dragEl.show();
-    },
-    //关闭拖拽
-    hideDrag: function() {
-      var _self = this,
-        dragEl = _self.get('dragEl');
-      dragEl && dragEl.hide();
-      _self.set('draging', null);
-      _self.set('resizing', false);
-    },
-    //移动drag
-    moveDrag: function(pageX) {
-      var _self = this,
-        dragEl = _self.get('dragEl');
-      dragEl && dragEl.css('left', pageX);
-    },
-    //获取点击的列
-    _getColumn: function(element) {
-      var _self = this,
-        columns = _self.get('grid').get('columns'),
-        rst = null;
-      BUI.each(columns, function(column) {
-        if (column.containsElement(element)) {
-          rst = column;
-          return false;
-        }
-      });
-      return rst;
-    },
-    //获取前一个列
-    _getPreCol: function(col) {
-      var _self = this,
-        columns = _self.get('grid').get('columns'),
-        rst = null;
-      BUI.each(columns, function(column, index) {
-        if (column == col) {
-          return false;
-        } else if (column.get('visible')) {
-          rst = column;
-        }
-      });
-      return rst;
-    }
-  });
-  module.exports = Resize;
-});
-define("bui/grid/plugins/editing", [], function(require, exports, module) {
+define("bui/grid/plugins/editing", ["jquery"], function(require, exports, module) {
   /**
    * @fileOverview 表格编辑插件
    * @ignore
    */
-  var CLS_CELL_INNER = BUI.prefix + 'grid-cell-inner',
+  var $ = require('jquery'),
+    CLS_CELL_INNER = BUI.prefix + 'grid-cell-inner',
     CLS_CELL_ERROR = BUI.prefix + 'grid-cell-error';
   /**
    * 表格的编辑插件
@@ -5124,7 +3615,7 @@ define("bui/grid/plugins/editing", [], function(require, exports, module) {
       var _self = this,
         grid = _self.get('grid');
       //延迟加载 editor模块
-      BUI.use('bui/editor', function(Editor) {
+      require.async('bui/editor', function(Editor) {
         _self.initEditors(Editor);
         _self._initGridEvent(grid);
         _self.set('isInitEditors', true);
@@ -5521,4 +4012,1531 @@ define("bui/grid/plugins/editing", [], function(require, exports, module) {
     }
   });
   module.exports = Editing;
+});
+define("bui/grid/plugins/rowediting", ["jquery", "bui/common"], function(require, exports, module) {
+  /**
+   * @fileOverview 表格行编辑
+   * @ignore
+   */
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
+    Editing = require("bui/grid/plugins/editing"),
+    CLS_ROW = BUI.prefix + 'grid-row';
+  /**
+   * @class BUI.Grid.Plugins.RowEditing
+   * @extends BUI.Grid.Plugins.Editing
+   * 单元格编辑插件
+   *
+   *  ** 注意 **
+   *
+   *  - 编辑器的定义在columns中，editor属性
+   *  - editor里面的定义对应form-field的定义，xtype代表 form-field + xtype
+   *  - validator 函数的函数原型 function(value,newRecord,originRecord){} //编辑的当前值，正在编辑的记录，原始记录
+   */
+  var RowEditing = function(config) {
+    RowEditing.superclass.constructor.call(this, config);
+  };
+  RowEditing.ATTRS = {
+    /**
+     * 是否自动保存数据到数据源，通过store的save方法实现
+     * @cfg {Object} [autoSave=false]
+     */
+    autoSave: {
+      value: false
+    },
+    /**
+     * @protected
+     * 编辑器的对齐设置
+     * @type {Object}
+     */
+    align: {
+      value: {
+        points: ['tl', 'tl'],
+        offset: [-2, 0]
+      }
+    },
+    /**
+     * 触发编辑样式，为空时默认点击整行都会触发编辑
+     * @cfg {String} [triggerCls = 'bui-grid-row']
+     */
+    triggerCls: {
+      value: CLS_ROW
+    },
+    /**
+     * 编辑器的默认配置信息
+     * @type {Object}
+     */
+    editor: {}
+  };
+  BUI.extend(RowEditing, Editing);
+  BUI.augment(RowEditing, {
+    /**
+     * @protected
+     * 获取编辑器的配置项
+     * @param  {Array} fields 字段配置
+     */
+    getEditorCfgs: function(fields) {
+      var _self = this,
+        editor = _self.get('editor'),
+        rst = [],
+        cfg = BUI.mix(true, {
+          changeSourceEvent: null,
+          autoUpdate: false,
+          form: {
+            children: fields,
+            buttonBar: {
+              elCls: 'centered toolbar'
+            }
+          }
+        }, editor);
+      rst.push(cfg);
+      return rst;
+    },
+    /**
+     * 封装验证方法
+     * @protected
+     */
+    wrapValidator: function(validator) {
+      var _self = this;
+      return function(value) {
+        var editor = _self.get('curEditor'),
+          origin = _self.get('record'),
+          record = editor ? editor.getValue() : origin;
+        if (record) {
+          return validator(value, record, origin);
+        }
+      };
+    },
+    /**
+     * @protected
+     * 编辑器字段定位
+     */
+    focusEditor: function(editor, field) {
+      var form = editor.get('form'),
+        control = form.getField(field);
+      if (control) {
+        control.focus();
+      }
+    },
+    /**
+     * @protected
+     * 获取列定义中的字段定义信息
+     * @param  {BUI.Grid.Column} column 列定义
+     * @return {Object}  字段定义
+     */
+    getFieldConfig: function(column) {
+      var editor = column.get('editor');
+      if (editor) {
+        if (editor.xtype === 'checkbox') {
+          editor.innerValueField = 'checked';
+        }
+        return editor;
+      }
+      var cfg = {
+        xtype: 'plain'
+      };
+      if (column.get('dataIndex') && column.get('renderer')) {
+        cfg.renderer = column.get('renderer');
+        //cfg.id = column.get('id');
+      }
+      return cfg;
+    },
+    /**
+     * 更新数据
+     * @protected
+     * @param  {Object} record 编辑的数据
+     * @param  {*} value  编辑值
+     */
+    updateRecord: function(store, record, editor) {
+      var _self = this,
+        value = editor.getValue();
+      BUI.each(value, function(v, k) {
+        if (BUI.isDate(v)) {
+          value[k] = v.getTime();
+        }
+      });
+      BUI.mix(record, value);
+      store.update(record);
+      if (_self.get('autoSave')) {
+        store.save(record);
+      }
+    },
+    /**
+     * 获取编辑此行的编辑器
+     * @protected
+     * @param  {String} field 点击单元格的字段
+     * @return {BUI.Editor.Editor}  编辑器
+     */
+    getEditor: function(field) {
+      var _self = this,
+        editors = _self.get('editors');
+      return editors[0];
+    },
+    /**
+     * @override
+     * 列发生改变
+     */
+    onColumnVisibleChange: function(column) {
+      var _self = this,
+        id = column.get('id'),
+        editor = _self.getEditor(),
+        field = editor.getChild(id, true);
+      if (field) {
+        field.set('visible', column.get('visible'));
+      }
+    },
+    /**
+     * 显示编辑器前
+     * @protected
+     * @template
+     * @param  {BUI.Editor.Editor} editor
+     * @param  {Object} options
+     */
+    beforeShowEditor: function(editor, options) {
+      var _self = this,
+        grid = _self.get('grid'),
+        columns = grid.get('columns'),
+        form = editor.get('form'),
+        row = $(options.row);
+      editor.set('width', row.width());
+      BUI.each(columns, function(column) {
+        var fieldName = column.get('dataIndex'),
+          field = form.getField(fieldName)
+        if (!column.get('visible')) {
+          field && field.set('visible', false);
+        } else {
+          var width = column.get('el').outerWidth() - field.getAppendWidth();
+          field.set('width', width);
+        }
+      });
+    },
+    /**
+     * @protected
+     * 获取要编辑的值
+     * @param  {Object} options 点击单元格的事件对象
+     * @return {*}   编辑的值
+     */
+    getEditValue: function(options) {
+      return options.record;
+    },
+    /**
+     * 获取编辑器的构造函数
+     * @param  {Object} Editor 命名空间
+     * @return {Function}       构造函数
+     */
+    getEditorConstructor: function(Editor) {
+      return Editor.RecordEditor;
+    },
+    /**
+     * @protected
+     * 获取对齐的节点
+     * @override
+     * @param  {Object} options 点击单元格的事件对象
+     * @return {jQuery}
+     */
+    getAlignNode: function(options) {
+      return $(options.row);
+    },
+    /**
+     * 获取编辑的字段
+     * @protected
+     * @return {Array}  字段集合
+     */
+    getFields: function() {
+      var _self = this,
+        editors = _self.get('editors');
+      return editors[0].get('form').get('children');
+    }
+  });
+  module.exports = RowEditing;
+});
+define("bui/grid/plugins/dialog", ["jquery", "bui/common"], function(require, exports, module) {
+  /**
+   * @fileOverview 表格跟表单联用
+   * @ignore
+   */
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
+    TYPE_ADD = 'add',
+    TYPE_EDIT = 'edit';
+  /**
+   * 表格的编辑插件
+   * @class BUI.Grid.Plugins.DialogEditing
+   */
+  function Dialog(config) {
+    Dialog.superclass.constructor.call(this, config);
+  }
+  Dialog.ATTRS = {
+    /**
+     * 是否自动保存数据到数据源，通过store的save方法实现
+     * @cfg {Object} [autoSave=false]
+     */
+    autoSave: {
+      value: false
+    },
+    /**
+     * 编辑的记录
+     * @type {Object}
+     * @readOnly
+     */
+    record: {},
+    /**
+     * @private
+     * 编辑记录的index
+     * @type {Object}
+     */
+    curIndex: {},
+    /**
+     * Dialog的内容，内部包含表单(form)
+     * @cfg {String} contentId
+     */
+    /**
+     * Dialog的内容，内部包含表单(form)
+     * @type {String}
+     */
+    contentId: {},
+    /**
+     * 编辑器
+     * @type {BUI.Editor.DialogEditor}
+     * @readOnly
+     */
+    editor: {},
+    /**
+     * Dialog中的表单
+     * @type {BUI.Form.Form}
+     * @readOnly
+     */
+    form: {},
+    events: {
+      value: {
+        /**
+         * @event
+         * 编辑的记录发生更改
+         * @param {Object} e 事件对象
+         * @param {Object} e.record 记录
+         * @param {Object} e.editType 编辑的类型 add 或者 edit
+         */
+        recordchange: false
+        /**
+         * @event accept
+         * 确认编辑
+         * @param {Object} ev 事件对象
+         * @param {Object} ev.record 编辑的数据
+         * @param {BUI.Form.Form} form 表单
+         * @param {BUI.Editor.Editor} ev.editor 编辑器
+         */
+        /**
+         * @event cancel
+         * 取消编辑
+         * @param {Object} ev 事件对象
+         * @param {Object} ev.record 编辑的数据
+         * @param {BUI.Form.Form} form 表单
+         * @param {BUI.Editor.Editor} ev.editor 编辑器
+         */
+        /**
+         * @event editorshow
+         * editor 显示
+         * @param {Object} ev 事件对象
+         * @param {Object} ev.record 编辑的数据
+         * @param {BUI.Editor.Editor} ev.editor 编辑器
+         */
+        /**
+         * @event editorready
+         * editor 创建完成，因为editor延迟创建，所以创建完成grid，等待editor创建成功
+         */
+      }
+    },
+    editType: {}
+  };
+  BUI.extend(Dialog, BUI.Base);
+  BUI.augment(Dialog, {
+    /**
+     * 初始化
+     * @protected
+     */
+    initializer: function(grid) {
+      var _self = this;
+      _self.set('grid', grid);
+      //延迟加载 editor模块
+      require.async('bui/editor', function(Editor) {
+        _self._initEditor(Editor);
+        _self.fire('editorready');
+      });
+    },
+    bindUI: function(grid) {
+      var _self = this,
+        triggerCls = _self.get('triggerCls');
+      if (triggerCls) {
+        grid.on('cellclick', function(ev) {
+          var sender = $(ev.domTarget),
+            editor = _self.get('editor');
+          if (sender.hasClass(triggerCls) && editor) {
+            _self.edit(ev.record);
+            if (grid.get('multipleSelect')) {
+              return false;
+            }
+          }
+        });
+      }
+    },
+    //初始化编辑器
+    _initEditor: function(Editor) {
+      var _self = this,
+        contentId = _self.get('contentId'),
+        formNode = $('#' + contentId).find('form'),
+        editor = _self.get('editor'),
+        cfg = BUI.merge(editor, {
+          contentId: contentId,
+          form: {
+            srcNode: formNode
+          }
+        });
+      editor = new Editor.DialogEditor(cfg);
+      _self._bindEditor(editor);
+      _self.set('editor', editor);
+      _self.set('form', editor.get('form'));
+    },
+    //绑定编辑器事件
+    _bindEditor: function(editor) {
+      var _self = this;
+      editor.on('accept', function() {
+        var form = editor.get('form'),
+          record = form.serializeToObject();
+        _self.saveRecord(record);
+        _self.fire('accept', {
+          editor: editor,
+          record: _self.get('record'),
+          form: form
+        });
+      });
+      editor.on('cancel', function() {
+        _self.fire('cancel', {
+          editor: editor,
+          record: _self.get('record'),
+          form: editor.get('form')
+        });
+      });
+    },
+    /**
+     * 编辑记录
+     * @param  {Object} record 记录
+     */
+    edit: function(record) {
+      var _self = this;
+      _self.set('editType', TYPE_EDIT);
+      _self.showEditor(record);
+    },
+    /**
+     * 添加记录
+     * @param  {Object} record 记录
+     * @param {Number} [index] 添加到的位置，默认添加在最后
+     */
+    add: function(record, index) {
+      var _self = this;
+      _self.set('editType', TYPE_ADD);
+      _self.set('curIndex', index);
+      _self.showEditor(record);
+    },
+    /**
+     * @private
+     * 保存记录
+     */
+    saveRecord: function(record) {
+      var _self = this,
+        grid = _self.get('grid'),
+        editType = _self.get('editType'),
+        curIndex = _self.get('curIndex'),
+        store = grid.get('store'),
+        curRecord = _self.get('record');
+      BUI.mix(curRecord, record);
+      if (editType == TYPE_ADD) {
+        if (curIndex != null) {
+          store.addAt(curRecord, curIndex);
+        } else {
+          store.add(curRecord);
+        }
+      } else {
+        store.update(curRecord);
+      }
+      if (_self.get('autoSave')) {
+        store.save(curRecord);
+      }
+    },
+    /**
+     * @private
+     * 显示编辑器
+     */
+    showEditor: function(record) {
+      var _self = this,
+        editor = _self.get('editor');
+      _self.set('record', record);
+      editor.show();
+      editor.setValue(record, true); //设置值，并且隐藏错误
+      _self.fire('recordchange', {
+        record: record,
+        editType: _self.get('editType')
+      });
+      _self.fire('editorshow', {
+        eidtor: editor,
+        editType: _self.get('editType')
+      });
+    },
+    /**
+     * 取消编辑
+     */
+    cancel: function() {
+      var _self = this,
+        editor = _self.get('editor');
+      editor.cancel();
+    },
+    destructor: function() {
+      var _self = this,
+        editor = _self.get('editor');
+      editor && editor.destroy();
+      _self.off();
+      _self.clearAttrVals();
+    }
+  });
+  module.exports = Dialog;
+});
+define("bui/grid/plugins/autofit", ["jquery", "bui/common"], function(require, exports, module) {
+  /**
+   * @fileOverview 自动适应表格宽度的扩展
+   * @ignore
+   */
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
+    UA = BUI.UA;
+  /**
+   * 表格自适应宽度
+   * @class BUI.Grid.Plugins.AutoFit
+   * @extends BUI.Base
+   */
+  var AutoFit = function(cfg) {
+    AutoFit.superclass.constructor.call(this, cfg);
+  };
+  BUI.extend(AutoFit, BUI.Base);
+  AutoFit.ATTRS = {};
+  BUI.augment(AutoFit, {
+    //绑定事件
+    bindUI: function(grid) {
+      var _self = this,
+        handler;
+      $(window).on('resize', function() {
+        function autoFit() {
+          clearTimeout(handler); //防止resize短时间内反复调用
+          handler = setTimeout(function() {
+            _self._autoFit(grid);
+          }, 100);
+          _self.set('handler', handler);
+        }
+        autoFit();
+      });
+    },
+    //自适应宽度
+    _autoFit: function(grid) {
+      var _self = this,
+        render = $(grid.get('render')),
+        docWidth = $(window).width(), //窗口宽度
+        width,
+        appendWidth = 0,
+        parent = grid.get('el').parent();
+      while (parent[0] && parent[0] != $('body')[0]) {
+        appendWidth += parent.outerWidth() - parent.width();
+        parent = parent.parent();
+      }
+      grid.set('width', docWidth - appendWidth);
+    }
+  });
+  module.exports = AutoFit;
+});
+define("bui/grid/plugins/gridmenu", ["jquery", "bui/common", "bui/menu"], function(require, exports, module) {
+  /**
+   * @fileOverview Grid 菜单
+   * @ignore
+   */
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
+    Menu = require("bui/menu"),
+    PREFIX = BUI.prefix,
+    ID_SORT_ASC = 'sort-asc',
+    ID_SORT_DESC = 'sort-desc',
+    ID_COLUMNS_SET = 'column-setting',
+    CLS_COLUMN_CHECKED = 'icon-check';
+  /**
+   * @class BUI.Grid.Plugins.GridMenu
+   * @extends BUI.Base
+   * 表格菜单插件
+   */
+  var gridMenu = function(config) {
+    gridMenu.superclass.constructor.call(this, config);
+  };
+  BUI.extend(gridMenu, BUI.Base);
+  gridMenu.ATTRS = {
+    /**
+     * 弹出菜单
+     * @type {BUI.Menu.ContextMenu}
+     */
+    menu: {},
+    /**
+     * @private
+     */
+    activedColumn: {},
+    triggerCls: {
+      value: PREFIX + 'grid-hd-menu-trigger'
+    },
+    /**
+     * 菜单的配置项
+     * @type {Array}
+     */
+    items: {
+      value: [{
+        id: ID_SORT_ASC,
+        text: '升序',
+        iconCls: 'icon-arrow-up'
+      }, {
+        id: ID_SORT_DESC,
+        text: '降序',
+        iconCls: 'icon-arrow-down'
+      }, {
+        xclass: 'menu-item-sparator'
+      }, {
+        id: ID_COLUMNS_SET,
+        text: '设置列',
+        iconCls: 'icon-list-alt'
+      }]
+    }
+  };
+  BUI.augment(gridMenu, {
+    /**
+     * 初始化
+     * @protected
+     */
+    initializer: function(grid) {
+      var _self = this;
+      _self.set('grid', grid);
+    },
+    /**
+     * 渲染DOM
+     */
+    renderUI: function(grid) {
+      var _self = this,
+        columns = grid.get('columns');
+      BUI.each(columns, function(column) {
+        _self._addShowMenu(column);
+      });
+    },
+    /**
+     * 绑定表格
+     * @protected
+     */
+    bindUI: function(grid) {
+      var _self = this;
+      grid.on('columnadd', function(ev) {
+        _self._addShowMenu(ev.column);
+      });
+      grid.on('columnclick', function(ev) {
+        var sender = $(ev.domTarget),
+          column = ev.column,
+          menu;
+        _self.set('activedColumn', column);
+        if (sender.hasClass(_self.get('triggerCls'))) {
+          menu = _self.get('menu') || _self._initMenu();
+          menu.set('align', {
+            node: sender, // 参考元素, falsy 或 window 为可视区域, 'trigger' 为触发元素, 其他为指定元素
+            points: ['bl', 'tl'], // ['tr', 'tl'] 表示 overlay 的 tl 与参考节点的 tr 对齐
+            offset: [0, 0]
+          });
+          menu.show();
+          _self._afterShow(column, menu);
+        }
+      });
+    },
+    _addShowMenu: function(column) {
+      if (!column.get('fixed')) {
+        column.set('showMenu', true);
+      }
+    },
+    //菜单显示后
+    _afterShow: function(column, menu) {
+      var _self = this,
+        grid = _self.get('grid');
+      menu = menu || _self.get('menu');
+      _self._resetSortMenuItems(column, menu);
+      _self._resetColumnsVisible(menu);
+    },
+    //设置菜单项是否选中
+    _resetColumnsVisible: function(menu) {
+      var _self = this,
+        settingItem = menu.findItemById(ID_COLUMNS_SET),
+        subMenu = settingItem.get('subMenu') || _self._initColumnsMenu(settingItem),
+        columns = _self.get('grid').get('columns');
+      subMenu.removeChildren(true);
+      $.each(columns, function(index, column) {
+        if (!column.get('fixed')) {
+          var config = {
+              xclass: 'context-menu-item',
+              text: column.get('title'),
+              column: column,
+              iconCls: 'icon'
+            },
+            menuItem = subMenu.addChild(config);
+          if (column.get('visible')) {
+            menuItem.set('selected', true);
+          }
+        }
+      });
+    },
+    //设置排序菜单项是否可用
+    _resetSortMenuItems: function(column, menu) {
+      var ascItem = menu.findItemById(ID_SORT_ASC),
+        descItem = menu.findItemById(ID_SORT_DESC);
+      if (column.get('sortable')) {
+        ascItem.set('disabled', false);
+        descItem.set('disabled', false);
+      } else {
+        ascItem.set('disabled', true);
+        descItem.set('disabled', true);
+      }
+    },
+    //初始化菜单
+    _initMenu: function() {
+      var _self = this,
+        menu = _self.get('menu'),
+        menuItems;
+      if (!menu) {
+        menuItems = _self.get('items');
+        $.each(menuItems, function(index, item) {
+          if (!item.xclass) {
+            item.xclass = 'context-menu-item'
+          }
+        });
+        menu = new Menu.ContextMenu({
+          children: menuItems,
+          elCls: 'grid-menu'
+        });
+        _self._initMenuEvent(menu);
+        _self.set('menu', menu)
+      }
+      return menu;
+    },
+    _initMenuEvent: function(menu) {
+      var _self = this;
+      menu.on('itemclick', function(ev) {
+        var item = ev.item,
+          id = item.get('id'),
+          activedColumn = _self.get('activedColumn');
+        if (id === ID_SORT_ASC) {
+          activedColumn.set('sortState', 'ASC');
+        } else if (id === ID_SORT_DESC) {
+          activedColumn.set('sortState', 'DESC');
+        }
+      });
+      menu.on('afterVisibleChange', function(ev) {
+        var visible = ev.newVal,
+          activedColumn = _self.get('activedColumn');
+        if (visible && activedColumn) {
+          activedColumn.set('open', true);
+        } else {
+          activedColumn.set('open', false);
+        }
+      });
+    },
+    _initColumnsMenu: function(settingItem) {
+      var subMenu = new Menu.ContextMenu({
+        multipleSelect: true,
+        elCls: 'grid-column-menu'
+      });
+      settingItem.set('subMenu', subMenu);
+      subMenu.on('itemclick', function(ev) {
+        var item = ev.item,
+          column = item.get('column'),
+          selected = item.get('selected');
+        if (selected) {
+          column.set('visible', true);
+        } else {
+          column.set('visible', false);
+        }
+      });
+      return subMenu;
+    },
+    destructor: function() {
+      var _self = this,
+        menu = _self.get('menu');
+      if (menu) {
+        menu.destroy();
+      }
+      _self.off();
+      _self.clearAttrVals();
+    }
+  });
+  module.exports = gridMenu;
+});
+define("bui/grid/plugins/summary", ["jquery", "bui/common"], function(require, exports, module) {
+  /**
+   * @fileOverview 表格数据汇总
+   * @author dxq613@gmail.com
+   * @ignore
+   */
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
+    PREFIX = BUI.prefix,
+    CLS_GRID_ROW = PREFIX + 'grid-row',
+    CLS_GRID_BODY = PREFIX + 'grid-body',
+    CLS_SUMMARY_ROW = PREFIX + 'grid-summary-row',
+    CLS_GRID_CELL_INNER = PREFIX + 'grid-cell-inner',
+    CLS_COLUMN_PREFIX = 'grid-td-',
+    CLS_GRID_CELL_TEXT = PREFIX + 'grid-cell-text',
+    CLS_GRID_CELL = PREFIX + 'grid-cell';
+  /**
+   * @private
+   * @ignore
+   */
+  function getEmptyCellTemplate(colspan) {
+    if (colspan > 0) {
+      return '<td class="' + CLS_GRID_CELL + '" colspan="' + colspan + '">&nbsp;</td>';
+    }
+    return '';
+  }
+  /**
+   * @private
+   * @ignore
+   */
+  function getCellTemplate(text, id) {
+    return '<td class="' + CLS_GRID_CELL + ' ' + CLS_COLUMN_PREFIX + id + '">' + getInnerTemplate(text) + '</td>';
+  }
+  /**
+   * @private
+   * @ignore
+   */
+  function getInnerTemplate(text) {
+    return '<div class="' + CLS_GRID_CELL_INNER + '" >' + '<span class="' + CLS_GRID_CELL_TEXT + ' ">' + text + '</span>' + '</div>';
+  }
+  /**
+   * @private
+   * @ignore
+   */
+  function getLastEmptyCell() {
+    return '<td class="' + CLS_GRID_CELL + ' ' + CLS_GRID_CELL + '-empty">&nbsp;</td>';
+  }
+  /**
+   * 表格菜单插件
+   * <pre><code>
+   * var store = new Store({
+   *      url : 'data/summary.json',
+   *      pageSize : 10,
+   *      autoLoad:true
+   *    }),
+   *    grid = new Grid.Grid({
+   *      render:'#grid',
+   *      columns : columns,
+   *      store: store,
+   *      bbar : {pagingBar : true},
+   *      plugins : [Grid.Plugins.Summary] // 插件形式引入单选表格
+   *    });
+   *
+   *  grid.render();
+   * </code></pre>
+   * @class BUI.Grid.Plugins.Summary
+   */
+  var summary = function(config) {
+    summary.superclass.constructor.call(this, config);
+  };
+  summary.ATTRS = {
+    footerTpl: {
+      value: '<tfoot></tfoot>'
+    },
+    footerEl: {},
+    /**
+     * 总汇总行的标题
+     * @type {String}
+     * @default '总汇总'
+     */
+    summaryTitle: {
+      value: '查询合计'
+    },
+    /**
+     * 本页汇总的标题
+     * @type {String}
+     */
+    pageSummaryTitle: {
+      value: '本页合计'
+    },
+    /**
+     * 在列对象中配置的字段
+     * @type {String}
+     * @default 'summary'
+     */
+    field: {
+      value: 'summary'
+    },
+    /**
+     * 本页汇总值的记录
+     * @type {String}
+     */
+    pageSummaryField: {
+      value: 'pageSummary'
+    },
+    /**
+     * 总汇总值的记录
+     * @type {String}
+     */
+    summaryField: {
+      value: 'summary'
+    },
+    /**
+     * @private
+     * 本页汇总值
+     * @type {Object}
+     */
+    pageSummary: {},
+    /**
+     * @private
+     * 总汇总
+     * @type {Object}
+     */
+    summary: {}
+  };
+  BUI.extend(summary, BUI.Base);
+  BUI.augment(summary, {
+    //初始化
+    initializer: function(grid) {
+      var _self = this;
+      _self.set('grid', grid);
+    },
+    //添加DOM结构
+    renderUI: function(grid) {
+      var _self = this,
+        bodyEl = grid.get('el').find('.' + CLS_GRID_BODY),
+        bodyTable = bodyEl.find('table'),
+        footerEl = $(_self.get('footerTpl')).appendTo(bodyTable);
+      _self.set('footerEl', footerEl);
+    },
+    //绑定事件
+    bindUI: function(grid) {
+      //绑定获取数据
+      var _self = this,
+        store = grid.get('store');
+      if (store) {
+        store.on('beforeprocessload', function(ev) {
+          _self._processSummary(ev.data);
+        });
+        store.on('add', function() {
+          _self.resetPageSummary();
+        });
+        store.on('remove', function() {
+          _self.resetPageSummary();
+        });
+        store.on('update', function() {
+          _self.resetPageSummary();
+        });
+      }
+      grid.on('aftershow', function() {
+        _self.resetSummary();
+      });
+      grid.get('header').on('afterVisibleChange', function() {
+        _self.resetSummary();
+      });
+    },
+    //处理汇总数据
+    _processSummary: function(data) {
+      var _self = this,
+        footerEl = _self.get('footerEl');
+      footerEl.empty();
+      if (!data) {
+        return;
+      }
+      var pageSummary = data[_self.get('pageSummaryField')],
+        summary = data[_self.get('summaryField')];
+      _self.set('pageSummary', pageSummary);
+      _self.set('summary', summary);
+    },
+    /**
+     * 重新设置本页汇总
+     */
+    resetPageSummary: function() {
+      var _self = this,
+        grid = _self.get('grid'),
+        columns = grid.get('columns'),
+        pageSummary = _self._calculatePageSummary(),
+        pageEl = _self.get('pageEl');
+      _self.set('pageSummary', pageSummary);
+      if (pageEl) {
+        BUI.each(columns, function(column) {
+          if (column.get('summary') && column.get('visible')) {
+            var id = column.get('id'),
+              cellEl = pageEl.find('.' + CLS_COLUMN_PREFIX + id),
+              text = _self._getSummaryCellText(column, pageSummary);
+            cellEl.find('.' + CLS_GRID_CELL_TEXT).text(text);
+          }
+        });
+        _self._updateFirstRow(pageEl, _self.get('pageSummaryTitle'));
+      }
+    },
+    //重置汇总数据
+    resetSummary: function(pageSummary, summary) {
+      var _self = this,
+        footerEl = _self.get('footerEl'),
+        pageEl = null;
+      footerEl.empty();
+      pageSummary = pageSummary || _self.get('pageSummary');
+      if (!pageSummary) {
+        pageSummary = _self._calculatePageSummary();
+        _self.set('pageSummary', pageSummary);
+      }
+      summary = summary || _self.get('summary');
+      pageEl = _self._creatSummaryRow(pageSummary, _self.get('pageSummaryTitle'));
+      _self.set('pageEl', pageEl);
+      _self._creatSummaryRow(summary, _self.get('summaryTitle'));
+    },
+    //创建汇总
+    _creatSummaryRow: function(summary, title) {
+      if (!summary) {
+        return null;
+      }
+      var _self = this,
+        footerEl = _self.get('footerEl'),
+        tpl = _self._getSummaryTpl(summary),
+        rowEl = $(tpl).appendTo(footerEl);
+      _self._updateFirstRow(rowEl, title);
+      return rowEl;
+    },
+    _updateFirstRow: function(rowEl, title) {
+      var firstCell = rowEl.find('td').first(),
+        textEl = firstCell.find('.' + CLS_GRID_CELL_INNER);
+      if (textEl.length) {
+        var textPrefix = title + ': ';
+        text = textEl.text();
+        if (text.indexOf(textPrefix) === -1) {
+          text = textPrefix + text;
+        }
+        firstCell.html(getInnerTemplate(text));
+      } else {
+        firstCell.html(getInnerTemplate(title + ':'));
+      }
+    },
+    //获取汇总模板
+    _getSummaryTpl: function(summary) {
+      var _self = this,
+        grid = _self.get('grid'),
+        columns = grid.get('columns'),
+        cellTempArray = [],
+        prePosition = -1, //上次汇总列的位置
+        currentPosition = -1, //当前位置
+        rowTemplate = null;
+      $.each(columns, function(colindex, column) {
+        if (column.get('visible')) {
+          currentPosition += 1;
+          if (column.get('summary')) {
+            cellTempArray.push(getEmptyCellTemplate(currentPosition - prePosition - 1));
+            var text = _self._getSummaryCellText(column, summary),
+              temp = getCellTemplate(text, column.get('id'));
+            cellTempArray.push(temp);
+            prePosition = currentPosition;
+          }
+        }
+      });
+      if (prePosition !== currentPosition) {
+        cellTempArray.push(getEmptyCellTemplate(currentPosition - prePosition));
+      }
+      rowTemplate = ['<tr class="', CLS_SUMMARY_ROW, ' ', CLS_GRID_ROW, '">', cellTempArray.join(''), getLastEmptyCell(), '</tr>'].join('');
+      return rowTemplate;
+    },
+    //获取汇总单元格内容
+    _getSummaryCellText: function(column, summary) {
+      var _self = this,
+        val = summary[column.get('dataIndex')],
+        value = val == null ? '' : val,
+        renderer = column.get('renderer'),
+        text = renderer ? renderer(value, summary) : value;
+      return text;
+    },
+    _calculatePageSummary: function() {
+      var _self = this,
+        grid = _self.get('grid'),
+        store = grid.get('store'),
+        columns = grid.get('columns'),
+        rst = {};
+      BUI.each(columns, function(column) {
+        if (column.get('summary')) {
+          var dataIndex = column.get('dataIndex');
+          rst[dataIndex] = store.sum(dataIndex);
+        }
+      });
+      return rst;
+    }
+  });
+  module.exports = summary;
+});
+define("bui/grid/plugins/rownumber", [], function(require, exports, module) {
+  var CLS_NUMBER = 'x-grid-rownumber';
+  /**
+   * @class BUI.Grid.Plugins.RowNumber
+   * 表格显示行序号的插件
+   */
+  function RowNumber(config) {
+    RowNumber.superclass.constructor.call(this, config);
+  }
+  BUI.extend(RowNumber, BUI.Base);
+  RowNumber.ATTRS = {
+    /**
+     * column's width which contains the row number
+     */
+    width: {
+      value: 40
+    },
+    /**
+     * @private
+     */
+    column: {}
+  };
+  BUI.augment(RowNumber, {
+    //创建行
+    createDom: function(grid) {
+      var _self = this;
+      var cfg = {
+          title: '',
+          width: _self.get('width'),
+          fixed: true,
+          resizable: false,
+          sortable: false,
+          renderer: function(value, obj, index) {
+            return index + 1;
+          },
+          elCls: CLS_NUMBER
+        },
+        column = grid.addColumn(cfg, 0);
+      _self.set('column', column);
+    }
+  });
+  module.exports = RowNumber;
+});
+define("bui/grid/plugins/columngroup", ["jquery", "bui/common"], function(require, exports, module) {
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
+    PREFIX = BUI.prefix,
+    CLS_HD_TITLE = PREFIX + 'grid-hd-title',
+    CLS_GROUP = PREFIX + 'grid-column-group',
+    CLS_GROUP_HEADER = PREFIX + 'grid-group-header',
+    CLS_DOUBLE = PREFIX + 'grid-db-hd';
+  /**
+   * 表头列分组功能
+   * @class BUI.Grid.Plugins.ColumnGroup
+   * @extends BUI.Base
+   */
+  var Group = function(cfg) {
+    Group.superclass.constructor.call(this, cfg);
+  };
+  Group.ATTRS = {
+    /**
+     * 分组
+     * @type {Array}
+     */
+    groups: {
+      value: []
+    },
+    /**
+     * 列模板
+     * @type {String}
+     */
+    columnTpl: {
+      value: '<th class="bui-grid-hd center" colspan="{colspan}"><div class="' + PREFIX + 'grid-hd-inner">' + '<span class="' + CLS_HD_TITLE + '">{title}</span>' + '</div></th>'
+    }
+  };
+  BUI.extend(Group, BUI.Base);
+  BUI.augment(Group, {
+    renderUI: function(grid) {
+      var _self = this,
+        groups = _self.get('groups'),
+        header = grid.get('header'),
+        headerEl = header.get('el'),
+        columns = header.get('children'),
+        wraperEl = $('<tr class="' + CLS_GROUP + '"></tr>').prependTo(headerEl.find('thead'));
+      headerEl.addClass(CLS_GROUP_HEADER);
+      //遍历分组，标志分组
+      BUI.each(groups, function(group) {
+        var tpl = _self._getGroupTpl(group),
+          gEl = $(tpl).appendTo(wraperEl);
+        group.el = gEl;
+        for (var i = group.from; i <= group.to; i++) {
+          var column = columns[i];
+          if (column) {
+            column.set('group', group);
+          }
+        }
+      });
+      var afterEl;
+      //修改未分组的rowspan和调整位置
+      for (var i = columns.length - 1; i >= 0; i--) {
+        var column = columns[i],
+          group = column.get('group');
+        if (group) {
+          afterEl = group.el;
+        } else {
+          var cEl = column.get('el'); //$(_self.get('emptyTpl'));
+          cEl.addClass(CLS_DOUBLE);
+          cEl.attr('rowspan', 2);
+          if (afterEl) {
+            cEl.insertBefore(afterEl);
+          } else {
+            cEl.appendTo(wraperEl);
+          }
+          afterEl = cEl;
+        }
+      }
+      if (groups[0].from !== 0) { //处理第一个单元格边框问题
+        var firstCol = columns[groups[0].from];
+        if (firstCol) {
+          firstCol.get('el').css('border-left-width', 1);
+        }
+      }
+      //移除空白列
+    },
+    _getGroupTpl: function(group) {
+      var _self = this,
+        columnTpl = _self.get('columnTpl'),
+        colspan = group.to - group.from + 1;
+      return BUI.substitute(columnTpl, {
+        colspan: colspan,
+        title: group.title
+      });
+    }
+  });
+  module.exports = Group;
+});
+define("bui/grid/plugins/rowgroup", ["jquery", "bui/common"], function(require, exports, module) {
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
+    DATA_GROUP = 'data-group',
+    PREFIX = BUI.prefix,
+    CLS_GROUP = PREFIX + 'grid-row-group',
+    CLS_TRIGGER = PREFIX + 'grid-cascade',
+    CLS_EXPAND = PREFIX + 'grid-cascade-expand';
+  //新的分组
+  function newGroup(value, text) {
+    return {
+      items: [],
+      value: value,
+      text: text
+    };
+  }
+  /**
+   * 表头列分组功能，仅处理数据展示，排序，不处理这个过程中的增删改，添加删除列
+   * @class BUI.Grid.Plugins.RowGroup
+   * @extends BUI.Base
+   */
+  var Group = function(cfg) {
+    Group.superclass.constructor.call(this, cfg);
+  };
+  Group.ATTRS = {
+    groups: {
+      shared: false,
+      value: []
+    },
+    /**
+     * 渲染分组内容，函数原型 function(text,group){}
+     *
+     *  - text 是分组字段格式化后的文本
+     *  - group 是当前分组，包括,text(文本）,value（值）,items（分组包含的项）
+     * @type {Function}
+     */
+    renderer: {}
+  };
+  BUI.extend(Group, BUI.Base);
+  BUI.augment(Group, {
+    renderUI: function(grid) {
+      var _self = this,
+        tbodyEl = grid.get('el').find('tbody');
+      _self.set('grid', grid);
+      _self.set('tbodyEl', tbodyEl);
+    },
+    bindUI: function(grid) {
+      var _self = this,
+        groups = [];
+      //显示完成记录时
+      grid.on('aftershow', function() {
+        var items = grid.getItems(),
+          column = _self._getSortColumn();
+        _self._clear();
+        if (column) {
+          grid.get('view').getAllElements().hide();
+          var field = column.get('dataIndex');
+          BUI.each(items, function(item, index) {
+            var last = groups[groups.length - 1],
+              renderer = column.get('renderer'),
+              value = item[field],
+              text;
+            if (!last || value != last.value) {
+              text = renderer ? renderer(value, item) : value;
+              var current = newGroup(value, text);
+              current.begin = index;
+              groups.push(current);
+              last && _self._createGroup(last);
+              last = current;
+            }
+            last.items.push(item);
+          });
+          var last = groups[groups.length - 1];
+          last && _self._createGroup(last);
+          _self.set('groups', groups);
+        }
+      });
+      //清除所有记录时
+      grid.on('clear', function() {
+        _self._clear();
+      });
+      _self.get('tbodyEl').delegate('.' + CLS_TRIGGER, 'click', function(ev) {
+        var sender = $(ev.currentTarget),
+          group = _self._getGroupData(sender);
+        if (sender.hasClass(CLS_EXPAND)) {
+          _self._collapse(group);
+          sender.removeClass(CLS_EXPAND);
+        } else {
+          _self._expand(group);
+          sender.addClass(CLS_EXPAND);
+        }
+      });
+    },
+    //获取排序的字段对应的列
+    _getSortColumn: function() {
+      var _self = this,
+        grid = _self.get('grid'),
+        store = grid.get('store'),
+        field = store.get('sortField');
+      return grid.findColumnByField(field);
+    },
+    //获取分组的数据
+    _getGroupData: function(el) {
+      var _self = this,
+        groupEl = el.closest('.' + CLS_GROUP);
+      return groupEl.data(DATA_GROUP);
+    },
+    _createGroup: function(group) {
+      var _self = this,
+        grid = _self.get('grid'),
+        item = group.items[0],
+        firstEl = grid.findElement(item),
+        count = grid.get('columns').length,
+        renderer = _self.get('renderer'),
+        text = renderer ? renderer(group.text, group) : group.text,
+        tpl = '<tr class="' + CLS_GROUP + '"><td colspan="' + (count + 1) + '"><div class="bui-grid-cell-inner"><span class="bui-grid-cell-text"><span class="bui-grid-cascade"><i class="bui-grid-cascade-icon"></i></span> ' + text + '</span></div></td></tr>',
+        node = $(tpl).insertBefore(firstEl);
+      node.data(DATA_GROUP, group);
+    },
+    _getGroupedElements: function(group) {
+      var _self = this,
+        grid = _self.get('grid'),
+        elements = grid.get('view').getAllElements(),
+        begin = group.begin,
+        end = group.items.length + begin,
+        rst = [];
+      for (var i = begin; i < end; i++) {
+        rst.push(elements[i]);
+      }
+      return $(rst);
+    },
+    _expand: function(group) {
+      var _self = this,
+        subEls = _self._getGroupedElements(group);
+      subEls.show();
+    },
+    _collapse: function(group) {
+      var _self = this,
+        subEls = _self._getGroupedElements(group);
+      subEls.hide();
+    },
+    _clear: function() {
+      var _self = this,
+        groups = _self.get('groups'),
+        tbodyEl = _self.get('tbodyEl');
+      BUI.Array.empty(groups);
+      tbodyEl.find('.' + CLS_GROUP).remove();
+    }
+  });
+  module.exports = Group;
+});
+define("bui/grid/plugins/columnresize", ["jquery", "bui/common"], function(require, exports, module) {
+  /**
+   * @fileOverview 拖拽改变列的宽度
+   * @ignore
+   */
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
+    NUM_DIS = 15,
+    NUM_MIN = 30,
+    STYLE_CURSOR = 'col-resize';
+  var Resize = function(cfg) {
+    Resize.superclass.constructor.call(this, cfg);
+  };
+  Resize.ATTRS = {
+    /**
+     * @private
+     * 是否正在拖拽
+     * @type {Boolean}
+     */
+    resizing: {
+      value: false
+    },
+    //拖拽属性
+    draging: {}
+  };
+  BUI.extend(Resize, BUI.Base);
+  BUI.augment(Resize, {
+    renderUI: function(grid) {
+      this.set('grid', grid);
+    },
+    bindUI: function(grid) {
+      var _self = this,
+        header = grid.get('header'),
+        curCol,
+        preCol,
+        direction;
+      header.get('el').delegate('.bui-grid-hd', 'mouseenter', function(ev) {
+        var resizing = _self.get('resizing');
+        if (!resizing) {
+          var sender = ev.currentTarget;
+          curCol = _self._getColumn(sender);
+          preCol = _self._getPreCol(curCol);
+        }
+      }).delegate('.bui-grid-hd', 'mouseleave', function(ev) {
+        var resizing = _self.get('resizing');
+        if (!resizing && curCol) {
+          curCol.get('el').css('cursor', '');
+          curCol = null;
+        }
+      }).delegate('.bui-grid-hd', 'mousemove', function(ev) {
+        var resizing = _self.get('resizing');
+        if (!resizing && curCol) {
+          var el = curCol.get('el'),
+            pageX = ev.pageX,
+            offset = el.offset(),
+            left = offset.left,
+            width = el.width();
+          if (pageX - left < NUM_DIS && preCol) {
+            el.css('cursor', STYLE_CURSOR);
+            direction = -1;
+          } else if ((left + width) - pageX < NUM_DIS) {
+            direction = 1;
+            el.css('cursor', STYLE_CURSOR);
+          } else {
+            curCol.get('el').css('cursor', '');
+          }
+        }
+        if (resizing) {
+          ev.preventDefault();
+          var draging = _self.get('draging'),
+            start = draging.start,
+            pageX = ev.pageX,
+            dif = pageX - start,
+            width = direction > 0 ? curCol.get('width') : preCol.get('width'),
+            toWidth = width + dif;
+          if (toWidth > NUM_MIN && toWidth < grid.get('el').width()) {
+            draging.end = pageX;
+            _self.moveDrag(pageX);
+          }
+        }
+      }).delegate('.bui-grid-hd', 'mousedown', function(ev) {
+        var resizing = _self.get('resizing');
+        if (!resizing && curCol && curCol.get('el').css('cursor') == STYLE_CURSOR) {
+          ev.preventDefault();
+          _self.showDrag(ev.pageX);
+          bindDraging();
+        }
+      });
+
+      function callback(ev) {
+        var draging = _self.get('draging')
+        if (curCol && draging) {
+          var col = direction > 0 ? curCol : preCol,
+            width = col.get('width'),
+            dif = draging.end - draging.start;
+          _self.hideDrag();
+          if (grid.get('forceFit')) {
+            var originWidth = col.get('originWidth'),
+              factor = width / originWidth,
+              toWidth = (width + dif) / factor;
+            // console.log(originWidth + ' ,'+width);
+            col.set('originWidth', toWidth);
+            col.set('width', toWidth);
+            //
+          } else {
+            col.set('width', width + dif);
+          }
+        }
+        $(document).off('mouseup', callback);
+      }
+
+      function bindDraging() {
+        $(document).on('mouseup', callback);
+      }
+    },
+    //显示拖拽
+    showDrag: function(pageX) {
+      var _self = this,
+        grid = _self.get('grid'),
+        header = grid.get('header'),
+        bodyEl = grid.get('el').find('.bui-grid-body'),
+        height = header.get('el').height() + bodyEl.height(),
+        offset = header.get('el').offset(),
+        dragEl = _self.get('dragEl');
+      if (!dragEl) {
+        var tpl = '<div class="bui-drag-line"></div>';
+        dragEl = $(tpl).appendTo('body');
+        _self.set('dragEl', dragEl);
+      }
+      dragEl.css({
+        top: offset.top,
+        left: pageX,
+        height: height
+      });
+      _self.set('resizing', true);
+      _self.set('draging', {
+        start: pageX,
+        end: pageX
+      });
+      dragEl.show();
+    },
+    //关闭拖拽
+    hideDrag: function() {
+      var _self = this,
+        dragEl = _self.get('dragEl');
+      dragEl && dragEl.hide();
+      _self.set('draging', null);
+      _self.set('resizing', false);
+    },
+    //移动drag
+    moveDrag: function(pageX) {
+      var _self = this,
+        dragEl = _self.get('dragEl');
+      dragEl && dragEl.css('left', pageX);
+    },
+    //获取点击的列
+    _getColumn: function(element) {
+      var _self = this,
+        columns = _self.get('grid').get('columns'),
+        rst = null;
+      BUI.each(columns, function(column) {
+        if (column.containsElement(element)) {
+          rst = column;
+          return false;
+        }
+      });
+      return rst;
+    },
+    //获取前一个列
+    _getPreCol: function(col) {
+      var _self = this,
+        columns = _self.get('grid').get('columns'),
+        rst = null;
+      BUI.each(columns, function(column, index) {
+        if (column == col) {
+          return false;
+        } else if (column.get('visible')) {
+          rst = column;
+        }
+      });
+      return rst;
+    }
+  });
+  module.exports = Resize;
 });

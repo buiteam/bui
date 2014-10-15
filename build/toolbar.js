@@ -1,4 +1,4 @@
-define("bui/toolbar", ["jquery", "bui/common", "bui/toolbar/baritem", "bui/toolbar/bar", "bui/toolbar/pagingbar", "bui/toolbar/numberpagingbar"], function(require, exports, module) {
+define("bui/toolbar", ["bui/common", "jquery"], function(require, exports, module) {
   /**
    * @fileOverview 工具栏命名空间入口
    * @ignore
@@ -24,7 +24,7 @@ define("bui/toolbar/baritem", ["jquery", "bui/common"], function(require, export
    * @namespace 工具栏命名空间
    * @ignore
    */
-  var $ = require("jquery"),
+  var $ = require('jquery'),
     BUI = require("bui/common"),
     PREFIX = BUI.prefix,
     Component = BUI.Component,
@@ -243,7 +243,7 @@ define("bui/toolbar/bar", ["jquery", "bui/common"], function(require, exports, m
    * @author dxq613@gmail.com, yiminghe@gmail.com
    * @ignore
    */
-  var $ = require("jquery"),
+  var $ = require('jquery'),
     BUI = require("bui/common"),
     Component = BUI.Component,
     UIBase = Component.UIBase;
@@ -334,13 +334,13 @@ define("bui/toolbar/bar", ["jquery", "bui/common"], function(require, exports, m
   });
   module.exports = Bar;
 });
-define("bui/toolbar/pagingbar", ["jquery", "bui/common", "bui/toolbar/bar"], function(require, exports, module) {
+define("bui/toolbar/pagingbar", ["jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview  a specialized toolbar that is bound to a Grid.Store and provides automatic paging control.
    * @author dxq613@gmail.com, yiminghe@gmail.com
    * @ignore
    */
-  var $ = require("jquery"),
+  var $ = require('jquery'),
     BUI = require("bui/common"),
     Bar = require("bui/toolbar/bar"),
     Component = BUI.Component,
@@ -812,13 +812,13 @@ define("bui/toolbar/pagingbar", ["jquery", "bui/common", "bui/toolbar/bar"], fun
   });
   module.exports = PagingBar;
 });
-define("bui/toolbar/numberpagingbar", ["jquery", "bui/common", "bui/toolbar/pagingbar", "bui/toolbar/bar"], function(require, exports, module) {
+define("bui/toolbar/numberpagingbar", ["jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview  a specialized toolbar that is bound to a Grid.Store and provides automatic paging control.
    * @author
    * @ignore
    */
-  var $ = require("jquery"),
+  var $ = require('jquery'),
     BUI = require("bui/common"),
     Component = BUI.Component,
     PBar = require("bui/toolbar/pagingbar");
@@ -867,7 +867,7 @@ define("bui/toolbar/numberpagingbar", ["jquery", "bui/common", "bui/toolbar/pagi
     _bindButtonEvent: function() {
       var _self = this,
         cls = _self.get('numberButtonCls');
-      _self.constructor.superclass._bindButtonEvent.call(this);
+      NumberPagingBar.superclass._bindButtonEvent.call(this);
       _self.get('el').delegate('a', 'click', function(ev) {
         ev.preventDefault();
       });

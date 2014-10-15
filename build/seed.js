@@ -945,89 +945,15 @@ seajs.config = function(configData) {
 
 })(this);
 
+;
 (function() {
-  /**
-   * Sea.js mini 2.3.0 | seajs.org/LICENSE.md
-   */
-  var define;
-  var require;
-  (function(global, undefined) {
-    /**
-     * util-lang.js - The minimal language enhancement
-     */
-    function isType(type) {
-      return function(obj) {
-        return {}.toString.call(obj) == "[object " + type + "]"
-      }
-    }
-    var isFunction = isType("Function")
-      /**
-       * module.js - The core of module loader
-       */
-    var cachedMods = {}
-
-    function Module() {}
-    // Execute a module
-    Module.prototype.exec = function() {
-      var mod = this
-        // When module is executed, DO NOT execute it again. When module
-        // is being executed, just return `module.exports` too, for avoiding
-        // circularly calling
-      if (this.execed) {
-        return mod.exports
-      }
-      this.execed = true;
-
-      function require(id) {
-        return Module.get(id).exec()
-      }
-      // Exec factory
-      var factory = mod.factory
-      var exports = isFunction(factory) ? factory(require, mod.exports = {}, mod) : factory
-      if (exports === undefined) {
-        exports = mod.exports
-      }
-      // Reduce memory leak
-      delete mod.factory
-      mod.exports = exports
-      return exports
-    }
-    // Define a module
-    define = function(id, deps, factory) {
-      var meta = {
-        id: id,
-        deps: deps,
-        factory: factory
-      }
-      Module.save(meta)
-    }
-    // Save meta data to cachedMods
-    Module.save = function(meta) {
-      var mod = Module.get(meta.id)
-      mod.id = meta.id
-      mod.dependencies = meta.deps
-      mod.factory = meta.factory
-    }
-    // Get an existed module or create a new one
-    Module.get = function(id) {
-      return cachedMods[id] || (cachedMods[id] = new Module())
-    }
-    // Public API
-    require = function(id) {
-      var mod = Module.get(id)
-      if (!mod.execed) {
-        mod.exec()
-      }
-      return mod.exports
-    }
-  })(this);
-  define("bui/config", [], function(require, exports, module) {
+  var bui_config_110_config_debug;
+  bui_config_110_config_debug = function() {
     //from seajs
     function getScriptAbsoluteSrc(node) {
       return node.hasAttribute ? // non-IE6/7
-        node.src :
-        // see http://msdn.microsoft.com/en-us/library/ms536429(VS.85).aspx
-        node.getAttribute("src", 4);
+        node.src : // see http://msdn.microsoft.com/en-us/library/ms536429(VS.85).aspx
+        node.getAttribute('src', 4);
     }
     var BUI = window.BUI = window.BUI || {};
     BUI.use = seajs.use;
@@ -1046,14 +972,25 @@ seajs.config = function(configData) {
     });
     BUI.setDebug = function(debug) {
       BUI.debug = debug;
+      //只有bui目录下面的文件使用-min.js
+      var regexp = new RegExp('^(' + loaderPath + '\\S*).js$');
       if (!debug) {
-        //只有bui目录下面的文件使用-min.js
-        var regexp = new RegExp('^(' + loaderPath + '\\S*).js$');
         seajs.config({
           map: [
-            [regexp, '$1-min.js']
+            [
+              regexp, '$1-min.js'
+            ]
           ]
         });
+      } else {
+        var map = seajs.data.map;
+        var mapReg;
+        for (var i = map.length - 1; i >= 0; i--) {
+          mapReg = map[i][0];
+          if (Object.prototype.toString.call(mapReg) === '[object RegExp]' && mapReg.toString() === regexp.toString()) {
+            map.splice(i, 1);
+          }
+        }
       }
     };
     BUI.setDebug(debug);
@@ -1063,9 +1000,8 @@ seajs.config = function(configData) {
         return window.jQuery;
       });
     }
-  });
-  require("bui/config");
-})();
+  }();
+}());
 define("bui/common", ["bui/common/util", "bui/common/ua", "bui/common/json", "bui/common/date", "bui/common/array", "bui/common/keycode", "bui/common/observable", "bui/common/base", "bui/common/component/component", "jquery", "bui/common/component/manage", "bui/common/component/uibase/uibase", "bui/common/component/view", "bui/common/component/controller", "bui/common/component/uibase/base", "bui/common/component/uibase/align", "bui/common/component/uibase/autoshow", "bui/common/component/uibase/autohide", "bui/common/component/uibase/close", "bui/common/component/uibase/collapsable", "bui/common/component/uibase/drag", "bui/common/component/uibase/keynav", "bui/common/component/uibase/list", "bui/common/component/uibase/listitem", "bui/common/component/uibase/mask", "bui/common/component/uibase/position", "bui/common/component/uibase/selection", "bui/common/component/uibase/stdmod", "bui/common/component/uibase/decorate", "bui/common/component/uibase/tpl", "bui/common/component/uibase/childcfg", "bui/common/component/uibase/bindable", "bui/common/component/uibase/depends", "bui/common/component/loader"], function(require, exports, module) {
   var BUI = require("bui/common/util");
   BUI.mix(BUI, {

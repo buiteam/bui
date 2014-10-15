@@ -945,89 +945,15 @@ seajs.config = function(configData) {
 
 })(this);
 
+;
 (function() {
-  /**
-   * Sea.js mini 2.3.0 | seajs.org/LICENSE.md
-   */
-  var define;
-  var require;
-  (function(global, undefined) {
-    /**
-     * util-lang.js - The minimal language enhancement
-     */
-    function isType(type) {
-      return function(obj) {
-        return {}.toString.call(obj) == "[object " + type + "]"
-      }
-    }
-    var isFunction = isType("Function")
-      /**
-       * module.js - The core of module loader
-       */
-    var cachedMods = {}
-
-    function Module() {}
-    // Execute a module
-    Module.prototype.exec = function() {
-      var mod = this
-        // When module is executed, DO NOT execute it again. When module
-        // is being executed, just return `module.exports` too, for avoiding
-        // circularly calling
-      if (this.execed) {
-        return mod.exports
-      }
-      this.execed = true;
-
-      function require(id) {
-        return Module.get(id).exec()
-      }
-      // Exec factory
-      var factory = mod.factory
-      var exports = isFunction(factory) ? factory(require, mod.exports = {}, mod) : factory
-      if (exports === undefined) {
-        exports = mod.exports
-      }
-      // Reduce memory leak
-      delete mod.factory
-      mod.exports = exports
-      return exports
-    }
-    // Define a module
-    define = function(id, deps, factory) {
-      var meta = {
-        id: id,
-        deps: deps,
-        factory: factory
-      }
-      Module.save(meta)
-    }
-    // Save meta data to cachedMods
-    Module.save = function(meta) {
-      var mod = Module.get(meta.id)
-      mod.id = meta.id
-      mod.dependencies = meta.deps
-      mod.factory = meta.factory
-    }
-    // Get an existed module or create a new one
-    Module.get = function(id) {
-      return cachedMods[id] || (cachedMods[id] = new Module())
-    }
-    // Public API
-    require = function(id) {
-      var mod = Module.get(id)
-      if (!mod.execed) {
-        mod.exec()
-      }
-      return mod.exports
-    }
-  })(this);
-  define("bui/config", [], function(require, exports, module) {
+  var bui_config_110_config_debug;
+  bui_config_110_config_debug = function() {
     //from seajs
     function getScriptAbsoluteSrc(node) {
       return node.hasAttribute ? // non-IE6/7
-        node.src :
-        // see http://msdn.microsoft.com/en-us/library/ms536429(VS.85).aspx
-        node.getAttribute("src", 4);
+        node.src : // see http://msdn.microsoft.com/en-us/library/ms536429(VS.85).aspx
+        node.getAttribute('src', 4);
     }
     var BUI = window.BUI = window.BUI || {};
     BUI.use = seajs.use;
@@ -1046,14 +972,25 @@ seajs.config = function(configData) {
     });
     BUI.setDebug = function(debug) {
       BUI.debug = debug;
+      //只有bui目录下面的文件使用-min.js
+      var regexp = new RegExp('^(' + loaderPath + '\\S*).js$');
       if (!debug) {
-        //只有bui目录下面的文件使用-min.js
-        var regexp = new RegExp('^(' + loaderPath + '\\S*).js$');
         seajs.config({
           map: [
-            [regexp, '$1-min.js']
+            [
+              regexp, '$1-min.js'
+            ]
           ]
         });
+      } else {
+        var map = seajs.data.map;
+        var mapReg;
+        for (var i = map.length - 1; i >= 0; i--) {
+          mapReg = map[i][0];
+          if (Object.prototype.toString.call(mapReg) === '[object RegExp]' && mapReg.toString() === regexp.toString()) {
+            map.splice(i, 1);
+          }
+        }
       }
     };
     BUI.setDebug(debug);
@@ -1063,9 +1000,8 @@ seajs.config = function(configData) {
         return window.jQuery;
       });
     }
-  });
-  require("bui/config");
-})();
+  }();
+}());
 define("bui/common", ["bui/common/util", "bui/common/ua", "bui/common/json", "bui/common/date", "bui/common/array", "bui/common/keycode", "bui/common/observable", "bui/common/base", "bui/common/component/component", "jquery", "bui/common/component/manage", "bui/common/component/uibase/uibase", "bui/common/component/view", "bui/common/component/controller", "bui/common/component/uibase/base", "bui/common/component/uibase/align", "bui/common/component/uibase/autoshow", "bui/common/component/uibase/autohide", "bui/common/component/uibase/close", "bui/common/component/uibase/collapsable", "bui/common/component/uibase/drag", "bui/common/component/uibase/keynav", "bui/common/component/uibase/list", "bui/common/component/uibase/listitem", "bui/common/component/uibase/mask", "bui/common/component/uibase/position", "bui/common/component/uibase/selection", "bui/common/component/uibase/stdmod", "bui/common/component/uibase/decorate", "bui/common/component/uibase/tpl", "bui/common/component/uibase/childcfg", "bui/common/component/uibase/bindable", "bui/common/component/uibase/depends", "bui/common/component/loader"], function(require, exports, module) {
   var BUI = require("bui/common/util");
   BUI.mix(BUI, {
@@ -16888,7 +16824,7 @@ define("bui/picker/listpicker", ["jquery", "bui/common", "bui/data", "bui/list",
     });
   module.exports = listPicker;
 });
-define("bui/toolbar", ["jquery", "bui/common", "bui/toolbar/baritem", "bui/toolbar/bar", "bui/toolbar/pagingbar", "bui/toolbar/numberpagingbar"], function(require, exports, module) {
+define("bui/toolbar", ["bui/common", "jquery"], function(require, exports, module) {
   /**
    * @fileOverview 工具栏命名空间入口
    * @ignore
@@ -16914,7 +16850,7 @@ define("bui/toolbar/baritem", ["jquery", "bui/common"], function(require, export
    * @namespace 工具栏命名空间
    * @ignore
    */
-  var $ = require("jquery"),
+  var $ = require('jquery'),
     BUI = require("bui/common"),
     PREFIX = BUI.prefix,
     Component = BUI.Component,
@@ -17133,7 +17069,7 @@ define("bui/toolbar/bar", ["jquery", "bui/common"], function(require, exports, m
    * @author dxq613@gmail.com, yiminghe@gmail.com
    * @ignore
    */
-  var $ = require("jquery"),
+  var $ = require('jquery'),
     BUI = require("bui/common"),
     Component = BUI.Component,
     UIBase = Component.UIBase;
@@ -17224,13 +17160,13 @@ define("bui/toolbar/bar", ["jquery", "bui/common"], function(require, exports, m
   });
   module.exports = Bar;
 });
-define("bui/toolbar/pagingbar", ["jquery", "bui/common", "bui/toolbar/bar"], function(require, exports, module) {
+define("bui/toolbar/pagingbar", ["jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview  a specialized toolbar that is bound to a Grid.Store and provides automatic paging control.
    * @author dxq613@gmail.com, yiminghe@gmail.com
    * @ignore
    */
-  var $ = require("jquery"),
+  var $ = require('jquery'),
     BUI = require("bui/common"),
     Bar = require("bui/toolbar/bar"),
     Component = BUI.Component,
@@ -17702,13 +17638,13 @@ define("bui/toolbar/pagingbar", ["jquery", "bui/common", "bui/toolbar/bar"], fun
   });
   module.exports = PagingBar;
 });
-define("bui/toolbar/numberpagingbar", ["jquery", "bui/common", "bui/toolbar/pagingbar", "bui/toolbar/bar"], function(require, exports, module) {
+define("bui/toolbar/numberpagingbar", ["jquery", "bui/common"], function(require, exports, module) {
   /**
    * @fileOverview  a specialized toolbar that is bound to a Grid.Store and provides automatic paging control.
    * @author
    * @ignore
    */
-  var $ = require("jquery"),
+  var $ = require('jquery'),
     BUI = require("bui/common"),
     Component = BUI.Component,
     PBar = require("bui/toolbar/pagingbar");
@@ -17757,7 +17693,7 @@ define("bui/toolbar/numberpagingbar", ["jquery", "bui/common", "bui/toolbar/pagi
     _bindButtonEvent: function() {
       var _self = this,
         cls = _self.get('numberButtonCls');
-      _self.constructor.superclass._bindButtonEvent.call(this);
+      NumberPagingBar.superclass._bindButtonEvent.call(this);
       _self.get('el').delegate('a', 'click', function(ev) {
         ev.preventDefault();
       });
@@ -19414,7 +19350,7 @@ define("bui/calendar/panel", ["jquery", "bui/common"], function(require, exports
   });
   module.exports = panel;
 });
-define("bui/select", ["jquery", "bui/common", "bui/select/select", "bui/select/combox", "bui/select/suggest", "bui/data", "bui/list", "bui/overlay", "bui/picker", "bui/select/tag"], function(require, exports, module) {
+define("bui/select", ["bui/common", "jquery", "bui/picker", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview 选择框命名空间入口文件
    * @ignore
@@ -19428,14 +19364,14 @@ define("bui/select", ["jquery", "bui/common", "bui/select/select", "bui/select/c
   });
   module.exports = Select;
 });
-define("bui/select/select", ["jquery", "bui/common", "bui/data", "bui/list", "bui/overlay", "bui/picker"], function(require, exports, module) {
+define("bui/select/select", ["jquery", "bui/common", "bui/picker", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview 选择控件
    * @author dxq613@gmail.com
    * @ignore
    */
   'use strict';
-  var $ = require("jquery"),
+  var $ = require('jquery'),
     BUI = require("bui/common"),
     ListPicker = require("bui/picker").ListPicker,
     PREFIX = BUI.prefix;
@@ -19500,16 +19436,21 @@ define("bui/select/select", ["jquery", "bui/common", "bui/data", "bui/list", "bu
         var _self = this,
           multipleSelect = _self.get('multipleSelect'),
           xclass,
-          picker = _self.get('picker');
+          picker = _self.get('picker'),
+          list;
         if (!picker) {
           xclass = multipleSelect ? 'listbox' : 'simple-list';
+          list = _self.get('list') || {};
+          list = BUI.mix(list, {
+            xclass: xclass,
+            elCls: PREFIX + 'select-list',
+            store: _self.get('store'),
+            items: formatItems(_self.get('items')) /**/
+          });
           picker = new Picker({
-            children: [{
-              xclass: xclass,
-              elCls: PREFIX + 'select-list',
-              store: _self.get('store'),
-              items: formatItems(_self.get('items')) /**/
-            }],
+            children: [
+              list
+            ],
             valueField: _self.get('valueField')
           });
           _self.set('picker', picker);
@@ -19542,15 +19483,19 @@ define("bui/select/select", ["jquery", "bui/common", "bui/data", "bui/list", "bu
           store = list.get('store');
         //选项发生改变时
         picker.on('selectedchange', function(ev) {
-          _self.fire('change', {
-            text: ev.text,
-            value: ev.value,
-            item: ev.item
+          if (ev.item) {
+            _self.fire('change', {
+              text: ev.text,
+              value: ev.value,
+              item: ev.item
+            });
+          }
+        });
+        if (_self.get('autoSetValue')) {
+          list.on('itemsshow', function() {
+            _self._syncValue();
           });
-        });
-        list.on('itemsshow', function() {
-          _self._syncValue();
-        });
+        }
         picker.on('show', function() {
           if (_self.get('forceFit')) {
             picker.set('width', _self.get('el').outerWidth());
@@ -19884,12 +19829,12 @@ define("bui/select/select", ["jquery", "bui/common", "bui/data", "bui/list", "bu
     });
   module.exports = select;
 });
-define("bui/select/combox", ["jquery", "bui/common", "bui/select/select", "bui/select/tag", "bui/data", "bui/list", "bui/overlay", "bui/picker"], function(require, exports, module) {
+define("bui/select/combox", ["jquery", "bui/common", "bui/picker", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview 组合框可用于选择输入文本
    * @ignore
    */
-  var $ = require("jquery"),
+  var $ = require('jquery'),
     BUI = require("bui/common"),
     Select = require("bui/select/select"),
     Tag = require("bui/select/tag"),
@@ -19958,8 +19903,8 @@ define("bui/select/combox", ["jquery", "bui/common", "bui/select/select", "bui/s
   }, {
     ATTRS: {
       /*focusable : {
-      value : false
-    },*/
+        value : false
+      },*/
       /**
        * 控件的模版
        * @type {String}
@@ -19988,13 +19933,273 @@ define("bui/select/combox", ["jquery", "bui/common", "bui/select/select", "bui/s
   });
   module.exports = combox;
 });
-define("bui/select/suggest", ["jquery", "bui/common", "bui/select/combox", "bui/select/select", "bui/select/tag", "bui/data", "bui/list", "bui/overlay", "bui/picker"], function(require, exports, module) {
+define("bui/select/tag", ["jquery", "bui/common", "bui/list", "bui/data"], function(require, exports, module) {
+  /**
+   * @fileOverview 输入、选择完毕后显示tag
+   * @ignore
+   */
+  var $ = require('jquery'),
+    BUI = require("bui/common"),
+    List = require("bui/list"),
+    KeyCode = BUI.KeyCode,
+    WARN = 'warn';
+
+  function html_decode(str) {
+      var s = "";
+      if (str.length == 0) return "";
+      s = str.replace(/>/g, "&gt;");
+      s = s.replace(/</g, "&lt;");
+      return s;
+    }
+    /**
+     * @class BUI.Select.Tag
+     * 显示tag的扩展
+     */
+  var Tag = function() {};
+  Tag.ATTRS = {
+    /**
+     * 显示tag
+     * @type {Boolean}
+     */
+    showTag: {
+      value: false
+    },
+    /**
+     * tag的模板
+     * @type {String}
+     */
+    tagItemTpl: {
+      value: '<li>{text}<button>×</button></li>'
+    },
+    /**
+     * @private
+     * tag 的列表
+     * @type {Object}
+     */
+    tagList: {
+      value: null
+    },
+    limit: {
+      value: null
+    },
+    forbitInput: {
+      value: false
+    },
+    tagPlaceholder: {
+      value: '输入标签'
+    },
+    tagFormatter: {
+      value: null
+    },
+    /**
+     * 默认的value分隔符，将值分割显示成tag
+     * @type {String}
+     */
+    separator: {
+      value: ';'
+    }
+  };
+  BUI.augment(Tag, {
+    __renderUI: function() {
+      var _self = this,
+        showTag = _self.get('showTag'),
+        tagPlaceholder = _self.get('tagPlaceholder'),
+        tagInput = _self.getTagInput();
+      if (showTag && !tagInput.attr('placeholder')) {
+        tagInput.attr('placeholder', tagPlaceholder);
+        _self.set('inputForceFit', false);
+      }
+    },
+    __bindUI: function() {
+      var _self = this,
+        showTag = _self.get('showTag'),
+        tagInput = _self.getTagInput();
+      if (showTag) {
+        tagInput.on('keydown', function(ev) {
+          if (!tagInput.val()) {
+            var tagList = _self.get('tagList'),
+              last = tagList.getLastItem(),
+              picker = _self.get('picker');
+            if (ev.which == KeyCode.DELETE || ev.which == KeyCode.BACKSPACE) {
+              if (tagList.hasStatus(last, WARN)) {
+                _self._delTag(last);
+              } else {
+                tagList.setItemStatus(last, WARN, true);
+              }
+              picker.hide();
+            } else {
+              tagList.setItemStatus(last, WARN, false);
+            }
+          }
+        });
+        var handler;
+
+        function setTag() {
+          var tagList = _self.get('tagList'),
+            last = tagList.getLastItem();
+          if (last && tagList.hasStatus(last, WARN)) { //如果最后一项处于警告状态
+            tagList.setItemStatus(last, WARN, false);
+          }
+          var val = tagInput.val();
+          if (val) {
+            _self._addTag(val);
+          }
+        }
+        if (!_self.get('forbitInput')) {
+          tagInput.on('change', function() {
+            handler = setTimeout(function() {
+              setTag();
+              handler = null;
+            }, 50);
+          });
+        }
+        _self.on('change', function(ev) {
+          setTimeout(function() {
+            if (handler) {
+              clearTimeout(handler);
+            }
+            setTag();
+          });
+        });
+      }
+    },
+    __syncUI: function() {
+      var _self = this,
+        showTag = _self.get('showTag'),
+        valueField = _self.get('valueField');
+      if (showTag && valueField) {
+        _self._setTags($(valueField).val());
+      }
+    },
+    //设置tags，初始化时处理
+    _setTags: function(value) {
+      var _self = this,
+        tagList = _self.get('tagList'),
+        separator = _self.get('separator'),
+        formatter = _self.get('tagFormatter'),
+        values = value.split(separator);
+      if (!tagList) {
+        tagList = _self._initTagList();
+      }
+      if (value) {
+        BUI.each(values, function(val) {
+          var text = val;
+          if (formatter) {
+            text = formatter(text);
+          }
+          tagList.addItem({
+            value: val,
+            text: text
+          });
+        });
+      }
+    },
+    //添加tag
+    _addTag: function(value) {
+      value = html_decode(value);
+      var _self = this,
+        tagList = _self.get('tagList'),
+        tagInput = _self.getTagInput(),
+        limit = _self.get('limit'),
+        formatter = _self.get('tagFormatter'),
+        preItem = tagList.getItem(value);
+      if (limit) {
+        if (tagList.getItemCount() >= limit) {
+          return;
+        }
+      }
+      if (!preItem) {
+        var text = value;
+        if (formatter) {
+          text = formatter(text);
+        }
+        tagList.addItem({
+          value: value,
+          text: text
+        });
+        _self._synTagsValue();
+      } else {
+        _self._blurItem(tagList, preItem);
+      }
+      tagInput.val('');
+    },
+    //提示用户选项已经存在
+    _blurItem: function(list, item) {
+      list.setItemStatus(item, 'active', true);
+      setTimeout(function() {
+        list.setItemStatus(item, 'active', false);
+      }, 400);
+    },
+    //删除tag
+    _delTag: function(item) {
+      var _self = this,
+        tagList = _self.get('tagList');
+      tagList.removeItem(item);
+      _self._synTagsValue();
+    },
+    /**
+     * 获取tag 列表的值
+     * @return {String} 列表对应的值
+     */
+    getTagsValue: function() {
+      var _self = this,
+        tagList = _self.get('tagList'),
+        items = tagList.getItems(),
+        vals = [];
+      BUI.each(items, function(item) {
+        vals.push(item.value);
+      });
+      return vals.join(_self.get('separator'));
+    },
+    //初始化tagList
+    _initTagList: function() {
+      var _self = this,
+        tagInput = _self.getTagInput(),
+        tagList = new List.SimpleList({
+          elBefore: tagInput,
+          itemTpl: _self.get('tagItemTpl'),
+          idField: 'value'
+        });
+      tagList.render();
+      _self._initTagEvent(tagList);
+      _self.set('tagList', tagList);
+      return tagList;
+    },
+    //初始化tag删除事件
+    _initTagEvent: function(list) {
+      var _self = this;
+      list.on('itemclick', function(ev) {
+        var sender = $(ev.domTarget);
+        if (sender.is('button')) {
+          _self._delTag(ev.item);
+        }
+      });
+    },
+    /**
+     * 获取输入的文本框
+     * @protected
+     * @return {jQuery} 输入框
+     */
+    getTagInput: function() {
+      var _self = this,
+        el = _self.get('el');
+      return el.is('input') ? el : el.find('input');
+    },
+    _synTagsValue: function() {
+      var _self = this,
+        valueEl = _self.get('valueField');
+      valueEl && $(valueEl).val(_self.getTagsValue());
+    }
+  });
+  module.exports = Tag;
+});
+define("bui/select/suggest", ["jquery", "bui/common", "bui/picker", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
   /**
    * @fileOverview 组合框可用于选择输入文本
    * @ignore
    */
   'use strict';
-  var $ = require("jquery"),
+  var $ = require('jquery'),
     BUI = require("bui/common"),
     Combox = require("bui/select/combox"),
     TIMER_DELAY = 200,
@@ -20064,14 +20269,15 @@ define("bui/select/suggest", ["jquery", "bui/common", "bui/select/combox", "bui/
       //输入为空时,直接返回
       if (!isStatic && !text) {
         /*        _self.set('items',EMPTY_ARRAY);
-      picker.hide();*/
+        picker.hide();*/
         return;
       }
       //3种加载方式选择
       var cacheable = _self.get('cacheable'),
+        store = _self.get('store'),
         url = _self.get('url'),
         data = _self.get('data');
-      if (cacheable && url) {
+      if (cacheable && (url || store)) {
         var dataCache = _self.get('dataCache');
         if (dataCache[text] !== undefined) {
           //从缓存读取
@@ -20082,7 +20288,7 @@ define("bui/select/suggest", ["jquery", "bui/common", "bui/select/combox", "bui/
           //BUI.log('no cache, data from server');
           _self._requestData();
         }
-      } else if (url) {
+      } else if (url || store) {
         //从服务器获取数据
         //BUI.log('no cache, data always from server');
         _self._requestData();
@@ -20313,209 +20519,6 @@ define("bui/select/suggest", ["jquery", "bui/common", "bui/select/combox", "bui/
     xclass: 'suggest'
   });
   module.exports = suggest;
-});
-define("bui/select/tag", ["jquery", "bui/common", "bui/data", "bui/list"], function(require, exports, module) {
-  /**
-   * @fileOverview 输入、选择完毕后显示tag
-   * @ignore
-   */
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    List = require("bui/list"),
-    KeyCode = BUI.KeyCode,
-    WARN = 'warn';
-  /**
-   * @class BUI.Select.Tag
-   * 显示tag的扩展
-   */
-  var Tag = function() {};
-  Tag.ATTRS = {
-    /**
-     * 显示tag
-     * @type {Boolean}
-     */
-    showTag: {
-      value: false
-    },
-    /**
-     * tag的模板
-     * @type {String}
-     */
-    tagItemTpl: {
-      value: '<li>{value}<button>×</button></li>'
-    },
-    /**
-     * @private
-     * tag 的列表
-     * @type {Object}
-     */
-    tagList: {
-      value: null
-    },
-    tagPlaceholder: {
-      value: '输入标签'
-    },
-    /**
-     * 默认的value分隔符，将值分割显示成tag
-     * @type {String}
-     */
-    separator: {
-      value: ';'
-    }
-  };
-  BUI.augment(Tag, {
-    __renderUI: function() {
-      var _self = this,
-        showTag = _self.get('showTag'),
-        tagPlaceholder = _self.get('tagPlaceholder'),
-        tagInput = _self.getTagInput();
-      if (showTag && !tagInput.attr('placeholder')) {
-        tagInput.attr('placeholder', tagPlaceholder);
-        _self.set('inputForceFit', false);
-      }
-    },
-    __bindUI: function() {
-      var _self = this,
-        showTag = _self.get('showTag'),
-        tagInput = _self.getTagInput();
-      if (showTag) {
-        tagInput.on('keydown', function(ev) {
-          if (!tagInput.val()) {
-            var tagList = _self.get('tagList'),
-              last = tagList.getLastItem(),
-              picker = _self.get('picker');
-            if (ev.which == KeyCode.DELETE || ev.which == KeyCode.BACKSPACE) {
-              if (tagList.hasStatus(last, WARN)) {
-                _self._delTag(last);
-              } else {
-                tagList.setItemStatus(last, WARN, true);
-              }
-              picker.hide();
-            } else {
-              tagList.setItemStatus(last, WARN, false);
-            }
-          }
-        });
-        tagInput.on('change', function(ev) {
-          setTimeout(function() {
-            var val = tagInput.val();
-            if (val) {
-              _self._addTag(val);
-            }
-          });
-        });
-      }
-    },
-    __syncUI: function() {
-      var _self = this,
-        showTag = _self.get('showTag'),
-        valueField = _self.get('valueField');
-      if (showTag && valueField) {
-        _self._setTags($(valueField).val());
-      }
-    },
-    //设置tags，初始化时处理
-    _setTags: function(value) {
-      var _self = this,
-        tagList = _self.get('tagList'),
-        separator = _self.get('separator'),
-        values = value.split(separator);
-      if (!tagList) {
-        tagList = _self._initTagList();
-      }
-      if (value) {
-        BUI.each(values, function(val) {
-          tagList.addItem({
-            value: val
-          });
-        });
-      }
-    },
-    //添加tag
-    _addTag: function(value) {
-      var _self = this,
-        tagList = _self.get('tagList'),
-        tagInput = _self.getTagInput(),
-        preItem = tagList.getItem(value);
-      if (!preItem) {
-        tagList.addItem({
-          value: value
-        });
-        _self._synTagsValue();
-      } else {
-        _self._blurItem(tagList, preItem);
-      }
-      tagInput.val('');
-    },
-    //提示用户选项已经存在
-    _blurItem: function(list, item) {
-      list.setItemStatus(item, 'active', true);
-      setTimeout(function() {
-        list.setItemStatus(item, 'active', false);
-      }, 400);
-    },
-    //删除tag
-    _delTag: function(item) {
-      var _self = this,
-        tagList = _self.get('tagList');
-      tagList.removeItem(item);
-      _self._synTagsValue();
-    },
-    /**
-     * 获取tag 列表的值
-     * @return {String} 列表对应的值
-     */
-    getTagsValue: function() {
-      var _self = this,
-        tagList = _self.get('tagList'),
-        items = tagList.getItems(),
-        vals = [];
-      BUI.each(items, function(item) {
-        vals.push(item.value);
-      });
-      return vals.join(_self.get('separator'));
-    },
-    //初始化tagList
-    _initTagList: function() {
-      var _self = this,
-        tagInput = _self.getTagInput(),
-        tagList = new List.SimpleList({
-          elBefore: tagInput,
-          itemTpl: _self.get('tagItemTpl'),
-          idField: 'value'
-        });
-      tagList.render();
-      _self._initTagEvent(tagList);
-      _self.set('tagList', tagList);
-      return tagList;
-    },
-    //初始化tag删除事件
-    _initTagEvent: function(list) {
-      var _self = this;
-      list.on('itemclick', function(ev) {
-        var sender = $(ev.domTarget);
-        if (sender.is('button')) {
-          _self._delTag(ev.item);
-        }
-      });
-    },
-    /**
-     * 获取输入的文本框
-     * @protected
-     * @return {jQuery} 输入框
-     */
-    getTagInput: function() {
-      var _self = this,
-        el = _self.get('el');
-      return el.is('input') ? el : el.find('input');
-    },
-    _synTagsValue: function() {
-      var _self = this,
-        valueEl = _self.get('valueField');
-      valueEl && $(valueEl).val(_self.getTagsValue());
-    }
-  });
-  module.exports = Tag;
 });
 define("bui/form", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
   /**

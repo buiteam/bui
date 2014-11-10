@@ -124,7 +124,7 @@ gulp.task('adapter.js', ['package'], function() {
 
 gulp.task('script', ['seed.js', 'bui.js', 'adapter.js'], function() {
   return gulp.src([
-      './build/*.js'
+      './build/**/*.js'
     ])
     .pipe(uglify({
       output: {

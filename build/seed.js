@@ -962,7 +962,8 @@ seajs.config = function(configData) {
       loaderScript = scripts[scripts.length - 1],
       src = getScriptAbsoluteSrc(loaderScript),
       loaderPath = src.substring(0, src.lastIndexOf('/')),
-      debug = loaderScript.getAttribute('data') === 'true' ? true : false;
+      // 不能用data 因为在把包的时候会把data替换成data
+      debug = loaderScript.getAttribute('debug') === 'true' ? true : false;
     BUI.loaderScript = loaderScript;
     //配置bui的路径
     seajs.config({
@@ -985,6 +986,9 @@ seajs.config = function(configData) {
       } else {
         var map = seajs.data.map;
         var mapReg;
+        if (!map) {
+          return;
+        }
         for (var i = map.length - 1; i >= 0; i--) {
           mapReg = map[i][0];
           if (Object.prototype.toString.call(mapReg) === '[object RegExp]' && mapReg.toString() === regexp.toString()) {

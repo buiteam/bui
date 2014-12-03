@@ -1355,6 +1355,14 @@ textarea.bui-form-field-error,
 .x-field-error {
   margin-left: 5px;
 }
+.x-field-error .x-icon {
+  padding: 1px;
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  border-radius: 8px;
+  position: relative;
+  top: 3px;
+}
 .x-field-error .x-field-error-text {
   padding-left: 5px;
   color: #eb4f38;

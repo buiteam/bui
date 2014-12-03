@@ -1,0 +1,32 @@
+{
+  "name": "bui-data",
+  "version": "1.1.0",
+  "description": "",
+  "keywords": [],
+  "homepage": "",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/buiteam/bui-data.git"
+  },
+  "bugs": {
+    "url": ""
+  },
+  "licenses": "MIT",
+  "spm": {
+    "main": "index.js",
+    "dependencies": {
+      "jquery": "1.9.1",
+      "bui-common": "1.1.0"
+    },
+    "devDependencies": {
+      "expect.js": "0.3.1",
+      "sinon": "1.6.0"
+    },
+    "engines": {
+      "seajs": "2.2.1"
+    },
+    "buildArgs": "--ignore jquery",
+    "tests": "tests/*.js"
+  }
+}

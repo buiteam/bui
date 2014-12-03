@@ -1,0 +1,171 @@
+
+
+.bui-select-list{
+  border:1px solid @borderColor;
+  background-color:@white;
+  overflow: auto;
+  .bui-list-item{
+    padding: 2px 4px 2px 8px;
+    .user-select(none);
+    cursor: pointer;
+    border: 1px solid @white;
+    .border-radius(@radius);
+    margin: 1px;
+    padding-left: 8px;
+    *zoom:1;
+  }
+
+  .bui-list-item-hover{
+    background: @optionHoverItemBack;
+    border:1px solid @optionHoverItemBorder;
+  }
+
+  .bui-list-item-selected{
+    background: @selectedItemBack;
+    border: 1px solid @selectedItemBorder;
+  }
+
+  .bui-list-item-disabled{
+    background:none;
+    color: @disabledColor;
+    cursor: default;
+    a {
+      color: @disabledColor;
+      cursor: default;
+    }
+    a:hover{
+      text-decoration: none;
+    }
+  }
+}
+
+.bui-select{
+  .bui-inline-block();
+  .bui-select-input{
+    _border:1px solid @borderColor;
+    border-right:none;
+    vertical-align:middle;
+    outline: none;
+    _height:22px;
+    _padding:1px 4px;
+    width: 118px;
+  }
+  .x-icon{
+    vertical-align:middle;
+    cursor: pointer;
+    height: 20px;
+    width: 20px;
+    .border-radius(0);
+  }
+  
+  .icon-caret{
+    vertical-align:middle;
+    margin-top: -4px;
+  }
+}
+
+.bui-select-disabled{
+  .x-icon{
+    .opacity(50);
+     cursor: default;
+  }
+  
+}
+
+/** list-checkbox **/
+.x-checkbox{
+  background: url("@{checkIconPath}") no-repeat 0px 0px transparent;
+}
+
+.x-radio{
+  background: url("@{radioIconPath}") no-repeat 0 0 transparent;
+}
+
+.x-checkbox,.x-radio{
+  width: 13px;
+  height: 20px;
+  *height: 17px;
+  vertical-align: top;
+  *vertical-align: baseline;
+  margin-right: 5px;
+  .inline-block();
+}
+
+.x-checkbox:hover,.x-radio:hover,.bui-list-item-hover .x-checkbox,.bui-list-item-hover .x-radio{
+  background-position: -16px 0px;
+}
+
+.bui-list-item-selected .x-checkbox,.bui-list-item-selected .x-radio,.checked .x-checkbox{
+  background-position: 0 -20px;
+}
+
+.bui-list-item-disabled .x-checkbox,.bui-list-item-disabled .x-radio{
+  background-position: -48px 0px;
+}
+
+.bui-simple-list-disabled,.bui-list-item-selected.bui-list-item-disabled{
+
+  .x-checkbox, .x-radio{
+    background-position: -48px -20px;
+  }
+}
+.bui-combox{
+  border: 1px solid @borderColor;
+  ul{
+    .clearfix();
+  }
+  .bui-list-item{
+    float: left;
+    display: inline-block;
+    float: left;
+    margin: 2px;
+    padding: 1px 6px;
+
+    transition: color 200ms;
+    -moz-transition: color 200ms; /* Firefox 4 */
+    -webkit-transition: color 200ms; /* Safari 和 Chrome */
+    -o-transition: color 200ms; /* Opera */
+
+    background-color: @btnInfoBackground;
+    color: @grayLighter;
+    button{
+      border: none;
+      padding: 0;
+      background: transparent;
+      margin-left: 5px;
+      cursor: pointer;
+      color: @grayLighter;
+    }
+  }
+
+  .bui-list-item-warn{
+    background-color:  @btnDangerBackground;
+  }
+
+  .bui-list-item-active{
+    background-color: @btnWarningBackground;
+  }
+
+  .bui-combox-input{
+    border : none;
+  }
+
+  .bui-combox-input:focus{
+    border:none;
+    outline: none;
+  }
+}
+
+.bui-tag-follow{
+  .bui-simple-list{
+    float: left;
+  }
+  
+  .bui-combox-input{
+    float: left;
+    margin-top: 2px;
+    width: 50px;
+  }
+}
+
+

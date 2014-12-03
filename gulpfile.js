@@ -15,7 +15,7 @@ var dependencies = require('./package.json').spm.dependencies;
 
 // 获取包文件的路径
 function getPackagePath(name, version) {
-  return './sea-modules/' + name + '/' + version + '/dist/' + name + '/' + version + '/';
+  return './spm_modules/' + name + '/' + version + '/dist/' + name + '/' + version + '/';
 }
 
 /**
@@ -51,7 +51,7 @@ function renameFile() {
 gulp.task('clean', function() {
   return gulp.src([
       './build',
-      './sea-modules'
+      './spm_modules'
     ], {read: false})
     .pipe(clean());
 });
@@ -83,7 +83,7 @@ gulp.task('package', function(){
 
 gulp.task('seed.js', ['package'], function() {
   return gulp.src([
-      './sea-modules/seajs/' + dependencies.seajs + '/dist/sea-debug.js',
+      './spm_modules/seajs/' + dependencies.seajs + '/dist/sea-debug.js',
       './build/config.js',
       './build/common.js'
     ])
@@ -93,7 +93,7 @@ gulp.task('seed.js', ['package'], function() {
 
 gulp.task('bui.js', ['package'], function() {
   return gulp.src([
-      './sea-modules/seajs/' + dependencies.seajs + '/dist/sea-debug.js',
+      './spm_modules/seajs/' + dependencies.seajs + '/dist/sea-debug.js',
       './build/config.js',
       './build/common.js',
       './build/data.js',
@@ -113,7 +113,7 @@ gulp.task('bui.js', ['package'], function() {
 // 适配kissy的js
 gulp.task('adapter.js', ['package'], function() {
   return gulp.src([
-      './sea-modules/bui-adapter/' + dependencies['bui-adapter'] + '/dist/adapter-debug.js',
+      './spm_modules/bui-adapter/' + dependencies['bui-adapter'] + '/dist/adapter-debug.js',
     ])
     .pipe(rename(function (path) {
         var basename = path.basename;

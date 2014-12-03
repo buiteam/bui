@@ -1,0 +1,23 @@
+{
+  "name": "bui-dpl",
+  "version": "1.1.0",
+  "description": "bui DPL(Design Pattern Library)",
+  "keywords": ["bui", "dpl"],
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/buiteam/bui-dpl.git"
+  },
+  "bugs": {
+    "url": "https://github.com/buiteam/bui-dpl/issues"
+  },
+  "licenses": "MIT",
+  "spm": {
+    "main": "",
+    "output": [
+      "./css/**/*.*",
+      "./img/**/*.*",
+      "./iconfont/**/*.*"
+    ]
+  }
+}

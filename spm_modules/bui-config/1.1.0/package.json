@@ -1,0 +1,20 @@
+{
+  "name": "bui-config",
+  "version": "1.1.0",
+  "description": "bui的入口配置文件",
+  "keywords": ["bui"],
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/buiteam/bui-config.git"
+  },
+  "bugs": {
+    "url": "https://github.com/buiteam/bui-config/issues"
+  },
+  "licenses": "MIT",
+  "spm": {
+    "main": "config.js",
+    "buildArgs": "--include standalone",
+    "tests": "tests/*.js"
+  }
+}

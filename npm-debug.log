@@ -1,0 +1,419 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node', '/usr/local/bin/npm', 'install' ]
+2 info using npm@1.2.21
+3 info using node@v0.11.2
+4 verbose read json /Users/dxq613/Desktop/work/web/bui/bui/package.json
+5 verbose readDependencies using package.json deps
+6 verbose install where, deps [ '/Users/dxq613/Desktop/work/web/bui/bui',
+6 verbose install   [ 'gulp',
+6 verbose install     'gulp-clean',
+6 verbose install     'gulp-concat',
+6 verbose install     'gulp-less',
+6 verbose install     'gulp-minify-css',
+6 verbose install     'gulp-rename',
+6 verbose install     'gulp-uglify',
+6 verbose install     'through2',
+6 verbose install     'spm' ] ]
+7 verbose from cache /Users/dxq613/Desktop/work/web/bui/bui/package.json
+8 info preinstall bui@1.1.0
+9 verbose from cache /Users/dxq613/Desktop/work/web/bui/bui/package.json
+10 verbose readDependencies using package.json deps
+11 verbose cache add [ 'gulp-concat@^2.1.7', null ]
+12 verbose cache add name=undefined spec="gulp-concat@^2.1.7" args=["gulp-concat@^2.1.7",null]
+13 verbose parsed url { protocol: null,
+13 verbose parsed url   slashes: null,
+13 verbose parsed url   auth: null,
+13 verbose parsed url   host: null,
+13 verbose parsed url   port: null,
+13 verbose parsed url   hostname: null,
+13 verbose parsed url   hash: null,
+13 verbose parsed url   search: null,
+13 verbose parsed url   query: null,
+13 verbose parsed url   pathname: 'gulp-concat@%5E2.1.7',
+13 verbose parsed url   path: 'gulp-concat@%5E2.1.7',
+13 verbose parsed url   href: 'gulp-concat@%5E2.1.7' }
+14 verbose cache add name="gulp-concat" spec="^2.1.7" args=["gulp-concat","^2.1.7"]
+15 verbose parsed url { protocol: null,
+15 verbose parsed url   slashes: null,
+15 verbose parsed url   auth: null,
+15 verbose parsed url   host: null,
+15 verbose parsed url   port: null,
+15 verbose parsed url   hostname: null,
+15 verbose parsed url   hash: null,
+15 verbose parsed url   search: null,
+15 verbose parsed url   query: null,
+15 verbose parsed url   pathname: '%5E2.1.7',
+15 verbose parsed url   path: '%5E2.1.7',
+15 verbose parsed url   href: '%5E2.1.7' }
+16 verbose addNamed [ 'gulp-concat', '^2.1.7' ]
+17 verbose addNamed [ null, null ]
+18 verbose cache add [ 'gulp-clean@^0.3.1', null ]
+19 verbose cache add name=undefined spec="gulp-clean@^0.3.1" args=["gulp-clean@^0.3.1",null]
+20 verbose parsed url { protocol: null,
+20 verbose parsed url   slashes: null,
+20 verbose parsed url   auth: null,
+20 verbose parsed url   host: null,
+20 verbose parsed url   port: null,
+20 verbose parsed url   hostname: null,
+20 verbose parsed url   hash: null,
+20 verbose parsed url   search: null,
+20 verbose parsed url   query: null,
+20 verbose parsed url   pathname: 'gulp-clean@%5E0.3.1',
+20 verbose parsed url   path: 'gulp-clean@%5E0.3.1',
+20 verbose parsed url   href: 'gulp-clean@%5E0.3.1' }
+21 verbose cache add name="gulp-clean" spec="^0.3.1" args=["gulp-clean","^0.3.1"]
+22 verbose parsed url { protocol: null,
+22 verbose parsed url   slashes: null,
+22 verbose parsed url   auth: null,
+22 verbose parsed url   host: null,
+22 verbose parsed url   port: null,
+22 verbose parsed url   hostname: null,
+22 verbose parsed url   hash: null,
+22 verbose parsed url   search: null,
+22 verbose parsed url   query: null,
+22 verbose parsed url   pathname: '%5E0.3.1',
+22 verbose parsed url   path: '%5E0.3.1',
+22 verbose parsed url   href: '%5E0.3.1' }
+23 verbose addNamed [ 'gulp-clean', '^0.3.1' ]
+24 verbose addNamed [ null, null ]
+25 verbose cache add [ 'gulp-less@^1.2.3', null ]
+26 verbose cache add name=undefined spec="gulp-less@^1.2.3" args=["gulp-less@^1.2.3",null]
+27 verbose parsed url { protocol: null,
+27 verbose parsed url   slashes: null,
+27 verbose parsed url   auth: null,
+27 verbose parsed url   host: null,
+27 verbose parsed url   port: null,
+27 verbose parsed url   hostname: null,
+27 verbose parsed url   hash: null,
+27 verbose parsed url   search: null,
+27 verbose parsed url   query: null,
+27 verbose parsed url   pathname: 'gulp-less@%5E1.2.3',
+27 verbose parsed url   path: 'gulp-less@%5E1.2.3',
+27 verbose parsed url   href: 'gulp-less@%5E1.2.3' }
+28 verbose cache add name="gulp-less" spec="^1.2.3" args=["gulp-less","^1.2.3"]
+29 verbose parsed url { protocol: null,
+29 verbose parsed url   slashes: null,
+29 verbose parsed url   auth: null,
+29 verbose parsed url   host: null,
+29 verbose parsed url   port: null,
+29 verbose parsed url   hostname: null,
+29 verbose parsed url   hash: null,
+29 verbose parsed url   search: null,
+29 verbose parsed url   query: null,
+29 verbose parsed url   pathname: '%5E1.2.3',
+29 verbose parsed url   path: '%5E1.2.3',
+29 verbose parsed url   href: '%5E1.2.3' }
+30 verbose addNamed [ 'gulp-less', '^1.2.3' ]
+31 verbose addNamed [ null, null ]
+32 verbose cache add [ 'gulp-minify-css@^0.3.0', null ]
+33 verbose cache add name=undefined spec="gulp-minify-css@^0.3.0" args=["gulp-minify-css@^0.3.0",null]
+34 verbose parsed url { protocol: null,
+34 verbose parsed url   slashes: null,
+34 verbose parsed url   auth: null,
+34 verbose parsed url   host: null,
+34 verbose parsed url   port: null,
+34 verbose parsed url   hostname: null,
+34 verbose parsed url   hash: null,
+34 verbose parsed url   search: null,
+34 verbose parsed url   query: null,
+34 verbose parsed url   pathname: 'gulp-minify-css@%5E0.3.0',
+34 verbose parsed url   path: 'gulp-minify-css@%5E0.3.0',
+34 verbose parsed url   href: 'gulp-minify-css@%5E0.3.0' }
+35 verbose cache add name="gulp-minify-css" spec="^0.3.0" args=["gulp-minify-css","^0.3.0"]
+36 verbose parsed url { protocol: null,
+36 verbose parsed url   slashes: null,
+36 verbose parsed url   auth: null,
+36 verbose parsed url   host: null,
+36 verbose parsed url   port: null,
+36 verbose parsed url   hostname: null,
+36 verbose parsed url   hash: null,
+36 verbose parsed url   search: null,
+36 verbose parsed url   query: null,
+36 verbose parsed url   pathname: '%5E0.3.0',
+36 verbose parsed url   path: '%5E0.3.0',
+36 verbose parsed url   href: '%5E0.3.0' }
+37 verbose addNamed [ 'gulp-minify-css', '^0.3.0' ]
+38 verbose addNamed [ null, null ]
+39 verbose cache add [ 'gulp-rename@^1.2.0', null ]
+40 verbose cache add name=undefined spec="gulp-rename@^1.2.0" args=["gulp-rename@^1.2.0",null]
+41 verbose parsed url { protocol: null,
+41 verbose parsed url   slashes: null,
+41 verbose parsed url   auth: null,
+41 verbose parsed url   host: null,
+41 verbose parsed url   port: null,
+41 verbose parsed url   hostname: null,
+41 verbose parsed url   hash: null,
+41 verbose parsed url   search: null,
+41 verbose parsed url   query: null,
+41 verbose parsed url   pathname: 'gulp-rename@%5E1.2.0',
+41 verbose parsed url   path: 'gulp-rename@%5E1.2.0',
+41 verbose parsed url   href: 'gulp-rename@%5E1.2.0' }
+42 verbose cache add name="gulp-rename" spec="^1.2.0" args=["gulp-rename","^1.2.0"]
+43 verbose parsed url { protocol: null,
+43 verbose parsed url   slashes: null,
+43 verbose parsed url   auth: null,
+43 verbose parsed url   host: null,
+43 verbose parsed url   port: null,
+43 verbose parsed url   hostname: null,
+43 verbose parsed url   hash: null,
+43 verbose parsed url   search: null,
+43 verbose parsed url   query: null,
+43 verbose parsed url   pathname: '%5E1.2.0',
+43 verbose parsed url   path: '%5E1.2.0',
+43 verbose parsed url   href: '%5E1.2.0' }
+44 verbose addNamed [ 'gulp-rename', '^1.2.0' ]
+45 verbose addNamed [ null, null ]
+46 verbose cache add [ 'gulp-uglify@^0.2.1', null ]
+47 verbose cache add name=undefined spec="gulp-uglify@^0.2.1" args=["gulp-uglify@^0.2.1",null]
+48 verbose parsed url { protocol: null,
+48 verbose parsed url   slashes: null,
+48 verbose parsed url   auth: null,
+48 verbose parsed url   host: null,
+48 verbose parsed url   port: null,
+48 verbose parsed url   hostname: null,
+48 verbose parsed url   hash: null,
+48 verbose parsed url   search: null,
+48 verbose parsed url   query: null,
+48 verbose parsed url   pathname: 'gulp-uglify@%5E0.2.1',
+48 verbose parsed url   path: 'gulp-uglify@%5E0.2.1',
+48 verbose parsed url   href: 'gulp-uglify@%5E0.2.1' }
+49 verbose cache add name="gulp-uglify" spec="^0.2.1" args=["gulp-uglify","^0.2.1"]
+50 verbose parsed url { protocol: null,
+50 verbose parsed url   slashes: null,
+50 verbose parsed url   auth: null,
+50 verbose parsed url   host: null,
+50 verbose parsed url   port: null,
+50 verbose parsed url   hostname: null,
+50 verbose parsed url   hash: null,
+50 verbose parsed url   search: null,
+50 verbose parsed url   query: null,
+50 verbose parsed url   pathname: '%5E0.2.1',
+50 verbose parsed url   path: '%5E0.2.1',
+50 verbose parsed url   href: '%5E0.2.1' }
+51 verbose addNamed [ 'gulp-uglify', '^0.2.1' ]
+52 verbose addNamed [ null, null ]
+53 verbose cache add [ 'through2@^0.4.1', null ]
+54 verbose cache add name=undefined spec="through2@^0.4.1" args=["through2@^0.4.1",null]
+55 verbose parsed url { protocol: null,
+55 verbose parsed url   slashes: null,
+55 verbose parsed url   auth: null,
+55 verbose parsed url   host: null,
+55 verbose parsed url   port: null,
+55 verbose parsed url   hostname: null,
+55 verbose parsed url   hash: null,
+55 verbose parsed url   search: null,
+55 verbose parsed url   query: null,
+55 verbose parsed url   pathname: 'through2@%5E0.4.1',
+55 verbose parsed url   path: 'through2@%5E0.4.1',
+55 verbose parsed url   href: 'through2@%5E0.4.1' }
+56 verbose cache add name="through2" spec="^0.4.1" args=["through2","^0.4.1"]
+57 verbose parsed url { protocol: null,
+57 verbose parsed url   slashes: null,
+57 verbose parsed url   auth: null,
+57 verbose parsed url   host: null,
+57 verbose parsed url   port: null,
+57 verbose parsed url   hostname: null,
+57 verbose parsed url   hash: null,
+57 verbose parsed url   search: null,
+57 verbose parsed url   query: null,
+57 verbose parsed url   pathname: '%5E0.4.1',
+57 verbose parsed url   path: '%5E0.4.1',
+57 verbose parsed url   href: '%5E0.4.1' }
+58 verbose addNamed [ 'through2', '^0.4.1' ]
+59 verbose addNamed [ null, null ]
+60 verbose cache add [ 'spm@^3.0.0', null ]
+61 verbose cache add name=undefined spec="spm@^3.0.0" args=["spm@^3.0.0",null]
+62 verbose parsed url { protocol: null,
+62 verbose parsed url   slashes: null,
+62 verbose parsed url   auth: null,
+62 verbose parsed url   host: null,
+62 verbose parsed url   port: null,
+62 verbose parsed url   hostname: null,
+62 verbose parsed url   hash: null,
+62 verbose parsed url   search: null,
+62 verbose parsed url   query: null,
+62 verbose parsed url   pathname: 'spm@%5E3.0.0',
+62 verbose parsed url   path: 'spm@%5E3.0.0',
+62 verbose parsed url   href: 'spm@%5E3.0.0' }
+63 verbose cache add name="spm" spec="^3.0.0" args=["spm","^3.0.0"]
+64 verbose parsed url { protocol: null,
+64 verbose parsed url   slashes: null,
+64 verbose parsed url   auth: null,
+64 verbose parsed url   host: null,
+64 verbose parsed url   port: null,
+64 verbose parsed url   hostname: null,
+64 verbose parsed url   hash: null,
+64 verbose parsed url   search: null,
+64 verbose parsed url   query: null,
+64 verbose parsed url   pathname: '%5E3.0.0',
+64 verbose parsed url   path: '%5E3.0.0',
+64 verbose parsed url   href: '%5E3.0.0' }
+65 verbose addNamed [ 'spm', '^3.0.0' ]
+66 verbose addNamed [ null, null ]
+67 silly lockFile c47e96bb-gulp-concat-2-1-7 gulp-concat@^2.1.7
+68 verbose lock gulp-concat@^2.1.7 /Users/dxq613/.npm/c47e96bb-gulp-concat-2-1-7.lock
+69 silly lockFile a388a01c-gulp-clean-0-3-1 gulp-clean@^0.3.1
+70 verbose lock gulp-clean@^0.3.1 /Users/dxq613/.npm/a388a01c-gulp-clean-0-3-1.lock
+71 silly lockFile 73f4177f-gulp-less-1-2-3 gulp-less@^1.2.3
+72 verbose lock gulp-less@^1.2.3 /Users/dxq613/.npm/73f4177f-gulp-less-1-2-3.lock
+73 verbose cache add [ 'gulp@^3.8.6', null ]
+74 verbose cache add name=undefined spec="gulp@^3.8.6" args=["gulp@^3.8.6",null]
+75 verbose parsed url { protocol: null,
+75 verbose parsed url   slashes: null,
+75 verbose parsed url   auth: null,
+75 verbose parsed url   host: null,
+75 verbose parsed url   port: null,
+75 verbose parsed url   hostname: null,
+75 verbose parsed url   hash: null,
+75 verbose parsed url   search: null,
+75 verbose parsed url   query: null,
+75 verbose parsed url   pathname: 'gulp@%5E3.8.6',
+75 verbose parsed url   path: 'gulp@%5E3.8.6',
+75 verbose parsed url   href: 'gulp@%5E3.8.6' }
+76 verbose cache add name="gulp" spec="^3.8.6" args=["gulp","^3.8.6"]
+77 verbose parsed url { protocol: null,
+77 verbose parsed url   slashes: null,
+77 verbose parsed url   auth: null,
+77 verbose parsed url   host: null,
+77 verbose parsed url   port: null,
+77 verbose parsed url   hostname: null,
+77 verbose parsed url   hash: null,
+77 verbose parsed url   search: null,
+77 verbose parsed url   query: null,
+77 verbose parsed url   pathname: '%5E3.8.6',
+77 verbose parsed url   path: '%5E3.8.6',
+77 verbose parsed url   href: '%5E3.8.6' }
+78 verbose addNamed [ 'gulp', '^3.8.6' ]
+79 verbose addNamed [ null, null ]
+80 silly lockFile dea97e51-gulp-3-8-6 gulp@^3.8.6
+81 verbose lock gulp@^3.8.6 /Users/dxq613/.npm/dea97e51-gulp-3-8-6.lock
+82 silly lockFile 97140670-gulp-minify-css-0-3-0 gulp-minify-css@^0.3.0
+83 verbose lock gulp-minify-css@^0.3.0 /Users/dxq613/.npm/97140670-gulp-minify-css-0-3-0.lock
+84 info addNameTag [ 'gulp-concat', '^2.1.7' ]
+85 info addNameTag [ 'gulp-clean', '^0.3.1' ]
+86 silly lockFile 575a3160-through2-0-4-1 through2@^0.4.1
+87 verbose lock through2@^0.4.1 /Users/dxq613/.npm/575a3160-through2-0-4-1.lock
+88 silly lockFile 31cef36d-gulp-rename-1-2-0 gulp-rename@^1.2.0
+89 verbose lock gulp-rename@^1.2.0 /Users/dxq613/.npm/31cef36d-gulp-rename-1-2-0.lock
+90 silly lockFile 179021e4-gulp-uglify-0-2-1 gulp-uglify@^0.2.1
+91 verbose lock gulp-uglify@^0.2.1 /Users/dxq613/.npm/179021e4-gulp-uglify-0-2-1.lock
+92 info addNameTag [ 'gulp', '^3.8.6' ]
+93 silly lockFile 84f4a1f5-spm-3-0-0 spm@^3.0.0
+94 verbose lock spm@^3.0.0 /Users/dxq613/.npm/84f4a1f5-spm-3-0-0.lock
+95 info addNameTag [ 'gulp-minify-css', '^0.3.0' ]
+96 info addNameTag [ 'through2', '^0.4.1' ]
+97 info addNameTag [ 'gulp-rename', '^1.2.0' ]
+98 info addNameTag [ 'gulp-uglify', '^0.2.1' ]
+99 info addNameTag [ 'spm', '^3.0.0' ]
+100 info addNameTag [ 'gulp-less', '^1.2.3' ]
+101 verbose url raw gulp-concat
+102 verbose url resolving [ 'https://registry.npmjs.org/', './gulp-concat' ]
+103 verbose url resolved https://registry.npmjs.org/gulp-concat
+104 info trying registry request attempt 1 at 13:01:48
+105 verbose etag "9AF2I6EFT5DXITW3TLT599DUU"
+106 http GET https://registry.npmjs.org/gulp-concat
+107 verbose url raw gulp-clean
+108 verbose url resolving [ 'https://registry.npmjs.org/', './gulp-clean' ]
+109 verbose url resolved https://registry.npmjs.org/gulp-clean
+110 info trying registry request attempt 1 at 13:01:48
+111 verbose etag "BE3X793YRQV8771AQQXOGL9DG"
+112 http GET https://registry.npmjs.org/gulp-clean
+113 verbose url raw gulp
+114 verbose url resolving [ 'https://registry.npmjs.org/', './gulp' ]
+115 verbose url resolved https://registry.npmjs.org/gulp
+116 info trying registry request attempt 1 at 13:01:48
+117 verbose etag "2U4MZ51WTHAUBOEQSJVK56PO9"
+118 http GET https://registry.npmjs.org/gulp
+119 verbose url raw through2
+120 verbose url resolving [ 'https://registry.npmjs.org/', './through2' ]
+121 verbose url resolved https://registry.npmjs.org/through2
+122 info trying registry request attempt 1 at 13:01:48
+123 verbose etag "98AGX7AOO209YXTRTMTR9AWQI"
+124 http GET https://registry.npmjs.org/through2
+125 verbose url raw gulp-minify-css
+126 verbose url resolving [ 'https://registry.npmjs.org/', './gulp-minify-css' ]
+127 verbose url resolved https://registry.npmjs.org/gulp-minify-css
+128 info trying registry request attempt 1 at 13:01:48
+129 verbose etag "7DP788QVEKECSLY5O2QOZSCDG"
+130 http GET https://registry.npmjs.org/gulp-minify-css
+131 verbose url raw gulp-rename
+132 verbose url resolving [ 'https://registry.npmjs.org/', './gulp-rename' ]
+133 verbose url resolved https://registry.npmjs.org/gulp-rename
+134 info trying registry request attempt 1 at 13:01:48
+135 verbose etag "EAQUFDPA75W0CIB3FWE3RW0P4"
+136 http GET https://registry.npmjs.org/gulp-rename
+137 verbose url raw gulp-uglify
+138 verbose url resolving [ 'https://registry.npmjs.org/', './gulp-uglify' ]
+139 verbose url resolved https://registry.npmjs.org/gulp-uglify
+140 info trying registry request attempt 1 at 13:01:48
+141 verbose etag "76BIDTKO0XGHTYCSKYFHSF3J4"
+142 http GET https://registry.npmjs.org/gulp-uglify
+143 verbose url raw gulp-less
+144 verbose url resolving [ 'https://registry.npmjs.org/', './gulp-less' ]
+145 verbose url resolved https://registry.npmjs.org/gulp-less
+146 info trying registry request attempt 1 at 13:01:48
+147 verbose etag "8F0JW9RQA26I60M70IVR2MD45"
+148 http GET https://registry.npmjs.org/gulp-less
+149 verbose url raw spm
+150 verbose url resolving [ 'https://registry.npmjs.org/', './spm' ]
+151 verbose url resolved https://registry.npmjs.org/spm
+152 info trying registry request attempt 1 at 13:01:49
+153 verbose etag "7KS7YMYURZUYD6X728IJPL656"
+154 http GET https://registry.npmjs.org/spm
+155 http 200 https://registry.npmjs.org/gulp-concat
+156 silly registry.get cb [ 200,
+156 silly registry.get   { date: 'Wed, 03 Dec 2014 05:01:49 GMT',
+156 silly registry.get     server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+156 silly registry.get     etag: '"ASYQX1OL9NH7JP6MI3EEXKWAX"',
+156 silly registry.get     'content-type': 'application/json',
+156 silly registry.get     'cache-control': 'max-age=60',
+156 silly registry.get     'content-length': '28656',
+156 silly registry.get     'accept-ranges': 'bytes',
+156 silly registry.get     via: '1.1 varnish',
+156 silly registry.get     age: '51',
+156 silly registry.get     'x-served-by': 'cache-ty66-TYO',
+156 silly registry.get     'x-cache': 'HIT',
+156 silly registry.get     'x-cache-hits': '2',
+156 silly registry.get     'x-timer': 'S1417582909.153662,VS0,VE0',
+156 silly registry.get     vary: 'Accept',
+156 silly registry.get     'keep-alive': 'timeout=10, max=50',
+156 silly registry.get     connection: 'Keep-Alive' } ]
+157 http 200 https://registry.npmjs.org/gulp-minify-css
+158 silly registry.get cb [ 200,
+158 silly registry.get   { date: 'Wed, 03 Dec 2014 05:01:49 GMT',
+158 silly registry.get     server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+158 silly registry.get     etag: '"3553QMF7ZHUZCM275AEGJJZWF"',
+158 silly registry.get     'content-type': 'application/json',
+158 silly registry.get     'cache-control': 'max-age=60',
+158 silly registry.get     'content-length': '21959',
+158 silly registry.get     'accept-ranges': 'bytes',
+158 silly registry.get     via: '1.1 varnish',
+158 silly registry.get     age: '52',
+158 silly registry.get     'x-served-by': 'cache-ty67-TYO',
+158 silly registry.get     'x-cache': 'HIT',
+158 silly registry.get     'x-cache-hits': '3',
+158 silly registry.get     'x-timer': 'S1417582909.163067,VS0,VE0',
+158 silly registry.get     vary: 'Accept',
+158 silly registry.get     'keep-alive': 'timeout=10, max=50',
+158 silly registry.get     connection: 'Keep-Alive' } ]
+159 silly lockFile c47e96bb-gulp-concat-2-1-7 gulp-concat@^2.1.7
+160 silly lockFile c47e96bb-gulp-concat-2-1-7 gulp-concat@^2.1.7
+161 silly lockFile 97140670-gulp-minify-css-0-3-0 gulp-minify-css@^0.3.0
+162 silly lockFile 97140670-gulp-minify-css-0-3-0 gulp-minify-css@^0.3.0
+163 error Error: No compatible version found: gulp-concat@'^2.1.7'
+163 error Valid install targets:
+163 error ["0.0.1","1.0.0","1.1.0","2.0.0","2.1.0","2.1.1","2.1.2","2.1.3","2.1.4","2.1.5","2.1.6","2.1.7","2.2.0","2.3.0","2.3.3","2.3.4","2.3.5","2.4.0","2.4.1","2.4.2"]
+163 error     at installTargetsError (/usr/local/lib/node_modules/npm/lib/cache.js:709:10)
+163 error     at /usr/local/lib/node_modules/npm/lib/cache.js:631:10
+163 error     at saved (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/get.js:138:7)
+163 error     at Object.oncomplete (fs.js:94:15)
+164 error If you need help, you may report this log at:
+164 error     <http://github.com/isaacs/npm/issues>
+164 error or email it to:
+164 error     <npm-@googlegroups.com>
+165 error System Darwin 13.3.0
+166 error command "node" "/usr/local/bin/npm" "install"
+167 error cwd /Users/dxq613/Desktop/work/web/bui/bui
+168 error node -v v0.11.2
+169 error npm -v 1.2.21
+170 verbose exit [ 1, true ]

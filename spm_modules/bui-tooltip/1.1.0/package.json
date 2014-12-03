@@ -1,0 +1,32 @@
+{
+  "name": "bui-tooltip",
+  "version": "1.1.0",
+  "description": "bui tooltip",
+  "keywords": ["bui"],
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/buiteam/bui-tooltip.git"
+  },
+  "bugs": {
+    "url": "https://github.com/buiteam/bui-tooltip/issues"
+  },
+  "licenses": "MIT",
+  "spm": {
+    "main": "index.js",
+    "dependencies": {
+      "jquery": "1.9.1",
+      "bui-common": "1.1.0",
+      "bui-overlay": "1.1.0"
+    },
+    "devDependencies": {
+      "expect.js": "0.3.1",
+      "sinon": "1.6.0"
+    },
+    "engines": {
+      "seajs": "2.2.1"
+    },
+    "buildArgs": "--ignore jquery",
+    "tests": "tests/*.js"
+  }
+}

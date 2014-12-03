@@ -1,0 +1,1 @@
+define("bui-extensions/1.1.0/index",[],function(){});

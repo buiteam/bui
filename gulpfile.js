@@ -10,12 +10,18 @@ var path = require('path');
 var exec = require('child_process').exec;
 var replace = require('gulp-replace');
 var uglify = require('gulp-uglify');
+var fs = require('fs');
+
 
 var dependencies = require('./package.json').spm.dependencies;
 
 // 获取包文件的路径
-function getPackagePath(name, version) {
-  return './spm_modules/' + name + '/' + version + '/dist/' + name + '/' + version + '/';
+function getPackagePath(name) {
+  var path = './spm_modules/' + name + '/';
+
+  var subDirs = fs.readdirSync(path);
+  var version = subDirs[subDirs.length -1];
+  return  path + version +'/dist/' + name + '/' + version + '/';
 }
 
 /**

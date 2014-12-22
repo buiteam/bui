@@ -13588,1729 +13588,1842 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
   });
   module.exports = TreeStore;
 });
-define("bui/list", ["jquery", "bui/common", "bui/list/list", "bui/list/listitem", "bui/list/simplelist", "bui/list/listbox", "bui/list/domlist", "bui/list/keynav", "bui/list/sortable", "bui/data"], function(require, exports, module) {
-  /**
-   * @fileOverview 列表模块入口文件
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    List = BUI.namespace('List');
-  BUI.mix(List, {
-    List: require("bui/list/list"),
-    ListItem: require("bui/list/listitem"),
-    SimpleList: require("bui/list/simplelist"),
-    Listbox: require("bui/list/listbox")
-  });
-  BUI.mix(List, {
-    ListItemView: List.ListItem.View,
-    SimpleListView: List.SimpleList.View
-  });
-  module.exports = List;
-});
-define("bui/list/list", ["jquery", "bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview 列表
-   * @ignore
-   */
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    Component = BUI.Component,
-    UIBase = Component.UIBase;
-  /**
-   * 列表
-   * <p>
-   * <img src="../assets/img/class-list.jpg"/>
-   * </p>
-   * xclass:'list'
-   * @class BUI.List.List
-   * @extends BUI.Component.Controller
-   * @mixins BUI.Component.UIBase.ChildList
-   */
-  var list = Component.Controller.extend([UIBase.ChildList], {}, {
-    ATTRS: {
-      elTagName: {
-        view: true,
-        value: 'ul'
-      },
-      idField: {
-        value: 'id'
-      },
-      /**
-       * 子类的默认类名，即类的 xclass
-       * @type {String}
-       * @override
-       * @default 'list-item'
-       */
-      defaultChildClass: {
-        value: 'list-item'
-      }
-    }
-  }, {
-    xclass: 'list'
-  });
-  module.exports = list;
-});
-define("bui/list/listitem", ["jquery", "bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview 列表项
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    Component = BUI.Component,
-    UIBase = Component.UIBase;
-  /**
-   * @private
-   * @class BUI.List.ItemView
-   * @extends BUI.Component.View
-   * @mixins BUI.Component.UIBase.ListItemView
-   * 列表项的视图层对象
-   */
-  var itemView = Component.View.extend([UIBase.ListItemView], {});
-  /**
-   * 列表项
-   * @private
-   * @class BUI.List.ListItem
-   * @extends BUI.Component.Controller
-   * @mixins BUI.Component.UIBase.ListItem
-   */
-  var item = Component.Controller.extend([UIBase.ListItem], {}, {
-    ATTRS: {
-      elTagName: {
-        view: true,
-        value: 'li'
-      },
-      xview: {
-        value: itemView
-      },
-      tpl: {
-        view: true,
-        value: '<span>{text}</span>'
-      }
-    }
-  }, {
-    xclass: 'list-item'
-  });
-  item.View = itemView;
-  module.exports = item;
-});
-define("bui/list/simplelist", ["jquery", "bui/common", "bui/list/domlist", "bui/list/keynav", "bui/list/sortable", "bui/data"], function(require, exports, module) {
-  /**
-   * @fileOverview 简单列表，直接使用DOM作为列表项
-   * @ignore
-   */
-  /**
-   * @name BUI.List
-   * @namespace 列表命名空间
-   * @ignore
-   */
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    UIBase = BUI.Component.UIBase,
-    UA = BUI.UA,
-    DomList = require("bui/list/domlist"),
-    KeyNav = require("bui/list/keynav"),
-    Sortable = require("bui/list/sortable"),
-    CLS_ITEM = BUI.prefix + 'list-item';
-  /**
-   * @class BUI.List.SimpleListView
-   * 简单列表视图类
-   * @extends BUI.Component.View
-   */
-  var simpleListView = BUI.Component.View.extend([DomList.View], {
-    setElementHover: function(element, hover) {
-      var _self = this;
-      _self.setItemStatusCls('hover', element, hover);
-    }
-  }, {
-    ATTRS: {
-      itemContainer: {
-        valueFn: function() {
-          return this.get('el').find(this.get('listSelector'));
-        }
-      }
-    }
-  }, {
-    xclass: 'simple-list-view'
-  });
-  /**
-   * 简单列表，用于显示简单数据
-   * <p>
-   * <img src="../assets/img/class-list.jpg"/>
-   * </p>
-   * xclass:'simple-list'
-   * ## 显示静态数组的数据
-   *
-   * ** 最简单的列表 **
-   * <pre><code>
-   *
-   * BUI.use('bui/list',function(List){
-   *   var list = new List.SimpleList({
-   *     render : '#t1',
-   *     items : [{value : '1',text : '1'},{value : '2',text : '2'}]
-   *   });
-   *   list.render();
-   * });
-   *
-   * </code></pre>
-   *
-   * ** 自定义模板的列表 **
-   *<pre><code>
-   *
-   * BUI.use('bui/list',function(List){
-   *   var list = new List.SimpleList({
-   *     render : '#t1',
-   *     items : [{value : '1',text : '1'},{value : '2',text : '2'}]
-   *   });
-   *   list.render();
-   * });
-   *
-   * </code></pre>
-   *
-   * @class BUI.List.SimpleList
-   * @extends BUI.Component.Controller
-   * @mixins BUI.List.DomList
-   * @mixins BUI.List.KeyNav
-   * @mixins BUI.Component.UIBase.Bindable
-   */
-  var simpleList = BUI.Component.Controller.extend([DomList, UIBase.Bindable, KeyNav, Sortable], {
-    /**
-     * @protected
-     * @ignore
-     */
-    bindUI: function() {
-      var _self = this,
-        itemCls = _self.get('itemCls'),
-        itemContainer = _self.get('view').getItemContainer();
-      itemContainer.delegate('.' + itemCls, 'mouseover', function(ev) {
-        if (_self.get('disabled')) { //控件禁用后，阻止事件
-          return;
-        }
-        var element = ev.currentTarget,
-          item = _self.getItemByElement(element);
-        if (_self.isItemDisabled(ev.item, ev.currentTarget)) { //如果禁用
-          return;
-        }
-        if (!(UA.ie && UA.ie < 8) && _self.get('focusable') && _self.get('highlightedStatus') === 'hover') {
-          _self.setHighlighted(item, element)
-        } else {
-          _self.setItemStatus(item, 'hover', true, element);
-        }
-        /*_self.get('view').setElementHover(element,true);*/
-      }).delegate('.' + itemCls, 'mouseout', function(ev) {
-        if (_self.get('disabled')) { //控件禁用后，阻止事件
-          return;
-        }
-        var sender = $(ev.currentTarget);
-        _self.get('view').setElementHover(sender, false);
-      });
-    },
-    /**
-     * 添加
-     * @protected
-     */
-    onAdd: function(e) {
-      var _self = this,
-        store = _self.get('store'),
-        item = e.record;
-      if (_self.getCount() == 0) { //初始为空时，列表跟Store不同步
-        _self.setItems(store.getResult());
-      } else {
-        _self.addItemToView(item, e.index);
-      }
-    },
-    /**
-     * 删除
-     * @protected
-     */
-    onRemove: function(e) {
-      var _self = this,
-        item = e.record;
-      _self.removeItem(item);
-    },
-    /**
-     * 更新
-     * @protected
-     */
-    onUpdate: function(e) {
-      this.updateItem(e.record);
-    },
-    /**
-     * 本地排序
-     * @protected
-     */
-    onLocalSort: function(e) {
-      if (this.get('frontSortable')) {
-        this.sort(e.field, e.direction);
-      } else {
-        this.onLoad(e);
-      }
-    },
-    /**
-     * 加载数据
-     * @protected
-     */
-    onLoad: function() {
-      var _self = this,
-        store = _self.get('store'),
-        items = store.getResult();
-      _self.set('items', items);
-    },
-    /**
-     * 过滤数据
-     * @protected
-     */
-    onFiltered: function(e) {
-      var _self = this,
-        items = e.data;
-      _self.set('items', items);
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 排序的时候是否直接进行DOM的排序，不重新生成DOM，<br>
-       * 在可展开的表格插件，TreeGrid等控件中不要使用此属性
-       * @type {Boolean}
-       * cfg {Boolean} frontSortable
-       */
-      frontSortable: {
-        value: false
-      },
-      focusable: {
-        value: false
-      },
-      /**
-       * 选项集合
-       * @protected
-       * @type {Array}
-       */
-      items: {
-        view: true,
-        value: []
-      },
-      /**
-       * 选项的样式，用来获取子项
-       * <pre><code>
-       * var list = new List.SimpleList({
-       *   render : '#t1',
-       *   itemCls : 'my-item', //自定义样式名称
-       *   items : [{id : '1',text : '1',type : '0'},{id : '2',text : '2',type : '1'}]
-       * });
-       * list.render();
-       * </code></pre>
-       * @cfg {Object} [itemCl='list-item']
-       */
-      itemCls: {
-        view: true,
-        value: CLS_ITEM
-      },
-      /**
-       * 选项的默认id字段
-       * <pre><code>
-       * var list = new List.SimpleList({
-       *   render : '#t1',
-       *   idField : 'id', //自定义选项 id 字段
-       *   items : [{id : '1',text : '1',type : '0'},{id : '2',text : '2',type : '1'}]
-       * });
-       * list.render();
-       *
-       * list.getItem('1'); //使用idField指定的字段进行查找
-       * </code></pre>
-       * @cfg {String} [idField = 'value']
-       */
-      idField: {
-        value: 'value'
-      },
-      /**
-       * 列表的选择器，将列表项附加到此节点
-       * @protected
-       * @type {Object}
-       */
-      listSelector: {
-        view: true,
-        value: 'ul'
-      },
-      /**
-       * 列表项的默认模板。
-       *<pre><code>
-       * var list = new List.SimpleList({
-       *   itemTpl : '&lt;li id="{value}"&gt;{text}&lt;/li&gt;', //列表项的模板
-       *   idField : 'value',
-       *   render : '#t1',
-       *   items : [{value : '1',text : '1'},{value : '2',text : '2'}]
-       * });
-       * list.render();
-       * </code></pre>
-       * @cfg {String} [itemTpl ='&lt;li role="option" class="bui-list-item" data-value="{value}"&gt;{text}&lt;/li&gt;']
-       */
-      itemTpl: {
-        view: true,
-        value: '<li role="option" class="' + CLS_ITEM + '">{text}</li>'
-      },
-      tpl: {
-        value: '<ul></ul>'
-      },
-      xview: {
-        value: simpleListView
-      }
-    }
-  }, {
-    xclass: 'simple-list',
-    prority: 0
-  });
-  simpleList.View = simpleListView;
-  module.exports = simpleList;
-});
-define("bui/list/listbox", ["jquery", "bui/list/simplelist", "bui/common", "bui/list/domlist", "bui/list/keynav", "bui/list/sortable", "bui/data"], function(require, exports, module) {
-  /**
-   * @fileOverview 可选择的列表
-   * @author dengbin
-   * @ignore
-   */
-  var $ = require("jquery"),
-    SimpleList = require("bui/list/simplelist");
-  /**
-   * 列表选择框
-   * @extends BUI.List.SimpleList
-   * @class BUI.List.Listbox
-   */
-  var listbox = SimpleList.extend({
-    bindUI: function() {
-      var _self = this;
-      _self.on('selectedchange', function(e) {
-        var item = e.item,
-          sender = $(e.domTarget),
-          checkbox = sender.find('input');
-        if (item) {
-          checkbox.attr('checked', e.selected);
-        }
-      });
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 选项模板
-       * @override
-       * @type {String}
-       */
-      itemTpl: {
-        value: '<li><span class="x-checkbox"></span>{text}</li>'
-      },
-      /**
-       * 选项模板
-       * @override
-       * @type {Boolean}
-       */
-      multipleSelect: {
-        value: true
-      }
-    }
-  }, {
-    xclass: 'listbox'
-  });
-  module.exports = listbox;
-});
-define("bui/list/domlist", ["jquery", "bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview 使用DOM元素作为选项的扩展类
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  'use strict';
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    Selection = BUI.Component.UIBase.Selection,
-    FIELD_PREFIX = 'data-',
-    List = BUI.Component.UIBase.List;
+define("bui/list", ["bui/common","jquery","bui/data"], function(require, exports, module){
+/**
+* @fileOverview 列表模块入口文件
+* @ignore
+*/
+var BUI = require("bui/common"),
+  List = BUI.namespace('List');
 
-  function getItemStatusCls(name, self) {
-    var _self = self,
-      itemCls = _self.get('itemCls'),
-      itemStatusCls = _self.get('itemStatusCls');
-    if (itemStatusCls && itemStatusCls[name]) {
-      return itemStatusCls[name];
-    }
-    return itemCls + '-' + name;
-  }
-  /**
-   * 选项是DOM的列表的视图类
-   * @private
-   * @class BUI.List.DomList.View
-   */
-  var domListView = function() {};
-  domListView.ATTRS = {
-    items: {}
-  };
-  domListView.prototype = {
-    /**
-     * @protected
-     * 清除者列表项的DOM
-     */
-    clearControl: function() {
-      var _self = this,
-        listEl = _self.getItemContainer(),
-        itemCls = _self.get('itemCls');
-      listEl.find('.' + itemCls).remove();
+BUI.mix(List, {
+  List : require("bui/list/list"),
+  ListItem : require("bui/list/listitem"),
+  SimpleList : require("bui/list/simplelist"),
+  Listbox : require("bui/list/listbox")
+});
+
+BUI.mix(List, {
+  ListItemView : List.ListItem.View,
+  SimpleListView : List.SimpleList.View
+});
+
+module.exports = List;
+
+});
+define("bui/list/list", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview 列表
+ * @ignore
+ */
+  
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  Component = BUI.Component,
+  UIBase = Component.UIBase;
+
+/**
+ * 列表
+ * <p>
+ * <img src="../assets/img/class-list.jpg"/>
+ * </p>
+ * xclass:'list'
+ * @class BUI.List.List
+ * @extends BUI.Component.Controller
+ * @mixins BUI.Component.UIBase.ChildList
+ */
+var list = Component.Controller.extend([UIBase.ChildList],{
+  
+},{
+  ATTRS : 
+  {
+    elTagName:{
+      view:true,
+      value:'ul'
+    },
+    idField:{
+      value:'id'
     },
     /**
-     * 添加选项
-     * @param {Object} item  选项值
-     * @param {Number} index 索引
-     */
-    addItem: function(item, index) {
-      return this._createItem(item, index);
-    },
-    /**
-     * 获取所有的记录
-     * @return {Array} 记录集合
-     */
-    getItems: function() {
-      var _self = this,
-        elements = _self.getAllElements(),
-        rst = [];
-      BUI.each(elements, function(elem) {
-        rst.push(_self.getItemByElement(elem));
-      });
-      return rst;
-    },
-    /**
-     * 更新列表项
-     * @param  {Object} item 选项值
-     * @ignore
-     */
-    updateItem: function(item) {
-      var _self = this,
-        items = _self.getItems(),
-        index = BUI.Array.indexOf(item, items),
-        element = null,
-        tpl;
-      if (index >= 0) {
-        element = _self.findElement(item);
-        tpl = _self.getItemTpl(item, index);
-        if (element) {
-          $(element).html($(tpl).html());
-        }
-      }
-      return element;
-    },
-    /**
-     * 移除选项
-     * @param  {jQuery} element
-     * @ignore
-     */
-    removeItem: function(item, element) {
-      element = element || this.findElement(item);
-      $(element).remove();
-    },
-    /**
-     * 获取列表项的容器
-     * @return {jQuery} 列表项容器
-     * @protected
-     */
-    getItemContainer: function() {
-      var container = this.get('itemContainer');
-      if (container.length) {
-        return container;
-      }
-      return this.get('el');
-    },
-    /**
-     * 获取记录的模板,itemTpl 和 数据item 合并产生的模板
-     * @protected
-     */
-    getItemTpl: function(item, index) {
-      var _self = this,
-        render = _self.get('itemTplRender'),
-        itemTpl = _self.get('itemTpl');
-      if (render) {
-        return render(item, index);
-      }
-      return BUI.substitute(itemTpl, item);
-    },
-    //创建项
-    _createItem: function(item, index) {
-      var _self = this,
-        listEl = _self.getItemContainer(),
-        itemCls = _self.get('itemCls'),
-        dataField = _self.get('dataField'),
-        tpl = _self.getItemTpl(item, index),
-        node = $(tpl);
-      if (index !== undefined) {
-        var target = listEl.find('.' + itemCls)[index];
-        if (target) {
-          node.insertBefore(target);
-        } else {
-          node.appendTo(listEl);
-        }
-      } else {
-        node.appendTo(listEl);
-      }
-      node.addClass(itemCls);
-      node.data(dataField, item);
-      return node;
-    },
-    /**
-     * 获取列表项对应状态的样式
-     * @param  {String} name 状态名称
-     * @return {String} 状态的样式
-     */
-    getItemStatusCls: function(name) {
-      return getItemStatusCls(name, this);
-    },
-    /**
-     * 设置列表项选中
-     * @protected
-     * @param {*} name 状态名称
-     * @param {HTMLElement} element DOM结构
-     * @param {Boolean} value 设置或取消此状态
-     */
-    setItemStatusCls: function(name, element, value) {
-      var _self = this,
-        cls = _self.getItemStatusCls(name),
-        method = value ? 'addClass' : 'removeClass';
-      if (element) {
-        $(element)[method](cls);
-      }
-    },
-    /**
-     * 是否有某个状态
-     * @param {*} name 状态名称
-     * @param {HTMLElement} element DOM结构
-     * @return {Boolean} 是否具有状态
-     */
-    hasStatus: function(name, element) {
-      var _self = this,
-        cls = _self.getItemStatusCls(name);
-      return $(element).hasClass(cls);
-    },
-    /**
-     * 设置列表项选中
-     * @param {*} item   记录
-     * @param {Boolean} selected 是否选中
-     * @param {HTMLElement} element DOM结构
-     */
-    setItemSelected: function(item, selected, element) {
-      var _self = this;
-      element = element || _self.findElement(item);
-      _self.setItemStatusCls('selected', element, selected);
-    },
-    /**
-     * 获取所有列表项的DOM结构
-     * @return {Array} DOM列表
-     */
-    getAllElements: function() {
-      var _self = this,
-        itemCls = _self.get('itemCls'),
-        el = _self.get('el');
-      return el.find('.' + itemCls);
-    },
-    /**
-     * 获取DOM结构中的数据
-     * @param {HTMLElement} element DOM 结构
-     * @return {Object} 该项对应的值
-     */
-    getItemByElement: function(element) {
-      var _self = this,
-        dataField = _self.get('dataField');
-      return $(element).data(dataField);
-    },
-    /**
-     * 根据状态获取第一个DOM 节点
-     * @param {String} name 状态名称
-     * @return {HTMLElement} Dom 节点
-     */
-    getFirstElementByStatus: function(name) {
-      var _self = this,
-        cls = _self.getItemStatusCls(name),
-        el = _self.get('el');
-      return el.find('.' + cls)[0];
-    },
-    /**
-     * 根据状态获取DOM
-     * @return {Array} DOM数组
-     */
-    getElementsByStatus: function(status) {
-      var _self = this,
-        cls = _self.getItemStatusCls(status),
-        el = _self.get('el');
-      return el.find('.' + cls);
-    },
-    /**
-     * 通过样式查找DOM元素
-     * @param {String} css样式
-     * @return {jQuery} DOM元素的数组对象
-     */
-    getSelectedElements: function() {
-      var _self = this,
-        cls = _self.getItemStatusCls('selected'),
-        el = _self.get('el');
-      return el.find('.' + cls);
-    },
-    /**
-     * 查找指定的项的DOM结构
-     * @param  {Object} item
-     * @return {HTMLElement} element
-     */
-    findElement: function(item) {
-      var _self = this,
-        elements = _self.getAllElements(),
-        result = null;
-      BUI.each(elements, function(element) {
-        if (_self.getItemByElement(element) == item) {
-          result = element;
-          return false;
-        }
-      });
-      return result;
-    },
-    /**
-     * 列表项是否选中
-     * @param  {HTMLElement}  element 是否选中
-     * @return {Boolean}  是否选中
-     */
-    isElementSelected: function(element) {
-      var _self = this,
-        cls = _self.getItemStatusCls('selected');
-      return element && $(element).hasClass(cls);
-    }
-  };
-  //转换成Object
-  function parseItem(element, self) {
-    var attrs = element.attributes,
-      itemStatusFields = self.get('itemStatusFields'),
-      item = {};
-    BUI.each(attrs, function(attr) {
-      var name = attr.nodeName;
-      if (name.indexOf(FIELD_PREFIX) !== -1) {
-        name = name.replace(FIELD_PREFIX, '');
-        item[name] = attr.nodeValue;
-      }
-    });
-    item.text = $(element).text();
-    //获取状态对应的值
-    BUI.each(itemStatusFields, function(v, k) {
-      var cls = getItemStatusCls(k, self);
-      if ($(element).hasClass(cls)) {
-        item[v] = true;
-      }
-    });
-    return item;
-  }
-  /**
-   * @class BUI.List.DomList
-   * 选项是DOM结构的列表
-   * @extends BUI.Component.UIBase.List
-   * @mixins BUI.Component.UIBase.Selection
-   */
-  var domList = function() {};
-  domList.ATTRS = BUI.merge(true, List.ATTRS, Selection.ATTRS, {
-    /**
-     * 在DOM节点上存储数据的字段
+     * 子类的默认类名，即类的 xclass
      * @type {String}
-     * @protected
+     * @override
+     * @default 'list-item'
      */
-    dataField: {
-      view: true,
-      value: 'data-item'
+    defaultChildClass : {
+      value : 'list-item'
+    }
+  }
+},{
+  xclass:'list'
+});
+
+module.exports = list;
+
+});
+define("bui/list/listitem", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview 列表项
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  Component = BUI.Component,
+  UIBase = Component.UIBase;
+  
+/**
+ * @private
+ * @class BUI.List.ItemView
+ * @extends BUI.Component.View
+ * @mixins BUI.Component.UIBase.ListItemView
+ * 列表项的视图层对象
+ */
+var itemView = Component.View.extend([UIBase.ListItemView],{
+});
+
+/**
+ * 列表项
+ * @private
+ * @class BUI.List.ListItem
+ * @extends BUI.Component.Controller
+ * @mixins BUI.Component.UIBase.ListItem
+ */
+var item = Component.Controller.extend([UIBase.ListItem],{
+  
+},{
+  ATTRS : 
+  {
+    elTagName:{
+      view:true,
+      value:'li'
     },
-    /**
-     * 选项所在容器，如果未设定，使用 el
-     * @type {jQuery}
-     * @protected
-     */
-    itemContainer: {
-      view: true
+    xview:{
+      value:itemView
     },
-    /**
-     * 选项状态对应的选项值
-     *
-     *   - 此字段用于将选项记录的值跟显示的DOM状态相对应
-     *   - 例如：下面记录中 <code> checked : true </code>，可以使得此记录对应的DOM上应用对应的状态(默认为 'list-item-checked')
-     *     <pre><code>{id : '1',text : 1,checked : true}</code></pre>
-     *   - 当更改DOM的状态时，记录中对应的字段属性也会跟着变化
-     * <pre><code>
-     *   var list = new List.SimpleList({
-     *   render : '#t1',
-     *   idField : 'id', //自定义样式名称
-     *   itemStatusFields : {
-     *     checked : 'checked',
-     *     disabled : 'disabled'
-     *   },
-     *   items : [{id : '1',text : '1',checked : true},{id : '2',text : '2',disabled : true}]
-     * });
-     * list.render(); //列表渲染后，会自动带有checked,和disabled对应的样式
-     *
-     * var item = list.getItem('1');
-     * list.hasStatus(item,'checked'); //true
-     *
-     * list.setItemStatus(item,'checked',false);
-     * list.hasStatus(item,'checked');  //false
-     * item.checked;                    //false
-     *
-     * </code></pre>
-     * ** 注意 **
-     * 此字段跟 {@link #itemStatusCls} 一起使用效果更好，可以自定义对应状态的样式
-     * @cfg {Object} itemStatusFields
-     */
-    itemStatusFields: {
-      value: {}
-    },
-    /**
-     * 项的样式，用来获取子项
-     * @cfg {Object} itemCls
-     */
-    itemCls: {
-      view: true
-    },
-    /**
-     * 是否允许取消选中，在多选情况下默认允许取消，单选情况下不允许取消,注意此属性只有单选情况下生效
-     * @type {Boolean}
-     */
-    cancelSelected: {
-      value: false
-    },
-    /**
-     * 获取项的文本，默认获取显示的文本
-     * @type {Object}
-     * @protected
-     */
-    textGetter: {},
-    /**
-     * 默认的加载控件内容的配置,默认值：
-     * <pre>
-     *  {
-     *   property : 'items',
-     *   dataType : 'json'
-     * }
-     * </pre>
-     * @type {Object}
-     */
-    defaultLoaderCfg: {
-      value: {
-        property: 'items',
-        dataType: 'json'
-      }
-    },
-    events: {
-      value: {
-        /**
-         * 选项对应的DOM创建完毕
-         * @event
-         * @param {Object} e 事件对象
-         * @param {Object} e.item 渲染DOM对应的选项
-         * @param {HTMLElement} e.element 渲染的DOM对象
-         */
-        'itemrendered': true,
-        /**
-         * @event
-         * 删除选项
-         * @param {Object} e 事件对象
-         * @param {Object} e.item 删除DOM对应的选项
-         * @param {HTMLElement} e.element 删除的DOM对象
-         */
-        'itemremoved': true,
-        /**
-         * @event
-         * 更新选项
-         * @param {Object} e 事件对象
-         * @param {Object} e.item 更新DOM对应的选项
-         * @param {HTMLElement} e.element 更新的DOM对象
-         */
-        'itemupdated': true,
-        /**
-         * 设置记录时，所有的记录显示完毕后触发
-         * @event
-         */
-        'itemsshow': false,
-        /**
-         * 设置记录后，所有的记录显示前触发
-         * @event:
-         */
-        'beforeitemsshow': false,
-        /**
-         * 清空所有记录，DOM清理完成后
-         * @event
-         */
-        'itemsclear': false,
-        /**
-         * 双击是触发
-         * @event
-         * @param {Object} e 事件对象
-         * @param {Object} e.item DOM对应的选项
-         * @param {HTMLElement} e.element 选项的DOM对象
-         * @param {HTMLElement} e.domTarget 点击的元素
-         */
-        'itemdblclick': false,
-        /**
-         * 清空所有Dom前触发
-         * @event
-         */
-        'beforeitemsclear': false
+    tpl:{
+      view:true,
+      value:'<span>{text}</span>'
+    }
+  }
+},{
+  xclass:'list-item'
+});
+
+item.View = itemView;
+
+module.exports = item;
+
+});
+define("bui/list/simplelist", ["jquery","bui/common","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 简单列表，直接使用DOM作为列表项
+ * @ignore
+ */
+
+
+/**
+ * @name BUI.List
+ * @namespace 列表命名空间
+ * @ignore
+ */
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  UIBase = BUI.Component.UIBase,
+  UA = BUI.UA,
+  DomList = require("bui/list/domlist"),
+  KeyNav = require("bui/list/keynav"),
+  Sortable = require("bui/list/sortable"),
+  CLS_ITEM = BUI.prefix + 'list-item';
+
+/**
+ * @class BUI.List.SimpleListView
+ * 简单列表视图类
+ * @extends BUI.Component.View
+ */
+var simpleListView = BUI.Component.View.extend([DomList.View],{
+
+  setElementHover : function(element,hover){
+    var _self = this;
+
+    _self.setItemStatusCls('hover',element,hover);
+  }
+
+},{
+  ATTRS : {
+    itemContainer : {
+      valueFn : function(){
+        return this.get('el').find(this.get('listSelector'));
       }
     }
-  });
-  domList.PARSER = {
-    items: function(el) {
-      var _self = this,
-        rst = [],
-        itemCls = _self.get('itemCls'),
-        dataField = _self.get('dataField'),
-        elements = el.find('.' + itemCls);
-      if (!elements.length) {
-        elements = el.children();
-        elements.addClass(itemCls);
-      }
-      BUI.each(elements, function(element) {
-        var item = parseItem(element, _self);
-        rst.push(item);
-        $(element).data(dataField, item);
-      });
-      //_self.setInternal('items',rst);
-      return rst;
-    }
-  };
-  BUI.augment(domList, List, Selection, {
-    //设置记录
-    _uiSetItems: function(items) {
-      var _self = this;
-      //使用srcNode 的方式，不同步
-      if (_self.get('srcNode') && !_self.get('rendered')) {
+  }
+},{
+  xclass:'simple-list-view'
+});
+
+/**
+ * 简单列表，用于显示简单数据
+ * <p>
+ * <img src="../assets/img/class-list.jpg"/>
+ * </p>
+ * xclass:'simple-list'
+ * ## 显示静态数组的数据
+ * 
+ * ** 最简单的列表 **
+ * <pre><code>
+ * 
+ * BUI.use('bui/list',function(List){
+ *   var list = new List.SimpleList({
+ *     render : '#t1',
+ *     items : [{value : '1',text : '1'},{value : '2',text : '2'}]
+ *   });
+ *   list.render();
+ * });
+ * 
+ * </code></pre>
+ *
+ * ** 自定义模板的列表 **
+ *<pre><code>
+ * 
+ * BUI.use('bui/list',function(List){
+ *   var list = new List.SimpleList({
+ *     render : '#t1',
+ *     items : [{value : '1',text : '1'},{value : '2',text : '2'}]
+ *   });
+ *   list.render();
+ * });
+ * 
+ * </code></pre>
+ * 
+ * @class BUI.List.SimpleList
+ * @extends BUI.Component.Controller
+ * @mixins BUI.List.DomList
+ * @mixins BUI.List.KeyNav
+ * @mixins BUI.Component.UIBase.Bindable
+ */
+var  simpleList = BUI.Component.Controller.extend([DomList,UIBase.Bindable,KeyNav,Sortable],
+{
+  /**
+   * @protected
+   * @ignore
+   */
+  bindUI : function(){
+    var _self = this,
+      itemCls = _self.get('itemCls'),
+      itemContainer = _self.get('view').getItemContainer();
+
+    itemContainer.delegate('.'+itemCls,'mouseover',function(ev){
+      if(_self.get('disabled')){ //控件禁用后，阻止事件
         return;
       }
-      this.setItems(items);
-    },
-    __bindUI: function() {
-      var _self = this,
-        selectedEvent = _self.get('selectedEvent'),
-        itemCls = _self.get('itemCls'),
-        itemContainer = _self.get('view').getItemContainer();
-      itemContainer.delegate('.' + itemCls, 'click', function(ev) {
-        if (_self.get('disabled')) { //控件禁用后，阻止事件
-          return;
-        }
-        var itemEl = $(ev.currentTarget),
-          item = _self.getItemByElement(itemEl);
-        if (_self.isItemDisabled(item, itemEl)) { //禁用状态下阻止选中
-          return;
-        }
-        var rst = _self.fire('itemclick', {
-          item: item,
-          element: itemEl[0],
-          domTarget: ev.target,
-          domEvent: ev
-        });
-        if (rst !== false && selectedEvent == 'click' && _self.isItemSelectable(item)) {
-          setItemSelectedStatus(item, itemEl);
-        }
-      });
-      if (selectedEvent !== 'click') { //如果选中事件不等于click，则进行监听选中
-        itemContainer.delegate('.' + itemCls, selectedEvent, function(ev) {
-          if (_self.get('disabled')) { //控件禁用后，阻止事件
-            return;
-          }
-          var itemEl = $(ev.currentTarget),
-            item = _self.getItemByElement(itemEl);
-          if (_self.isItemDisabled(item, itemEl)) { //禁用状态下阻止选中
-            return;
-          }
-          if (_self.isItemSelectable(item)) {
-            setItemSelectedStatus(item, itemEl);
-          }
-        });
+      var element = ev.currentTarget,
+        item = _self.getItemByElement(element);
+      if(_self.isItemDisabled(ev.item,ev.currentTarget)){ //如果禁用
+        return;
       }
-      itemContainer.delegate('.' + itemCls, 'dblclick', function(ev) {
-        if (_self.get('disabled')) { //控件禁用后，阻止事件
-          return;
-        }
-        var itemEl = $(ev.currentTarget),
-          item = _self.getItemByElement(itemEl);
-        if (_self.isItemDisabled(item, itemEl)) { //禁用状态下阻止选中
-          return;
-        }
-        _self.fire('itemdblclick', {
-          item: item,
-          element: itemEl[0],
-          domTarget: ev.target
-        });
-      });
+      
+      if(!(UA.ie && UA.ie < 8) && _self.get('focusable') && _self.get('highlightedStatus') === 'hover'){
+        _self.setHighlighted(item,element)
+      }else{
+        _self.setItemStatus(item,'hover',true,element);
+      }
+      /*_self.get('view').setElementHover(element,true);*/
 
-      function setItemSelectedStatus(item, itemEl) {
-        var multipleSelect = _self.get('multipleSelect'),
-          isSelected;
-        isSelected = _self.isItemSelected(item, itemEl);
-        if (!isSelected) {
-          if (!multipleSelect) {
-            _self.clearSelected();
-          }
-          _self.setItemSelected(item, true, itemEl);
-        } else if (multipleSelect) {
-          _self.setItemSelected(item, false, itemEl);
-        } else if (_self.get('cancelSelected')) {
-          _self.setSelected(null); //选中空记录
-        }
+    }).delegate('.'+itemCls,'mouseout',function(ev){
+      if(_self.get('disabled')){ //控件禁用后，阻止事件
+        return;
       }
-      _self.on('itemrendered itemupdated', function(ev) {
-        var item = ev.item,
-          element = ev.element;
-        _self._syncItemStatus(item, element);
-      });
+      var sender = $(ev.currentTarget);
+      _self.get('view').setElementHover(sender,false);
+    });
+  },
+  /**
+   * 添加
+   * @protected
+   */
+  onAdd : function(e){
+    var _self = this,
+      store = _self.get('store'),
+      item = e.record;
+    if(_self.getCount() == 0){ //初始为空时，列表跟Store不同步
+      _self.setItems(store.getResult());
+    }else{
+      _self.addItemToView(item,e.index);
+    }
+    
+  },
+  handleContextMenu: function(ev) {
+    var _self = this,
+      target = ev.target,
+      itemCls = _self.get('itemCls'),
+      element = $(target).closest('.' + itemCls),
+      item = _self.getItemByElement(element);
+
+    var result = _self.fire('itemcontextmenu',{
+      element : element,
+      item : item,
+      pageX : ev.pageX,
+      pageY : ev.pageY,
+      domTarget : ev.target,
+      domEvent : ev
+    });
+    if(result === false){
+      ev.preventDefault();
+    }
+  },
+  /**
+   * 删除
+  * @protected
+  */
+  onRemove : function(e){
+    var _self = this,
+      item = e.record;
+    _self.removeItem(item);
+  },
+  /**
+   * 更新
+  * @protected
+  */
+  onUpdate : function(e){
+    this.updateItem(e.record);
+  },
+  /**
+  * 本地排序
+  * @protected
+  */
+  onLocalSort : function(e){
+    if(this.get('frontSortable')){
+      this.sort(e.field ,e.direction);
+    }else{
+      this.onLoad(e);
+    }
+  },
+  /**
+   * 加载数据
+   * @protected
+   */
+  onLoad:function(){
+    var _self = this,
+      store = _self.get('store'),
+      items = store.getResult();
+    _self.set('items',items);
+  },
+  /**
+   * 过滤数据
+   * @protected
+   */
+  onFiltered: function(e){
+    var _self = this,
+      items = e.data;
+    _self.set('items', items);
+  }
+},{
+  ATTRS : 
+
+  {
+
+    /**
+     * 排序的时候是否直接进行DOM的排序，不重新生成DOM，<br>
+     * 在可展开的表格插件，TreeGrid等控件中不要使用此属性
+     * @type {Boolean}
+     * cfg {Boolean} frontSortable
+     */
+    frontSortable : {
+      value : false
     },
-    //获取值，通过字段
-    getValueByField: function(item, field) {
-      return item && item[field];
-    },
-    //同步选项状态
-    _syncItemStatus: function(item, element) {
-      var _self = this,
-        itemStatusFields = _self.get('itemStatusFields');
-      BUI.each(itemStatusFields, function(v, k) {
-        if (item[v] != null) {
-          _self.get('view').setItemStatusCls(k, element, item[v]);
-        }
-      });
+    focusable : {
+      value : false
     },
     /**
+     * 选项集合
      * @protected
-     * 获取记录中的状态值，未定义则为undefined
-     * @param  {Object} item  记录
-     * @param  {String} status 状态名
-     * @return {Boolean|undefined}
+     * @type {Array}
      */
-    getStatusValue: function(item, status) {
-      var _self = this,
-        itemStatusFields = _self.get('itemStatusFields'),
-        field = itemStatusFields[status];
-      return item[field];
+    items : {
+      view:true,
+      value : []
     },
     /**
-     * 获取选项数量
-     * @return {Number} 选项数量
+     * 选项的样式，用来获取子项
+     * <pre><code>
+     * var list = new List.SimpleList({
+     *   render : '#t1',
+     *   itemCls : 'my-item', //自定义样式名称
+     *   items : [{id : '1',text : '1',type : '0'},{id : '2',text : '2',type : '1'}]
+     * });
+     * list.render();
+     * </code></pre>
+     * @cfg {Object} [itemCl='list-item']
      */
-    getCount: function() {
-      var items = this.getItems();
-      return items ? items.length : 0;
+    itemCls : {
+      view:true,
+      value : CLS_ITEM
     },
     /**
-     * 更改状态值对应的字段
+     * 选项的默认id字段
+     * <pre><code>
+     * var list = new List.SimpleList({
+     *   render : '#t1',
+     *   idField : 'id', //自定义选项 id 字段
+     *   items : [{id : '1',text : '1',type : '0'},{id : '2',text : '2',type : '1'}]
+     * });
+     * list.render();
+     *
+     * list.getItem('1'); //使用idField指定的字段进行查找
+     * </code></pre>
+     * @cfg {String} [idField = 'value']
+     */
+    idField : {
+      value : 'value'
+    },
+    /**
+     * 列表的选择器，将列表项附加到此节点
      * @protected
-     * @param  {String} status 状态名
-     * @return {String} 状态对应的字段
+     * @type {Object}
      */
-    getStatusField: function(status) {
-      var _self = this,
-        itemStatusFields = _self.get('itemStatusFields');
-      return itemStatusFields[status];
+    listSelector:{
+      view:true,
+      value:'ul'
     },
     /**
-     * 设置记录状态值
-     * @protected
-     * @param  {Object} item  记录
-     * @param  {String} status 状态名
-     * @param {Boolean} value 状态值
+     * 列表项的默认模板。
+     *<pre><code>
+     * var list = new List.SimpleList({
+     *   itemTpl : '&lt;li id="{value}"&gt;{text}&lt;/li&gt;', //列表项的模板
+     *   idField : 'value',
+     *   render : '#t1',
+     *   items : [{value : '1',text : '1'},{value : '2',text : '2'}]
+     * });
+     * list.render();
+     * </code></pre>
+     * @cfg {String} [itemTpl ='&lt;li role="option" class="bui-list-item" data-value="{value}"&gt;{text}&lt;/li&gt;']
      */
-    setStatusValue: function(item, status, value) {
-      var _self = this,
-        itemStatusFields = _self.get('itemStatusFields'),
-        field = itemStatusFields[status];
-      if (field) {
-        item[field] = value;
+    
+    itemTpl :{
+      view : true,
+      value : '<li role="option" class="' + CLS_ITEM + '">{text}</li>'
+    },
+    tpl : {
+      value:'<ul></ul>'
+    },
+    xview:{
+      value : simpleListView
+    }
+  }
+},{
+  xclass : 'simple-list',
+  prority : 0
+});
+
+simpleList.View = simpleListView;
+
+module.exports = simpleList;
+
+});
+define("bui/list/domlist", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview 使用DOM元素作为选项的扩展类
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+'use strict';
+
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  Selection = BUI.Component.UIBase.Selection,
+  FIELD_PREFIX = 'data-',
+  List = BUI.Component.UIBase.List;
+
+function getItemStatusCls(name ,self) {
+  var _self = self,
+    itemCls = _self.get('itemCls'),
+    itemStatusCls = _self.get('itemStatusCls');
+
+  if(itemStatusCls && itemStatusCls[name]){
+    return itemStatusCls[name];
+  }
+  return itemCls + '-' + name;
+}
+
+/**
+ * 选项是DOM的列表的视图类
+ * @private
+ * @class BUI.List.DomList.View
+ */
+var domListView = function(){
+
+};
+
+domListView.ATTRS = {
+  items : {}
+};
+
+domListView.prototype = {
+  /**
+   * @protected
+   * 清除者列表项的DOM
+   */
+  clearControl : function(){
+    var _self = this,
+      listEl = _self.getItemContainer(),
+      itemCls = _self.get('itemCls');
+    listEl.find('.'+itemCls).remove();
+  },
+  /**
+   * 添加选项
+   * @param {Object} item  选项值
+   * @param {Number} index 索引
+   */
+  addItem : function(item,index){
+    return this._createItem(item,index);
+  },
+  /**
+   * 获取所有的记录
+   * @return {Array} 记录集合
+   */
+  getItems : function(){
+    var _self = this,
+      elements = _self.getAllElements(),
+      rst = [];
+    BUI.each(elements,function(elem){
+      rst.push(_self.getItemByElement(elem));
+    });
+    return rst;
+  },
+  /**
+   * 更新列表项
+   * @param  {Object} item 选项值
+   * @ignore
+   */
+  updateItem : function(item){
+    var _self = this, 
+      items = _self.getItems(),
+      index = BUI.Array.indexOf(item,items),
+      element = null,
+      tpl;
+    if(index >=0 ){
+      element = _self.findElement(item);
+      tpl = _self.getItemTpl(item,index);
+      if(element){
+        $(element).html($(tpl).html());
       }
-    },
-    /**
-     * @ignore
-     * 获取选项文本
-     */
-    getItemText: function(item) {
-      var _self = this,
+    }
+    return element;
+  },
+  /**
+   * 移除选项
+   * @param  {jQuery} element
+   * @ignore
+   */
+  removeItem:function(item,element){
+    element = element || this.findElement(item);
+    $(element).remove();
+  },
+  /**
+   * 获取列表项的容器
+   * @return {jQuery} 列表项容器
+   * @protected
+   */
+  getItemContainer : function  () {
+    var container = this.get('itemContainer');
+    if(container.length){
+      return container;
+    }
+    return this.get('el');
+  },
+  /**
+   * 获取记录的模板,itemTpl 和 数据item 合并产生的模板
+   * @protected 
+   */
+  getItemTpl : function  (item,index) {
+    var _self = this,
+      render = _self.get('itemTplRender'),
+      itemTpl = _self.get('itemTpl');  
+    if(render){
+      return render(item,index);
+    }
+    
+    return BUI.substitute(itemTpl,item);
+  },
+  //创建项
+  _createItem : function(item,index){
+    var _self = this,
+      listEl = _self.getItemContainer(),
+      itemCls = _self.get('itemCls'),
+      dataField = _self.get('dataField'),
+      tpl = _self.getItemTpl(item,index),
+      node = $(tpl);
+    if(index !== undefined){
+      var target = listEl.find('.'+itemCls)[index];
+      if(target){
+        node.insertBefore(target);
+      }else{
+        node.appendTo(listEl);
+      }
+    }else{
+      node.appendTo(listEl);
+    }
+    node.addClass(itemCls);
+    node.data(dataField,item);
+    return node;
+  },
+  /**
+   * 获取列表项对应状态的样式
+   * @param  {String} name 状态名称
+   * @return {String} 状态的样式
+   */
+  getItemStatusCls : function(name){
+    return getItemStatusCls(name,this);
+  },
+  /**
+   * 设置列表项选中
+   * @protected
+   * @param {*} name 状态名称
+   * @param {HTMLElement} element DOM结构
+   * @param {Boolean} value 设置或取消此状态
+   */
+  setItemStatusCls : function(name,element,value){
+    var _self = this,
+      cls = _self.getItemStatusCls(name),
+      method = value ? 'addClass' : 'removeClass';
+    if(element){
+      $(element)[method](cls);
+    }
+  },
+  /**
+   * 是否有某个状态
+   * @param {*} name 状态名称
+   * @param {HTMLElement} element DOM结构
+   * @return {Boolean} 是否具有状态
+   */
+  hasStatus : function(name,element){
+    var _self = this,
+      cls = _self.getItemStatusCls(name);
+    return $(element).hasClass(cls);
+  },
+  /**
+   * 设置列表项选中
+   * @param {*} item   记录
+   * @param {Boolean} selected 是否选中
+   * @param {HTMLElement} element DOM结构
+   */
+  setItemSelected: function(item,selected,element){
+    var _self = this;
+
+    element = element || _self.findElement(item);
+    _self.setItemStatusCls('selected',element,selected);
+  },
+  /**
+   * 获取所有列表项的DOM结构
+   * @return {Array} DOM列表
+   */
+  getAllElements : function(){
+    var _self = this,
+      itemCls = _self.get('itemCls'),
+      el = _self.get('el');
+    return el.find('.' + itemCls);
+  },
+  /**
+   * 获取DOM结构中的数据
+   * @param {HTMLElement} element DOM 结构
+   * @return {Object} 该项对应的值
+   */
+  getItemByElement : function(element){
+    var _self = this,
+      dataField = _self.get('dataField');
+    return $(element).data(dataField);
+  },
+  /**
+   * 根据状态获取第一个DOM 节点
+   * @param {String} name 状态名称
+   * @return {HTMLElement} Dom 节点
+   */
+  getFirstElementByStatus : function(name){
+    var _self = this,
+      cls = _self.getItemStatusCls(name),
+      el = _self.get('el');
+    return el.find('.' + cls)[0];
+  },
+  /**
+   * 根据状态获取DOM
+   * @return {Array} DOM数组
+   */
+  getElementsByStatus : function(status){
+    var _self = this,
+      cls = _self.getItemStatusCls(status),
+      el = _self.get('el');
+    return el.find('.' + cls);
+  },
+  /**
+   * 通过样式查找DOM元素
+   * @param {String} css样式
+   * @return {jQuery} DOM元素的数组对象
+   */
+  getSelectedElements : function(){
+    var _self = this,
+      cls = _self.getItemStatusCls('selected'),
+      el = _self.get('el');
+    return el.find('.' + cls);
+  },
+  /**
+   * 查找指定的项的DOM结构
+   * @param  {Object} item 
+   * @return {HTMLElement} element
+   */
+  findElement : function(item){
+    var _self = this,
+      elements = _self.getAllElements(),
+      result = null;
+
+    BUI.each(elements,function(element){
+      if(_self.getItemByElement(element) == item){
+          result = element;
+          return false;
+      }
+    });
+    return result;
+  },
+  /**
+   * 列表项是否选中
+   * @param  {HTMLElement}  element 是否选中
+   * @return {Boolean}  是否选中
+   */
+  isElementSelected : function(element){
+    var _self = this,
+      cls = _self.getItemStatusCls('selected');
+    return element && $(element).hasClass(cls);
+  }
+};
+
+//转换成Object
+function parseItem(element,self){
+  var attrs = element.attributes,
+    itemStatusFields = self.get('itemStatusFields'),
+    item = {};
+
+  BUI.each(attrs,function(attr){
+    var name = attr.nodeName;
+    if(name.indexOf(FIELD_PREFIX) !== -1){
+      name = name.replace(FIELD_PREFIX,'');
+      item[name] = attr.nodeValue;
+    }
+  });
+  item.text = $(element).text();
+  //获取状态对应的值
+  BUI.each(itemStatusFields,function(v,k){
+    var cls = getItemStatusCls(k,self);
+    if($(element).hasClass(cls)){
+      item[v] = true;
+    }
+  });
+  return item;
+}
+
+/**
+ * @class BUI.List.DomList
+ * 选项是DOM结构的列表
+ * @extends BUI.Component.UIBase.List
+ * @mixins BUI.Component.UIBase.Selection
+ */
+var domList = function(){
+
+};
+
+domList.ATTRS =BUI.merge(true,List.ATTRS,Selection.ATTRS,{
+
+  /**
+   * 在DOM节点上存储数据的字段
+   * @type {String}
+   * @protected
+   */
+  dataField : {
+      view:true,
+      value:'data-item'
+  },
+  /**
+   * 选项所在容器，如果未设定，使用 el
+   * @type {jQuery}
+   * @protected
+   */
+  itemContainer : {
+      view : true
+  },
+  /**
+   * 选项状态对应的选项值
+   * 
+   *   - 此字段用于将选项记录的值跟显示的DOM状态相对应
+   *   - 例如：下面记录中 <code> checked : true </code>，可以使得此记录对应的DOM上应用对应的状态(默认为 'list-item-checked')
+   *     <pre><code>{id : '1',text : 1,checked : true}</code></pre>
+   *   - 当更改DOM的状态时，记录中对应的字段属性也会跟着变化
+   * <pre><code>
+   *   var list = new List.SimpleList({
+   *   render : '#t1',
+   *   idField : 'id', //自定义样式名称
+   *   itemStatusFields : {
+   *     checked : 'checked',
+   *     disabled : 'disabled'
+   *   },
+   *   items : [{id : '1',text : '1',checked : true},{id : '2',text : '2',disabled : true}]
+   * });
+   * list.render(); //列表渲染后，会自动带有checked,和disabled对应的样式
+   *
+   * var item = list.getItem('1');
+   * list.hasStatus(item,'checked'); //true
+   *
+   * list.setItemStatus(item,'checked',false);
+   * list.hasStatus(item,'checked');  //false
+   * item.checked;                    //false
+   * 
+   * </code></pre>
+   * ** 注意 **
+   * 此字段跟 {@link #itemStatusCls} 一起使用效果更好，可以自定义对应状态的样式
+   * @cfg {Object} itemStatusFields
+   */
+  itemStatusFields : {
+    value : {}
+  },
+  /**
+   * 项的样式，用来获取子项
+   * @cfg {Object} itemCls
+   */
+  itemCls : {
+    view : true
+  }, 
+  /**
+   * 是否允许取消选中，在多选情况下默认允许取消，单选情况下不允许取消,注意此属性只有单选情况下生效
+   * @type {Boolean}
+   */
+  cancelSelected : {
+    value : false
+  },   
+  /**
+   * 获取项的文本，默认获取显示的文本
+   * @type {Object}
+   * @protected
+   */
+  textGetter : {
+
+  },
+  /**
+   * 默认的加载控件内容的配置,默认值：
+   * <pre>
+   *  {
+   *   property : 'items',
+   *   dataType : 'json'
+   * }
+   * </pre>
+   * @type {Object}
+   */
+  defaultLoaderCfg  : {
+    value : {
+      property : 'items',
+      dataType : 'json'
+    }
+  },
+  events : {
+    value : {
+      /**
+       * 选项对应的DOM创建完毕
+       * @event
+       * @param {Object} e 事件对象
+       * @param {Object} e.item 渲染DOM对应的选项
+       * @param {HTMLElement} e.element 渲染的DOM对象
+       */
+      'itemrendered' : true,
+      /**
+       * @event
+       * 删除选项
+       * @param {Object} e 事件对象
+       * @param {Object} e.item 删除DOM对应的选项
+       * @param {HTMLElement} e.element 删除的DOM对象
+       */
+      'itemremoved' : true,
+      /**
+       * @event
+       * 更新选项
+       * @param {Object} e 事件对象
+       * @param {Object} e.item 更新DOM对应的选项
+       * @param {HTMLElement} e.element 更新的DOM对象
+       */
+      'itemupdated' : true,
+      /**
+      * 设置记录时，所有的记录显示完毕后触发
+      * @event
+      */
+      'itemsshow' : false,
+      /**
+      * 设置记录后，所有的记录显示前触发
+      * @event:
+      */
+      'beforeitemsshow' : false,
+      /**
+      * 清空所有记录，DOM清理完成后
+      * @event
+      */
+      'itemsclear' : false,
+      /**
+       * 双击是触发
+      * @event
+      * @param {Object} e 事件对象
+      * @param {Object} e.item DOM对应的选项
+      * @param {HTMLElement} e.element 选项的DOM对象
+      * @param {HTMLElement} e.domTarget 点击的元素
+      */
+      'itemdblclick' : false,
+      /**
+      * 清空所有Dom前触发
+      * @event
+      */
+      'beforeitemsclear' : false
+       
+    } 
+  }
+});
+
+domList.PARSER = {
+  items : function(el){
+    var _self = this,
+      rst = [],
+      itemCls = _self.get('itemCls'),
+      dataField = _self.get('dataField'),
+      elements = el.find('.' + itemCls);
+    if(!elements.length){
+      elements = el.children();
+      elements.addClass(itemCls);
+    }
+    BUI.each(elements,function(element){
+      var item = parseItem(element,_self);
+      rst.push(item);
+      $(element).data(dataField,item);
+    });
+    //_self.setInternal('items',rst);
+    return rst;
+  }
+};
+
+BUI.augment(domList,List,Selection,{
+   
+  //设置记录
+  _uiSetItems : function (items) {
+    var _self = this;
+    //使用srcNode 的方式，不同步
+    if(_self.get('srcNode') && !_self.get('rendered')){
+      return;
+    }
+    this.setItems(items);
+  },
+  __bindUI : function(){
+    var _self = this,
+      selectedEvent = _self.get('selectedEvent'),
+      itemCls = _self.get('itemCls'),
+      itemContainer = _self.get('view').getItemContainer();
+
+    itemContainer.delegate('.'+itemCls,'click',function(ev){
+      if(_self.get('disabled')){ //控件禁用后，阻止事件
+        return;
+      }
+      var itemEl = $(ev.currentTarget),
+        item = _self.getItemByElement(itemEl);
+      if(_self.isItemDisabled(item,itemEl)){ //禁用状态下阻止选中
+        return;
+      }
+      var rst = _self.fire('itemclick',{item:item,element : itemEl[0],domTarget:ev.target,domEvent : ev});
+      if(rst !== false && selectedEvent == 'click' && _self.isItemSelectable(item)){
+        setItemSelectedStatus(item,itemEl); 
+      }
+    });
+    if(selectedEvent !== 'click'){ //如果选中事件不等于click，则进行监听选中
+      itemContainer.delegate('.'+itemCls,selectedEvent,function(ev){
+        if(_self.get('disabled')){ //控件禁用后，阻止事件
+          return;
+        }
+        var itemEl = $(ev.currentTarget),
+          item = _self.getItemByElement(itemEl);
+        if(_self.isItemDisabled(item,itemEl)){ //禁用状态下阻止选中
+          return;
+        }
+        if(_self.isItemSelectable(item)){
+          setItemSelectedStatus(item,itemEl); 
+        }
+        
+      });
+    }
+
+    itemContainer.delegate('.' + itemCls,'dblclick',function(ev){
+      if(_self.get('disabled')){ //控件禁用后，阻止事件
+        return;
+      }
+      var itemEl = $(ev.currentTarget),
+        item = _self.getItemByElement(itemEl);
+      if(_self.isItemDisabled(item,itemEl)){ //禁用状态下阻止选中
+        return;
+      }
+      _self.fire('itemdblclick',{item:item,element : itemEl[0],domTarget:ev.target});
+    });
+    
+    function setItemSelectedStatus(item,itemEl){
+      var multipleSelect = _self.get('multipleSelect'),
+        isSelected;
+      isSelected = _self.isItemSelected(item,itemEl);
+      if(!isSelected){
+        if(!multipleSelect){
+          _self.clearSelected();
+        }
+        _self.setItemSelected(item,true,itemEl);
+      }else if(multipleSelect){
+        _self.setItemSelected(item,false,itemEl);
+      }else if(_self.get('cancelSelected')){
+        _self.setSelected(null); //选中空记录
+      }      
+    }
+    _self.on('itemrendered itemupdated',function(ev){
+      var item = ev.item,
+        element = ev.element;
+      _self._syncItemStatus(item,element);
+    });
+  },
+  //获取值，通过字段
+  getValueByField : function(item,field){
+    return item && item[field];
+  }, 
+  //同步选项状态
+  _syncItemStatus : function(item,element){
+    var _self = this,
+      itemStatusFields = _self.get('itemStatusFields');
+    BUI.each(itemStatusFields,function(v,k){
+      if(item[v] != null){
+        _self.get('view').setItemStatusCls(k,element,item[v]);
+      }
+    });
+  },
+  /**
+   * @protected
+   * 获取记录中的状态值，未定义则为undefined
+   * @param  {Object} item  记录
+   * @param  {String} status 状态名
+   * @return {Boolean|undefined}  
+   */
+  getStatusValue : function(item,status){
+    var _self = this,
+      itemStatusFields = _self.get('itemStatusFields'),
+      field = itemStatusFields[status];
+    return item[field];
+  },
+  /**
+   * 获取选项数量
+   * @return {Number} 选项数量
+   */
+  getCount : function(){
+    var items = this.getItems();
+    return items ? items.length : 0;
+  },
+  /**
+   * 更改状态值对应的字段
+   * @protected
+   * @param  {String} status 状态名
+   * @return {String} 状态对应的字段
+   */
+  getStatusField : function(status){
+    var _self = this,
+      itemStatusFields = _self.get('itemStatusFields');
+    return itemStatusFields[status];
+  },
+  /**
+   * 设置记录状态值
+   * @protected
+   * @param  {Object} item  记录
+   * @param  {String} status 状态名
+   * @param {Boolean} value 状态值
+   */
+  setStatusValue : function(item,status,value){
+    var _self = this,
+      itemStatusFields = _self.get('itemStatusFields'),
+      field = itemStatusFields[status];
+    if(field){
+      item[field] = value;
+    }
+  },
+  /**
+   * @ignore
+   * 获取选项文本
+   */
+  getItemText : function(item){
+    var _self = this,
         textGetter = _self.get('textGetter');
-      if (!item) {
+    if(!item)
+    {
         return '';
-      }
-      if (textGetter) {
-        return textGetter(item);
-      } else {
-        return $(_self.findElement(item)).text();
-      }
-    },
-    /**
-     * 删除项
-     * @param  {Object} item 选项记录
-     * @ignore
-     */
-    removeItem: function(item) {
-      var _self = this,
-        items = _self.get('items'),
-        element = _self.findElement(item),
-        index;
-      index = BUI.Array.indexOf(item, items);
-      if (index !== -1) {
-        items.splice(index, 1);
-      }
-      _self.get('view').removeItem(item, element);
-      _self.fire('itemremoved', {
-        item: item,
-        domTarget: $(element)[0],
-        element: element
-      });
-    },
-    /**
-     * 在指定位置添加选项,选项值为一个对象
-     * @param {Object} item 选项
-     * @param {Number} index 索引
-     * @ignore
-     */
-    addItemAt: function(item, index) {
-      var _self = this,
-        items = _self.get('items');
-      if (index === undefined) {
+    }
+    if(textGetter){
+      return textGetter(item);
+    }else{
+      return $(_self.findElement(item)).text();
+    }
+  },
+  /**
+   * 删除项
+   * @param  {Object} item 选项记录
+   * @ignore
+   */
+  removeItem : function (item) {
+    var _self = this,
+      items = _self.get('items'),
+      element = _self.findElement(item),
+      index;
+    index = BUI.Array.indexOf(item,items);
+    if(index !== -1){
+      items.splice(index, 1);
+    }
+    _self.get('view').removeItem(item,element);
+    _self.fire('itemremoved',{item:item,domTarget: $(element)[0],element : element});
+  },
+  /**
+   * 在指定位置添加选项,选项值为一个对象
+   * @param {Object} item 选项
+   * @param {Number} index 索引
+   * @ignore
+   */
+  addItemAt : function(item,index) {
+    var _self = this,
+      items = _self.get('items');
+    if(index === undefined) {
         index = items.length;
-      }
-      items.splice(index, 0, item);
-      _self.addItemToView(item, index);
-      return item;
-    },
-    /**
-     * @protected
-     * 直接在View上显示
-     * @param {Object} item 选项
-     * @param {Number} index 索引
-     *
-     */
-    addItemToView: function(item, index) {
-      var _self = this,
-        element = _self.get('view').addItem(item, index);
-      _self.fire('itemrendered', {
-        item: item,
-        domTarget: $(element)[0],
-        element: element
-      });
-      return element;
-    },
-    /**
-     * 更新列表项
-     * @param  {Object} item 选项值
-     * @ignore
-     */
-    updateItem: function(item) {
-      var _self = this,
-        element = _self.get('view').updateItem(item);
-      _self.fire('itemupdated', {
-        item: item,
-        domTarget: $(element)[0],
-        element: element
-      });
-    },
-    /**
-     * 设置列表记录
-     * <pre><code>
-     *   list.setItems(items);
-     *   //等同
-     *   list.set('items',items);
-     * </code></pre>
-     * @param {Array} items 列表记录
-     */
-    setItems: function(items) {
-      var _self = this;
-      if (items != _self.getItems()) {
-        _self.setInternal('items', items);
-      }
-      //清理子控件
-      _self.clearControl();
-      _self.fire('beforeitemsshow');
-      BUI.each(items, function(item, index) {
-        _self.addItemToView(item, index);
-      });
-      _self.fire('itemsshow');
-    },
-    /**
-     * 获取所有选项
-     * @return {Array} 选项集合
-     * @override
-     * @ignore
-     */
-    getItems: function() {
-      return this.get('items');
-    },
-    /**
-     * 获取DOM结构中的数据
-     * @protected
-     * @param {HTMLElement} element DOM 结构
-     * @return {Object} 该项对应的值
-     */
-    getItemByElement: function(element) {
-      return this.get('view').getItemByElement(element);
-    },
-    /**
-     * 获取选中的第一项,
-     * <pre><code>
-     * var item = list.getSelected(); //多选模式下第一条
-     * </code></pre>
-     * @return {Object} 选中的第一项或者为null
-     */
-    getSelected: function() { //this.getSelection()[0] 的方式效率太低
-      var _self = this,
-        element = _self.get('view').getFirstElementByStatus('selected');
+    }
+    items.splice(index, 0, item);
+    _self.addItemToView(item,index);
+    return item;
+  }, 
+  /**
+   * @protected
+   * 直接在View上显示
+   * @param {Object} item 选项
+   * @param {Number} index 索引
+   * 
+   */
+  addItemToView : function(item,index){
+    var _self = this,
+      element = _self.get('view').addItem(item,index);
+    _self.fire('itemrendered',{item:item,domTarget : $(element)[0],element : element});
+    return element;
+  },
+  /**
+   * 更新列表项
+   * @param  {Object} item 选项值
+   * @ignore
+   */
+  updateItem : function(item){
+    var _self = this,
+      element =  _self.get('view').updateItem(item);
+    _self.fire('itemupdated',{item : item,domTarget : $(element)[0],element : element});
+  },
+  /**
+   * 设置列表记录
+   * <pre><code>
+   *   list.setItems(items);
+   *   //等同 
+   *   list.set('items',items);
+   * </code></pre>
+   * @param {Array} items 列表记录
+   */
+  setItems : function(items){
+    var _self = this;
+    if(items != _self.getItems()){
+      _self.setInternal('items',items);
+    }
+    //清理子控件
+    _self.clearControl();
+    _self.fire('beforeitemsshow');
+    BUI.each(items,function(item,index){
+      _self.addItemToView(item,index);
+    });
+    _self.fire('itemsshow');
+  },
+  /**
+   * 获取所有选项
+   * @return {Array} 选项集合
+   * @override
+   * @ignore
+   */
+  getItems : function () {
+    
+    return this.get('items');
+  },
+   /**
+   * 获取DOM结构中的数据
+   * @protected
+   * @param {HTMLElement} element DOM 结构
+   * @return {Object} 该项对应的值
+   */
+  getItemByElement : function(element){
+    return this.get('view').getItemByElement(element);
+  },
+  /**
+   * 获取选中的第一项,
+   * <pre><code>
+   * var item = list.getSelected(); //多选模式下第一条
+   * </code></pre>
+   * @return {Object} 选中的第一项或者为null
+   */
+  getSelected : function(){ //this.getSelection()[0] 的方式效率太低
+    var _self = this,
+      element = _self.get('view').getFirstElementByStatus('selected');
       return _self.getItemByElement(element) || null;
-    },
-    /**
-     * 根据状态获取选项
-     * <pre><code>
-     *   //设置状态
-     *   list.setItemStatus(item,'active');
-     *
-     *   //获取'active'状态的选项
-     *   list.getItemsByStatus('active');
-     * </code></pre>
-     * @param  {String} status 状态名
-     * @return {Array}  选项组集合
-     */
-    getItemsByStatus: function(status) {
-      var _self = this,
-        elements = _self.get('view').getElementsByStatus(status),
-        rst = [];
-      BUI.each(elements, function(element) {
-        rst.push(_self.getItemByElement(element));
-      });
-      return rst;
-    },
-    /**
-     * 查找指定的项的DOM结构
-     * <pre><code>
-     *   var item = list.getItem('2'); //获取选项
-     *   var element = list.findElement(item);
-     *   $(element).addClass('xxx');
-     * </code></pre>
-     * @param  {Object} item
-     * @return {HTMLElement} element
-     */
-    findElement: function(item) {
-      var _self = this;
-      if (BUI.isString(item)) {
-        item = _self.getItem(item);
-      }
-      return this.get('view').findElement(item);
-    },
-    findItemByField: function(field, value) {
-      var _self = this,
-        items = _self.get('items'),
-        result = null;
-      BUI.each(items, function(item) {
-        if (item[field] != null && item[field] == value) { //会出现false == '','0' == false的情况
+  },
+  /**
+   * 根据状态获取选项
+   * <pre><code>
+   *   //设置状态
+   *   list.setItemStatus(item,'active');
+   *   
+   *   //获取'active'状态的选项
+   *   list.getItemsByStatus('active');
+   * </code></pre>
+   * @param  {String} status 状态名
+   * @return {Array}  选项组集合
+   */
+  getItemsByStatus : function(status){
+    var _self = this,
+      elements = _self.get('view').getElementsByStatus(status),
+      rst = [];
+    BUI.each(elements,function(element){
+      rst.push(_self.getItemByElement(element));
+    });
+    return rst;
+  },
+  /**
+   * 查找指定的项的DOM结构
+   * <pre><code>
+   *   var item = list.getItem('2'); //获取选项
+   *   var element = list.findElement(item);
+   *   $(element).addClass('xxx');
+   * </code></pre>
+   * @param  {Object} item 
+   * @return {HTMLElement} element
+   */
+  findElement : function(item){
+    var _self = this;
+    if(BUI.isString(item)){
+      item = _self.getItem(item);
+    }
+    return this.get('view').findElement(item);
+  },
+  findItemByField : function(field,value){
+    var _self = this,
+      items = _self.get('items'),
+      result = null;
+    BUI.each(items,function(item){
+      if(item[field] != null && item[field] == value){//会出现false == '','0' == false的情况
           result = item;
           return false;
-        }
-      });
-      return result;
-    },
-    /**
-     * @override
-     * @ignore
-     */
-    setItemSelectedStatus: function(item, selected, element) {
-      var _self = this;
-      element = element || _self.findElement(item);
-      //_self.get('view').setItemSelected(item,selected,element);
-      _self.setItemStatus(item, 'selected', selected, element);
-      //_self.afterSelected(item,selected,element);
-    },
-    /**
-     * 设置所有选项选中
-     * @ignore
-     */
-    setAllSelection: function() {
-      var _self = this,
-        items = _self.getItems();
-      _self.setSelection(items);
-    },
-    /**
-     * 选项是否被选中
-     * <pre><code>
-     *   var item = list.getItem('2');
-     *   if(list.isItemSelected(item)){
-     *     //do something
-     *   }
-     * </code></pre>
-     * @override
-     * @param  {Object}  item 选项
-     * @return {Boolean}  是否选中
-     */
-    isItemSelected: function(item, element) {
-      var _self = this;
-      element = element || _self.findElement(item);
-      return _self.get('view').isElementSelected(element);
-    },
-    /**
-     * 是否选项被禁用
-     * <pre><code>
-     * var item = list.getItem('2');
-     * if(list.isItemDisabled(item)){ //如果选项禁用
-     *   //do something
-     * }
-     * </code></pre>
-     * @param {Object} item 选项
-     * @return {Boolean} 选项是否禁用
-     */
-    isItemDisabled: function(item, element) {
-      return this.hasStatus(item, 'disabled', element);
-    },
-    /**
-     * 设置选项禁用
-     * <pre><code>
-     * var item = list.getItem('2');
-     * list.setItemDisabled(item,true);//设置选项禁用，会在DOM上添加 itemCls + 'disabled'的样式
-     * list.setItemDisabled(item,false); //取消禁用，可以用{@link #itemStatusCls} 来替换样式
-     * </code></pre>
-     * @param {Object} item 选项
-     */
-    setItemDisabled: function(item, disabled) {
-      var _self = this;
-      /*if(disabled){
+      }
+    });
+
+    return result;
+  },
+  /**
+   * @override
+   * @ignore
+   */
+  setItemSelectedStatus : function(item,selected,element){
+    var _self = this;
+    element = element || _self.findElement(item);
+    //_self.get('view').setItemSelected(item,selected,element);
+    _self.setItemStatus(item,'selected',selected,element);
+    //_self.afterSelected(item,selected,element);
+  },
+  /**
+   * 设置所有选项选中
+   * @ignore
+   */
+  setAllSelection : function(){
+    var _self = this,
+      items = _self.getItems();
+    _self.setSelection(items);
+  },
+  /**
+   * 选项是否被选中
+   * <pre><code>
+   *   var item = list.getItem('2');
+   *   if(list.isItemSelected(item)){
+   *     //do something
+   *   }
+   * </code></pre>
+   * @override
+   * @param  {Object}  item 选项
+   * @return {Boolean}  是否选中
+   */
+  isItemSelected : function(item,element){
+    var _self = this;
+    element = element || _self.findElement(item);
+
+    return _self.get('view').isElementSelected(element);
+  },
+  /**
+   * 是否选项被禁用
+   * <pre><code>
+   * var item = list.getItem('2');
+   * if(list.isItemDisabled(item)){ //如果选项禁用
+   *   //do something
+   * }
+   * </code></pre>
+   * @param {Object} item 选项
+   * @return {Boolean} 选项是否禁用
+   */
+  isItemDisabled : function(item,element){
+    return this.hasStatus(item,'disabled',element);
+  },
+  /**
+   * 设置选项禁用
+   * <pre><code>
+   * var item = list.getItem('2');
+   * list.setItemDisabled(item,true);//设置选项禁用，会在DOM上添加 itemCls + 'disabled'的样式
+   * list.setItemDisabled(item,false); //取消禁用，可以用{@link #itemStatusCls} 来替换样式
+   * </code></pre>
+   * @param {Object} item 选项
+   */
+  setItemDisabled : function(item,disabled){
+    
+    var _self = this;
+    /*if(disabled){
       //清除选择
       _self.setItemSelected(item,false);
     }*/
-      _self.setItemStatus(item, 'disabled', disabled);
-    },
-    /**
-     * 获取选中的项的值
-     * @override
-     * @return {Array}
-     * @ignore
-     */
-    getSelection: function() {
-      var _self = this,
-        elements = _self.get('view').getSelectedElements(),
-        rst = [];
-      BUI.each(elements, function(elem) {
-        rst.push(_self.getItemByElement(elem));
-      });
-      return rst;
-    },
-    /**
-     * @protected
-     * @override
-     * 清除者列表项的DOM
-     */
-    clearControl: function() {
-      this.fire('beforeitemsclear');
-      this.get('view').clearControl();
-      this.fire('itemsclear');
-    },
-    /**
-     * 选项是否存在某种状态
-     * <pre><code>
-     * var item = list.getItem('2');
-     * list.setItemStatus(item,'active',true);
-     * list.hasStatus(item,'active'); //true
-     *
-     * list.setItemStatus(item,'active',false);
-     * list.hasStatus(item,'false'); //true
-     * </code></pre>
-     * @param {*} item 选项
-     * @param {String} status 状态名称，如selected,hover,open等等
-     * @param {HTMLElement} [element] 选项对应的Dom，放置反复查找
-     * @return {Boolean} 是否具有某种状态
-     */
-    hasStatus: function(item, status, element) {
-      if (!item) {
-        return false;
-      }
-      var _self = this,
-        field = _self.getStatusField(status);
-      /*if(field){
+    _self.setItemStatus(item,'disabled',disabled);
+  },
+  /**
+   * 获取选中的项的值
+   * @override
+   * @return {Array} 
+   * @ignore
+   */
+  getSelection : function(){
+    var _self = this,
+      elements = _self.get('view').getSelectedElements(),
+      rst = [];
+    BUI.each(elements,function(elem){
+      rst.push(_self.getItemByElement(elem));
+    });
+    return rst;
+  },
+  /**
+   * @protected
+   * @override
+   * 清除者列表项的DOM
+   */
+  clearControl : function(){
+    this.fire('beforeitemsclear');
+    this.get('view').clearControl();
+    this.fire('itemsclear');
+  },
+  /**
+   * 选项是否存在某种状态
+   * <pre><code>
+   * var item = list.getItem('2');
+   * list.setItemStatus(item,'active',true);
+   * list.hasStatus(item,'active'); //true
+   *
+   * list.setItemStatus(item,'active',false);
+   * list.hasStatus(item,'false'); //true
+   * </code></pre>
+   * @param {*} item 选项
+   * @param {String} status 状态名称，如selected,hover,open等等
+   * @param {HTMLElement} [element] 选项对应的Dom，放置反复查找
+   * @return {Boolean} 是否具有某种状态
+   */
+  hasStatus : function(item,status,element){
+    if(!item){
+      return false;
+    }
+    var _self = this,
+      field = _self.getStatusField(status);
+    /*if(field){
       return _self.getStatusValue(item,status);
     }*/
+    element = element || _self.findElement(item);
+    return _self.get('view').hasStatus(status,element);
+  },
+  /**
+   * 设置选项状态,可以设置任何自定义状态
+   * <pre><code>
+   * var item = list.getItem('2');
+   * list.setItemStatus(item,'active',true);
+   * list.hasStatus(item,'active'); //true
+   *
+   * list.setItemStatus(item,'active',false);
+   * list.hasStatus(item,'false'); //true
+   * </code></pre>
+   * @param {*} item 选项
+   * @param {String} status 状态名称
+   * @param {Boolean} value 状态值，true,false
+   * @param {HTMLElement} [element] 选项对应的Dom，放置反复查找
+   */
+  setItemStatus : function(item,status,value,element){
+    var _self = this;
+    if(item){
       element = element || _self.findElement(item);
-      return _self.get('view').hasStatus(status, element);
-    },
-    /**
-     * 设置选项状态,可以设置任何自定义状态
-     * <pre><code>
-     * var item = list.getItem('2');
-     * list.setItemStatus(item,'active',true);
-     * list.hasStatus(item,'active'); //true
-     *
-     * list.setItemStatus(item,'active',false);
-     * list.hasStatus(item,'false'); //true
-     * </code></pre>
-     * @param {*} item 选项
-     * @param {String} status 状态名称
-     * @param {Boolean} value 状态值，true,false
-     * @param {HTMLElement} [element] 选项对应的Dom，放置反复查找
-     */
-    setItemStatus: function(item, status, value, element) {
-      var _self = this;
-      if (item) {
-        element = element || _self.findElement(item);
+    }
+    
+    if(!_self.isItemDisabled(item,element) || status === 'disabled'){ //禁用后，阻止添加任何状态变化
+      if(item){
+        if(status === 'disabled' && value){ //禁用，同时清理其他状态
+          _self.clearItemStatus(item);
+        }
+        _self.setStatusValue(item,status,value);
+        _self.get('view').setItemStatusCls(status,element,value);
+        _self.fire('itemstatuschange',{item : item,status : status,value : value,element : element});
       }
-      if (!_self.isItemDisabled(item, element) || status === 'disabled') { //禁用后，阻止添加任何状态变化
-        if (item) {
-          if (status === 'disabled' && value) { //禁用，同时清理其他状态
-            _self.clearItemStatus(item);
-          }
-          _self.setStatusValue(item, status, value);
-          _self.get('view').setItemStatusCls(status, element, value);
-          _self.fire('itemstatuschange', {
-            item: item,
-            status: status,
-            value: value,
-            element: element
-          });
-        }
-        if (status === 'selected') { //处理选中
-          _self.afterSelected(item, value, element);
-        }
-      }
-    },
-    /**
-     * 清除所有选项状态,如果指定清除的状态名，则清除指定的，否则清除所有状态
-     * @param {Object} item 选项
-     */
-    clearItemStatus: function(item, status, element) {
-      var _self = this,
-        itemStatusFields = _self.get('itemStatusFields');
-      element = element || _self.findElement(item);
-      if (status) {
-        _self.setItemStatus(item, status, false, element);
-      } else {
-        BUI.each(itemStatusFields, function(v, k) {
-          _self.setItemStatus(item, k, false, element);
-        });
-        if (!itemStatusFields['selected']) {
-          _self.setItemSelected(item, false);
-        }
-        //移除hover状态
-        _self.setItemStatus(item, 'hover', false);
+      
+      if(status === 'selected'){ //处理选中
+        _self.afterSelected(item,value,element);
       }
     }
-  });
-  domList.View = domListView;
-  module.exports = domList;
-});
-define("bui/list/keynav", ["jquery", "bui/common"], function(require, exports, module) {
+    
+  },
   /**
-   * @fileOverview 列表选项，使用键盘导航
-   * @author dxq613@gmail.com
-   * @ignore
+   * 清除所有选项状态,如果指定清除的状态名，则清除指定的，否则清除所有状态
+   * @param {Object} item 选项
    */
-  'use strict';
-  /**
-   * @class BUI.List.KeyNav
-   * 列表导航扩展类
-   */
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    KeyNav = function() {};
-  KeyNav.ATTRS = {
-    /**
-     * 选项高亮使用的状态,有些场景下，使用selected更合适
-     * @cfg {String} [highlightedStatus='hover']
-     */
-    highlightedStatus: {
-      value: 'hover'
-    }
-  };
-  BUI.augment(KeyNav, {
-    /**
-     * 设置选项高亮，默认使用 'hover' 状态
-     * @param  {Object} item 选项
-     * @param  {Boolean} value 状态值，true,false
-     * @protected
-     */
-    setHighlighted: function(item, element) {
-      if (this.hasStatus(item, 'hover', element)) {
-        return;
-      }
-      var _self = this,
-        highlightedStatus = _self.get('highlightedStatus'),
-        lightedElement = _self._getHighLightedElement(),
-        lightedItem = lightedElement ? _self.getItemByElement(lightedElement) : null;
-      if (lightedItem !== item) {
-        if (lightedItem) {
-          this.setItemStatus(lightedItem, highlightedStatus, false, lightedElement);
-        }
-        this.setItemStatus(item, highlightedStatus, true, element);
-        _self._scrollToItem(item, element);
-      }
-    },
-    _getHighLightedElement: function() {
-      var _self = this,
-        highlightedStatus = _self.get('highlightedStatus'),
-        element = _self.get('view').getFirstElementByStatus(highlightedStatus);
-      return element;
-    },
-    /**
-     * 获取高亮的选项
-     * @return {Object} item
-     * @protected
-     */
-    getHighlighted: function() {
-      var _self = this,
-        highlightedStatus = _self.get('highlightedStatus'),
-        element = _self.get('view').getFirstElementByStatus(highlightedStatus);
-      return _self.getItemByElement(element) || null;
-    },
-    /**
-     * 获取列数
-     * @return {Number} 选项的列数,默认为1列
-     * @protected
-     */
-    getColumnCount: function() {
-      var _self = this,
-        firstItem = _self.getFirstItem(),
-        element = _self.findElement(firstItem),
-        node = $(element);
-      if (element) {
-        return parseInt(node.parent().width() / node.outerWidth(), 10);
-      }
-      return 1;
-    },
-    /**
-     * 获取选项的行数 ，总数/列数 = list.getCount / column
-     * @protected
-     * @return {Number} 选项行数
-     */
-    getRowCount: function(columns) {
-      var _self = this;
-      columns = columns || _self.getColumnCount();
-      return (this.getCount() + columns - 1) / columns;
-    },
-    _getNextItem: function(forward, skip, count) {
-      var _self = this,
-        currentIndx = _self._getCurrentIndex(), //默认第一行
-        itemCount = _self.getCount(),
-        factor = forward ? 1 : -1,
-        nextIndex;
-      if (currentIndx === -1) {
-        return forward ? _self.getFirstItem() : _self.getLastItem();
-      }
-      if (!forward) {
-        skip = skip * factor;
-      }
-      nextIndex = (currentIndx + skip + count) % count;
-      if (nextIndex > itemCount - 1) { //如果位置超出索引位置
-        if (forward) {
-          nextIndex = nextIndex - (itemCount - 1);
-        } else {
-          nextIndex = nextIndex + skip;
-        }
-      }
-      return _self.getItemAt(nextIndex);
-    },
-    //获取左边一项
-    _getLeftItem: function() {
-      var _self = this,
-        count = _self.getCount(),
-        column = _self.getColumnCount();
-      if (!count || column <= 1) { //单列时,或者为0时
-        return null;
-      }
-      return _self._getNextItem(false, 1, count);
-    },
-    //获取当前项
-    _getCurrentItem: function() {
-      return this.getHighlighted();
-    },
-    //获取当前项
-    _getCurrentIndex: function() {
-      var _self = this,
-        item = _self._getCurrentItem();
-      return this.indexOfItem(item);
-    },
-    //获取右边一项
-    _getRightItem: function() {
-      var _self = this,
-        count = _self.getCount(),
-        column = _self.getColumnCount();
-      if (!count || column <= 1) { //单列时,或者为0时
-        return null;
-      }
-      return this._getNextItem(true, 1, count);
-    },
-    //获取下面一项
-    _getDownItem: function() {
-      var _self = this,
-        columns = _self.getColumnCount(),
-        rows = _self.getRowCount(columns);
-      if (rows <= 1) { //单行或者为0时
-        return null;
-      }
-      return this._getNextItem(true, columns, columns * rows);
-    },
-    getScrollContainer: function() {
-      return this.get('el');
-    },
-    /**
-     * @protected
-     * 只处理上下滚动，不处理左右滚动
-     * @return {Boolean} 是否可以上下滚动
-     */
-    isScrollVertical: function() {
-      var _self = this,
-        el = _self.get('el'),
-        container = _self.get('view').getItemContainer();
-      return el.height() < container.height();
-    },
-    _scrollToItem: function(item, element) {
-      var _self = this;
-      if (_self.isScrollVertical()) {
-        element = element || _self.findElement(item);
-        var container = _self.getScrollContainer(),
-          top = $(element).position().top,
-          ctop = container.position().top,
-          cHeight = container.height(),
-          distance = top - ctop,
-          height = $(element).height(),
-          scrollTop = container.scrollTop();
-        if (distance < 0 || distance > cHeight - height) {
-          container.scrollTop(scrollTop + distance);
-        }
-      }
-    },
-    //获取上面一项
-    _getUpperItem: function() {
-      var _self = this,
-        columns = _self.getColumnCount(),
-        rows = _self.getRowCount(columns);
-      if (rows <= 1) { //单行或者为0时
-        return null;
-      }
-      return this._getNextItem(false, columns, columns * rows);
-    },
-    /**
-     * 处理向上导航
-     * @protected
-     * @param  {jQuery.Event} ev 事件对象
-     */
-    handleNavUp: function(ev) {
-      var _self = this,
-        upperItem = _self._getUpperItem();
-      _self.setHighlighted(upperItem);
-    },
-    /**
-     * 处理向下导航
-     * @protected
-     * @param  {jQuery.Event} ev 事件对象
-     */
-    handleNavDown: function(ev) {
-      this.setHighlighted(this._getDownItem());
-    },
-    /**
-     * 处理向左导航
-     * @protected
-     * @param  {jQuery.Event} ev 事件对象
-     */
-    handleNavLeft: function(ev) {
-      this.setHighlighted(this._getLeftItem());
-    },
-    /**
-     * 处理向右导航
-     * @protected
-     * @param  {jQuery.Event} ev 事件对象
-     */
-    handleNavRight: function(ev) {
-      this.setHighlighted(this._getRightItem());
-    },
-    /**
-     * 处理确认键
-     * @protected
-     * @param  {jQuery.Event} ev 事件对象
-     */
-    handleNavEnter: function(ev) {
-      var _self = this,
-        current = _self._getCurrentItem(),
-        element;
-      if (current) {
-        element = _self.findElement(current);
-        //_self.setSelected(current);
-        $(element).trigger('click');
-      }
-    },
-    /**
-     * 处理 esc 键
-     * @protected
-     * @param  {jQuery.Event} ev 事件对象
-     */
-    handleNavEsc: function(ev) {
-      this.setHighlighted(null); //移除
-    },
-    /**
-     * 处理Tab键
-     * @param  {jQuery.Event} ev 事件对象
-     */
-    handleNavTab: function(ev) {
-      this.setHighlighted(this._getRightItem());
-    }
-  });
-  module.exports = KeyNav;
-});
-define("bui/list/sortable", ["jquery", "bui/common", "bui/data"], function(require, exports, module) {
-  /**
-   * @fileOverview 列表排序
-   * @ignore
-   */
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    DataSortable = require("bui/data").Sortable;
-  /**
-   * @class BUI.List.Sortable
-   * 列表排序的扩展
-   * @extends BUI.Data.Sortable
-   */
-  var Sortable = function() {};
-  Sortable.ATTRS = BUI.merge(true, DataSortable.ATTRS, {});
-  BUI.augment(Sortable, DataSortable, {
-    /**
-     * @protected
-     * @override
-     * @ignore
-     * 覆写比较方法
-     */
-    compare: function(obj1, obj2, field, direction) {
-      var _self = this,
-        dir;
-      field = field || _self.get('sortField');
-      direction = direction || _self.get('sortDirection');
-      //如果未指定排序字段，或方向，则按照默认顺序
-      if (!field || !direction) {
-        return 1;
-      }
-      dir = direction === 'ASC' ? 1 : -1;
-      if (!$.isPlainObject(obj1)) {
-        obj1 = _self.getItemByElement(obj1);
-      }
-      if (!$.isPlainObject(obj2)) {
-        obj2 = _self.getItemByElement(obj2);
-      }
-      return _self.get('compareFunction')(obj1[field], obj2[field]) * dir;
-    },
-    /**
-     * 获取排序的集合
-     * @protected
-     * @return {Array} 排序集合
-     */
-    getSortData: function() {
-      return $.makeArray(this.get('view').getAllElements());
-    },
-    /**
-     * 列表排序
-     * @param  {string} field  字段名
-     * @param  {string} direction 排序方向 ASC,DESC
-     */
-    sort: function(field, direction) {
-      var _self = this,
-        sortedElements = _self.sortData(field, direction),
-        itemContainer = _self.get('view').getItemContainer();
-      if (!_self.get('store')) {
-        _self.sortData(field, direction, _self.get('items'));
-      }
-      BUI.each(sortedElements, function(el) {
-        $(el).appendTo(itemContainer);
+  clearItemStatus : function(item,status,element){
+    var _self = this,
+      itemStatusFields = _self.get('itemStatusFields');
+    element = element || _self.findElement(item);
+      
+    if(status){
+      _self.setItemStatus(item,status,false,element);
+    }else{
+      BUI.each(itemStatusFields,function(v,k){
+        _self.setItemStatus(item,k,false,element);
       });
+      if(!itemStatusFields['selected']){
+        _self.setItemSelected(item,false);
+      }
+      //移除hover状态
+      _self.setItemStatus(item,'hover',false);
     }
-  });
-  module.exports = Sortable;
+    
+  }
 });
+
+domList.View = domListView;
+
+module.exports = domList;
+
+});
+define("bui/list/keynav", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview 列表选项，使用键盘导航
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+'use strict';
+/**
+ * @class BUI.List.KeyNav
+ * 列表导航扩展类
+ */
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  KeyNav = function(){};
+
+KeyNav.ATTRS = {
+  /**
+   * 选项高亮使用的状态,有些场景下，使用selected更合适
+   * @cfg {String} [highlightedStatus='hover']
+   */
+  highlightedStatus : {
+    value : 'hover'
+  }
+};
+
+BUI.augment(KeyNav,{
+
+  /**
+   * 设置选项高亮，默认使用 'hover' 状态
+   * @param  {Object} item 选项
+   * @param  {Boolean} value 状态值，true,false
+   * @protected
+   */
+  setHighlighted : function(item,element){
+    if(this.hasStatus(item,'hover',element)){
+      return;
+    }
+    var _self = this,
+      highlightedStatus = _self.get('highlightedStatus'),
+      lightedElement = _self._getHighLightedElement(),
+      lightedItem = lightedElement ? _self.getItemByElement(lightedElement) : null;
+    if(lightedItem !== item){
+      if(lightedItem){
+        this.setItemStatus(lightedItem,highlightedStatus,false,lightedElement);
+      }
+      this.setItemStatus(item,highlightedStatus,true,element);
+      _self._scrollToItem(item,element);
+    }
+  },
+  _getHighLightedElement : function(){
+    var _self = this,
+      highlightedStatus = _self.get('highlightedStatus'),
+      element = _self.get('view').getFirstElementByStatus(highlightedStatus);
+    return element;
+  },
+  /**
+   * 获取高亮的选项
+   * @return {Object} item
+   * @protected
+   */
+  getHighlighted : function(){
+    var _self = this,
+      highlightedStatus = _self.get('highlightedStatus'),
+      element = _self.get('view').getFirstElementByStatus(highlightedStatus);
+    return _self.getItemByElement(element) || null;
+  },
+  /**
+   * 获取列数
+   * @return {Number} 选项的列数,默认为1列
+   * @protected
+   */
+  getColumnCount : function(){
+    var _self = this,
+      firstItem = _self.getFirstItem(),
+      element = _self.findElement(firstItem),
+      node = $(element);
+    if(element){
+      return parseInt(node.parent().width() / node.outerWidth(),10);
+    }
+    return 1;
+  },
+  /**
+   * 获取选项的行数 ，总数/列数 = list.getCount / column
+   * @protected
+   * @return {Number} 选项行数
+   */
+  getRowCount : function(columns){
+    var _self = this;
+    columns = columns || _self.getColumnCount();
+    return (this.getCount() + columns - 1) / columns;
+  },
+  _getNextItem : function(forward,skip,count){
+    var _self = this,
+      currentIndx = _self._getCurrentIndex(),//默认第一行
+      itemCount = _self.getCount(),
+      factor = forward ? 1 : -1,
+      nextIndex; 
+    if(currentIndx === -1){
+      return forward ? _self.getFirstItem() : _self.getLastItem();
+    }
+    if(!forward){
+      skip = skip * factor;
+    }
+    nextIndex = (currentIndx + skip + count) % count;
+    if(nextIndex > itemCount - 1){ //如果位置超出索引位置
+      if(forward){
+        nextIndex = nextIndex -  (itemCount - 1);
+      }else{
+        nextIndex = nextIndex + skip;
+      }
+      
+    }
+    return _self.getItemAt(nextIndex);
+  },
+  //获取左边一项
+  _getLeftItem : function(){
+    var _self = this,
+      count = _self.getCount(),
+      column = _self.getColumnCount();
+    if(!count || column <= 1){ //单列时,或者为0时
+      return null;
+    }
+    return _self._getNextItem(false,1,count);
+  },
+  //获取当前项
+  _getCurrentItem : function(){
+    return this.getHighlighted();
+  },
+  //获取当前项
+  _getCurrentIndex : function(){
+    var _self = this,
+      item = _self._getCurrentItem();
+    return this.indexOfItem(item);
+  },
+  //获取右边一项
+  _getRightItem : function(){
+    var _self = this,
+      count = _self.getCount(),
+      column = _self.getColumnCount();
+    if(!count || column <= 1){ //单列时,或者为0时
+      return null;
+    }
+    return this._getNextItem(true,1,count);
+  },
+  //获取下面一项
+  _getDownItem : function(){
+    var _self = this,
+      columns = _self.getColumnCount(),
+      rows = _self.getRowCount(columns);
+    if(rows <= 1){ //单行或者为0时
+      return null;
+    }
+
+    return  this._getNextItem(true,columns,columns * rows);
+
+  },
+  getScrollContainer : function(){
+    return this.get('el');
+  },
+  /**
+   * @protected
+   * 只处理上下滚动，不处理左右滚动
+   * @return {Boolean} 是否可以上下滚动
+   */
+  isScrollVertical : function(){
+    var _self = this,
+      el = _self.get('el'),
+      container = _self.get('view').getItemContainer();
+
+    return el.height() < container.height();
+  },
+
+  _scrollToItem : function(item,element){
+    var _self = this;
+
+    if(_self.isScrollVertical()){
+      element = element || _self.findElement(item);
+      var container = _self.getScrollContainer(),
+        top = $(element).position().top,
+        ctop = container.position().top,
+        cHeight = container.height(),
+        distance = top - ctop,
+        height = $(element).height(),
+        scrollTop = container.scrollTop();
+
+      if(distance < 0 || distance > cHeight - height){
+        container.scrollTop(scrollTop + distance);
+      }
+
+    }
+  },
+  //获取上面一项
+  _getUpperItem : function(){
+    var _self = this,
+      columns = _self.getColumnCount(),
+      rows = _self.getRowCount(columns);
+    if(rows <= 1){ //单行或者为0时
+      return null;
+    }
+    return this._getNextItem(false,columns,columns * rows);
+  },
+  /**
+   * 处理向上导航
+   * @protected
+   * @param  {jQuery.Event} ev 事件对象
+   */
+  handleNavUp : function (ev) {
+
+    var _self = this,
+      upperItem = _self._getUpperItem();
+    _self.setHighlighted(upperItem);
+  },
+  /**
+   * 处理向下导航
+   * @protected
+   * @param  {jQuery.Event} ev 事件对象
+   */
+  handleNavDown : function (ev) {
+    
+    this.setHighlighted(this._getDownItem());
+  },
+  /**
+   * 处理向左导航
+   * @protected
+   * @param  {jQuery.Event} ev 事件对象
+   */
+  handleNavLeft : function (ev) {
+    this.setHighlighted(this._getLeftItem());
+  },
+  
+  /**
+   * 处理向右导航
+   * @protected
+   * @param  {jQuery.Event} ev 事件对象
+   */
+  handleNavRight : function (ev) {
+    this.setHighlighted(this._getRightItem());
+  },
+  /**
+   * 处理确认键
+   * @protected
+   * @param  {jQuery.Event} ev 事件对象
+   */
+  handleNavEnter : function (ev) {
+    var _self = this,
+      current = _self._getCurrentItem(),
+      element;
+    if(current){
+      element = _self.findElement(current);
+      //_self.setSelected(current);
+      $(element).trigger('click');
+    }
+  },
+  /**
+   * 处理 esc 键
+   * @protected
+   * @param  {jQuery.Event} ev 事件对象
+   */
+  handleNavEsc : function (ev) {
+    this.setHighlighted(null); //移除
+  },
+  /**
+   * 处理Tab键
+   * @param  {jQuery.Event} ev 事件对象
+   */
+  handleNavTab : function(ev){
+    this.setHighlighted(this._getRightItem());
+  }
+
+});
+
+module.exports = KeyNav;
+
+});
+define("bui/list/sortable", ["jquery","bui/common","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 列表排序
+ * @ignore
+ */
+
+
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  DataSortable = require("bui/data").Sortable;
+
+/**
+ * @class BUI.List.Sortable
+ * 列表排序的扩展
+ * @extends BUI.Data.Sortable
+ */
+var Sortable = function(){
+
+};
+
+
+
+Sortable.ATTRS = BUI.merge(true,DataSortable.ATTRS, {
+
+});
+
+BUI.augment(Sortable,DataSortable,{
+  
+  /**
+   * @protected
+   * @override
+   * @ignore
+   * 覆写比较方法
+   */
+  compare : function(obj1,obj2,field,direction){
+    var _self = this,
+      dir;
+    field = field || _self.get('sortField');
+    direction = direction || _self.get('sortDirection');
+    //如果未指定排序字段，或方向，则按照默认顺序
+    if(!field || !direction){
+      return 1;
+    }
+    dir = direction === 'ASC' ? 1 : -1;
+    if(!$.isPlainObject(obj1)){
+      obj1 = _self.getItemByElement(obj1);
+    }
+    if(!$.isPlainObject(obj2)){
+      obj2 = _self.getItemByElement(obj2);
+    }
+
+    return _self.get('compareFunction')(obj1[field],obj2[field]) * dir;
+  },
+  /**
+   * 获取排序的集合
+   * @protected
+   * @return {Array} 排序集合
+   */
+  getSortData : function(){
+    return $.makeArray(this.get('view').getAllElements());
+  },
+  /**
+   * 列表排序
+   * @param  {string} field  字段名
+   * @param  {string} direction 排序方向 ASC,DESC
+   */
+  sort : function(field,direction){
+    var _self = this,
+      sortedElements = _self.sortData(field,direction),
+      itemContainer = _self.get('view').getItemContainer();
+    if(!_self.get('store')){
+      _self.sortData(field,direction,_self.get('items'));
+    }
+    BUI.each(sortedElements,function(el){
+      $(el).appendTo(itemContainer);
+    });
+  }
+
+});
+
+module.exports = Sortable;
+
+});
+define("bui/list/listbox", ["jquery","bui/common","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 可选择的列表
+ * @author dengbin
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  SimpleList = require("bui/list/simplelist");
+/**
+ * 列表选择框
+ * @extends BUI.List.SimpleList
+ * @class BUI.List.Listbox
+ */
+var listbox = SimpleList.extend({
+  bindUI : function(){
+  	var _self = this;
+    
+  	_self.on('selectedchange',function(e){
+  		var item = e.item,
+  			sender = $(e.domTarget),
+  			checkbox =sender.find('input');
+  		if(item){
+  			checkbox.attr('checked',e.selected);
+  		}
+  	});
+  }
+},{
+  ATTRS : {
+    /**
+     * 选项模板
+     * @override
+     * @type {String}
+     */
+    itemTpl : {
+      value : '<li><span class="x-checkbox"></span>{text}</li>'
+    },
+    /**
+     * 选项模板
+     * @override
+     * @type {Boolean}
+     */
+    multipleSelect : {
+      value : true
+    }
+  }
+},{
+  xclass: 'listbox'
+});
+
+module.exports = listbox;
+
+});
+
 define("bui/mask", ["jquery", "bui/common", "bui/mask/mask", "bui/mask/loadmask"], function(require, exports, module) {
   /**
    * @fileOverview Mask的入口文件
@@ -16383,456 +16496,493 @@ define("bui/overlay/message", ["jquery", "bui/overlay/dialog", "bui/overlay/over
   message.Show = showMessage;
   module.exports = message;
 });
-define("bui/picker", ["jquery", "bui/common", "bui/picker/mixin", "bui/picker/picker", "bui/picker/listpicker", "bui/overlay", "bui/data", "bui/list"], function(require, exports, module) {
-  /**
-   * @fileOverview Picker的入口
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    Picker = BUI.namespace('Picker');
-  BUI.mix(Picker, {
-    Mixin: require("bui/picker/mixin"),
-    Picker: require("bui/picker/picker"),
-    ListPicker: require("bui/picker/listpicker")
-  });
-  module.exports = Picker;
+define("bui/picker", ["bui/common","jquery","bui/overlay","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview Picker的入口
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+var BUI = require("bui/common"),
+  Picker = BUI.namespace('Picker');
+
+BUI.mix(Picker, {
+  Mixin : require("bui/picker/mixin"),
+  Picker : require("bui/picker/picker"),
+  ListPicker : require("bui/picker/listpicker")
 });
-define("bui/picker/mixin", ["jquery"], function(require, exports, module) {
+
+module.exports = Picker;
+
+});
+define("bui/picker/mixin", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview picker的扩展
+ * @ignore
+ */
+
+var $ = require('jquery');
+
+/**
+ * @class BUI.Picker.Mixin
+ */
+var Mixin = function () {
+};
+
+Mixin.ATTRS = {
   /**
-   * @fileOverview picker的扩展
-   * @ignore
+   * 用于选择的控件，默认为第一个子元素,此控件实现 @see {BUI.Component.UIBase.Selection} 接口
+   * @protected
+   * @type {Object|BUI.Component.Controller}
    */
-  var $ = require("jquery");
-  /**
-   * @class BUI.Picker.Mixin
-   */
-  var Mixin = function() {};
-  Mixin.ATTRS = {
-    /**
-     * 用于选择的控件，默认为第一个子元素,此控件实现 @see {BUI.Component.UIBase.Selection} 接口
-     * @protected
-     * @type {Object|BUI.Component.Controller}
-     */
-    innerControl: {
-      getter: function() {
-        return this.get('children')[0];
-      }
-    },
-    /**
-     * 显示选择器的事件
-     * @cfg {String} [triggerEvent='click']
-     */
-    /**
-     * 显示选择器的事件
-     * @type {String}
-     * @default 'click'
-     */
-    triggerEvent: {
-      value: 'click'
-    },
-    /**
-     * 选择器选中的项，是否随着触发器改变
-     * @cfg {Boolean} [autoSetValue=true]
-     */
-    /**
-     * 选择器选中的项，是否随着触发器改变
-     * @type {Boolean}
-     */
-    autoSetValue: {
-      value: true
-    },
-    /**
-     * 选择发生改变的事件
-     * @cfg {String} [changeEvent='selectedchange']
-     */
-    /**
-     * 选择发生改变的事件
-     * @type {String}
-     */
-    changeEvent: {
-      value: 'selectedchange'
-    },
-    /**
-     * 自动隐藏
-     * @type {Boolean}
-     * @override
-     */
-    autoHide: {
-      value: true
-    },
-    /**
-     * 隐藏选择器的事件
-     * @protected
-     * @type {String}
-     */
-    hideEvent: {
-      value: 'itemclick'
-    },
-    /**
-     * 返回的文本放在的DOM，一般是input
-     * @cfg {String|HTMLElement|jQuery} textField
-     */
-    /**
-     * 返回的文本放在的DOM，一般是input
-     * @type {String|HTMLElement|jQuery}
-     */
-    textField: {},
-    align: {
-      value: {
-        points: ['bl', 'tl'], // ['tr', 'tl'] 表示 overlay 的 tl 与参考节点的 tr 对齐
-        offset: [0, 0] // 有效值为 [n, m]
-      }
-    },
-    /**
-     * 返回的值放置DOM ,一般是input
-     * @cfg {String|HTMLElement|jQuery} valueField
-     */
-    /**
-     * 返回的值放置DOM ,一般是input
-     * @type {String|HTMLElement|jQuery}
-     */
-    valueField: {}
-    /**
-     * @event selectedchange
-     * 选中值改变事件
-     * @param {Object} e 事件对象
-     * @param {String} text 选中的文本
-     * @param {string} value 选中的值
-     * @param {jQuery} curTrigger 当前触发picker的元素
-     */
-  }
-  Mixin.prototype = {
-    __bindUI: function() {
-      var _self = this,
-        //innerControl = _self.get('innerControl'),
-        hideEvent = _self.get('hideEvent'),
-        trigger = $(_self.get('trigger'));
-      _self.on('show', function(ev) {
-        //trigger.on(_self.get('triggerEvent'),function(e){
-        if (!_self.get('isInit')) {
-          _self._initControl();
-        }
-        if (_self.get('autoSetValue')) {
-          var valueField = _self.get('valueField') || _self.get('textField') || _self.get('curTrigger'),
-            val = $(valueField).val();
-          _self.setSelectedValue(val);
-        }
-      });
-      //_self.initControlEvent();
-    },
-    _initControl: function() {
-      var _self = this;
-      if (_self.get('isInit')) { //已经初始化过
-        return;
-      }
-      if (!_self.get('innerControl')) {
-        var control = _self.createControl();
-        _self.get('children').push(control);
-      }
-      _self.initControlEvent();
-      _self.set('isInit', true);
-    },
-    /**
-     * 初始化内部控件，绑定事件
-     */
-    initControl: function() {
-      this._initControl();
-    },
-    /**
-     * @protected
-     * 初始化内部控件
-     */
-    createControl: function() {},
-    //初始化内部控件的事件
-    initControlEvent: function() {
-      var _self = this,
-        innerControl = _self.get('innerControl'),
-        trigger = $(_self.get('trigger')),
-        hideEvent = _self.get('hideEvent');
-      innerControl.on(_self.get('changeEvent'), function(e) {
-        var curTrigger = _self.get('curTrigger'),
-          textField = _self.get('textField') || curTrigger || trigger,
-          valueField = _self.get('valueField'),
-          selValue = _self.getSelectedValue(),
-          isChange = false;
-        if (textField) {
-          var selText = _self.getSelectedText(),
-            preText = $(textField).val();
-          if (selText != preText) {
-            $(textField).val(selText);
-            isChange = true;
-            $(textField).trigger('change');
-          }
-        }
-        if (valueField && _self.get('autoSetValue')) {
-          var preValue = $(valueField).val();
-          if (valueField != preValue) {
-            $(valueField).val(selValue);
-            isChange = true;
-            $(valueField).trigger('change');
-          }
-        }
-        if (isChange) {
-          _self.onChange(selText, selValue, e);
-        }
-      });
-      if (hideEvent) {
-        innerControl.on(_self.get('hideEvent'), function() {
-          var curTrigger = _self.get('curTrigger');
-          try { //隐藏时，在ie6,7下会报错
-            if (curTrigger) {
-              curTrigger.focus();
-            }
-          } catch (e) {
-            BUI.log(e);
-          }
-          _self.hide();
-        });
-      }
-    },
-    /**
-     * 设置选中的值
-     * @template
-     * @protected
-     * @param {String} val 设置值
-     */
-    setSelectedValue: function(val) {},
-    /**
-     * 获取选中的值，多选状态下，值以','分割
-     * @template
-     * @protected
-     * @return {String} 选中的值
-     */
-    getSelectedValue: function() {},
-    /**
-     * 获取选中项的文本，多选状态下，文本以','分割
-     * @template
-     * @protected
-     * @return {String} 选中的文本
-     */
-    getSelectedText: function() {},
-    /**
-     * 选择器获取焦点时，默认选中内部控件
-     */
-    focus: function() {
-      this.get('innerControl').focus();
-    },
-    /**
-     * @protected
-     * 发生改变
-     */
-    onChange: function(selText, selValue, ev) {
-      var _self = this,
-        curTrigger = _self.get('curTrigger');
-      //curTrigger && curTrigger.trigger('change'); //触发改变事件
-      _self.fire('selectedchange', {
-        value: selValue,
-        text: selText,
-        curTrigger: curTrigger
-      });
-    },
-    /**
-     * 处理 esc 键
-     * @protected
-     * @param  {jQuery.Event} ev 事件对象
-     */
-    handleNavEsc: function(ev) {
-      this.hide();
-    },
-    _uiSetValueField: function(v) {
-      var _self = this;
-      if (v != null && v !== '' && _self.get('autoSetValue')) { //if(v)问题太多
-        _self.setSelectedValue($(v).val());
-      }
-    },
-    _getTextField: function() {
-      var _self = this;
-      return _self.get('textField') || _self.get('curTrigger');
+  innerControl : {
+    getter:function(){
+      return this.get('children')[0];
     }
-  }
-  module.exports = Mixin;
-});
-define("bui/picker/picker", ["jquery", "bui/common", "bui/overlay", "bui/picker/mixin"], function(require, exports, module) {
+  },
   /**
-   * @fileOverview 选择器
-   * @ignore
+   * 显示选择器的事件
+   * @cfg {String} [triggerEvent='click']
    */
-  var $ = require("jquery"),
-    Overlay = require("bui/overlay").Overlay,
-    Mixin = require("bui/picker/mixin");
   /**
-   * 选择器控件的基类，弹出一个层来选择数据，不要使用此类创建控件，仅用于继承实现控件
-   * xclass : 'picker'
+   * 显示选择器的事件
+   * @type {String}
+   * @default 'click'
+   */
+  triggerEvent:{
+    value:'click'
+  },
+  /**
+   * 选择器选中的项，是否随着触发器改变
+   * @cfg {Boolean} [autoSetValue=true]
+   */
+  /**
+   * 选择器选中的项，是否随着触发器改变
+   * @type {Boolean}
+   */
+  autoSetValue : {
+    value : true
+  },
+  /**
+   * 选择发生改变的事件
+   * @cfg {String} [changeEvent='selectedchange']
+   */
+  /**
+   * 选择发生改变的事件
+   * @type {String}
+   */
+  changeEvent : {
+    value:'selectedchange'
+  },
+  /**
+   * 自动隐藏
+   * @type {Boolean}
+   * @override
+   */
+  autoHide:{
+    value : true
+  },
+  /**
+   * 隐藏选择器的事件
+   * @protected
+   * @type {String}
+   */
+  hideEvent:{
+    value:'itemclick'
+  },
+  /**
+   * 返回的文本放在的DOM，一般是input
+   * @cfg {String|HTMLElement|jQuery} textField
+   */
+  /**
+   * 返回的文本放在的DOM，一般是input
+   * @type {String|HTMLElement|jQuery}
+   */
+  textField : {
+
+  },
+  align : {
+    value : {
+       points: ['bl','tl'], // ['tr', 'tl'] 表示 overlay 的 tl 与参考节点的 tr 对齐
+       offset: [0, 0]      // 有效值为 [n, m]
+    }
+  },
+  /**
+   * 返回的值放置DOM ,一般是input
+   * @cfg {String|HTMLElement|jQuery} valueField
+   */
+  /**
+   * 返回的值放置DOM ,一般是input
+   * @type {String|HTMLElement|jQuery}
+   */
+  valueField:{
+
+  }
+  /**
+   * @event selectedchange
+   * 选中值改变事件
+   * @param {Object} e 事件对象
+   * @param {String} text 选中的文本
+   * @param {string} value 选中的值
+   * @param {jQuery} curTrigger 当前触发picker的元素
+   */
+}
+
+Mixin.prototype = {
+
+  __bindUI : function(){
+    var _self = this,
+      //innerControl = _self.get('innerControl'),
+      hideEvent = _self.get('hideEvent'),
+      trigger = $(_self.get('trigger'));
+
+    _self.on('show',function(ev){
+    //trigger.on(_self.get('triggerEvent'),function(e){
+      if(!_self.get('isInit')){
+        _self._initControl();
+      }
+      if(_self.get('autoSetValue')){
+        var valueField = _self.get('valueField') || _self.get('textField') || _self.get('curTrigger'),
+          val = $(valueField).val();
+        _self.setSelectedValue(val);
+      }
+    });
+
+    //_self.initControlEvent();
+  },
+  _initControl : function(){
+    var _self = this;
+    if(_self.get('isInit')){ //已经初始化过
+      return ;
+    }
+    if(!_self.get('innerControl')){
+      var control = _self.createControl();
+      _self.get('children').push(control);
+    }
+    _self.initControlEvent();
+    _self.set('isInit',true);
+  },
+  /**
+   * 初始化内部控件，绑定事件
+   */
+  initControl : function(){
+    this._initControl();
+  },  
+  /**
+   * @protected
+   * 初始化内部控件
+   */
+  createControl : function(){
+    
+  },
+  //初始化内部控件的事件
+  initControlEvent : function(){
+    var _self = this,
+      innerControl = _self.get('innerControl'),
+      trigger = $(_self.get('trigger')),
+      hideEvent = _self.get('hideEvent');
+
+    innerControl.on(_self.get('changeEvent'),function(e){
+      var curTrigger = _self.get('curTrigger'),
+        textField = _self.get('textField') || curTrigger || trigger,
+        valueField = _self.get('valueField'),
+        selValue = _self.getSelectedValue(),
+        isChange = false;
+
+      if(textField){
+        var selText = _self.getSelectedText(),
+          preText = $(textField).val();
+        if(selText != preText){
+          $(textField).val(selText);
+          isChange = true;
+          $(textField).trigger('change');
+        }
+      }
+      
+      if(valueField && _self.get('autoSetValue')){
+        var preValue = $(valueField).val();  
+        if(valueField != preValue){
+          $(valueField).val(selValue);
+          isChange = true;
+          $(valueField).trigger('change');
+        }
+      }
+      if(isChange){
+        _self.onChange(selText,selValue,e);
+      }
+    });
+    
+    if(hideEvent){
+      innerControl.on(_self.get('hideEvent'),function(){
+        var curTrigger = _self.get('curTrigger');
+        try{ //隐藏时，在ie6,7下会报错
+          if(curTrigger){
+            curTrigger.focus();
+          }
+        }catch(e){
+          BUI.log(e);
+        }
+        _self.hide();
+      });
+    }
+  },
+  /**
+   * 设置选中的值
+   * @template
+   * @protected
+   * @param {String} val 设置值
+   */
+  setSelectedValue : function(val){
+    
+  },
+  /**
+   * 获取选中的值，多选状态下，值以','分割
+   * @template
+   * @protected
+   * @return {String} 选中的值
+   */
+  getSelectedValue : function(){
+    
+  },
+  /**
+   * 获取选中项的文本，多选状态下，文本以','分割
+   * @template
+   * @protected
+   * @return {String} 选中的文本
+   */
+  getSelectedText : function(){
+
+  },
+  /**
+   * 选择器获取焦点时，默认选中内部控件
+   */
+  focus : function(){
+    this.get('innerControl').focus();
+  },
+  /**
+   * @protected
+   * 发生改变
+   */
+  onChange : function(selText,selValue,ev){
+    var _self = this,
+      curTrigger = _self.get('curTrigger');
+    //curTrigger && curTrigger.trigger('change'); //触发改变事件
+    _self.fire('selectedchange',{value : selValue,text : selText,curTrigger : curTrigger});
+  },
+  /**
+   * 处理 esc 键
+   * @protected
+   * @param  {jQuery.Event} ev 事件对象
+   */
+  handleNavEsc : function (ev) {
+    this.hide();
+  },
+  _uiSetValueField : function(v){
+    var _self = this;
+    if(v != null && v !== '' && _self.get('autoSetValue')){ //if(v)问题太多
+      _self.setSelectedValue($(v).val());
+    }
+  },
+  _getTextField : function(){
+    var _self = this;
+    return _self.get('textField') || _self.get('curTrigger');
+  }
+}
+
+module.exports = Mixin;
+
+});
+define("bui/picker/picker", ["jquery","bui/overlay","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview 选择器
+ * @ignore
+ */
+
+  
+var $ = require('jquery'),
+  Overlay = require("bui/overlay").Overlay,
+  Mixin = require("bui/picker/mixin");
+
+/**
+ * 选择器控件的基类，弹出一个层来选择数据，不要使用此类创建控件，仅用于继承实现控件
+ * xclass : 'picker'
+ * <pre><code>
+ * BUI.use(['bui/picker','bui/list'],function(Picker,List){
+ *
+ * var items = [
+ *       {text:'选项1',value:'a'},
+ *       {text:'选项2',value:'b'},
+ *      {text:'选项3',value:'c'}
+ *     ],
+ *   list = new List.SimpleList({
+ *     elCls:'bui-select-list',
+ *     items : items
+ *   }),
+ *   picker = new Picker.ListPicker({
+ *     trigger : '#show',  
+ *     valueField : '#hide', //如果需要列表返回的value，放在隐藏域，那么指定隐藏域
+ *     width:100,  //指定宽度
+ *     children : [list] //配置picker内的列表
+ *   });
+ * picker.render();
+ * });
+ * </code></pre>
+ * @abstract
+ * @class BUI.Picker.Picker
+ * @mixins BUI.Picker.Mixin
+ * @extends BUI.Overlay.Overlay
+ */
+var picker = Overlay.extend([Mixin], {
+  
+},{
+  ATTRS : {
+
+  }
+},{
+  xclass:'picker'
+});
+
+module.exports = picker;
+
+});
+define("bui/picker/listpicker", ["jquery","bui/list","bui/common","bui/data","bui/overlay"], function(require, exports, module){
+/**
+ * @fileOverview 列表项的选择器
+ * @ignore
+ */
+
+
+var $ = require('jquery'),
+  List = require("bui/list"),
+  Picker = require("bui/picker/picker"),
+  /**
+   * 列表选择器,xclass = 'list-picker'
    * <pre><code>
-   * BUI.use(['bui/picker','bui/list'],function(Picker,List){
+   * BUI.use(['bui/picker'],function(Picker){
    *
    * var items = [
    *       {text:'选项1',value:'a'},
    *       {text:'选项2',value:'b'},
    *      {text:'选项3',value:'c'}
    *     ],
-   *   list = new List.SimpleList({
-   *     elCls:'bui-select-list',
-   *     items : items
-   *   }),
    *   picker = new Picker.ListPicker({
-   *     trigger : '#show',
+   *     trigger : '#show',  
    *     valueField : '#hide', //如果需要列表返回的value，放在隐藏域，那么指定隐藏域
    *     width:100,  //指定宽度
-   *     children : [list] //配置picker内的列表
+   *     children : [{
+   *        elCls:'bui-select-list',
+   *        items : items
+   *     }] //配置picker内的列表
    *   });
    * picker.render();
    * });
    * </code></pre>
-   * @abstract
-   * @class BUI.Picker.Picker
-   * @mixins BUI.Picker.Mixin
-   * @extends BUI.Overlay.Overlay
+   * @class BUI.Picker.ListPicker
+   * @extends BUI.Picker.Picker
    */
-  var picker = Overlay.extend([Mixin], {}, {
-    ATTRS: {}
-  }, {
-    xclass: 'picker'
-  });
-  module.exports = picker;
-});
-define("bui/picker/listpicker", ["jquery", "bui/common", "bui/data", "bui/list", "bui/picker/picker", "bui/overlay", "bui/picker/mixin"], function(require, exports, module) {
-  /**
-   * @fileOverview 列表项的选择器
-   * @ignore
-   */
-  var $ = require("jquery"),
-    List = require("bui/list"),
-    Picker = require("bui/picker/picker"),
-    /**
-     * 列表选择器,xclass = 'list-picker'
-     * <pre><code>
-     * BUI.use(['bui/picker'],function(Picker){
-     *
-     * var items = [
-     *       {text:'选项1',value:'a'},
-     *       {text:'选项2',value:'b'},
-     *      {text:'选项3',value:'c'}
-     *     ],
-     *   picker = new Picker.ListPicker({
-     *     trigger : '#show',
-     *     valueField : '#hide', //如果需要列表返回的value，放在隐藏域，那么指定隐藏域
-     *     width:100,  //指定宽度
-     *     children : [{
-     *        elCls:'bui-select-list',
-     *        items : items
-     *     }] //配置picker内的列表
-     *   });
-     * picker.render();
-     * });
-     * </code></pre>
-     * @class BUI.Picker.ListPicker
-     * @extends BUI.Picker.Picker
-     */
-    listPicker = Picker.extend({
-      initializer: function() {
-        var _self = this,
-          children = _self.get('children'),
-          list = _self.get('list');
-        if (!list) {
-          children.push({});
-        }
-      },
-      /**
-       * 设置选中的值
-       * @override
-       * @param {String} val 设置值
-       */
-      setSelectedValue: function(val) {
-        val = val ? val.toString() : '';
-        if (!this.get('isInit')) {
-          this._initControl();
-        }
-        var _self = this,
-          list = _self.get('list'),
-          selectedValue = _self.getSelectedValue();
-        if (val !== selectedValue && list.getCount()) {
-          if (list.get('multipleSelect')) {
-            list.clearSelection();
-          }
-          list.setSelectionByField(val.split(','));
-        }
-      },
-      /**
-       * @protected
-       * @ignore
-       */
-      onChange: function(selText, selValue, ev) {
-        var _self = this,
-          curTrigger = _self.get('curTrigger');
-        //curTrigger && curTrigger.trigger('change'); //触发改变事件
-        _self.fire('selectedchange', {
-          value: selValue,
-          text: selText,
-          curTrigger: curTrigger,
-          item: ev.item
+  listPicker = Picker.extend({
+    initializer : function(){
+      var _self = this,
+        children = _self.get('children'),
+        list = _self.get('list');
+      if(!list){
+        children.push({
+
         });
+      }
+    },
+    /**
+     * 设置选中的值
+     * @override
+     * @param {String} val 设置值
+     */
+    setSelectedValue : function(val){
+      val = val ? val.toString() : '';
+      if(!this.get('isInit')){
+        this._initControl();
+      }
+      var _self = this,
+        list = _self.get('list'),
+        selectedValue = _self.getSelectedValue();
+      if(val !== selectedValue && list.getCount()){
+        if(list.get('multipleSelect')){
+          list.clearSelection();
+        }
+        list.setSelectionByField(val.split(','));
+      }   
+    },
+    /**
+     * @protected
+     * @ignore
+     */
+    onChange : function(selText,selValue,ev){
+      var _self = this,
+        curTrigger = _self.get('curTrigger');
+      //curTrigger && curTrigger.trigger('change'); //触发改变事件
+      _self.fire('selectedchange',{value : selValue,text : selText,curTrigger : curTrigger,item : ev.item});
+    },
+    /**
+     * 获取选中的值，多选状态下，值以','分割
+     * @return {String} 选中的值
+     */
+    getSelectedValue : function(){
+      if(!this.get('isInit')){
+        this._initControl();
+      }
+      return this.get('list').getSelectionValues().join(',');
+    },
+    /**
+     * 获取选中项的文本，多选状态下，文本以','分割
+     * @return {String} 选中的文本
+     */
+    getSelectedText : function(){
+      if(!this.get('isInit')){
+        this._initControl();
+      }
+      return this.get('list').getSelectionText().join(',');
+    }
+  },{
+    ATTRS : {
+      /**
+       * 默认子控件的样式,默认为'simple-list'
+       * @type {String}
+       * @override
+       */
+      defaultChildClass:{
+        value : 'simple-list'
       },
       /**
-       * 获取选中的值，多选状态下，值以','分割
-       * @return {String} 选中的值
+       * 选择的列表
+       * <pre><code>
+       *  var list = picker.get('list');
+       *  list.getSelected();
+       * </code></pre>
+       * @type {BUI.List.SimpleList}
+       * @readOnly
        */
-      getSelectedValue: function() {
-        if (!this.get('isInit')) {
-          this._initControl();
+      list : {
+        getter:function(){
+          return this.get('children')[0];
         }
-        return this.get('list').getSelectionValues().join(',');
-      },
+      }
       /**
-       * 获取选中项的文本，多选状态下，文本以','分割
-       * @return {String} 选中的文本
+       * @event selectedchange
+       * 选择发生改变事件
+       * @param {Object} e 事件对象
+       * @param {String} e.text 选中的文本
+       * @param {string} e.value 选中的值
+       * @param {Object} e.item 发生改变的选项
+       * @param {jQuery} e.curTrigger 当前触发picker的元素
        */
-      getSelectedText: function() {
-        if (!this.get('isInit')) {
-          this._initControl();
-        }
-        return this.get('list').getSelectionText().join(',');
-      }
-    }, {
-      ATTRS: {
-        /**
-         * 默认子控件的样式,默认为'simple-list'
-         * @type {String}
-         * @override
-         */
-        defaultChildClass: {
-          value: 'simple-list'
-        },
-        /**
-         * 选择的列表
-         * <pre><code>
-         *  var list = picker.get('list');
-         *  list.getSelected();
-         * </code></pre>
-         * @type {BUI.List.SimpleList}
-         * @readOnly
-         */
-        list: {
-          getter: function() {
-            return this.get('children')[0];
-          }
-        }
-        /**
-         * @event selectedchange
-         * 选择发生改变事件
-         * @param {Object} e 事件对象
-         * @param {String} e.text 选中的文本
-         * @param {string} e.value 选中的值
-         * @param {Object} e.item 发生改变的选项
-         * @param {jQuery} e.curTrigger 当前触发picker的元素
-         */
-      }
-    }, {
-      xclass: 'list-picker'
-    });
-  module.exports = listPicker;
+    }
+  },{
+    xclass : 'list-picker'
+  });
+
+module.exports = listPicker;
+
 });
+
 define("bui/toolbar", ["bui/common", "jquery"], function(require, exports, module) {
   /**
    * @fileOverview 工具栏命名空间入口
@@ -17852,2983 +18002,3246 @@ define("bui/toolbar/numberpagingbar", ["jquery", "bui/common"], function(require
   });
   module.exports = NumberPagingBar;
 });
-define("bui/calendar", ["jquery", "bui/common", "bui/calendar/calendar", "bui/calendar/monthpicker", "bui/calendar/datepicker", "bui/data", "bui/list", "bui/overlay", "bui/picker", "bui/calendar/header", "bui/calendar/panel", "bui/toolbar"], function(require, exports, module) {
-  /**
-   * @fileOverview 日历命名空间入口
-   * @ignore
-   */
+define("bui/calendar", ["bui/common","jquery","bui/picker","bui/overlay","bui/list","bui/data","bui/toolbar"], function(require, exports, module){
+/**
+ * @fileOverview 日历命名空间入口
+ * @ignore
+ */
+
   var BUI = require("bui/common"),
     Calendar = BUI.namespace('Calendar');
+
   BUI.mix(Calendar, {
     Calendar: require("bui/calendar/calendar"),
     MonthPicker: require("bui/calendar/monthpicker"),
     DatePicker: require("bui/calendar/datepicker")
   });
+
   module.exports = Calendar;
+
 });
-define("bui/calendar/calendar", ["jquery", "bui/common", "bui/data", "bui/list", "bui/overlay", "bui/picker", "bui/calendar/monthpicker", "bui/calendar/header", "bui/calendar/panel", "bui/toolbar"], function(require, exports, module) {
-  /**
-   * @fileOverview 日期控件
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    PREFIX = BUI.prefix,
-    CLS_PICKER_TIME = 'x-datepicker-time',
-    CLS_PICKER_HOUR = 'x-datepicker-hour',
-    CLS_PICKER_MINUTE = 'x-datepicker-minute',
-    CLS_PICKER_SECOND = 'x-datepicker-second',
-    CLS_TIME_PICKER = 'x-timepicker',
-    Picker = require("bui/picker").ListPicker,
-    MonthPicker = require("bui/calendar/monthpicker"),
-    Header = require("bui/calendar/header"),
-    Panel = require("bui/calendar/panel"),
-    Toolbar = require("bui/toolbar"),
-    Component = BUI.Component,
-    DateUtil = BUI.Date;
+define("bui/calendar/calendar", ["bui/common","jquery","bui/picker","bui/overlay","bui/list","bui/data","bui/toolbar"], function(require, exports, module){
+/**
+ * @fileOverview 日期控件
+ * @author dxq613@gmail.com
+ * @ignore
+ */
 
-  function today() {
-    var now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  }
 
-  function fixedNumber(n) {
-    if (n < 10) {
-      return '0' + n;
-    }
-    return n.toString();
-  }
+var BUI = require("bui/common"),
+  PREFIX = BUI.prefix,
+  CLS_PICKER_TIME = 'x-datepicker-time',
+  CLS_PICKER_HOUR = 'x-datepicker-hour',
+  CLS_PICKER_MINUTE = 'x-datepicker-minute',
+  CLS_PICKER_SECOND = 'x-datepicker-second',
+  CLS_TIME_PICKER = 'x-timepicker',
+  Picker = require("bui/picker").ListPicker,
+  MonthPicker = require("bui/calendar/monthpicker"),
+  Header = require("bui/calendar/header"),
+  Panel = require("bui/calendar/panel"),
+  Toolbar = require("bui/toolbar"),
+  Component = BUI.Component,
+  DateUtil = BUI.Date;
 
-  function getNumberItems(end) {
-    var items = [];
-    for (var i = 0; i < end; i++) {
-      items.push({
-        text: fixedNumber(i),
-        value: fixedNumber(i)
-      });
-    }
-    return items;
-  }
+function today(){
+  var now = new Date();
+  return new Date(now.getFullYear(),now.getMonth(),now.getDate());
+}
 
-  function getTimeUnit(self, cls) {
-    var inputEl = self.get('el').find('.' + cls);
-    return parseInt(inputEl.val(), 10);
+function fixedNumber(n){
+  if( n< 10 ){
+    return '0'+n;
   }
+  return n.toString();
+}
+function getNumberItems(end){
+  var items = [];
+  for (var i = 0; i < end; i++) {
+    items.push({text:fixedNumber(i),value:fixedNumber(i)});
+  }
+  return items;
+}
 
-  function setTimeUnit(self, cls, val) {
-    var inputEl = self.get('el').find('.' + cls);
-    if (BUI.isNumber(val)) {
-      val = fixedNumber(val);
-    }
-    inputEl.val(val);
+function getTimeUnit (self,cls){
+  var inputEl = self.get('el').find('.' + cls);
+  return parseInt(inputEl.val(),10);
+
+}
+
+function setTimeUnit (self,cls,val){
+  var inputEl = self.get('el').find('.' + cls);
+  if(BUI.isNumber(val)){
+    val = fixedNumber(val);
   }
-  /**
-   * 日期控件
-   * <p>
-   * <img src="../assets/img/class-calendar.jpg"/>
-   * </p>
-   * xclass:'calendar'
-   * <pre><code>
-   *  BUI.use('bui/calendar',function(Calendar){
-   *    var calendar = new Calendar.Calendar({
-   *      render:'#calendar'
-   *    });
-   *    calendar.render();
-   *    calendar.on('selectedchange',function (ev) {
-   *      alert(ev.date);
-   *    });
-   * });
-   * </code></pre>
-   * @class BUI.Calendar.Calendar
-   * @extends BUI.Component.Controller
-   */
-  var calendar = Component.Controller.extend({
-    //设置内容
-    initializer: function() {
-      var _self = this,
-        children = _self.get('children'),
-        header = new Header(),
-        panel = new Panel(),
-        footer = _self.get('footer') || _self._createFooter();
-      /*,
+  inputEl.val(val);
+}
+
+
+
+/**
+ * 日期控件
+ * <p>
+ * <img src="../assets/img/class-calendar.jpg"/>
+ * </p>
+ * xclass:'calendar'
+ * <pre><code>
+ *  BUI.use('bui/calendar',function(Calendar){
+ *    var calendar = new Calendar.Calendar({
+ *      render:'#calendar'
+ *    });
+ *    calendar.render();
+ *    calendar.on('selectedchange',function (ev) {
+ *      alert(ev.date);
+ *    });
+ * });
+ * </code></pre>
+ * @class BUI.Calendar.Calendar
+ * @extends BUI.Component.Controller
+ */
+var calendar = Component.Controller.extend({
+
+  //设置内容
+  initializer: function(){
+    var _self = this,
+      children = _self.get('children'),
+      header = new Header(),
+      panel = new Panel(),
+      footer = _self.get('footer') || _self._createFooter();/*,
       monthPicker = _self.get('monthPicker') || _self._createMonthPicker();*/
-      //添加头
-      children.push(header);
-      //添加panel
-      children.push(panel);
-      children.push(footer);
-      //children.push(monthPicker);
-      _self.set('header', header);
-      _self.set('panel', panel);
-      _self.set('footer', footer);
-      //_self.set('monthPicker',monthPicker);
-    },
-    renderUI: function() {
-      var _self = this,
-        children = _self.get('children');
-      if (_self.get('showTime')) {
-        var timepicker = _self.get('timepicker') || _self._initTimePicker();
-        children.push(timepicker);
-        _self.set('timepicker', timepicker);
-      }
-    },
-    //绑定事件
-    bindUI: function() {
-      var _self = this,
-        header = _self.get('header'),
-        panel = _self.get('panel');
-      panel.on('selectedchange', function(e) {
-        var date = e.date;
-        if (!DateUtil.isDateEquals(date, _self.get('selectedDate'))) {
-          _self.set('selectedDate', date);
-        }
-      });
-      if (!_self.get('showTime')) {
-        panel.on('click', function() {
-          _self.fire('accept');
-        });
-      } else {
-        _self._initTimePickerEvent();
-      }
-      header.on('monthchange', function(e) {
-        _self._setYearMonth(e.year, e.month);
-      });
-      header.on('headerclick', function() {
-        var monthPicker = _self.get('monthpicker') || _self._createMonthPicker();
-        monthPicker.set('year', header.get('year'));
-        monthPicker.set('month', header.get('month'));
-        monthPicker.show();
-      });
-    },
-    _initTimePicker: function() {
-      var _self = this,
-        lockTime = _self.get('lockTime'),
-        _timePickerEnum = {
-          hour: CLS_PICKER_HOUR,
-          minute: CLS_PICKER_MINUTE,
-          second: CLS_PICKER_SECOND
-        };
-      if (lockTime) {
-        for (var key in lockTime) {
-          var noCls = _timePickerEnum[key.toLowerCase()];
-          _self.set(key, lockTime[key]);
-          if (!lockTime.editable) {
-            _self.get('el').find("." + noCls).attr("disabled", "");
-          }
-        }
-      }
-      var picker = new Picker({
-        elCls: CLS_TIME_PICKER,
-        children: [{
-          itemTpl: '<li><a href="#">{text}</a></li>'
-        }],
-        autoAlign: false,
-        align: {
-          node: _self.get('el'),
-          points: ['bl', 'bl'],
-          offset: [0, -30]
-        },
-        trigger: _self.get('el').find('.' + CLS_PICKER_TIME)
-      });
-      picker.render();
-      _self._initTimePickerEvent(picker);
-      return picker;
-    },
-    _initTimePickerEvent: function(picker) {
-      var _self = this,
-        picker = _self.get('timepicker');
-      if (!picker) {
-        return;
-      }
-      picker.get('el').delegate('a', 'click', function(ev) {
-        ev.preventDefault();
-      });
-      picker.on('triggerchange', function(ev) {
-        var curTrigger = ev.curTrigger;
-        if (curTrigger.hasClass(CLS_PICKER_HOUR)) {
-          picker.get('list').set('items', getNumberItems(24));
-        } else {
-          picker.get('list').set('items', getNumberItems(60));
-        }
-      });
-      picker.on('selectedchange', function(ev) {
-        var curTrigger = ev.curTrigger,
-          val = ev.value;
-        if (curTrigger.hasClass(CLS_PICKER_HOUR)) {
-          _self.setInternal('hour', val);
-        } else if (curTrigger.hasClass(CLS_PICKER_MINUTE)) {
-          _self.setInternal('minute', val);
-        } else {
-          _self.setInternal('second', val);
-        }
-      });
-    },
-    //更改年和月
-    _setYearMonth: function(year, month) {
-      var _self = this,
-        selectedDate = _self.get('selectedDate'),
-        date = selectedDate.getDate();
-      if (year !== selectedDate.getFullYear() || month !== selectedDate.getMonth()) {
-        var newDate = new Date(year, month, date);
-        if (newDate.getMonth() != month) { //下一个月没有对应的日期,定位到下一个月最后一天
-          newDate = DateUtil.addDay(-1, new Date(year, month + 1));
-        }
-        _self.set('selectedDate', newDate);
-      }
-    },
-    //创建选择月的控件
-    _createMonthPicker: function() {
-      var _self = this,
-        monthpicker;
-      monthpicker = new MonthPicker({
-        render: _self.get('el'),
-        effect: {
-          effect: 'slide',
-          duration: 300
-        },
-        visibleMode: 'display',
-        success: function() {
-          var picker = this;
-          _self._setYearMonth(picker.get('year'), picker.get('month'));
-          picker.hide();
-        },
-        cancel: function() {
-          this.hide();
-        }
-      });
-      _self.set('monthpicker', monthpicker);
-      _self.get('children').push(monthpicker);
-      return monthpicker;
-    },
-    //创建底部按钮栏
-    _createFooter: function() {
-      var _self = this,
-        showTime = this.get('showTime'),
-        items = [];
-      if (showTime) {
-        items.push({
-          content: _self.get('timeTpl')
-        });
-        items.push({
-          xclass: 'bar-item-button',
-          text: '确定',
-          btnCls: 'button button-small button-primary',
-          listeners: {
-            click: function() {
-              _self.fire('accept');
-            }
-          }
-        });
-      } else {
-        items.push({
-          xclass: 'bar-item-button',
-          text: '今天',
-          btnCls: 'button button-small',
-          id: 'todayBtn',
-          listeners: {
-            click: function() {
-              var day = today();
-              _self.set('selectedDate', day);
-              _self.fire('accept');
-            }
-          }
-        });
-        items.push({
-          xclass: 'bar-item-button',
-          text: '清除',
-          btnCls: 'button button-small',
-          id: 'clsBtn',
-          listeners: {
-            click: function() {
-              _self.fire('clear');
-            }
-          }
-        });
-      }
-      return new Toolbar.Bar({
-        elCls: PREFIX + 'calendar-footer',
-        children: items
-      });
-    },
-    //更新今天按钮的状态
-    _updateTodayBtnAble: function() {
-      var _self = this;
-      if (!_self.get('showTime')) {
-        var footer = _self.get("footer"),
-          panelView = _self.get("panel").get("view"),
-          now = today(),
-          btn = footer.getItem("todayBtn");
-        panelView._isInRange(now) ? btn.enable() : btn.disable();
-      }
-    },
-    //设置所选日期
-    _uiSetSelectedDate: function(v) {
-      var _self = this,
-        year = v.getFullYear(),
-        month = v.getMonth();
-      _self.get('header').setMonth(year, month);
-      _self.get('panel').set('selected', v);
-      _self.fire('datechange', {
-        date: v
-      });
-    },
-    _uiSetHour: function(v) {
-      setTimeUnit(this, CLS_PICKER_HOUR, v);
-    },
-    _uiSetMinute: function(v) {
-      setTimeUnit(this, CLS_PICKER_MINUTE, v);
-    },
-    _uiSetSecond: function(v) {
-      setTimeUnit(this, CLS_PICKER_SECOND, v);
-    },
-    //设置最大值
-    _uiSetMaxDate: function(v) {
-      var _self = this;
-      _self.get('panel').set('maxDate', v);
-      _self._updateTodayBtnAble();
-    },
-    //设置最小值
-    _uiSetMinDate: function(v) {
-      var _self = this;
-      _self.get('panel').set('minDate', v);
-      _self._updateTodayBtnAble();
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 日历控件头部，选择年月
-       * @private
-       * @type {Object}
-       */
-      header: {},
-      /**
-       * 日历控件选择日
-       * @private
-       * @type {Object}
-       */
-      panel: {},
-      /**
-       * 最大日期
-       * <pre><code>
-       *   calendar.set('maxDate','2013-07-29');
-       * </code></pre>
-       * @type {Date}
-       */
-      maxDate: {},
-      /**
-       * 最小日期
-       * <pre><code>
-       *   calendar.set('minDate','2013-07-29');
-       * </code></pre>
-       * @type {Date}
-       */
-      minDate: {},
-      /**
-       * 选择月份控件
-       * @private
-       * @type {Object}
-       */
-      monthPicker: {},
-      /**
-       * 选择时间控件
-       * @private
-       * @type {Object}
-       */
-      timepicker: {},
-      width: {
-        value: 180
-      },
-      events: {
-        value: {
-          /**
-           * @event
-           * @name BUI.Calendar.Calendar#click
-           * @param {Object} e 点击事件
-           * @param {Date} e.date
-           */
-          'click': false,
-          /**
-           * 确认日期更改，如果不显示日期则当点击日期或者点击今天按钮时触发，如果显示日期，则当点击确认按钮时触发。
-           * @event
-           */
-          'accept': false,
-          /**
-           * @event
-           * @name BUI.Calendar.Calendar#datechange
-           * @param {Object} e 选中的日期发生改变
-           * @param {Date} e.date
-           */
-          'datechange': false,
-          /**
-           * @event
-           * @name BUI.Calendar.Calendar#monthchange
-           * @param {Object} e 月份发生改变
-           * @param {Number} e.year
-           * @param {Number} e.month
-           */
-          'monthchange': false
-        }
-      },
-      /**
-       * 是否选择时间,此选项决定是否可以选择时间
-       *
-       * @cfg {Boolean} showTime
-       */
-      showTime: {
-        value: false
-      },
-      /**
-       * 锁定时间选择
-       *<pre><code>
-       *  var calendar = new Calendar.Calendar({
-       *  render:'#calendar',
-       *  lockTime : {hour:00,minute:30} //表示锁定时为00,分为30分,秒无锁用户可选择
-       * });
-       * </code></pre>
-       *
-       * @type {Object}
-       */
-      lockTime: {},
-      timeTpl: {
-        value: '<input type="text" readonly class="' + CLS_PICKER_TIME + ' ' + CLS_PICKER_HOUR + '" />:<input type="text" readonly class="' + CLS_PICKER_TIME + ' ' + CLS_PICKER_MINUTE + '" />:<input type="text" readonly class="' + CLS_PICKER_TIME + ' ' + CLS_PICKER_SECOND + '" />'
-      },
-      /**
-       * 选择的日期,默认为当天
-       * <pre><code>
-       *  var calendar = new Calendar.Calendar({
-       *  render:'#calendar',
-       *   selectedDate : new Date('2013/07/01') //不能使用字符串
-       * });
-       * </code></pre>
-       * @cfg {Date} selectedDate
-       */
-      /**
-       * 选择的日期
-       * <pre><code>
-       *   calendar.set('selectedDate',new Date('2013-9-01'));
-       * </code></pre>
-       * @type {Date}
-       * @default today
-       */
-      selectedDate: {
-        value: today()
-      },
-      /**
-       * 小时,默认为当前小时
-       * @type {Number}
-       */
-      hour: {
-        value: new Date().getHours()
-      },
-      /**
-       * 分,默认为当前分
-       * @type {Number}
-       */
-      minute: {
-        value: new Date().getMinutes()
-      },
-      /**
-       * 秒,默认为当前秒
-       * @type {Number}
-       */
-      second: {
-        value: 0
-      }
-    }
-  }, {
-    xclass: 'calendar',
-    priority: 0
-  });
-  module.exports = calendar;
-});
-define("bui/calendar/monthpicker", ["jquery", "bui/common", "bui/overlay", "bui/data", "bui/list", "bui/toolbar"], function(require, exports, module) {
-  /**
-   * @fileOverview 选择年月
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    Component = BUI.Component,
-    Overlay = require("bui/overlay").Overlay,
-    List = require("bui/list").SimpleList,
-    Toolbar = require("bui/toolbar"),
-    PREFIX = BUI.prefix,
-    CLS_MONTH = 'x-monthpicker-month',
-    DATA_MONTH = 'data-month',
-    DATA_YEAR = 'data-year',
-    CLS_YEAR = 'x-monthpicker-year',
-    CLS_YEAR_NAV = 'x-monthpicker-yearnav',
-    CLS_SELECTED = 'x-monthpicker-selected',
-    CLS_ITEM = 'x-monthpicker-item',
-    months = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
 
-  function getMonths() {
-    return $.map(months, function(month, index) {
-      return {
-        text: month,
-        value: index
-      };
+
+    //添加头
+    children.push(header);
+    //添加panel
+    children.push(panel);
+    children.push(footer);
+    //children.push(monthPicker);
+
+    _self.set('header',header);
+    _self.set('panel',panel);
+    _self.set('footer',footer);
+    //_self.set('monthPicker',monthPicker);
+  },
+  renderUI : function(){
+    var _self = this,
+    children = _self.get('children');
+    if(_self.get('showTime')){
+      var  timepicker = _self.get('timepicker') || _self._initTimePicker();
+      children.push(timepicker);
+      _self.set('timepicker',timepicker);
+    }
+  },
+  //绑定事件
+  bindUI : function(){
+    var _self = this,
+      header = _self.get('header'),
+      panel = _self.get('panel');
+
+    panel.on('selectedchange',function(e){
+      var date = e.date;
+      if(!DateUtil.isDateEquals(date,_self.get('selectedDate'))){
+        _self.set('selectedDate',date);
+      }
+    });
+    if(!_self.get('showTime')){
+      panel.on('click',function(){
+        _self.fire('accept');
+      });
+    }else{
+      _self._initTimePickerEvent();
+    }
+
+    header.on('monthchange',function(e){
+      _self._setYearMonth(e.year,e.month);
+    });
+
+    header.on('headerclick',function(){
+      var monthPicker = _self.get('monthpicker') || _self._createMonthPicker();
+      monthPicker.set('year',header.get('year'));
+      monthPicker.set('month',header.get('month'));
+      monthPicker.show();
+    });
+  },
+  _initTimePicker : function(){
+    var _self = this,
+      lockTime = _self.get('lockTime'),
+      _timePickerEnum={hour:CLS_PICKER_HOUR,minute:CLS_PICKER_MINUTE,second:CLS_PICKER_SECOND};
+    if(lockTime){
+        for(var key in lockTime){
+            var noCls = _timePickerEnum[key.toLowerCase()];
+            _self.set(key,lockTime[key]);
+            if(!lockTime.editable){
+              _self.get('el').find("."+noCls).attr("disabled","");
+            }
+        }
+    }
+    var  picker = new Picker({
+        elCls : CLS_TIME_PICKER,
+        children:[{
+          itemTpl : '<li><a href="#">{text}</a></li>'
+        }],
+        autoAlign : false,
+        align : {
+          node : _self.get('el').find('.bui-calendar-footer'),
+          points:['tl','bl'],
+          offset:[-1,1]
+        },
+        trigger : _self.get('el').find('.' +CLS_PICKER_TIME)
+      });
+    picker.render();
+    _self._initTimePickerEvent(picker);
+    return picker;
+  },
+  _initTimePickerEvent : function(picker){
+    var _self = this,
+      picker= _self.get('timepicker');
+
+    if(!picker){
+      return;
+    }
+
+    picker.get('el').delegate('a','click',function(ev){
+      ev.preventDefault();
+    });
+    picker.on('triggerchange',function(ev){
+      var curTrigger = ev.curTrigger;
+      if(curTrigger.hasClass(CLS_PICKER_HOUR)){
+        picker.get('list').set('items',getNumberItems(24));
+      }else{
+        picker.get('list').set('items',getNumberItems(60));
+      }
+    });
+
+    picker.on('selectedchange',function(ev){
+      var curTrigger = ev.curTrigger,
+        val = ev.value;
+      if(curTrigger.hasClass(CLS_PICKER_HOUR)){
+        _self.setInternal('hour',val);
+      }else if(curTrigger.hasClass(CLS_PICKER_MINUTE)){
+        _self.setInternal('minute',val);
+      }else{
+        _self.setInternal('second',val);
+      }
+    });
+  },
+  //更改年和月
+  _setYearMonth : function(year,month){
+    var _self = this,
+      selectedDate = _self.get('selectedDate'),
+      date = selectedDate.getDate();
+    if(year !== selectedDate.getFullYear() || month !== selectedDate.getMonth()){
+      var newDate = new Date(year,month,date);
+      if(newDate.getMonth() != month){ //下一个月没有对应的日期,定位到下一个月最后一天
+        newDate = DateUtil.addDay(-1,new Date(year,month + 1));
+      }
+      _self.set('selectedDate',newDate);
+    }
+  },
+  //创建选择月的控件
+  _createMonthPicker: function(){
+    var _self = this,
+      monthpicker;
+    monthpicker = new MonthPicker({
+      render : _self.get('el'),
+      effect : {
+        effect:'slide',
+        duration:300
+      },
+      visibleMode:'display',
+      success : function(){
+        var picker = this;
+        _self._setYearMonth(picker.get('year'),picker.get('month'));
+        picker.hide();
+      },
+      cancel : function(){
+        this.hide();
+      }
+    });
+    _self.set('monthpicker',monthpicker);
+    _self.get('children').push(monthpicker);
+    return monthpicker;
+  },
+  //创建底部按钮栏
+  _createFooter : function(){
+    var _self = this,
+      showTime = this.get('showTime'),
+      items = [];
+
+    if(showTime){
+      items.push({
+        content : _self.get('timeTpl')
+      });
+      items.push({
+        xclass:'bar-item-button',
+        text:'确定',
+        btnCls: 'button button-small button-primary',
+        listeners:{
+          click:function(){
+            _self.fire('accept');
+          }
+        }
+      });
+    }else{
+      items.push({
+        xclass:'bar-item-button',
+        text:'今天',
+        btnCls: 'button button-small',
+	      id:'todayBtn',
+        listeners:{
+          click:function(){
+            var day = today();
+            _self.set('selectedDate',day);
+            _self.fire('accept');
+          }
+        }
+      });
+      items.push({
+        xclass:'bar-item-button',
+        text:'清除',
+        btnCls: 'button button-small',
+        id:'clsBtn',
+        listeners:{
+          click:function(){
+            _self.fire('clear');
+          }
+        }
+      });
+    }
+
+    return new Toolbar.Bar({
+        elCls : PREFIX + 'calendar-footer',
+        children:items
+      });
+  },
+//更新今天按钮的状态
+  _updateTodayBtnAble: function () {
+          var _self = this;
+          if (!_self.get('showTime')) {
+              var footer = _self.get("footer"),
+                  panelView = _self.get("panel").get("view"),
+                  now = today(),
+                  btn = footer.getItem("todayBtn");
+              panelView._isInRange(now) ? btn.enable() : btn.disable();
+          }
+  },
+  //设置所选日期
+  _uiSetSelectedDate : function(v){
+    var _self = this,
+      year = v.getFullYear(),
+      month = v.getMonth();
+
+    _self.get('header').setMonth(year,month);
+    _self.get('panel').set('selected',v);
+    _self.fire('datechange',{date:v});
+  },
+  _uiSetHour : function(v){
+    setTimeUnit(this,CLS_PICKER_HOUR,v);
+  },
+  _uiSetMinute : function(v){
+    setTimeUnit(this,CLS_PICKER_MINUTE,v);
+  },
+  _uiSetSecond : function(v){
+    setTimeUnit(this,CLS_PICKER_SECOND,v);
+  },
+  //设置最大值
+  _uiSetMaxDate : function(v){
+    var _self = this;
+    _self.get('panel').set('maxDate',v);
+  _self._updateTodayBtnAble();
+  },
+  //设置最小值
+  _uiSetMinDate : function(v){
+    var _self = this;
+    _self.get('panel').set('minDate',v);
+  _self._updateTodayBtnAble();
+  }
+
+},{
+  ATTRS :
+  {
+    /**
+     * 日历控件头部，选择年月
+     * @private
+     * @type {Object}
+     */
+    header:{
+
+    },
+
+    /**
+     * 日历控件选择日
+     * @private
+     * @type {Object}
+     */
+    panel:{
+
+    },
+    /**
+     * 最大日期
+     * <pre><code>
+     *   calendar.set('maxDate','2013-07-29');
+     * </code></pre>
+     * @type {Date}
+     */
+    maxDate : {
+
+    },
+    /**
+     * 最小日期
+     * <pre><code>
+     *   calendar.set('minDate','2013-07-29');
+     * </code></pre>
+     * @type {Date}
+     */
+    minDate : {
+
+    },
+    /**
+     * 选择月份控件
+     * @private
+     * @type {Object}
+     */
+    monthPicker : {
+
+    },
+    /**
+     * 选择时间控件
+     * @private
+     * @type {Object}
+     */
+    timepicker:{
+
+    },
+    width:{
+      value:180
+    },
+    events:{
+      value:{
+         /**
+         * @event
+         * @name BUI.Calendar.Calendar#click
+         * @param {Object} e 点击事件
+         * @param {Date} e.date
+         */
+        'click' : false,
+        /**
+         * 确认日期更改，如果不显示日期则当点击日期或者点击今天按钮时触发，如果显示日期，则当点击确认按钮时触发。
+         * @event
+         */
+        'accept' : false,
+        /**
+         * @event
+         * @name BUI.Calendar.Calendar#datechange
+         * @param {Object} e 选中的日期发生改变
+         * @param {Date} e.date
+         */
+        'datechange' : false,
+         /**
+         * @event
+         * @name BUI.Calendar.Calendar#monthchange
+         * @param {Object} e 月份发生改变
+         * @param {Number} e.year
+         * @param {Number} e.month
+         */
+        'monthchange' : false
+      }
+    },
+    /**
+     * 是否选择时间,此选项决定是否可以选择时间
+     *
+     * @cfg {Boolean} showTime
+     */
+    showTime : {
+      value : false
+    },
+    /**
+    * 锁定时间选择
+    *<pre><code>
+    *  var calendar = new Calendar.Calendar({
+    *  render:'#calendar',
+    *  lockTime : {hour:00,minute:30} //表示锁定时为00,分为30分,秒无锁用户可选择
+    * });
+    * </code></pre>
+     *
+     * @type {Object}
+    */
+    lockTime :{
+    },
+    timeTpl : {
+      value : '<input type="text" readonly class="' + CLS_PICKER_TIME + ' ' + CLS_PICKER_HOUR + '" />:<input type="text" readonly class="' + CLS_PICKER_TIME + ' ' + CLS_PICKER_MINUTE + '" />:<input type="text" readonly class="' + CLS_PICKER_TIME + ' ' + CLS_PICKER_SECOND + '" />'
+    },
+    /**
+     * 选择的日期,默认为当天
+     * <pre><code>
+     *  var calendar = new Calendar.Calendar({
+     *  render:'#calendar',
+     *   selectedDate : new Date('2013/07/01') //不能使用字符串
+     * });
+     * </code></pre>
+     * @cfg {Date} selectedDate
+     */
+    /**
+     * 选择的日期
+     * <pre><code>
+     *   calendar.set('selectedDate',new Date('2013-9-01'));
+     * </code></pre>
+     * @type {Date}
+     * @default today
+     */
+    selectedDate : {
+      value : today()
+    },
+    /**
+     * 小时,默认为当前小时
+     * @type {Number}
+     */
+    hour : {
+      value : new Date().getHours()
+    },
+    /**
+     * 分,默认为当前分
+     * @type {Number}
+     */
+    minute:{
+      value : new Date().getMinutes()
+    },
+    /**
+     * 秒,默认为当前秒
+     * @type {Number}
+     */
+    second : {
+      value : 0
+    }
+  }
+},{
+  xclass : 'calendar',
+  priority : 0
+});
+
+module.exports = calendar;
+
+});
+define("bui/calendar/monthpicker", ["jquery","bui/common","bui/overlay","bui/list","bui/data","bui/toolbar"], function(require, exports, module){
+/**
+ * @fileOverview 选择年月
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  Component = BUI.Component,
+  Overlay = require("bui/overlay").Overlay,
+  List = require("bui/list").SimpleList,
+  Toolbar = require("bui/toolbar"),
+  PREFIX = BUI.prefix,
+  CLS_MONTH = 'x-monthpicker-month',
+  DATA_MONTH = 'data-month',
+  DATA_YEAR = 'data-year',
+  CLS_YEAR = 'x-monthpicker-year',
+  CLS_YEAR_NAV = 'x-monthpicker-yearnav',
+  CLS_SELECTED = 'x-monthpicker-selected',
+  CLS_ITEM = 'x-monthpicker-item',
+  months = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+
+function getMonths(){
+  return $.map(months,function(month,index){
+    return {text:month,value:index};
+  });
+}
+
+var MonthPanel = List.extend({
+
+  
+  bindUI : function(){
+    var _self = this;
+    _self.get('el').delegate('a','click',function(ev){
+      ev.preventDefault();
+    }).delegate('.' + CLS_MONTH,'dblclick',function(){
+      _self.fire('monthdblclick');
     });
   }
-  var MonthPanel = List.extend({
-    bindUI: function() {
-      var _self = this;
-      _self.get('el').delegate('a', 'click', function(ev) {
-        ev.preventDefault();
-      }).delegate('.' + CLS_MONTH, 'dblclick', function() {
-        _self.fire('monthdblclick');
-      });
+},{
+  ATTRS:{
+    itemTpl:{
+      view:true,
+      value : '<li class="'+CLS_ITEM+' x-monthpicker-month"><a href="#" hidefocus="on">{text}</a></li>'
+    },
+    
+    itemCls : {
+      value : CLS_ITEM
+    },
+    items:{
+      view:true,
+      value:getMonths()
+    },
+    elCls : {
+      view:true,
+      value:'x-monthpicker-months'
     }
-  }, {
-    ATTRS: {
-      itemTpl: {
-        view: true,
-        value: '<li class="' + CLS_ITEM + ' x-monthpicker-month"><a href="#" hidefocus="on">{text}</a></li>'
-      },
-      itemCls: {
-        value: CLS_ITEM
-      },
-      items: {
-        view: true,
-        value: getMonths()
-      },
-      elCls: {
-        view: true,
-        value: 'x-monthpicker-months'
+  }
+},{
+  xclass:'calendar-month-panel'
+});
+
+
+var YearPanel = List.extend({
+
+  bindUI : function(){
+    var _self = this,
+      el = _self.get('el');
+    el.delegate('a','click',function(ev){
+      ev.preventDefault();
+    });
+
+    el.delegate('.' + CLS_YEAR,'dblclick',function(){
+      _self.fire('yeardblclick');
+    });
+
+    el.delegate('.x-icon','click',function(ev){
+      var sender = $(ev.currentTarget);
+
+      if(sender.hasClass(CLS_YEAR_NAV + '-prev')){
+        _self._prevPage();
+      }else if(sender.hasClass(CLS_YEAR_NAV + '-next')){
+        _self._nextPage();
       }
+    });
+    _self.on('itemselected',function(ev){
+      if(ev.item){
+        _self.setInternal('year',ev.item.value);
+      }
+      
+    });
+  },
+  _prevPage : function(){
+    var _self = this,
+      start = _self.get('start'),
+      yearCount = _self.get('yearCount');
+    _self.set('start',start - yearCount);
+  },
+  _nextPage : function(){
+    var _self = this,
+      start = _self.get('start'),
+      yearCount = _self.get('yearCount');
+    _self.set('start',start + yearCount);
+  },
+  _uiSetStart : function(){
+    var _self = this;
+    _self._setYearsContent();
+  },
+  _uiSetYear : function(v){
+    var _self = this,
+      item = _self.findItemByField('value',v);
+    if(item){
+      _self.setSelectedByField(v);
+    }else{
+      _self.set('start',v);
     }
-  }, {
-    xclass: 'calendar-month-panel'
-  });
-  var YearPanel = List.extend({
-    bindUI: function() {
-      var _self = this,
-        el = _self.get('el');
-      el.delegate('a', 'click', function(ev) {
-        ev.preventDefault();
-      });
-      el.delegate('.' + CLS_YEAR, 'dblclick', function() {
-        _self.fire('yeardblclick');
-      });
-      el.delegate('.x-icon', 'click', function(ev) {
-        var sender = $(ev.currentTarget);
-        if (sender.hasClass(CLS_YEAR_NAV + '-prev')) {
-          _self._prevPage();
-        } else if (sender.hasClass(CLS_YEAR_NAV + '-next')) {
-          _self._nextPage();
-        }
-      });
-      _self.on('itemselected', function(ev) {
-        if (ev.item) {
-          _self.setInternal('year', ev.item.value);
-        }
-      });
-    },
-    _prevPage: function() {
-      var _self = this,
-        start = _self.get('start'),
-        yearCount = _self.get('yearCount');
-      _self.set('start', start - yearCount);
-    },
-    _nextPage: function() {
-      var _self = this,
-        start = _self.get('start'),
-        yearCount = _self.get('yearCount');
-      _self.set('start', start + yearCount);
-    },
-    _uiSetStart: function() {
-      var _self = this;
-      _self._setYearsContent();
-    },
-    _uiSetYear: function(v) {
-      var _self = this,
-        item = _self.findItemByField('value', v);
-      if (item) {
-        _self.setSelectedByField(v);
-      } else {
-        _self.set('start', v);
-      }
-    },
-    _setYearsContent: function() {
-      var _self = this,
-        year = _self.get('year'),
-        start = _self.get('start'),
-        yearCount = _self.get('yearCount'),
-        items = [];
-      for (var i = start; i < start + yearCount; i++) {
-        var text = i.toString();
-        items.push({
-          text: text,
-          value: i
-        });
-      }
-      _self.set('items', items);
-      _self.setSelectedByField(year);
+  },
+  _setYearsContent : function(){
+    var _self = this,
+      year = _self.get('year'),
+      start = _self.get('start'),
+      yearCount = _self.get('yearCount'),
+      items = [];
+
+    for(var i = start;i< start + yearCount;i++){
+      var text = i.toString();
+
+      items.push({text:text,value:i});
     }
-  }, {
-    ATTRS: {
-      items: {
-        view: true,
-        value: []
-      },
-      elCls: {
-        view: true,
-        value: 'x-monthpicker-years'
-      },
-      itemCls: {
-        value: CLS_ITEM
-      },
-      year: {},
-      /**
-       * 起始年
-       * @private
-       * @ignore
-       * @type {Number}
-       */
-      start: {
-        value: new Date().getFullYear()
-      },
-      /**
-       * 年数
-       * @private
-       * @ignore
-       * @type {Number}
-       */
-      yearCount: {
-        value: 10
-      },
-      itemTpl: {
-        view: true,
-        value: '<li class="' + CLS_ITEM + ' ' + CLS_YEAR + '"><a href="#" hidefocus="on">{text}</a></li>'
-      },
-      tpl: {
-        view: true,
-        value: '<div class="' + CLS_YEAR_NAV + '">' + '<span class="' + CLS_YEAR_NAV + '-prev x-icon x-icon-normal x-icon-small"><span class="icon icon-caret icon-caret-left"></span></span>' + '<span class="' + CLS_YEAR_NAV + '-next x-icon x-icon-normal x-icon-small"><span class="icon icon-caret icon-caret-right"></span></span>' + '</div>' + '<ul></ul>'
-      }
+    _self.set('items',items);
+    _self.setSelectedByField(year);
+  }
+
+},{
+  ATTRS:{
+    items:{
+      view:true,
+      value:[]
+    },
+    elCls : {
+      view:true,
+      value:'x-monthpicker-years'
+    },
+    itemCls : {
+      value : CLS_ITEM
+    },
+    year:{
+
+    },
+    /**
+     * 起始年
+     * @private
+     * @ignore
+     * @type {Number}
+     */
+    start:{
+      value: new Date().getFullYear()
+    },
+    /**
+     * 年数
+     * @private
+     * @ignore
+     * @type {Number}
+     */
+    yearCount:{
+      value:10
+    },
+    itemTpl : {
+      view:true,
+      value : '<li class="'+CLS_ITEM+' '+CLS_YEAR+'"><a href="#" hidefocus="on">{text}</a></li>'
+    },
+    tpl : {
+      view:true,
+      value:'<div class="'+CLS_YEAR_NAV+'">'+
+            '<span class="'+CLS_YEAR_NAV+'-prev x-icon x-icon-normal x-icon-small"><span class="icon icon-caret icon-caret-left"></span></span>'+
+            '<span class="'+CLS_YEAR_NAV+'-next x-icon x-icon-normal x-icon-small"><span class="icon icon-caret icon-caret-right"></span></span>'+
+            '</div>'+
+            '<ul></ul>'
     }
-  }, {
-    xclass: 'calendar-year-panel'
-  });
-  /**
-   * 月份选择器
-   * xclass : 'calendar-monthpicker'
-   * @class BUI.Calendar.MonthPicker
-   * @extends BUI.Overlay.Overlay
-   */
-  var monthPicker = Overlay.extend({
-    initializer: function() {
-      var _self = this,
-        children = _self.get('children'),
-        monthPanel = new MonthPanel(),
-        yearPanel = new YearPanel(),
-        footer = _self._createFooter();
-      children.push(monthPanel);
-      children.push(yearPanel);
-      children.push(footer);
-      _self.set('yearPanel', yearPanel);
-      _self.set('monthPanel', monthPanel);
-    },
-    bindUI: function() {
-      var _self = this;
-      _self.get('monthPanel').on('itemselected', function(ev) {
-        if (ev.item) {
-          _self.setInternal('month', ev.item.value);
-        }
-      }).on('monthdblclick', function() {
-        _self._successCall();
-      });
-      _self.get('yearPanel').on('itemselected', function(ev) {
-        if (ev.item) {
-          _self.setInternal('year', ev.item.value);
-        }
-      }).on('yeardblclick', function() {
-        _self._successCall();
-      });
-    },
-    _successCall: function() {
-      var _self = this,
-        callback = _self.get('success');
-      if (callback) {
-        callback.call(_self);
+  }
+},{
+  xclass:'calendar-year-panel'
+});
+
+/**
+ * 月份选择器
+ * xclass : 'calendar-monthpicker'
+ * @class BUI.Calendar.MonthPicker
+ * @extends BUI.Overlay.Overlay
+ */
+var monthPicker = Overlay.extend({
+
+  initializer : function(){
+    var _self = this,
+      children = _self.get('children'),
+      monthPanel = new MonthPanel(),
+      yearPanel = new YearPanel(),
+      footer = _self._createFooter();
+
+    children.push(monthPanel);
+    children.push(yearPanel);
+    children.push(footer);
+
+    _self.set('yearPanel',yearPanel);
+    _self.set('monthPanel',monthPanel);
+  },
+  bindUI : function(){
+    var _self = this;
+
+    _self.get('monthPanel').on('itemselected',function(ev){
+      if(ev.item){
+        _self.setInternal('month',ev.item.value);
       }
-    },
-    _createFooter: function() {
-      var _self = this;
-      return new Toolbar.Bar({
-        elCls: PREFIX + 'clear x-monthpicker-footer',
-        children: [{
-          xclass: 'bar-item-button',
-          text: '确定',
-          btnCls: 'button button-small button-primary',
-          handler: function() {
-            _self._successCall();
-          }
-        }, {
-          xclass: 'bar-item-button',
-          text: '取消',
-          btnCls: 'button button-small last',
-          handler: function() {
-            var callback = _self.get('cancel');
-            if (callback) {
-              callback.call(_self);
+    }).on('monthdblclick',function(){
+      _self._successCall();
+    });
+
+    _self.get('yearPanel').on('itemselected',function(ev){
+      if(ev.item){
+        _self.setInternal('year',ev.item.value);
+      }
+    }).on('yeardblclick',function(){
+      _self._successCall();
+    });
+
+  },
+  _successCall : function(){
+    var _self = this,
+      callback = _self.get('success');
+
+    if(callback){
+      callback.call(_self);
+    }
+  },
+  _createFooter : function(){
+    var _self = this;
+    return new Toolbar.Bar({
+        elCls : PREFIX + 'clear x-monthpicker-footer',
+        children:[
+          {
+            xclass:'bar-item-button',
+            text:'确定',
+            btnCls: 'button button-small button-primary',
+            handler:function(){
+              _self._successCall();
+            }
+          },{
+            xclass:'bar-item-button',
+            text:'取消',
+            btnCls:'button button-small last',
+            handler:function(){
+              var callback = _self.get('cancel');
+              if(callback){
+                callback.call(_self);
+              }
             }
           }
-        }]
+        ]
       });
+  },
+  _uiSetYear : function(v){
+    this.get('yearPanel').set('year',v);
+  },
+  _uiSetMonth:function(v){
+    this.get('monthPanel').setSelectedByField(v);
+  }
+},{
+  ATTRS:
+  {
+    /**
+     * 下部工具栏
+     * @private
+     * @type {Object}
+     */
+    footer : {
+
     },
-    _uiSetYear: function(v) {
-      this.get('yearPanel').set('year', v);
+    align : {
+      value : {}
     },
-    _uiSetMonth: function(v) {
-      this.get('monthPanel').setSelectedByField(v);
+    /**
+     * 选中的年
+     * @type {Number}
+     */
+    year : {
+      
+    },
+    /**
+     * 成功的回调函数
+     * @type {Function}
+     */
+    success:{
+      value : function(){
+
+      }
+    },
+    /**
+     * 取消的回调函数
+     * @type {Function}
+     */
+    cancel :{
+
+    value : function(){} 
+
+    },
+    width:{
+      value:180
+    },
+    /**
+     * 选中的月
+     * @type {Number}
+     */
+    month:{
+      
+    },
+    /**
+     * 选择年的控件
+     * @private
+     * @type {Object}
+     */
+    yearPanel : {
+
+    },
+    /**
+     * 选择月的控件
+     * @private
+     * @type {Object}
+     */
+    monthPanel:{
+
     }
-  }, {
-    ATTRS: {
-      /**
-       * 下部工具栏
-       * @private
-       * @type {Object}
-       */
-      footer: {},
-      align: {
-        value: {}
-      },
-      /**
-       * 选中的年
-       * @type {Number}
-       */
-      year: {},
-      /**
-       * 成功的回调函数
-       * @type {Function}
-       */
-      success: {
-        value: function() {}
-      },
-      /**
-       * 取消的回调函数
-       * @type {Function}
-       */
-      cancel: {
-        value: function() {}
-      },
-      width: {
-        value: 180
-      },
-      /**
-       * 选中的月
-       * @type {Number}
-       */
-      month: {},
-      /**
-       * 选择年的控件
-       * @private
-       * @type {Object}
-       */
-      yearPanel: {},
-      /**
-       * 选择月的控件
-       * @private
-       * @type {Object}
-       */
-      monthPanel: {}
-    }
-  }, {
-    xclass: 'monthpicker'
-  });
-  module.exports = monthPicker;
+
+  }
+},{
+  xclass :'monthpicker'
 });
-define("bui/calendar/datepicker", ["jquery", "bui/common", "bui/data", "bui/list", "bui/overlay", "bui/picker", "bui/calendar/calendar", "bui/calendar/monthpicker", "bui/calendar/header", "bui/calendar/panel", "bui/toolbar"], function(require, exports, module) {
+
+module.exports = monthPicker;
+
+});
+define("bui/calendar/header", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview 日期控件来选择年月的部分
+ * @ignore
+ */
+
+  
+var $ = require('jquery'),BUI = require("bui/common"),
+  PREFIX = BUI.prefix,
+  Component = BUI.Component,
+  CLS_TEXT_YEAR = 'year-text',
+  CLS_TEXT_MONTH = 'month-text',
+  CLS_ARROW = 'x-datepicker-arrow',
+  CLS_PREV = 'x-datepicker-prev',
+  CLS_NEXT = 'x-datepicker-next';
+    
+/**
+ * 日历控件显示选择年月
+ * xclass:'calendar-header'
+ * @class BUI.Calendar.Header
+ * @private
+ * @extends BUI.Component.Controller
+ */
+var header = Component.Controller.extend({
+
+  bindUI : function(){
+    var _self = this,
+      el = _self.get('el');
+	
+    el.delegate('.' + CLS_ARROW,'click',function(e){
+      e.preventDefault();
+      var sender = $(e.currentTarget);
+      if(sender.hasClass(CLS_NEXT)){
+        _self.nextMonth();
+      }else if(sender.hasClass(CLS_PREV)){
+        _self.prevMonth();
+      }
+    });
+
+    el.delegate('.x-datepicker-month','click',function(){
+      _self.fire('headerclick');
+    });
+  
+  },
   /**
-   * @fileOverview 日期选择器
-   * @author dxq613@gmail.com
+   * 设置年月
+   * @ignore
+   * @param {Number} year  年
+   * @param {Number} month 月
+   */
+  setMonth : function(year,month){
+    var _self = this,
+      curYear = _self.get('year'),
+      curMonth = _self.get('month');
+    if(year !== curYear || month !== curMonth){
+      _self.set('year',year);
+      _self.set('month',month);
+      _self.fire('monthchange',{year:year,month:month});
+    }
+  },
+  /**
+   * 下一月
    * @ignore
    */
-  var BUI = require("bui/common"),
-    Picker = require("bui/picker").Picker,
-    Calendar = require("bui/calendar/calendar"),
-    DateUtil = BUI.Date;
+  nextMonth : function(){
+    var _self = this,
+      date = new Date(_self.get('year'),_self.get('month') + 1);
+
+    _self.setMonth(date.getFullYear(),date.getMonth());
+  },
   /**
-   * 日期选择器，可以由输入框等触发
-   * <p>
-   * <img src="../assets/img/class-calendar.jpg"/>
-   * </p>
-   * xclass : 'calendar-datepicker'
-   * <pre><code>
-   *   BUI.use('bui/calendar',function(Calendar){
-   *      var datepicker = new Calendar.DatePicker({
-   *        trigger:'.calendar',
-   *        //delegateTrigger : true, //如果设置此参数，那么新增加的.calendar元素也会支持日历选择
-   *        autoRender : true
-   *      });
-   *    });
-   * </code></pre>
-   * @class BUI.Calendar.DatePicker
-   * @extends BUI.Picker.Picker
+   * 上一月
+   * @ignore
    */
-  var datepicker = Picker.extend({
-    initializer: function() {},
+  prevMonth : function(){
+    var _self = this,
+      date = new Date(_self.get('year'),_self.get('month') - 1);
+
+     _self.setMonth(date.getFullYear(),date.getMonth());
+  },
+  _uiSetYear : function(v){
+    var _self = this;
+    _self.get('el').find('.' + CLS_TEXT_YEAR).text(v);
+  },
+  _uiSetMonth : function(v){
+      var _self = this;
+    _self.get('el').find('.' + CLS_TEXT_MONTH).text(v+1);
+  }
+
+},{
+  ATTRS : {
     /**
-     * @protected
-     * 初始化内部控件
+     * 年
+     * @type {Number}
      */
-    createControl: function() {
-      var _self = this,
-        children = _self.get('children'),
-        calendar = new Calendar({
-          render: _self.get('el'),
-          showTime: _self.get('showTime'),
-          lockTime: _self.get('lockTime'),
-          minDate: _self.get('minDate'),
-          maxDate: _self.get('maxDate'),
-          autoRender: true
-        });
-      calendar.on('clear', function() {
-        var curTrigger = _self.get('curTrigger'),
-          oldValue = curTrigger.val();
-        if (oldValue) {
-          curTrigger.val('');
-          curTrigger.trigger('change');
-        }
-      });
-      if (!_self.get('dateMask')) {
-        if (_self.get('showTime')) {
-          _self.set('dateMask', 'yyyy-mm-dd HH:MM:ss');
-        } else {
-          _self.set('dateMask', 'yyyy-mm-dd');
-        }
-      }
-      children.push(calendar);
-      _self.set('calendar', calendar);
-      return calendar;
+    year:{
+      sync:false
     },
     /**
-     * 设置选中的值
-     * <pre><code>
-     *   datePicker.setSelectedValue('2012-01-1');
-     * </code></pre>
-     * @param {String} val 设置值
-     * @protected
+     * 月
+     * @type {Number}
      */
-    setSelectedValue: function(val) {
-      if (!this.get('calendar')) {
-        return;
+    month:{
+      sync:false,
+      setter:function(v){
+        this.set('monthText',v+1);
       }
-      var _self = this,
-        calendar = this.get('calendar'),
-        date = DateUtil.parse(val, _self.get("dateMask"));
-      date = date || _self.get('selectedDate');
-      calendar.set('selectedDate', DateUtil.getDate(date));
+    },
+    /**
+     * @private
+     * @type {Object}
+     */
+    monthText : {
+      
+    },
+    tpl:{
+      view:true,
+      value:'<div class="'+CLS_ARROW+' ' + CLS_PREV + '"><span class="icon icon-white icon-caret  icon-caret-left"></span></div>'+
+        '<div class="x-datepicker-month">'+
+          '<div class="month-text-container">'+
+            '<span><span class="year-text">{year}</span>年 <span class="month-text">{monthText}</span>月</span>'+
+            '<span class="' + PREFIX + 'caret ' + PREFIX + 'caret-down"></span>'+
+          '</div>'+
+        '</div>' +
+        '<div class="'+CLS_ARROW+' ' + CLS_NEXT + '"><span class="icon icon-white icon-caret  icon-caret-right"></span></div>'
+    },
+    elCls:{
+      view:true,
+      value:'x-datepicker-header'
+    },
+	  events:{
+  		value:{
+        /**
+         * 月发生改变，年发生改变也意味着月发生改变
+         * @event
+         * @param {Object} e 事件对象
+         * @param {Number} e.year 年
+         * @param {Number} e.month 月
+         */
+  			'monthchange' : true
+  		}
+	  }
+  }
+},{
+  xclass:'calendar-header'
+});
+
+module.exports = header;
+
+});
+define("bui/calendar/panel", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview 日历控件显示一月的日期
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  Component = BUI.Component,
+  DateUtil = BUI.Date,
+  CLS_DATE = 'x-datepicker-date',
+  CLS_TODAY = 'x-datepicker-today',
+  CLS_DISABLED = 'x-datepicker-disabled',
+  CLS_ACTIVE = 'x-datepicker-active',
+  DATA_DATE = 'data-date',//存储日期对象
+  DATE_MASK = 'isoDate',
+  CLS_SELECTED = 'x-datepicker-selected',
+  SHOW_WEEKS = 6,//当前容器显示6周
+  dateTypes = {
+    deactive : 'prevday',
+    active : 'active',
+    disabled : 'disabled'
+  },
+  weekDays = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+/**
+ * 日历面板的视图类
+ * @class BUI.Calendar.PanelView
+ * @extends BUI.Component.View
+ * @private
+ */
+var panelView = Component.View.extend({
+
+  renderUI : function(){
+    this.updatePanel();
+  },
+
+  //更新容器，当月、年发生改变时
+  updatePanel : function(){
+    var _self = this,
+      el = _self.get('el'),
+      bodyEl = el.find('tbody'),
+      innerTem = _self._getPanelInnerTpl();
+
+    bodyEl.empty();
+    $(innerTem).appendTo(bodyEl);
+  },
+  //获取容器内容
+  _getPanelInnerTpl : function(){
+    var _self = this,
+      startDate = _self._getFirstDate(),
+      temps = [];
+
+    for (var i = 0; i < SHOW_WEEKS; i++) {
+      var weekStart = DateUtil.addWeek(i,startDate);
+      temps.push(_self._getWeekTpl(weekStart));
+    };
+
+    return temps.join('');
+  },
+  //获取周模版
+  _getWeekTpl : function(startDate){
+    var _self = this,
+      weekTpl = _self.get('weekTpl'),
+      daysTemps = [];
+    for (var i = 0; i < weekDays.length; i++) {
+      var date = DateUtil.addDay(i,startDate);
+      daysTemps.push(_self._getDayTpl(date));  
+    }
+
+    return BUI.substitute(weekTpl,{
+      daysTpl:daysTemps.join('')
+    });
+  },
+  //获取日模版
+  _getDayTpl : function(date){
+    var _self = this,
+      dayTpl = _self.get('dayTpl'),
+      day = date.getDay(),
+      todayCls = _self._isToday(date) ? CLS_TODAY:'',
+      dayOfWeek = weekDays[day],
+      dateNumber = date.getDate(),
+      //不是本月则处于不活动状态
+      //不在指定的最大最小范围内，禁止选中
+      dateType = _self._isInRange(date) ? (_self._isCurrentMonth(date) ? dateTypes.active : dateTypes.deactive) : dateTypes.disabled;
+
+    return BUI.substitute(dayTpl,{
+      dayOfWeek : dayOfWeek,
+      dateType : dateType,
+      dateNumber : dateNumber,
+      todayCls : todayCls,
+      date : DateUtil.format(date,DATE_MASK)
+    });
+  },
+  //获取当前容器的第一天
+  _getFirstDate : function(year,month){
+    var _self = this,
+      monthFirstDate = _self._getMonthFirstDate(year,month),
+      day = monthFirstDate.getDay();
+    return DateUtil.addDay(day * -1,monthFirstDate);
+  },
+  //获取当月的第一天
+  _getMonthFirstDate : function(year,month){
+    var _self = this,
+      year = year || _self.get('year'),
+      month = month || _self.get('month');
+    return new Date(year,month);
+  },
+  //是否是当前显示的月
+  _isCurrentMonth : function(date){
+    return date.getMonth() === this.get('month');
+  },
+  //是否是今天
+  _isToday : function(date){
+    var tody = new Date();
+    return tody.getFullYear() === date.getFullYear() && tody.getMonth() === date.getMonth() && tody.getDate() === date.getDate();
+  },
+  //是否在允许的范围内
+  _isInRange : function(date){
+    var _self = this,
+      maxDate = _self.get('maxDate'),
+      minDate = _self.get('minDate');
+
+    if(minDate && date < minDate){
+      return false;
+    }
+    if(maxDate && date > maxDate){
+      return false;
+    }
+    return true;
+  },
+  //清除选中的日期
+  _clearSelectedDate : function(){
+    var _self = this;
+    _self.get('el').find('.'+CLS_SELECTED).removeClass(CLS_SELECTED);
+  },
+  //查找日期对应的DOM节点
+  _findDateElement : function(date){
+    var _self = this,
+      dateStr = DateUtil.format(date,DATE_MASK),
+      activeList = _self.get('el').find('.' + CLS_DATE),
+      result = null;
+    if(dateStr){
+      activeList.each(function(index,item){
+        if($(item).attr('title') === dateStr){
+          result = $(item);
+          return false;
+        }
+      });
+    }
+    return result;
+  },
+  //设置选中的日期
+  _setSelectedDate : function(date){
+    var _self = this,
+      dateEl = _self._findDateElement(date);
+
+    _self._clearSelectedDate();
+    if(dateEl){
+      dateEl.addClass(CLS_SELECTED);
+    }
+  }
+},{
+  ATTRS : {
+
+  }
+});
+
+/**
+ * 日历控件显示日期的容器
+ * xclass:'calendar-panel'
+ * @class BUI.Calendar.Panel
+ * @private
+ * @extends BUI.Component.Controller
+ */
+var panel = Component.Controller.extend(
+{
+
+  /**
+   * 设置默认年月
+   * @protected
+   */
+  initializer : function(){
+    var _self = this,
+      now = new Date();
+    if(!_self.get('year')){
+      _self.set('year',now.getFullYear());
+    }
+
+    if(!_self.get('month')){
+      _self.set('month',now.getMonth());
+    }
+  },
+  /**
+   * @protected
+   * @ignore
+   */
+  bindUI : function(){
+    var _self = this,
+      el = _self.get('el');
+    el.delegate('.' + CLS_DATE,'click',function(e){
+      e.preventDefault();
+    });
+    //阻止禁用的日期被选择
+    el.delegate('.' + CLS_DISABLED,'mouseup',function(e){
+      e.stopPropagation();
+    });
+  },
+  /**
+   * @protected
+   * @ignore
+   */
+  performActionInternal : function(ev){
+    var _self = this,
+      sender = $(ev.target).closest('.' + CLS_DATE);
+    if(sender){
+      var date = sender.attr('title');
+      if(date){
+        date = DateUtil.parse(date);
+        if(_self.get('view')._isInRange(date)){
+          _self.set('selected',date);
+        }
+        //_self.fire('click',{date:date});
+      }
+    }
+  },
+  /**
+   * 设置年月
+   * @param {Number} year  年
+   * @param {Number} month 月
+   */
+  setMonth : function(year,month){
+    var _self = this,
+      curYear = _self.get('year'),
+      curMonth = _self.get('month');
+    if(year !== curYear || month !== curMonth){
+      _self.set('year',year);
+      _self.set('month',month);
+  		//if(_self.get('rendered')){
+  			_self.get('view').updatePanel();
+  		//}
+    }
+  },
+  //选中日期
+  _uiSetSelected : function(date,ev){
+    var _self = this;
+    
+    if(!(ev && ev.prevVal && DateUtil.isDateEquals(date,ev.prevVal))){
+      _self.setMonth(date.getFullYear(),date.getMonth());
+      _self.get('view')._setSelectedDate(date);
+      _self.fire('selectedchange',{date:date});
+    } 
+  },
+  //设置最日期
+  _uiSetMaxDate : function(v){
+    if(v){
+      this.get('view').updatePanel();
+    }
+  },
+  //设置最小日期
+  _uiSetMinDate : function(v){
+    if(v){
+      this.get('view').updatePanel();
+    }
+  }
+},{
+  ATTRS:
+  {
+    /**
+     * 展示的月所属年
+     * @type {Number}
+     */
+    year : {
+      view :true
+    },
+    /**
+     * 展示的月
+     * @type {Number}
+     */
+    month:{
+      view :true
+    },
+    /**
+     * 选中的日期
+     * @type {Date}
+     */
+    selected : {
+
+    },
+    focusable:{
+      value:true
+    },
+    /**
+     * 日期的模板
+     * @private
+     * @type {Object}
+     */
+    dayTpl:{
+      view : true,
+      value:'<td class="x-datepicker-date x-datepicker-{dateType} {todayCls} day-{dayOfWeek}" title="{date}">'+
+              '<a href="#" hidefocus="on" tabindex="1">'+
+                '<em><span>{dateNumber}</span></em>'+
+              '</a>'+
+            '</td>'
+    },
+    events:{
+      value : {
+        /**
+         * @event
+         * @name BUI.Calendar.Panel#click
+         * @param {Object} e 点击事件
+         * @param {Date} e.date
+         */
+        'click' : false,
+        /**
+         * @name BUI.Calendar.Panel#selectedchange
+         * @param {Object} e 点击事件
+         * @param {Date} e.date
+         */
+        'selectedchange' : true
+      }
+    },
+    /**
+     * 最小日期
+     * @type {Date | String}
+     */
+    maxDate : {
+      view : true,
+      setter : function(val){
+        if(val){
+          if(BUI.isString(val)){
+            return DateUtil.parse(val);
+          }
+          return val;
+        }
+      }
+    },
+    /**
+     * 最小日期
+     * @type {Date | String}
+     */
+    minDate : {
+      view : true,
+      setter : function(val){
+        if(val){
+          if(BUI.isString(val)){
+            return DateUtil.parse(val);
+          }
+          return val;
+        }
+      }
+    },
+    /**
+     * 周的模板
+     * @private
+     * @type {Object}
+     */
+    weekTpl:{
+      view : true,
+      value : '<tr>{daysTpl}</tr>'
+    },
+    tpl:{
+      view:true,
+      value:'<table class="x-datepicker-inner" cellspacing="0">' +
+              '<thead>' +
+                 '<tr>' +
+                  '<th  title="Sunday"><span>日</span></th>' +
+                  '<th  title="Monday"><span>一</span></th>' +
+                  '<th  title="Tuesday"><span>二</span></th>' +
+                  '<th  title="Wednesday"><span>三</span></th>' +
+                  '<th  title="Thursday"><span>四</span></th>' +
+                  '<th  title="Friday"><span>五</span></th>' +
+                  '<th  title="Saturday"><span>六</span></th>' +
+                '</tr>' +
+              '</thead>' +
+              '<tbody class="x-datepicker-body">' +
+              '</tbody>' +
+            '</table>'
+    },
+    xview : {value : panelView}
+  }
+},{
+  xclass:'calendar-panel',
+  priority:0
+});
+
+module.exports = panel;
+
+});
+define("bui/calendar/datepicker", ["bui/common","jquery","bui/picker","bui/overlay","bui/list","bui/data","bui/toolbar"], function(require, exports, module){
+/**
+ * @fileOverview 日期选择器
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+  
+var BUI = require("bui/common"),
+  Picker = require("bui/picker").Picker,
+  Calendar = require("bui/calendar/calendar"),
+  DateUtil = BUI.Date;
+
+/**
+ * 日期选择器，可以由输入框等触发
+ * <p>
+ * <img src="../assets/img/class-calendar.jpg"/>
+ * </p>
+ * xclass : 'calendar-datepicker'
+ * <pre><code>
+ *   BUI.use('bui/calendar',function(Calendar){
+ *      var datepicker = new Calendar.DatePicker({
+ *        trigger:'.calendar',
+ *        //delegateTrigger : true, //如果设置此参数，那么新增加的.calendar元素也会支持日历选择
+ *        autoRender : true
+ *      });
+ *    });
+ * </code></pre>
+ * @class BUI.Calendar.DatePicker
+ * @extends BUI.Picker.Picker
+ */
+var datepicker = Picker.extend({
+
+  initializer:function(){
+    
+  },
+  /**
+   * @protected
+   * 初始化内部控件
+   */
+  createControl : function(){
+    var _self = this,
+      children = _self.get('children'),
+      calendar = new Calendar({
+        render : _self.get('el'),
+        showTime : _self.get('showTime'),
+        lockTime : _self.get('lockTime'),
+        minDate: _self.get('minDate'),
+        maxDate: _self.get('maxDate'),
+        autoRender : true
+      });
+
+    calendar.on('clear', function(){
+      var curTrigger = _self.get('curTrigger'),
+        oldValue = curTrigger.val();
+
+      if(oldValue){
+        curTrigger.val('');
+        curTrigger.trigger('change');
+      }
+    });
+
+    if (!_self.get('dateMask')) {
       if (_self.get('showTime')) {
+          _self.set('dateMask', 'yyyy-mm-dd HH:MM:ss');
+      } else {
+          _self.set('dateMask', 'yyyy-mm-dd');
+      }
+     }  
+    children.push(calendar);
+    _self.set('calendar',calendar);
+    return calendar;
+  },
+  /**
+   * 设置选中的值
+   * <pre><code>
+   *   datePicker.setSelectedValue('2012-01-1');
+   * </code></pre>
+   * @param {String} val 设置值
+   * @protected
+   */
+  setSelectedValue : function(val){
+    if(!this.get('calendar')){
+      return;
+    }
+    var _self = this,
+      calendar = this.get('calendar'),
+      date = DateUtil.parse(val,_self.get("dateMask"));
+    date = date || _self.get('selectedDate');
+    calendar.set('selectedDate',DateUtil.getDate(date));
+
+    if(_self.get('showTime')){
+
         var lockTime = this.get("lockTime"),
           hour = date.getHours(),
           minute = date.getMinutes(),
           second = date.getSeconds();
-        if (lockTime) {
-          if (!val || !lockTime.editable) {
-            hour = lockTime['hour'] != null ? lockTime['hour'] : hour;
-            minute = lockTime['minute'] != null ? lockTime['minute'] : minute;
-            second = lockTime['second'] != null ? lockTime['second'] : second;
-          }
-        }
-        calendar.set('hour', hour);
-        calendar.set('minute', minute);
-        calendar.set('second', second);
-      }
-    },
-    /**
-     * 获取选中的值
-     * @protected
-     * @return {String} 选中的值
-     */
-    getSelectedValue: function() {
-      if (!this.get('calendar')) {
-        return null;
-      }
-      var _self = this,
-        calendar = _self.get('calendar'),
-        date = DateUtil.getDate(calendar.get('selectedDate'));
-      if (_self.get('showTime')) {
-        date = DateUtil.addHour(calendar.get('hour'), date);
-        date = DateUtil.addMinute(calendar.get('minute'), date);
-        date = DateUtil.addSecond(calendar.get('second'), date);
-      }
-      return date;
-    },
-    /**
-     * 获取选中项的文本，多选状态下，文本以','分割
-     * @protected
-     * @return {String} 选中的文本
-     */
-    getSelectedText: function() {
-      if (!this.get('calendar')) {
-        return '';
-      }
-      return DateUtil.format(this.getSelectedValue(), this._getFormatType());
-    },
-    _getFormatType: function() {
-      return this.get('dateMask');
-    },
-    //设置最大值
-    _uiSetMaxDate: function(v) {
-      if (!this.get('calendar')) {
-        return null;
-      }
-      var _self = this;
-      _self.get('calendar').set('maxDate', v);
-    },
-    //设置最小值
-    _uiSetMinDate: function(v) {
-      if (!this.get('calendar')) {
-        return null;
-      }
-      var _self = this;
-      _self.get('calendar').set('minDate', v);
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 是否显示日期
-       * <pre><code>
-       *  var datepicker = new Calendar.DatePicker({
-       *    trigger:'.calendar',
-       *    showTime : true, //可以选择日期
-       *    autoRender : true
-       *  });
-       * </code></pre>
-       * @type {Boolean}
-       */
-      showTime: {
-        value: false
-      },
-      /**
-       * 锁定时间选择，默认锁定的时间不能修改可以通过 editable : true 来允许修改锁定的时间
-       *<pre><code>
-       *  var calendar = new Calendar.Calendar({
-       *  render:'#calendar',
-       *  lockTime : {hour:00,minute:30} //表示锁定时为00,分为30分,秒无锁用户可选择
-       * });
-       * </code></pre>
-       *
-       * @type {Object}
-       */
-      lockTime: {},
-      /**
-       * 最大日期
-       * <pre><code>
-       *   var datepicker = new Calendar.DatePicker({
-       *     trigger:'.calendar',
-       *     maxDate : '2014-01-01',
-       *     minDate : '2013-7-25',
-       *     autoRender : true
-       *   });
-       * </code></pre>
-       * @type {Date}
-       */
-      maxDate: {},
-      /**
-       * 最小日期
-       * <pre><code>
-       *   var datepicker = new Calendar.DatePicker({
-       *     trigger:'.calendar',
-       *     maxDate : '2014-01-01',
-       *     minDate : '2013-7-25',
-       *     autoRender : true
-       *   });
-       * </code></pre>
-       * @type {Date}
-       */
-      minDate: {},
-      /**
-       * 返回日期格式，如果不设置默认为 yyyy-mm-dd，时间选择为true时为 yyyy-mm-dd HH:MM:ss
-       * <pre><code>
-       *   calendar.set('dateMask','yyyy-mm-dd');
-       * </code></pre>
-       * @type {String}
-       */
-      dateMask: {},
-      changeEvent: {
-        value: 'accept'
-      },
-      hideEvent: {
-        value: 'accept clear'
-      },
-      /**
-       * 日历对象,可以进行更多的操作，参看{@link BUI.Calendar.Calendar}
-       * @type {BUI.Calendar.Calendar}
-       */
-      calendar: {},
-      /**
-       * 默认选中的日期
-       * @type {Date}
-       */
-      selectedDate: {
-        value: new Date(new Date().setSeconds(0))
-      }
-    }
-  }, {
-    xclass: 'datepicker',
-    priority: 0
-  });
-  module.exports = datepicker;
-});
-define("bui/calendar/header", ["jquery", "bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview 日期控件来选择年月的部分
-   * @ignore
-   */
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    PREFIX = BUI.prefix,
-    Component = BUI.Component,
-    CLS_TEXT_YEAR = 'year-text',
-    CLS_TEXT_MONTH = 'month-text',
-    CLS_ARROW = 'x-datepicker-arrow',
-    CLS_PREV = 'x-datepicker-prev',
-    CLS_NEXT = 'x-datepicker-next';
-  /**
-   * 日历控件显示选择年月
-   * xclass:'calendar-header'
-   * @class BUI.Calendar.Header
-   * @private
-   * @extends BUI.Component.Controller
-   */
-  var header = Component.Controller.extend({
-    bindUI: function() {
-      var _self = this,
-        el = _self.get('el');
-      el.delegate('.' + CLS_ARROW, 'click', function(e) {
-        e.preventDefault();
-        var sender = $(e.currentTarget);
-        if (sender.hasClass(CLS_NEXT)) {
-          _self.nextMonth();
-        } else if (sender.hasClass(CLS_PREV)) {
-          _self.prevMonth();
-        }
-      });
-      el.delegate('.x-datepicker-month', 'click', function() {
-        _self.fire('headerclick');
-      });
-    },
-    /**
-     * 设置年月
-     * @ignore
-     * @param {Number} year  年
-     * @param {Number} month 月
-     */
-    setMonth: function(year, month) {
-      var _self = this,
-        curYear = _self.get('year'),
-        curMonth = _self.get('month');
-      if (year !== curYear || month !== curMonth) {
-        _self.set('year', year);
-        _self.set('month', month);
-        _self.fire('monthchange', {
-          year: year,
-          month: month
-        });
-      }
-    },
-    /**
-     * 下一月
-     * @ignore
-     */
-    nextMonth: function() {
-      var _self = this,
-        date = new Date(_self.get('year'), _self.get('month') + 1);
-      _self.setMonth(date.getFullYear(), date.getMonth());
-    },
-    /**
-     * 上一月
-     * @ignore
-     */
-    prevMonth: function() {
-      var _self = this,
-        date = new Date(_self.get('year'), _self.get('month') - 1);
-      _self.setMonth(date.getFullYear(), date.getMonth());
-    },
-    _uiSetYear: function(v) {
-      var _self = this;
-      _self.get('el').find('.' + CLS_TEXT_YEAR).text(v);
-    },
-    _uiSetMonth: function(v) {
-      var _self = this;
-      _self.get('el').find('.' + CLS_TEXT_MONTH).text(v + 1);
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 年
-       * @type {Number}
-       */
-      year: {
-        sync: false
-      },
-      /**
-       * 月
-       * @type {Number}
-       */
-      month: {
-        sync: false,
-        setter: function(v) {
-          this.set('monthText', v + 1);
-        }
-      },
-      /**
-       * @private
-       * @type {Object}
-       */
-      monthText: {},
-      tpl: {
-        view: true,
-        value: '<div class="' + CLS_ARROW + ' ' + CLS_PREV + '"><span class="icon icon-white icon-caret  icon-caret-left"></span></div>' + '<div class="x-datepicker-month">' + '<div class="month-text-container">' + '<span><span class="year-text">{year}</span>年 <span class="month-text">{monthText}</span>月</span>' + '<span class="' + PREFIX + 'caret ' + PREFIX + 'caret-down"></span>' + '</div>' + '</div>' + '<div class="' + CLS_ARROW + ' ' + CLS_NEXT + '"><span class="icon icon-white icon-caret  icon-caret-right"></span></div>'
-      },
-      elCls: {
-        view: true,
-        value: 'x-datepicker-header'
-      },
-      events: {
-        value: {
-          /**
-           * 月发生改变，年发生改变也意味着月发生改变
-           * @event
-           * @param {Object} e 事件对象
-           * @param {Number} e.year 年
-           * @param {Number} e.month 月
-           */
-          'monthchange': true
-        }
-      }
-    }
-  }, {
-    xclass: 'calendar-header'
-  });
-  module.exports = header;
-});
-define("bui/calendar/panel", ["jquery", "bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview 日历控件显示一月的日期
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    Component = BUI.Component,
-    DateUtil = BUI.Date,
-    CLS_DATE = 'x-datepicker-date',
-    CLS_TODAY = 'x-datepicker-today',
-    CLS_DISABLED = 'x-datepicker-disabled',
-    CLS_ACTIVE = 'x-datepicker-active',
-    DATA_DATE = 'data-date', //存储日期对象
-    DATE_MASK = 'isoDate',
-    CLS_SELECTED = 'x-datepicker-selected',
-    SHOW_WEEKS = 6, //当前容器显示6周
-    dateTypes = {
-      deactive: 'prevday',
-      active: 'active',
-      disabled: 'disabled'
-    },
-    weekDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  /**
-   * 日历面板的视图类
-   * @class BUI.Calendar.PanelView
-   * @extends BUI.Component.View
-   * @private
-   */
-  var panelView = Component.View.extend({
-    renderUI: function() {
-      this.updatePanel();
-    },
-    //更新容器，当月、年发生改变时
-    updatePanel: function() {
-      var _self = this,
-        el = _self.get('el'),
-        bodyEl = el.find('tbody'),
-        innerTem = _self._getPanelInnerTpl();
-      bodyEl.empty();
-      $(innerTem).appendTo(bodyEl);
-    },
-    //获取容器内容
-    _getPanelInnerTpl: function() {
-      var _self = this,
-        startDate = _self._getFirstDate(),
-        temps = [];
-      for (var i = 0; i < SHOW_WEEKS; i++) {
-        var weekStart = DateUtil.addWeek(i, startDate);
-        temps.push(_self._getWeekTpl(weekStart));
-      };
-      return temps.join('');
-    },
-    //获取周模版
-    _getWeekTpl: function(startDate) {
-      var _self = this,
-        weekTpl = _self.get('weekTpl'),
-        daysTemps = [];
-      for (var i = 0; i < weekDays.length; i++) {
-        var date = DateUtil.addDay(i, startDate);
-        daysTemps.push(_self._getDayTpl(date));
-      }
-      return BUI.substitute(weekTpl, {
-        daysTpl: daysTemps.join('')
-      });
-    },
-    //获取日模版
-    _getDayTpl: function(date) {
-      var _self = this,
-        dayTpl = _self.get('dayTpl'),
-        day = date.getDay(),
-        todayCls = _self._isToday(date) ? CLS_TODAY : '',
-        dayOfWeek = weekDays[day],
-        dateNumber = date.getDate(),
-        //不是本月则处于不活动状态
-        //不在指定的最大最小范围内，禁止选中
-        dateType = _self._isInRange(date) ? (_self._isCurrentMonth(date) ? dateTypes.active : dateTypes.deactive) : dateTypes.disabled;
-      return BUI.substitute(dayTpl, {
-        dayOfWeek: dayOfWeek,
-        dateType: dateType,
-        dateNumber: dateNumber,
-        todayCls: todayCls,
-        date: DateUtil.format(date, DATE_MASK)
-      });
-    },
-    //获取当前容器的第一天
-    _getFirstDate: function(year, month) {
-      var _self = this,
-        monthFirstDate = _self._getMonthFirstDate(year, month),
-        day = monthFirstDate.getDay();
-      return DateUtil.addDay(day * -1, monthFirstDate);
-    },
-    //获取当月的第一天
-    _getMonthFirstDate: function(year, month) {
-      var _self = this,
-        year = year || _self.get('year'),
-        month = month || _self.get('month');
-      return new Date(year, month);
-    },
-    //是否是当前显示的月
-    _isCurrentMonth: function(date) {
-      return date.getMonth() === this.get('month');
-    },
-    //是否是今天
-    _isToday: function(date) {
-      var tody = new Date();
-      return tody.getFullYear() === date.getFullYear() && tody.getMonth() === date.getMonth() && tody.getDate() === date.getDate();
-    },
-    //是否在允许的范围内
-    _isInRange: function(date) {
-      var _self = this,
-        maxDate = _self.get('maxDate'),
-        minDate = _self.get('minDate');
-      if (minDate && date < minDate) {
-        return false;
-      }
-      if (maxDate && date > maxDate) {
-        return false;
-      }
-      return true;
-    },
-    //清除选中的日期
-    _clearSelectedDate: function() {
-      var _self = this;
-      _self.get('el').find('.' + CLS_SELECTED).removeClass(CLS_SELECTED);
-    },
-    //查找日期对应的DOM节点
-    _findDateElement: function(date) {
-      var _self = this,
-        dateStr = DateUtil.format(date, DATE_MASK),
-        activeList = _self.get('el').find('.' + CLS_DATE),
-        result = null;
-      if (dateStr) {
-        activeList.each(function(index, item) {
-          if ($(item).attr('title') === dateStr) {
-            result = $(item);
-            return false;
-          }
-        });
-      }
-      return result;
-    },
-    //设置选中的日期
-    _setSelectedDate: function(date) {
-      var _self = this,
-        dateEl = _self._findDateElement(date);
-      _self._clearSelectedDate();
-      if (dateEl) {
-        dateEl.addClass(CLS_SELECTED);
-      }
-    }
-  }, {
-    ATTRS: {}
-  });
-  /**
-   * 日历控件显示日期的容器
-   * xclass:'calendar-panel'
-   * @class BUI.Calendar.Panel
-   * @private
-   * @extends BUI.Component.Controller
-   */
-  var panel = Component.Controller.extend({
-    /**
-     * 设置默认年月
-     * @protected
-     */
-    initializer: function() {
-      var _self = this,
-        now = new Date();
-      if (!_self.get('year')) {
-        _self.set('year', now.getFullYear());
-      }
-      if (!_self.get('month')) {
-        _self.set('month', now.getMonth());
-      }
-    },
-    /**
-     * @protected
-     * @ignore
-     */
-    bindUI: function() {
-      var _self = this,
-        el = _self.get('el');
-      el.delegate('.' + CLS_DATE, 'click', function(e) {
-        e.preventDefault();
-      });
-      //阻止禁用的日期被选择
-      el.delegate('.' + CLS_DISABLED, 'mouseup', function(e) {
-        e.stopPropagation();
-      });
-    },
-    /**
-     * @protected
-     * @ignore
-     */
-    performActionInternal: function(ev) {
-      var _self = this,
-        sender = $(ev.target).closest('.' + CLS_DATE);
-      if (sender) {
-        var date = sender.attr('title');
-        if (date) {
-          date = DateUtil.parse(date);
-          if (_self.get('view')._isInRange(date)) {
-            _self.set('selected', date);
-          }
-          //_self.fire('click',{date:date});
-        }
-      }
-    },
-    /**
-     * 设置年月
-     * @param {Number} year  年
-     * @param {Number} month 月
-     */
-    setMonth: function(year, month) {
-      var _self = this,
-        curYear = _self.get('year'),
-        curMonth = _self.get('month');
-      if (year !== curYear || month !== curMonth) {
-        _self.set('year', year);
-        _self.set('month', month);
-        //if(_self.get('rendered')){
-        _self.get('view').updatePanel();
-        //}
-      }
-    },
-    //选中日期
-    _uiSetSelected: function(date, ev) {
-      var _self = this;
-      if (!(ev && ev.prevVal && DateUtil.isDateEquals(date, ev.prevVal))) {
-        _self.setMonth(date.getFullYear(), date.getMonth());
-        _self.get('view')._setSelectedDate(date);
-        _self.fire('selectedchange', {
-          date: date
-        });
-      }
-    },
-    //设置最日期
-    _uiSetMaxDate: function(v) {
-      if (v) {
-        this.get('view').updatePanel();
-      }
-    },
-    //设置最小日期
-    _uiSetMinDate: function(v) {
-      if (v) {
-        this.get('view').updatePanel();
-      }
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 展示的月所属年
-       * @type {Number}
-       */
-      year: {
-        view: true
-      },
-      /**
-       * 展示的月
-       * @type {Number}
-       */
-      month: {
-        view: true
-      },
-      /**
-       * 选中的日期
-       * @type {Date}
-       */
-      selected: {},
-      focusable: {
-        value: true
-      },
-      /**
-       * 日期的模板
-       * @private
-       * @type {Object}
-       */
-      dayTpl: {
-        view: true,
-        value: '<td class="x-datepicker-date x-datepicker-{dateType} {todayCls} day-{dayOfWeek}" title="{date}">' + '<a href="#" hidefocus="on" tabindex="1">' + '<em><span>{dateNumber}</span></em>' + '</a>' + '</td>'
-      },
-      events: {
-        value: {
-          /**
-           * @event
-           * @name BUI.Calendar.Panel#click
-           * @param {Object} e 点击事件
-           * @param {Date} e.date
-           */
-          'click': false,
-          /**
-           * @name BUI.Calendar.Panel#selectedchange
-           * @param {Object} e 点击事件
-           * @param {Date} e.date
-           */
-          'selectedchange': true
-        }
-      },
-      /**
-       * 最小日期
-       * @type {Date | String}
-       */
-      maxDate: {
-        view: true,
-        setter: function(val) {
-          if (val) {
-            if (BUI.isString(val)) {
-              return DateUtil.parse(val);
-            }
-            return val;
-          }
-        }
-      },
-      /**
-       * 最小日期
-       * @type {Date | String}
-       */
-      minDate: {
-        view: true,
-        setter: function(val) {
-          if (val) {
-            if (BUI.isString(val)) {
-              return DateUtil.parse(val);
-            }
-            return val;
-          }
-        }
-      },
-      /**
-       * 周的模板
-       * @private
-       * @type {Object}
-       */
-      weekTpl: {
-        view: true,
-        value: '<tr>{daysTpl}</tr>'
-      },
-      tpl: {
-        view: true,
-        value: '<table class="x-datepicker-inner" cellspacing="0">' + '<thead>' + '<tr>' + '<th  title="Sunday"><span>日</span></th>' + '<th  title="Monday"><span>一</span></th>' + '<th  title="Tuesday"><span>二</span></th>' + '<th  title="Wednesday"><span>三</span></th>' + '<th  title="Thursday"><span>四</span></th>' + '<th  title="Friday"><span>五</span></th>' + '<th  title="Saturday"><span>六</span></th>' + '</tr>' + '</thead>' + '<tbody class="x-datepicker-body">' + '</tbody>' + '</table>'
-      },
-      xview: {
-        value: panelView
-      }
-    }
-  }, {
-    xclass: 'calendar-panel',
-    priority: 0
-  });
-  module.exports = panel;
-});
-define("bui/select", ["bui/common", "jquery", "bui/picker", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
-  /**
-   * @fileOverview 选择框命名空间入口文件
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    Select = BUI.namespace('Select');
-  BUI.mix(Select, {
-    Select: require("bui/select/select"),
-    Combox: require("bui/select/combox"),
-    Suggest: require("bui/select/suggest")
-  });
-  module.exports = Select;
-});
-define("bui/select/select", ["jquery", "bui/common", "bui/picker", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
-  /**
-   * @fileOverview 选择控件
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  'use strict';
-  var $ = require('jquery'),
-    BUI = require("bui/common"),
-    ListPicker = require("bui/picker").ListPicker,
-    PREFIX = BUI.prefix;
 
-  function formatItems(items) {
-    if ($.isPlainObject(items)) {
-      var tmp = [];
-      BUI.each(items, function(v, n) {
-        tmp.push({
-          value: n,
-          text: v
-        });
-      });
-      return tmp;
+        if(lockTime){
+          if(!val || !lockTime.editable){
+            hour = lockTime['hour'] != null ?lockTime['hour']:hour;
+            minute = lockTime['minute'] != null ?lockTime['minute']:minute;
+            second = lockTime['second'] != null ?lockTime['second']:second;
+          }
+        }
+
+      calendar.set('hour',hour);
+      calendar.set('minute',minute);
+      calendar.set('second',second);
     }
-    var rst = [];
-    BUI.each(items, function(item, index) {
-      if (BUI.isString(item)) {
-        rst.push({
-          value: item,
-          text: item
-        });
-      } else {
-        rst.push(item);
-      }
-    });
-    return rst;
+  },
+  /**
+   * 获取选中的值
+   * @protected
+   * @return {String} 选中的值
+   */
+  getSelectedValue : function(){
+    if(!this.get('calendar')){
+      return null;
+    }
+    var _self = this, 
+      calendar = _self.get('calendar'),
+    date =  DateUtil.getDate(calendar.get('selectedDate'));
+    if(_self.get('showTime')){
+      date = DateUtil.addHour(calendar.get('hour'),date);
+      date = DateUtil.addMinute(calendar.get('minute'),date);
+      date = DateUtil.addSecond(calendar.get('second'),date);
+    }
+    return date;
+  },
+  /**
+   * 获取选中项的文本，多选状态下，文本以','分割
+   * @protected
+   * @return {String} 选中的文本
+   */
+  getSelectedText : function(){
+    if(!this.get('calendar')){
+      return '';
+    }
+    return DateUtil.format(this.getSelectedValue(),this._getFormatType());
+  },
+  _getFormatType : function(){
+    return this.get('dateMask');
+  },
+  //设置最大值
+  _uiSetMaxDate : function(v){
+    if(!this.get('calendar')){
+      return null;
+    }
+    var _self = this;
+    _self.get('calendar').set('maxDate',v);
+  },
+  //设置最小值
+  _uiSetMinDate : function(v){
+    if(!this.get('calendar')){
+      return null;
+    }
+    var _self = this;
+    _self.get('calendar').set('minDate',v);
   }
-  var Component = BUI.Component,
-    Picker = ListPicker,
-    CLS_INPUT = PREFIX + 'select-input',
+
+},{
+  ATTRS : 
+  {
     /**
-     * 选择控件
-     * xclass:'select'
+     * 是否显示日期
      * <pre><code>
-     *  BUI.use('bui/select',function(Select){
-     *
-     *   var items = [
-     *         {text:'选项1',value:'a'},
-     *         {text:'选项2',value:'b'},
-     *         {text:'选项3',value:'c'}
-     *       ],
-     *       select = new Select.Select({
-     *         render:'#s1',
-     *         valueField:'#hide',
-     *         //multipleSelect: true, //是否多选
-     *         items:items
-     *       });
-     *   select.render();
-     *   select.on('change', function(ev){
-     *     //ev.text,ev.value,ev.item
-     *   });
-     *
+     *  var datepicker = new Calendar.DatePicker({
+     *    trigger:'.calendar',
+     *    showTime : true, //可以选择日期
+     *    autoRender : true
+     *  });
+     * </code></pre>
+     * @type {Boolean}
+     */
+    showTime : {
+      value:false
+    },
+     /**
+     * 锁定时间选择，默认锁定的时间不能修改可以通过 editable : true 来允许修改锁定的时间
+     *<pre><code>
+     *  var calendar = new Calendar.Calendar({
+     *  render:'#calendar',
+     *  lockTime : {hour:00,minute:30} //表示锁定时为00,分为30分,秒无锁用户可选择
      * });
      * </code></pre>
-     * @class BUI.Select.Select
-     * @extends BUI.Component.Controller
+     *
+     * @type {Object}
      */
-    select = Component.Controller.extend({
-      //初始化
-      initializer: function() {
-        var _self = this,
-          multipleSelect = _self.get('multipleSelect'),
-          xclass,
-          picker = _self.get('picker'),
-          list;
-        if (!picker) {
-          xclass = multipleSelect ? 'listbox' : 'simple-list';
-          list = _self.get('list') || {};
-          list = BUI.mix(list, {
-            xclass: xclass,
-            elCls: PREFIX + 'select-list',
-            store: _self.get('store'),
-            items: formatItems(_self.get('items')) /**/
-          });
-          picker = new Picker({
-            children: [
-              list
-            ],
-            valueField: _self.get('valueField')
-          });
-          _self.set('picker', picker);
-        } else {
-          if (_self.get('valueField')) {
-            picker.set('valueField', _self.get('valueField'));
-          }
-        }
-        if (multipleSelect) {
-          picker.set('hideEvent', '');
-        }
-      },
-      //渲染DOM以及选择器
-      renderUI: function() {
-        var _self = this,
-          picker = _self.get('picker'),
-          textEl = _self._getTextEl();
-        picker.set('trigger', _self.getTrigger());
-        picker.set('triggerEvent', _self.get('triggerEvent'));
-        picker.set('autoSetValue', _self.get('autoSetValue'));
-        picker.set('textField', textEl);
-        picker.render();
-        _self.set('list', picker.get('list'));
-      },
-      //绑定事件
-      bindUI: function() {
-        var _self = this,
-          picker = _self.get('picker'),
-          list = picker.get('list'),
-          store = list.get('store');
-        //选项发生改变时
-        picker.on('selectedchange', function(ev) {
-          if (ev.item) {
-            _self.fire('change', {
-              text: ev.text,
-              value: ev.value,
-              item: ev.item
-            });
-          }
-        });
-        if (_self.get('autoSetValue')) {
-          list.on('itemsshow', function() {
-            _self._syncValue();
-          });
-        }
-        picker.on('show', function() {
-          if (_self.get('forceFit')) {
-            picker.set('width', _self.get('el').outerWidth());
-          }
-        });
-      },
-      /**
-       * 是否包含元素
-       * @override
-       */
-      containsElement: function(elem) {
-        var _self = this,
-          picker = _self.get('picker');
-        return Component.Controller.prototype.containsElement.call(this, elem) || picker.containsElement(elem);
-      },
-      /**
-       * @protected
-       * 获取触发点
-       */
-      getTrigger: function() {
-        return this.get('el');
-      },
-      //设置子项
-      _uiSetItems: function(items) {
-        if (!items) {
-          return;
-        }
-        var _self = this,
-          picker = _self.get('picker'),
-          list = picker.get('list');
-        list.set('items', formatItems(items));
-        _self._syncValue();
-      },
-      _syncValue: function() {
-        var _self = this,
-          picker = _self.get('picker'),
-          valueField = _self.get('valueField');
-        if (valueField) {
-          picker.setSelectedValue($(valueField).val());
-        }
-      },
-      //设置Form表单中的名称
-      _uiSetName: function(v) {
-        var _self = this,
-          textEl = _self._getTextEl();
-        if (v) {
-          textEl.attr('name', v);
-        }
-      },
-      _uiSetWidth: function(v) {
-        var _self = this;
-        if (v != null) {
-          if (_self.get('inputForceFit')) {
-            var textEl = _self._getTextEl(),
-              iconEl = _self.get('el').find('.x-icon'),
-              appendWidth = textEl.outerWidth() - textEl.width(),
-              width = v - iconEl.outerWidth() - appendWidth;
-            textEl.width(width);
-          }
-          if (_self.get('forceFit')) {
-            var picker = _self.get('picker');
-            picker.set('width', v);
-          }
-        }
-      },
-      //禁用
-      _uiSetDisabled: function(v) {
-        var _self = this,
-          picker = _self.get('picker'),
-          textEl = _self._getTextEl();
-        picker.set('disabled', v);
-        textEl && textEl.attr('disabled', v);
-      },
-      _getTextEl: function() {
-        var _self = this,
-          el = _self.get('el');
-        return el.is('input') ? el : el.find('input');
-      },
-      /**
-       * 析构函数
-       */
-      destructor: function() {
-        var _self = this,
-          picker = _self.get('picker');
-        if (picker) {
-          picker.destroy();
-        }
-      },
-      //获取List控件
-      _getList: function() {
-        var _self = this,
-          picker = _self.get('picker'),
-          list = picker.get('list');
-        return list;
-      },
-      /**
-       * 获取选中项的值，如果是多选则，返回的'1,2,3'形式的字符串
-       * <pre><code>
-       *  var value = select.getSelectedValue();
-       * </code></pre>
-       * @return {String} 选中项的值
-       */
-      getSelectedValue: function() {
-        return this.get('picker').getSelectedValue();
-      },
-      /**
-       * 设置选中的值
-       * <pre><code>
-       * select.setSelectedValue('1'); //单选模式下
-       * select.setSelectedValue('1,2,3'); //多选模式下
-       * </code></pre>
-       * @param {String} value 选中的值
-       */
-      setSelectedValue: function(value) {
-        var _self = this,
-          picker = _self.get('picker');
-        picker.setSelectedValue(value);
-      },
-      /**
-       * 获取选中项的文本，如果是多选则，返回的'text1,text2,text3'形式的字符串
-       * <pre><code>
-       *  var value = select.getSelectedText();
-       * </code></pre>
-       * @return {String} 选中项的文本
-       */
-      getSelectedText: function() {
-        return this.get('picker').getSelectedText();
-      }
-    }, {
-      ATTRS: {
-        /**
-         * 选择器，浮动出现，供用户选择
-         * @cfg {BUI.Picker.ListPicker} picker
-         * <pre><code>
-         * var columns = [
-         *       {title : '表头1(30%)',dataIndex :'a', width:'30%'},
-         *       {id: '123',title : '表头2(30%)',dataIndex :'b', width:'30%'},
-         *       {title : '表头3(40%)',dataIndex : 'c',width:'40%'}
-         *     ],
-         *   data = [{a:'123',b:'选择文本1'},{a:'cdd',b:'选择文本2'},{a:'1333',b:'选择文本3',c:'eee',d:2}],
-         *   grid = new Grid.SimpleGrid({
-         *     idField : 'a', //设置作为key 的字段，放到valueField中
-         *     columns : columns,
-         *     textGetter: function(item){ //返回选中的文本
-         *       return item.b;
-         *     }
-         *   }),
-         *   picker = new Picker.ListPicker({
-         *     width:300,  //指定宽度
-         *     children : [grid] //配置picker内的列表
-         *   }),
-         *   select = new Select.Select({
-         *     render:'#s1',
-         *     picker : picker,
-         *     forceFit:false, //不强迫列表跟选择器宽度一致
-         *     valueField:'#hide',
-         *     items : data
-         *   });
-         * select.render();
-         * </code></pre>
-         */
-        /**
-         * 选择器，浮动出现，供用户选择
-         * @readOnly
-         * @type {BUI.Picker.ListPicker}
-         */
-        picker: {},
-        /**
-         * Picker中的列表
-         * <pre>
-         *   var list = select.get('list');
-         * </pre>
-         * @readOnly
-         * @type {BUI.List.SimpleList}
-         */
-        list: {},
-        /**
-         * 存放值得字段，一般是一个input[type='hidden'] ,用于存放选择框的值
-         * @cfg {Object} valueField
-         */
-        /**
-         * @ignore
-         */
-        valueField: {},
-        /**
-         * 数据缓冲类
-         * <pre><code>
-         *  var store = new Store({
-         *    url : 'data.json',
-         *    autoLoad : true
-         *  });
-         *  var select = new Select({
-         *    render : '#s',
-         *    store : store//设置了store后，不要再设置items，会进行覆盖
-         *  });
-         *  select.render();
-         * </code></pre>
-         * @cfg {BUI.Data.Store} Store
-         */
-        store: {},
-        focusable: {
-          value: true
-        },
-        /**
-         * 是否跟valueField自动同步
-         * @type {Boolean}
-         */
-        autoSetValue: {
-          value: true
-        },
-        /**
-         * 是否可以多选
-         * @cfg {Boolean} [multipleSelect=false]
-         */
-        /**
-         * 是否可以多选
-         * @type {Boolean}
-         */
-        multipleSelect: {
-          value: false
-        },
-        /**
-         * 内部的input是否跟随宽度的变化而变化
-         * @type {Object}
-         */
-        inputForceFit: {
-          value: true
-        },
-        /**
-         * 控件的name，用于存放选中的文本，便于表单提交
-         * @cfg {Object} name
-         */
-        /**
-         * 控件的name，便于表单提交
-         * @type {Object}
-         */
-        name: {},
-        /**
-         * 选项
-         * @cfg {Array} items
-         * <pre><code>
-         *  BUI.use('bui/select',function(Select){
-         *
-         *   var items = [
-         *         {text:'选项1',value:'a'},
-         *         {text:'选项2',value:'b'},
-         *         {text:'选项3',value:'c'}
-         *       ],
-         *       select = new Select.Select({
-         *         render:'#s1',
-         *         valueField:'#hide',
-         *         //multipleSelect: true, //是否多选
-         *         items:items
-         *       });
-         *   select.render();
-         *
-         * });
-         * </code></pre>
-         */
-        /**
-         * 选项
-         * @type {Array}
-         */
-        items: {
-          sync: false
-        },
-        /**
-         * 标示选择完成后，显示文本的DOM节点的样式
-         * @type {String}
-         * @protected
-         * @default 'bui-select-input'
-         */
-        inputCls: {
-          value: CLS_INPUT
-        },
-        /**
-         * 是否使选择列表跟选择框同等宽度
-         * <pre><code>
-         *   picker = new Picker.ListPicker({
-         *     width:300,  //指定宽度
-         *     children : [grid] //配置picker内的列表
-         *   }),
-         *   select = new Select.Select({
-         *     render:'#s1',
-         *     picker : picker,
-         *     forceFit:false, //不强迫列表跟选择器宽度一致
-         *     valueField:'#hide',
-         *     items : data
-         *   });
-         * select.render();
-         * </code></pre>
-         * @cfg {Boolean} [forceFit=true]
-         */
-        forceFit: {
-          value: true
-        },
-        events: {
-          value: {
-            /**
-             * 选择值发生改变时
-             * @event
-             * @param {Object} e 事件对象
-             * @param {String} e.text 选中的文本
-             * @param {String} e.value 选中的value
-             * @param {Object} e.item 发生改变的选项
-             */
-            'change': false
-          }
-        },
-        /**
-         * 控件的默认模版
-         * @type {String}
-         * @default
-         * '&lt;input type="text" readonly="readonly" class="bui-select-input"/&gt;&lt;span class="x-icon x-icon-normal"&gt;&lt;span class="bui-caret bui-caret-down"&gt;&lt;/span&gt;&lt;/span&gt;'
-         */
-        tpl: {
-          view: true,
-          value: '<input type="text" readonly="readonly" class="' + CLS_INPUT + '"/><span class="x-icon x-icon-normal"><i class="icon icon-caret icon-caret-down"></i></span>'
-        },
-        /**
-         * 触发的事件
-         * @cfg {String} triggerEvent
-         * @default 'click'
-         */
-        triggerEvent: {
-          value: 'click'
-        }
-      }
-    }, {
-      xclass: 'select'
-    });
-  module.exports = select;
+    lockTime :{
+
+    },
+    /**
+     * 最大日期
+     * <pre><code>
+     *   var datepicker = new Calendar.DatePicker({
+     *     trigger:'.calendar',
+     *     maxDate : '2014-01-01',
+     *     minDate : '2013-7-25',
+     *     autoRender : true
+     *   });
+     * </code></pre>
+     * @type {Date}
+     */
+    maxDate : {
+
+    },
+    /**
+     * 最小日期
+     * <pre><code>
+     *   var datepicker = new Calendar.DatePicker({
+     *     trigger:'.calendar',
+     *     maxDate : '2014-01-01',
+     *     minDate : '2013-7-25',
+     *     autoRender : true
+     *   });
+     * </code></pre>
+     * @type {Date}
+     */
+    minDate : {
+
+    },
+  /**
+     * 返回日期格式，如果不设置默认为 yyyy-mm-dd，时间选择为true时为 yyyy-mm-dd HH:MM:ss
+     * <pre><code>
+     *   calendar.set('dateMask','yyyy-mm-dd');
+     * </code></pre>
+     * @type {String}
+    */
+    dateMask: {
+
+    },
+    changeEvent:{
+      value:'accept'
+    },
+    hideEvent:{
+      value:'accept clear'
+    },
+    /**
+     * 日历对象,可以进行更多的操作，参看{@link BUI.Calendar.Calendar}
+     * @type {BUI.Calendar.Calendar}
+     */
+    calendar:{
+
+    },
+    /**
+     * 默认选中的日期
+     * @type {Date}
+     */
+    selectedDate: {
+    	value: new Date(new Date().setSeconds(0))
+    }
+  }
+},{
+  xclass : 'datepicker',
+  priority : 0
 });
-define("bui/select/combox", ["jquery", "bui/common", "bui/picker", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
+
+module.exports = datepicker;
+
+});
+
+define("bui/select", ["bui/common","jquery","bui/picker","bui/overlay","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 选择框命名空间入口文件
+ * @ignore
+ */
+
+var BUI = require("bui/common"),
+  Select = BUI.namespace('Select');
+
+BUI.mix(Select,{
+  Select : require("bui/select/select"),
+  Combox : require("bui/select/combox"),
+  Suggest: require("bui/select/suggest")
+});
+
+module.exports = Select;
+
+});
+define("bui/select/select", ["jquery","bui/common","bui/picker","bui/overlay","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 选择控件
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+'use strict';
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  ListPicker = require("bui/picker").ListPicker,
+  PREFIX = BUI.prefix;
+
+function formatItems(items){
+ 
+  if($.isPlainObject(items)){
+    var tmp = [];
+    BUI.each(items,function(v,n){
+      tmp.push({value : n,text : v});
+    });
+    return tmp;
+  }
+  var rst = [];
+  BUI.each(items,function(item,index){
+    if(BUI.isString(item)){
+      rst.push({value : item,text:item});
+    }else{
+      rst.push(item);
+    }
+  });
+  return rst;
+}
+
+var Component = BUI.Component,
+  Picker = ListPicker,
+  CLS_INPUT = PREFIX + 'select-input',
   /**
-   * @fileOverview 组合框可用于选择输入文本
-   * @ignore
-   */
-  var $ = require('jquery'),
-    BUI = require("bui/common"),
-    Select = require("bui/select/select"),
-    Tag = require("bui/select/tag"),
-    CLS_INPUT = BUI.prefix + 'combox-input';
-  /**
-   * 组合框 用于提示输入
-   * xclass:'combox'
+   * 选择控件
+   * xclass:'select'
    * <pre><code>
-   * BUI.use('bui/select',function(Select){
-   *
-   *  var select = new Select.Combox({
-   *    render:'#c1',
-   *    name:'combox',
-   *    items:['选项1','选项2','选项3','选项4']
-   *  });
-   *  select.render();
+   *  BUI.use('bui/select',function(Select){
+   * 
+   *   var items = [
+   *         {text:'选项1',value:'a'},
+   *         {text:'选项2',value:'b'},
+   *         {text:'选项3',value:'c'}
+   *       ],
+   *       select = new Select.Select({  
+   *         render:'#s1',
+   *         valueField:'#hide',
+   *         //multipleSelect: true, //是否多选
+   *         items:items
+   *       });
+   *   select.render();
+   *   select.on('change', function(ev){
+   *     //ev.text,ev.value,ev.item
+   *   });
+   *   
    * });
    * </code></pre>
-   * @class BUI.Select.Combox
-   * @extends BUI.Select.Select
+   * @class BUI.Select.Select
+   * @extends BUI.Component.Controller
    */
-  var combox = Select.extend([Tag], {
-    renderUI: function() {
+  select = Component.Controller.extend({
+    //初始化
+    initializer:function(){
       var _self = this,
-        picker = _self.get('picker');
-      picker.set('autoFocused', false);
-    },
-    _uiSetItems: function(v) {
-      var _self = this;
-      for (var i = 0; i < v.length; i++) {
-        var item = v[i];
-        if (BUI.isString(item)) {
-          v[i] = {
-            value: item,
-            text: item
-          };
+        multipleSelect = _self.get('multipleSelect'),
+        xclass,
+        picker = _self.get('picker'),
+        list;
+      if(!picker){
+        xclass = multipleSelect ? 'listbox' : 'simple-list';
+        list = _self.get('list') || {};
+        list = BUI.mix(list,{
+          xclass : xclass,
+          elCls:PREFIX + 'select-list',
+          store : _self.get('store'),
+          items : formatItems(_self.get('items'))/**/
+        });
+
+        picker = new Picker({
+          children:[
+            list
+          ],
+          valueField : _self.get('valueField')
+        });
+        
+        _self.set('picker',picker);
+      }else{
+        if(_self.get('valueField')){
+          picker.set('valueField',_self.get('valueField'));
         }
       }
-      combox.superclass._uiSetItems.call(_self, v);
+      if(multipleSelect){
+        picker.set('hideEvent','');
+      }
+      
     },
-    bindUI: function() {
+    //渲染DOM以及选择器
+    renderUI : function(){
+      var _self = this,
+        picker = _self.get('picker'),
+        textEl = _self._getTextEl();
+      picker.set('trigger',_self.getTrigger());
+      picker.set('triggerEvent', _self.get('triggerEvent'));
+      picker.set('autoSetValue', _self.get('autoSetValue'));
+      picker.set('textField',textEl);
+      picker.render();
+      _self.set('list',picker.get('list'));
+    },
+    //绑定事件
+    bindUI : function(){
       var _self = this,
         picker = _self.get('picker'),
         list = picker.get('list'),
-        textField = picker.get('textField');
-      //修复手动清空textField里面的值，再选时不填充的bug
-      $(textField).on('keyup', function(ev) {
-        var item = list.getSelected();
-        if (item) {
-          list.clearItemStatus(item);
+        store = list.get('store');
+        
+      //选项发生改变时
+      picker.on('selectedchange',function(ev){
+        if(ev.item){
+          _self.fire('change',{text : ev.text,value : ev.value,item : ev.item});
         }
       });
-      picker.on('show', function() {
-        list.clearSelected();
+      if(_self.get('autoSetValue')){
+        list.on('itemsshow',function(){
+          _self._syncValue();
+        });
+      }
+      
+      picker.on('show',function(){
+        if(_self.get('forceFit')){
+          picker.set('width',_self.get('el').outerWidth());
+        }
       });
     },
-    //覆写此方法
-    _uiSetValueField: function() {},
+    /**
+     * 是否包含元素
+     * @override
+     */
+    containsElement : function(elem){
+      var _self = this,
+        picker = _self.get('picker');
+
+      return Component.Controller.prototype.containsElement.call(this,elem) || picker.containsElement(elem);
+    },
     /**
      * @protected
      * 获取触发点
      */
-    getTrigger: function() {
-      return this._getTextEl();
-    }
-  }, {
-    ATTRS: {
-      /*focusable : {
-        value : false
-      },*/
-      /**
-       * 控件的模版
-       * @type {String}
-       * @default
-       * '&lt;input type="text" class="'+CLS_INPUT+'"/&gt;'
-       */
-      tpl: {
-        view: true,
-        value: '<input type="text" class="' + CLS_INPUT + '"/>'
-      },
-      /**
-       * 显示选择回的文本DOM节点的样式
-       * @type {String}
-       * @protected
-       * @default 'bui-combox-input'
-       */
-      inputCls: {
-        value: CLS_INPUT
-      },
-      autoSetValue: {
-        value: false
+    getTrigger : function(){
+      return this.get('el');
+    },
+    //设置子项
+    _uiSetItems : function(items){
+      if(!items){
+        return;
       }
-    }
-  }, {
-    xclass: 'combox'
-  });
-  module.exports = combox;
-});
-define("bui/select/tag", ["jquery", "bui/common", "bui/list", "bui/data"], function(require, exports, module) {
-  /**
-   * @fileOverview 输入、选择完毕后显示tag
-   * @ignore
-   */
-  var $ = require('jquery'),
-    BUI = require("bui/common"),
-    List = require("bui/list"),
-    KeyCode = BUI.KeyCode,
-    WARN = 'warn';
-
-  function html_decode(str) {
-      var s = "";
-      if (str.length == 0) return "";
-      s = str.replace(/>/g, "&gt;");
-      s = s.replace(/</g, "&lt;");
-      return s;
-    }
-    /**
-     * @class BUI.Select.Tag
-     * 显示tag的扩展
-     */
-  var Tag = function() {};
-  Tag.ATTRS = {
-    /**
-     * 显示tag
-     * @type {Boolean}
-     */
-    showTag: {
-      value: false
-    },
-    /**
-     * tag的模板
-     * @type {String}
-     */
-    tagItemTpl: {
-      value: '<li>{text}<button>×</button></li>'
-    },
-    /**
-     * @private
-     * tag 的列表
-     * @type {Object}
-     */
-    tagList: {
-      value: null
-    },
-    limit: {
-      value: null
-    },
-    forbitInput: {
-      value: false
-    },
-    tagPlaceholder: {
-      value: '输入标签'
-    },
-    tagFormatter: {
-      value: null
-    },
-    /**
-     * 默认的value分隔符，将值分割显示成tag
-     * @type {String}
-     */
-    separator: {
-      value: ';'
-    }
-  };
-  BUI.augment(Tag, {
-    __renderUI: function() {
       var _self = this,
-        showTag = _self.get('showTag'),
-        tagPlaceholder = _self.get('tagPlaceholder'),
-        tagInput = _self.getTagInput();
-      if (showTag && !tagInput.attr('placeholder')) {
-        tagInput.attr('placeholder', tagPlaceholder);
-        _self.set('inputForceFit', false);
-      }
+        picker = _self.get('picker'),
+        list = picker.get('list');
+      list.set('items',formatItems(items));
+      _self._syncValue();
     },
-    __bindUI: function() {
+    _syncValue : function(){
       var _self = this,
-        showTag = _self.get('showTag'),
-        tagInput = _self.getTagInput();
-      if (showTag) {
-        tagInput.on('keydown', function(ev) {
-          if (!tagInput.val()) {
-            var tagList = _self.get('tagList'),
-              last = tagList.getLastItem(),
-              picker = _self.get('picker');
-            if (ev.which == KeyCode.DELETE || ev.which == KeyCode.BACKSPACE) {
-              if (tagList.hasStatus(last, WARN)) {
-                _self._delTag(last);
-              } else {
-                tagList.setItemStatus(last, WARN, true);
-              }
-              picker.hide();
-            } else {
-              tagList.setItemStatus(last, WARN, false);
-            }
-          }
-        });
-        var handler;
-
-        function setTag() {
-          var tagList = _self.get('tagList'),
-            last = tagList.getLastItem();
-          if (last && tagList.hasStatus(last, WARN)) { //如果最后一项处于警告状态
-            tagList.setItemStatus(last, WARN, false);
-          }
-          var val = tagInput.val();
-          if (val) {
-            _self._addTag(val);
-          }
-        }
-        if (!_self.get('forbitInput')) {
-          tagInput.on('change', function() {
-            handler = setTimeout(function() {
-              setTag();
-              handler = null;
-            }, 50);
-          });
-        }
-        _self.on('change', function(ev) {
-          setTimeout(function() {
-            if (handler) {
-              clearTimeout(handler);
-            }
-            setTag();
-          });
-        });
-      }
-    },
-    __syncUI: function() {
-      var _self = this,
-        showTag = _self.get('showTag'),
+        picker = _self.get('picker'),
         valueField = _self.get('valueField');
-      if (showTag && valueField) {
-        _self._setTags($(valueField).val());
+      if(valueField){
+        picker.setSelectedValue($(valueField).val());
       }
     },
-    //设置tags，初始化时处理
-    _setTags: function(value) {
+    //设置Form表单中的名称
+    _uiSetName:function(v){
       var _self = this,
-        tagList = _self.get('tagList'),
-        separator = _self.get('separator'),
-        formatter = _self.get('tagFormatter'),
-        values = value.split(separator);
-      if (!tagList) {
-        tagList = _self._initTagList();
-      }
-      if (value) {
-        BUI.each(values, function(val) {
-          var text = val;
-          if (formatter) {
-            text = formatter(text);
-          }
-          tagList.addItem({
-            value: val,
-            text: text
-          });
-        });
+        textEl = _self._getTextEl();
+      if(v){
+        textEl.attr('name',v);
       }
     },
-    //添加tag
-    _addTag: function(value) {
-      value = html_decode(value);
-      var _self = this,
-        tagList = _self.get('tagList'),
-        tagInput = _self.getTagInput(),
-        limit = _self.get('limit'),
-        formatter = _self.get('tagFormatter'),
-        preItem = tagList.getItem(value);
-      if (limit) {
-        if (tagList.getItemCount() >= limit) {
-          return;
-        }
-      }
-      if (!preItem) {
-        var text = value;
-        if (formatter) {
-          text = formatter(text);
-        }
-        tagList.addItem({
-          value: value,
-          text: text
-        });
-        _self._synTagsValue();
-      } else {
-        _self._blurItem(tagList, preItem);
-      }
-      tagInput.val('');
-    },
-    //提示用户选项已经存在
-    _blurItem: function(list, item) {
-      list.setItemStatus(item, 'active', true);
-      setTimeout(function() {
-        list.setItemStatus(item, 'active', false);
-      }, 400);
-    },
-    //删除tag
-    _delTag: function(item) {
-      var _self = this,
-        tagList = _self.get('tagList');
-      tagList.removeItem(item);
-      _self._synTagsValue();
-    },
-    /**
-     * 获取tag 列表的值
-     * @return {String} 列表对应的值
-     */
-    getTagsValue: function() {
-      var _self = this,
-        tagList = _self.get('tagList'),
-        items = tagList.getItems(),
-        vals = [];
-      BUI.each(items, function(item) {
-        vals.push(item.value);
-      });
-      return vals.join(_self.get('separator'));
-    },
-    //初始化tagList
-    _initTagList: function() {
-      var _self = this,
-        tagInput = _self.getTagInput(),
-        tagList = new List.SimpleList({
-          elBefore: tagInput,
-          itemTpl: _self.get('tagItemTpl'),
-          idField: 'value'
-        });
-      tagList.render();
-      _self._initTagEvent(tagList);
-      _self.set('tagList', tagList);
-      return tagList;
-    },
-    //初始化tag删除事件
-    _initTagEvent: function(list) {
+    _uiSetWidth : function(v){
       var _self = this;
-      list.on('itemclick', function(ev) {
-        var sender = $(ev.domTarget);
-        if (sender.is('button')) {
-          _self._delTag(ev.item);
+      if(v != null){
+        if(_self.get('inputForceFit')){
+          var textEl = _self._getTextEl(),
+          iconEl = _self.get('el').find('.x-icon'),
+          appendWidth = textEl.outerWidth() - textEl.width(),
+          
+          width = v - iconEl.outerWidth() - appendWidth;
+          textEl.width(width);
         }
-      });
+        
+        if(_self.get('forceFit')){
+          var picker = _self.get('picker');
+          picker.set('width',v);
+        }
+        
+      }
     },
-    /**
-     * 获取输入的文本框
-     * @protected
-     * @return {jQuery} 输入框
-     */
-    getTagInput: function() {
+    //禁用
+    _uiSetDisabled : function(v){
       var _self = this,
+        picker = _self.get('picker'),
+        textEl = _self._getTextEl();
+      picker.set('disabled',v);
+      textEl && textEl.attr('disabled',v);
+    },
+    _getTextEl : function(){
+       var _self = this,
         el = _self.get('el');
       return el.is('input') ? el : el.find('input');
     },
-    _synTagsValue: function() {
+    /**
+     * 析构函数
+     */
+    destructor:function(){
       var _self = this,
-        valueEl = _self.get('valueField');
-      valueEl && $(valueEl).val(_self.getTagsValue());
-    }
-  });
-  module.exports = Tag;
-});
-define("bui/select/suggest", ["jquery", "bui/common", "bui/picker", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
-  /**
-   * @fileOverview 组合框可用于选择输入文本
-   * @ignore
-   */
-  'use strict';
-  var $ = require('jquery'),
-    BUI = require("bui/common"),
-    Combox = require("bui/select/combox"),
-    TIMER_DELAY = 200,
-    EMPTY = '';
-  /**
-   * 组合框 用于提示输入
-   * xclass:'suggest'
-   * ** 简单使用静态数据 **
-   * <pre><code>
-   * BUI.use('bui/select',function (Select) {
-   *
-   *  var suggest = new Select.Suggest({
-   *     render:'#c2',
-   *     name:'suggest', //形成输入框的name
-   *     data:['1222224','234445','122','1111111']
-   *   });
-   *   suggest.render();
-   *
-   * });
-   * </code></pre>
-   * ** 查询服务器数据 **
-   * <pre><code>
-   * BUI.use('bui/select',function(Select){
-   *
-   *  var suggest = new Select.Suggest({
-   *    render:'#s1',
-   *    name:'suggest',
-   *    url:'server-data.php'
-   *  });
-   *  suggest.render();
-   *
-   * });
-   * </code></pre>
-   * @class BUI.Select.Suggest
-   * @extends BUI.Select.Combox
-   */
-  var suggest = Combox.extend({
-    bindUI: function() {
-      var _self = this,
-        textEl = _self.get('el').find('input'),
-        triggerEvent = (_self.get('triggerEvent') === 'keyup') ? 'keyup' : 'keyup click';
-      //监听 keyup 事件
-      textEl.on(triggerEvent, function() {
-        _self._start();
-      });
-    },
-    //启动计时器，开始监听用户输入
-    _start: function() {
-      var _self = this;
-      _self._timer = _self.later(function() {
-        _self._updateContent();
-        // _self._timer = _self.later(arguments.callee, TIMER_DELAY);
-      }, TIMER_DELAY);
-    },
-    //更新提示层的数据
-    _updateContent: function() {
-      var _self = this,
-        isStatic = _self.get('data'),
-        textEl = _self.get('el').find('input'),
-        text;
-      //检测是否需要更新。注意：加入空格也算有变化
-      if (!isStatic && (textEl.val() === _self.get('query'))) {
-        return;
-      }
-      _self.set('query', textEl.val());
-      text = textEl.val();
-      //输入为空时,直接返回
-      if (!isStatic && !text) {
-        /*        _self.set('items',EMPTY_ARRAY);
-        picker.hide();*/
-        return;
-      }
-      //3种加载方式选择
-      var cacheable = _self.get('cacheable'),
-        store = _self.get('store'),
-        url = _self.get('url'),
-        data = _self.get('data');
-      if (cacheable && (url || store)) {
-        var dataCache = _self.get('dataCache');
-        if (dataCache[text] !== undefined) {
-          //从缓存读取
-          //BUI.log('use cache');
-          _self._handleResponse(dataCache[text]);
-        } else {
-          //请求服务器数据
-          //BUI.log('no cache, data from server');
-          _self._requestData();
-        }
-      } else if (url || store) {
-        //从服务器获取数据
-        //BUI.log('no cache, data always from server');
-        _self._requestData();
-      } else if (data) {
-        //使用静态数据源
-        //BUI.log('use static datasource');
-        _self._handleResponse(data, true);
+        picker = _self.get('picker');
+      if(picker){
+        picker.destroy();
       }
     },
-    //如果存在数据源
-    _getStore: function() {
+    //获取List控件
+    _getList:function(){
       var _self = this,
         picker = _self.get('picker'),
         list = picker.get('list');
-      if (list) {
-        return list.get('store');
-      }
-    },
-    //通过 script 元素异步加载数据
-    _requestData: function() {
-      var _self = this,
-        textEl = _self.get('el').find('input'),
-        callback = _self.get('callback'),
-        store = _self.get('store'),
-        param = {};
-      param[textEl.attr('name')] = textEl.val();
-      if (store) {
-        param.start = 0; //回滚到第一页
-        store.load(param, callback);
-      } else {
-        $.ajax({
-          url: _self.get('url'),
-          type: 'post',
-          dataType: _self.get('dataType'),
-          data: param,
-          success: function(data) {
-            _self._handleResponse(data);
-            if (callback) {
-              callback(data);
-            }
-          }
-        });
-      }
-    },
-    //处理获取的数据
-    _handleResponse: function(data, filter) {
-      var _self = this,
-        items = filter ? _self._getFilterItems(data) : data;
-      _self.set('items', items);
-      if (_self.get('cacheable')) {
-        _self.get('dataCache')[_self.get('query')] = items;
-      }
-    },
-    //如果列表记录是对象获取显示的文本
-    _getItemText: function(item) {
-      var _self = this,
-        picker = _self.get('picker'),
-        list = picker.get('list');
-      if (list) {
-        return list.getItemText(item);
-      }
-      return '';
-    },
-    //获取过滤的文本
-    _getFilterItems: function(data) {
-      var _self = this,
-        result = [],
-        textEl = _self.get('el').find('input'),
-        text = textEl.val(),
-        isStatic = _self.get('data');
-      data = data || [];
-      /**
-       * @private
-       * @ignore
-       */
-      function push(str, item) {
-        if (BUI.isString(item)) {
-          result.push(str);
-        } else {
-          result.push(item);
-        }
-      }
-      BUI.each(data, function(item) {
-        var str = BUI.isString(item) ? item : _self._getItemText(item);
-        if (isStatic) {
-          if (str.indexOf($.trim(text)) !== -1) {
-            push(str, item);
-          }
-        } else {
-          push(str, item);
-        }
-      });
-      return result;
+      return list;
     },
     /**
-     * 延迟执行指定函数 fn
-     * @protected
-     * @return {Object} 操作定时器的对象
+     * 获取选中项的值，如果是多选则，返回的'1,2,3'形式的字符串
+     * <pre><code>
+     *  var value = select.getSelectedValue();
+     * </code></pre>
+     * @return {String} 选中项的值
      */
-    later: function(fn, when, periodic) {
-      when = when || 0;
-      var r = periodic ? setInterval(fn, when) : setTimeout(fn, when);
-      return {
-        id: r,
-        interval: periodic,
-        cancel: function() {
-          if (this.interval) {
-            clearInterval(r);
-          } else {
-            clearTimeout(r);
-          }
-        }
-      };
+    getSelectedValue:function(){
+      return this.get('picker').getSelectedValue();
+    },
+    /**
+     * 设置选中的值
+     * <pre><code>
+     * select.setSelectedValue('1'); //单选模式下
+     * select.setSelectedValue('1,2,3'); //多选模式下
+     * </code></pre>
+     * @param {String} value 选中的值
+     */
+    setSelectedValue : function(value){
+      var _self = this,
+        picker = _self.get('picker');
+      picker.setSelectedValue(value);
+    },
+    /**
+     * 获取选中项的文本，如果是多选则，返回的'text1,text2,text3'形式的字符串
+     * <pre><code>
+     *  var value = select.getSelectedText();
+     * </code></pre>
+     * @return {String} 选中项的文本
+     */
+    getSelectedText:function(){
+      return this.get('picker').getSelectedText();
     }
-  }, {
-    ATTRS: {
+  },{
+    ATTRS : 
+    {
+
       /**
-       * 用于显示提示的数据源
+       * 选择器，浮动出现，供用户选择
+       * @cfg {BUI.Picker.ListPicker} picker
        * <pre><code>
-       *   var suggest = new Select.Suggest({
-       *     render:'#c2',
-       *     name:'suggest', //形成输入框的name
-       *     data:['1222224','234445','122','1111111']
+       * var columns = [
+       *       {title : '表头1(30%)',dataIndex :'a', width:'30%'},
+       *       {id: '123',title : '表头2(30%)',dataIndex :'b', width:'30%'},
+       *       {title : '表头3(40%)',dataIndex : 'c',width:'40%'}
+       *     ],   
+       *   data = [{a:'123',b:'选择文本1'},{a:'cdd',b:'选择文本2'},{a:'1333',b:'选择文本3',c:'eee',d:2}],
+       *   grid = new Grid.SimpleGrid({
+       *     idField : 'a', //设置作为key 的字段，放到valueField中
+       *     columns : columns,
+       *     textGetter: function(item){ //返回选中的文本
+       *       return item.b;
+       *     }
+       *   }),
+       *   picker = new Picker.ListPicker({
+       *     width:300,  //指定宽度
+       *     children : [grid] //配置picker内的列表
+       *   }),
+       *   select = new Select.Select({  
+       *     render:'#s1',
+       *     picker : picker,
+       *     forceFit:false, //不强迫列表跟选择器宽度一致
+       *     valueField:'#hide',
+       *     items : data
        *   });
+       * select.render();
        * </code></pre>
-       * @cfg {Array} data
        */
       /**
-       * 用于显示提示的数据源
-       * @type {Array}
+       * 选择器，浮动出现，供用户选择
+       * @readOnly
+       * @type {BUI.Picker.ListPicker}
        */
-      data: {
-        value: null
+      picker:{
+
       },
       /**
-       * 输入框的值
-       * @type {String}
-       * @private
+       * Picker中的列表
+       * <pre>
+       *   var list = select.get('list');
+       * </pre>
+       * @readOnly
+       * @type {BUI.List.SimpleList}
        */
-      query: {
-        value: EMPTY
+      list : {
+
       },
       /**
-       * 是否允许缓存
-       * @cfg {Boolean} cacheable
+       * 存放值得字段，一般是一个input[type='hidden'] ,用于存放选择框的值
+       * @cfg {Object} valueField
        */
       /**
-       * 是否允许缓存
+       * @ignore
+       */
+      valueField : {
+
+      },
+      /**
+       * 数据缓冲类
+       * <pre><code>
+       *  var store = new Store({
+       *    url : 'data.json',
+       *    autoLoad : true
+       *  });
+       *  var select = new Select({
+       *    render : '#s',
+       *    store : store//设置了store后，不要再设置items，会进行覆盖
+       *  });
+       *  select.render();
+       * </code></pre>
+       * @cfg {BUI.Data.Store} Store
+       */
+      store : {
+
+      },
+      focusable:{
+        value:true
+      },
+      /**
+       * 是否跟valueField自动同步
        * @type {Boolean}
        */
-      cacheable: {
-        value: false
+      autoSetValue : {
+        value : true
       },
       /**
-       * 缓存的数据
-       * @private
+       * 是否可以多选
+       * @cfg {Boolean} [multipleSelect=false]
        */
-      dataCache: {
-        shared: false,
-        value: {}
+      /**
+       * 是否可以多选
+       * @type {Boolean}
+       */
+      multipleSelect:{
+        value:false
       },
       /**
-       * 请求返回的数据格式默认为'jsonp'
-       * <pre><code>
-       *  var suggest = new Select.Suggest({
-       *    render:'#s1',
-       *    name:'suggest',
-       *    dataType : 'json',
-       *    url:'server-data.php'
-       *  });
-       * </code></pre>
-       * @cfg {Object} [dataType = 'jsonp']
+       * 内部的input是否跟随宽度的变化而变化
+       * @type {Object}
        */
-      dataType: {
-        value: 'jsonp'
+      inputForceFit : {
+        value : true
+      },  
+      /**
+       * 控件的name，用于存放选中的文本，便于表单提交
+       * @cfg {Object} name
+       */
+      /**
+       * 控件的name，便于表单提交
+       * @type {Object}
+       */
+      name:{
+
       },
       /**
-       * 请求数据的url
+       * 选项
+       * @cfg {Array} items
        * <pre><code>
-       *  var suggest = new Select.Suggest({
-       *    render:'#s1',
-       *    name:'suggest',
-       *    dataType : 'json',
-       *    url:'server-data.php'
-       *  });
+       *  BUI.use('bui/select',function(Select){
+       * 
+       *   var items = [
+       *         {text:'选项1',value:'a'},
+       *         {text:'选项2',value:'b'},
+       *         {text:'选项3',value:'c'}
+       *       ],
+       *       select = new Select.Select({  
+       *         render:'#s1',
+       *         valueField:'#hide',
+       *         //multipleSelect: true, //是否多选
+       *         items:items
+       *       });
+       *   select.render();
+       *   
+       * });
        * </code></pre>
-       * @cfg {String} url
        */
-      url: {},
       /**
-       * 请求完数据的回调函数
-       * <pre><code>
-       *  var suggest = new Select.Suggest({
-       *    render:'#s1',
-       *    name:'suggest',
-       *    dataType : 'json',
-       *    callback : function(data){
-       *      //do something
-       *    },
-       *    url:'server-data.php'
-       *  });
-       * </code></pre>
-       * @type {Function}
+       * 选项
+       * @type {Array}
        */
-      callback: {},
+      items:{
+        sync:false
+      },
+      /**
+       * 标示选择完成后，显示文本的DOM节点的样式
+       * @type {String}
+       * @protected
+       * @default 'bui-select-input'
+       */
+      inputCls:{
+        value:CLS_INPUT
+      },
+      /**
+       * 是否使选择列表跟选择框同等宽度
+       * <pre><code>
+       *   picker = new Picker.ListPicker({
+       *     width:300,  //指定宽度
+       *     children : [grid] //配置picker内的列表
+       *   }),
+       *   select = new Select.Select({  
+       *     render:'#s1',
+       *     picker : picker,
+       *     forceFit:false, //不强迫列表跟选择器宽度一致
+       *     valueField:'#hide',
+       *     items : data
+       *   });
+       * select.render();
+       * </code></pre>
+       * @cfg {Boolean} [forceFit=true]
+       */
+      forceFit : {
+        value : true
+      },
+      events : {
+        value : {
+          /**
+           * 选择值发生改变时
+           * @event
+           * @param {Object} e 事件对象
+           * @param {String} e.text 选中的文本
+           * @param {String} e.value 选中的value
+           * @param {Object} e.item 发生改变的选项
+           */
+          'change' : false
+        }
+      },
+      /**
+       * 控件的默认模版
+       * @type {String}
+       * @default 
+       * '&lt;input type="text" readonly="readonly" class="bui-select-input"/&gt;&lt;span class="x-icon x-icon-normal"&gt;&lt;span class="bui-caret bui-caret-down"&gt;&lt;/span&gt;&lt;/span&gt;'
+       */
+      tpl : {
+        view:true,
+        value : '<input type="text" readonly="readonly" class="'+CLS_INPUT+'"/><span class="x-icon x-icon-normal"><i class="icon icon-caret icon-caret-down"></i></span>'
+      },
       /**
        * 触发的事件
        * @cfg {String} triggerEvent
        * @default 'click'
        */
-      triggerEvent: {
-        valueFn: function() {
-          if (this.get('data')) {
-            return 'click';
+      triggerEvent:{
+        value:'click'
+      }  
+    }
+  },{
+    xclass : 'select'
+  });
+
+module.exports = select;
+
+});
+define("bui/select/combox", ["jquery","bui/common","bui/picker","bui/overlay","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 组合框可用于选择输入文本
+ * @ignore
+ */
+
+
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  Select = require("bui/select/select"),
+  Tag = require("bui/select/tag"),
+  CLS_INPUT = BUI.prefix + 'combox-input';
+
+/**
+ * 组合框 用于提示输入
+ * xclass:'combox'
+ * <pre><code>
+ * BUI.use('bui/select',function(Select){
+ * 
+ *  var select = new Select.Combox({
+ *    render:'#c1',
+ *    name:'combox',
+ *    items:['选项1','选项2','选项3','选项4']
+ *  });
+ *  select.render();
+ * });
+ * </code></pre>
+ * @class BUI.Select.Combox
+ * @extends BUI.Select.Select
+ */
+var combox = Select.extend([Tag],{
+
+  renderUI : function(){
+    var _self = this,
+      picker = _self.get('picker');
+    picker.set('autoFocused',false);
+
+  },
+  _uiSetItems : function(v){
+    var _self = this;
+
+    for(var i = 0 ; i < v.length ; i++){
+      var item = v[i];
+      if(BUI.isString(item)){
+        v[i] = {value:item,text:item};
+      }
+    }
+    combox.superclass._uiSetItems.call(_self,v);
+  },
+  bindUI: function(){
+    var _self = this,
+      picker = _self.get('picker'),
+      list = picker.get('list'),
+      textField = picker.get('textField');
+
+    //修复手动清空textField里面的值，再选时不填充的bug
+    $(textField).on('keyup', function(ev){
+      var item = list.getSelected();
+      if(item){
+        list.clearItemStatus(item);
+      }
+    });
+
+    picker.on('show',function(){
+      list.clearSelected();
+    });
+
+  },
+  //覆写此方法
+  _uiSetValueField : function(){
+
+  },
+  /**
+   * @protected
+   * 获取触发点
+   */
+  getTrigger : function(){
+    return this._getTextEl();
+  }
+},{
+  ATTRS : 
+  {
+    /*focusable : {
+      value : false
+    },*/
+    /**
+     * 控件的模版
+     * @type {String}
+     * @default  
+     * '&lt;input type="text" class="'+CLS_INPUT+'"/&gt;'
+     */
+    tpl:{
+      view:true,
+      value:'<input type="text" class="'+CLS_INPUT+'"/>'
+    },
+    /**
+     * 显示选择回的文本DOM节点的样式
+     * @type {String}
+     * @protected
+     * @default 'bui-combox-input'
+     */
+    inputCls:{
+      value:CLS_INPUT
+    },
+    autoSetValue : {
+      value : false
+    }
+  }
+},{
+  xclass:'combox'
+});
+
+module.exports = combox;
+
+});
+define("bui/select/tag", ["jquery","bui/common","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 输入、选择完毕后显示tag
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  List = require("bui/list"),
+  KeyCode = BUI.KeyCode,
+  WARN = 'warn';
+
+function html_decode(str)   
+{   
+  var s = "";   
+  if (str.length == 0) return "";   
+  s = str.replace(/>/g, "&gt;");   
+  s = s.replace(/</g, "&lt;");   
+  return s;   
+}    
+
+/**
+ * @class BUI.Select.Tag
+ * 显示tag的扩展
+ */
+var Tag = function(){
+
+};
+
+Tag.ATTRS = {
+  /**
+   * 显示tag
+   * @type {Boolean}
+   */
+  showTag : {
+    value : false
+  },
+  /**
+   * tag的模板
+   * @type {String}
+   */
+  tagItemTpl : {
+    value : '<li>{text}<button>×</button></li>'
+  },
+  /**
+   * @private
+   * tag 的列表
+   * @type {Object}
+   */
+  tagList : {
+    value : null
+  },
+  limit : {
+    value : null
+  },
+  forbitInput : {
+    value : false
+  },
+  tagPlaceholder : {
+    value : '输入标签'
+  },
+  tagFormatter : {
+    value : null
+  },
+  /**
+   * 默认的value分隔符，将值分割显示成tag
+   * @type {String}
+   */
+  separator : {
+    value : ';'
+  }
+};
+
+BUI.augment(Tag,{
+
+  __renderUI : function(){
+    var _self = this,
+      showTag = _self.get('showTag'),
+      tagPlaceholder = _self.get('tagPlaceholder'),
+      tagInput = _self.getTagInput();
+    if(showTag && !tagInput.attr('placeholder')){
+      tagInput.attr('placeholder',tagPlaceholder);
+      _self.set('inputForceFit',false);
+    }
+  },
+  __bindUI : function(){
+    var _self = this,
+      showTag = _self.get('showTag'),
+      tagInput = _self.getTagInput();
+    if(showTag){
+      tagInput.on('keydown',function(ev){
+        if(!tagInput.val()){
+          var tagList =  _self.get('tagList'),
+            last = tagList.getLastItem(),
+            picker = _self.get('picker');
+          if(ev.which == KeyCode.DELETE || ev.which == KeyCode.BACKSPACE){
+            if(tagList.hasStatus(last,WARN)){
+              _self._delTag(last);
+            }else{
+              tagList.setItemStatus(last,WARN,true);
+            }
+            picker.hide();
+          }else{
+            tagList.setItemStatus(last,WARN,false);
           }
-          return 'keyup';
         }
-      },
-      /**
-       * suggest不提供自动设置选中文本功能
-       * @type {Boolean}
-       */
-      autoSetValue: {
-        value: false
+      });
+
+      var handler;
+      function setTag(){
+        var tagList =  _self.get('tagList'),
+          last = tagList.getLastItem();
+        if(last && tagList.hasStatus(last,WARN)){ //如果最后一项处于警告状态
+          tagList.setItemStatus(last,WARN,false);
+        }
+
+        var val = tagInput.val();
+        if(val){
+          _self._addTag(val);
+        }
+        
       }
-    }
-  }, {
-    xclass: 'suggest'
-  });
-  module.exports = suggest;
-});
-define("bui/form", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
-  /**
-   * @fileOverview form 命名空间入口
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    Form = BUI.namespace('Form'),
-    Tips = require("bui/form/tips");
-  BUI.mix(Form, {
-    Tips: Tips,
-    TipItem: Tips.Item,
-    FieldContainer: require("bui/form/fieldcontainer"),
-    Form: require("bui/form/form"),
-    Row: require("bui/form/row"),
-    Group: require("bui/form/fieldgroup"),
-    HForm: require("bui/form/hform"),
-    Rules: require("bui/form/rules"),
-    Field: require("bui/form/field"),
-    FieldGroup: require("bui/form/fieldgroup")
-  });
-  module.exports = Form;
-});
-define("bui/form/tips", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
-  /**
-   * @fileOverview 输入提示信息
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require('jquery'),
-    BUI = require("bui/common"),
-    prefix = BUI.prefix,
-    Overlay = require("bui/overlay").Overlay,
-    FIELD_TIP = 'data-tip',
-    CLS_TIP_CONTAINER = prefix + 'form-tip-container';
-  /**
-   * 表单提示信息类
-   * xclass:'form-tip'
-   * @class BUI.Form.TipItem
-   * @extends BUI.Overlay.Overlay
-   */
-  var tipItem = Overlay.extend({
-    initializer: function() {
-      var _self = this,
-        render = _self.get('render');
-      if (!render) {
-        var parent = $(_self.get('trigger')).parent();
-        _self.set('render', parent);
-      }
-    },
-    renderUI: function() {
-      var _self = this;
-      _self.resetVisible();
-    },
-    /**
-     * 重置是否显示
-     */
-    resetVisible: function() {
-      var _self = this,
-        triggerEl = $(_self.get('trigger'));
-      if (triggerEl.val()) { //如果默认有文本则不显示，否则显示
-        _self.set('visible', false);
-      } else {
-        _self.set('align', {
-          node: $(_self.get('trigger')),
-          points: ['cl', 'cl']
+      if(!_self.get('forbitInput')){
+        tagInput.on('change',function(){
+          handler = setTimeout(function(){
+            setTag();
+            handler = null;
+          },50);
         });
-        _self.set('visible', true);
       }
-    },
-    bindUI: function() {
-      var _self = this,
-        triggerEl = $(_self.get('trigger'));
-      _self.get('el').on('click', function() {
-        _self.hide();
-        triggerEl.focus();
-      });
-      triggerEl.on('click focus', function() {
-        _self.hide();
-      });
-      triggerEl.on('blur', function() {
-        _self.resetVisible();
+      
+
+      _self.on('change',function(ev){
+        setTimeout(function(){
+          if(handler){
+            clearTimeout(handler);
+          }
+          setTag();
+        });
       });
     }
-  }, {
-    ATTRS: {
-      /**
-       * 提示的输入框
-       * @cfg {String|HTMLElement|jQuery} trigger
-       */
-      /**
-       * 提示的输入框
-       * @type {String|HTMLElement|jQuery}
-       */
-      trigger: {},
-      /**
-       * 提示文本
-       * @cfg {String} text
-       */
-      /**
-       * 提示文本
-       * @type {String}
-       */
-      text: {},
-      /**
-       * 提示文本上显示的icon样式
-       * @cfg {String} iconCls
-       *     iconCls : icon-ok
-       */
-      /**
-       * 提示文本上显示的icon样式
-       * @type {String}
-       *     iconCls : icon-ok
-       */
-      iconCls: {},
-      /**
-       * 默认的模版
-       * @type {String}
-       * @default '<span class="{iconCls}"></span><span class="tip-text">{text}</span>'
-       */
-      tpl: {
-        value: '<span class="{iconCls}"></span><span class="tip-text">{text}</span>'
+  },
+  __syncUI : function(){
+    var _self = this,
+      showTag = _self.get('showTag'),
+      valueField = _self.get('valueField');
+    if(showTag && valueField){
+      _self._setTags($(valueField).val());
+    }
+  },
+  //设置tags，初始化时处理
+  _setTags : function(value){
+    
+    var _self = this,
+      tagList = _self.get('tagList'),
+      separator = _self.get('separator'),
+      formatter = _self.get('tagFormatter'),
+      values = value.split(separator);
+    if(!tagList){
+      tagList = _self._initTagList();
+    }
+    if(value){
+      BUI.each(values,function(val){
+        var text = val;
+        if(formatter){
+          text = formatter(text);
+        }
+        tagList.addItem({value : val,text : text});
+      });
+    }
+  },
+  //添加tag
+  _addTag : function(value){
+    value = html_decode(value);
+    var _self = this,
+      tagList = _self.get('tagList'),
+      tagInput = _self.getTagInput(),
+      limit = _self.get('limit'),
+      formatter = _self.get('tagFormatter'),
+      preItem = tagList.getItem(value);
+    if(limit){
+      if(tagList.getItemCount() >= limit){
+        return;
       }
     }
-  }, {
-    xclass: 'form-tip'
-  });
+    if(!preItem){
+      var text = value;
+      if(formatter){
+        text = formatter(text);
+      }
+      tagList.addItem({value : value,text : text});
+      _self._synTagsValue();
+    }else{
+      _self._blurItem(tagList,preItem);
+    }
+    tagInput.val('');
+
+  },
+  //提示用户选项已经存在
+  _blurItem : function(list,item){
+    list.setItemStatus(item,'active',true);
+    setTimeout(function(){
+      list.setItemStatus(item,'active',false);
+    },400);
+  },
+  //删除tag
+  _delTag : function(item){
+    var _self = this,
+      tagList = _self.get('tagList');
+
+    tagList.removeItem(item);
+    _self._synTagsValue();
+  },
+
   /**
-   * 表单提示信息的管理类
-   * @class BUI.Form.Tips
-   * @extends BUI.Base
+   * 获取tag 列表的值
+   * @return {String} 列表对应的值
    */
-  var Tips = function(config) {
-    if (this.constructor !== Tips) {
-      return new Tips(config);
+  getTagsValue : function(){
+    var _self = this,
+      tagList = _self.get('tagList'),
+      items = tagList.getItems(),
+      vals = [];
+
+    BUI.each(items,function(item){
+      vals.push(item.value);
+    });
+    return vals.join(_self.get('separator'));
+  },
+  //初始化tagList
+  _initTagList : function(){
+    var _self = this,
+      tagInput = _self.getTagInput(),
+      tagList = new List.SimpleList({
+        elBefore : tagInput,
+        itemTpl : _self.get('tagItemTpl'),
+        idField : 'value'
+      });
+    tagList.render();
+    _self._initTagEvent(tagList);
+    _self.set('tagList',tagList);
+    return tagList;
+  },
+  //初始化tag删除事件
+  _initTagEvent : function(list){
+    var _self = this;
+    list.on('itemclick',function(ev){
+      var sender = $(ev.domTarget);
+      if(sender.is('button')){
+        _self._delTag(ev.item);
+      }
+    });
+  },
+  /**
+   * 获取输入的文本框
+   * @protected
+   * @return {jQuery} 输入框
+   */
+  getTagInput : function(){
+    var _self = this,
+        el = _self.get('el');
+    return el.is('input') ? el : el.find('input');
+  },
+  _synTagsValue : function(){
+    var _self = this,
+      valueEl = _self.get('valueField');
+     valueEl && $(valueEl).val(_self.getTagsValue());
+  }
+});
+
+module.exports = Tag;
+
+});
+define("bui/select/suggest", ["jquery","bui/common","bui/picker","bui/overlay","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 组合框可用于选择输入文本
+ * @ignore
+ */
+
+'use strict';
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  Combox = require("bui/select/combox"),
+  TIMER_DELAY = 200,
+  EMPTY = '';
+
+/**
+ * 组合框 用于提示输入
+ * xclass:'suggest'
+ * ** 简单使用静态数据 **
+ * <pre><code>
+ * BUI.use('bui/select',function (Select) {
+ *
+ *  var suggest = new Select.Suggest({
+ *     render:'#c2',
+ *     name:'suggest', //形成输入框的name
+ *     data:['1222224','234445','122','1111111']
+ *   });
+ *   suggest.render();
+ *   
+ * });
+ * </code></pre>
+ * ** 查询服务器数据 **
+ * <pre><code>
+ * BUI.use('bui/select',function(Select){
+ *
+ *  var suggest = new Select.Suggest({
+ *    render:'#s1',
+ *    name:'suggest', 
+ *    url:'server-data.php'
+ *  });
+ *  suggest.render();
+ *
+ * });
+ * </code></pre>
+ * @class BUI.Select.Suggest
+ * @extends BUI.Select.Combox
+ */
+var suggest = Combox.extend({
+  bindUI : function(){
+    var _self = this,
+      textEl = _self.get('el').find('input'),
+      triggerEvent = (_self.get('triggerEvent') === 'keyup') ? 'keyup' : 'keyup click';
+
+    //监听 keyup 事件
+    textEl.on(triggerEvent, function(){
+      _self._start();
+    });
+  },
+  //启动计时器，开始监听用户输入
+  _start:function(){
+    var _self = this;
+    _self._timer = _self.later(function(){
+      _self._updateContent();
+     // _self._timer = _self.later(arguments.callee, TIMER_DELAY);
+    }, TIMER_DELAY);
+  },
+  //更新提示层的数据
+  _updateContent:function(){
+    var _self = this,
+      isStatic = _self.get('data'),
+      textEl = _self.get('el').find('input'),
+      text;
+
+    //检测是否需要更新。注意：加入空格也算有变化
+    if (!isStatic && (textEl.val() === _self.get('query'))) {
+      return;
     }
-    Tips.superclass.constructor.call(this, config);
-    this._init();
-  };
-  Tips.ATTRS = {
+
+    _self.set('query', textEl.val());
+    text = textEl.val();
+    //输入为空时,直接返回
+    if (!isStatic && !text) {
+      /*        _self.set('items',EMPTY_ARRAY);
+      picker.hide();*/
+      return;
+    }
+
+    //3种加载方式选择
+    var cacheable = _self.get('cacheable'),
+      store = _self.get('store'),
+      url = _self.get('url'),
+      data = _self.get('data');
+
+    if (cacheable && (url || store)) {
+      var dataCache = _self.get('dataCache');
+      if (dataCache[text] !== undefined) {
+        //从缓存读取
+        //BUI.log('use cache');
+        _self._handleResponse(dataCache[text]);
+      }else{
+        //请求服务器数据
+        //BUI.log('no cache, data from server');
+        _self._requestData();
+      }
+    }else if (url || store) {
+      //从服务器获取数据
+      //BUI.log('no cache, data always from server');
+      _self._requestData();
+    }else if (data) {
+      //使用静态数据源
+      //BUI.log('use static datasource');
+      _self._handleResponse(data,true);
+    }
+  },
+  //如果存在数据源
+  _getStore : function(){
+    var _self = this,
+      picker = _self.get('picker'),
+      list = picker.get('list');
+    if(list){
+      return list.get('store');
+    }
+  },
+  //通过 script 元素异步加载数据
+  _requestData:function(){
+    var _self = this,
+      textEl = _self.get('el').find('input'),
+      callback = _self.get('callback'),
+      store = _self.get('store'),
+      param = {};
+
+    param[textEl.attr('name')] = textEl.val();
+    if(store){
+      param.start = 0; //回滚到第一页
+      store.load(param,callback);
+    }else{
+      $.ajax({
+        url:_self.get('url'),
+        type:'post',
+        dataType:_self.get('dataType'),
+        data:param,
+        success:function(data){
+          _self._handleResponse(data);
+          if(callback){
+            callback(data);
+          }
+        }
+      });
+    }
+    
+  },
+  //处理获取的数据
+  _handleResponse:function(data,filter){
+    var _self = this,
+      items = filter ? _self._getFilterItems(data) : data;
+    _self.set('items',items);
+
+    if(_self.get('cacheable')){
+      _self.get('dataCache')[_self.get('query')] = items;
+    }
+  },
+  //如果列表记录是对象获取显示的文本
+  _getItemText : function(item){
+    var _self = this,
+      picker = _self.get('picker'),
+      list = picker.get('list');
+    if(list){
+      return list.getItemText(item);
+    }
+    return '';
+  },
+  //获取过滤的文本
+  _getFilterItems:function(data){
+    var _self = this,
+      result = [],
+      textEl = _self.get('el').find('input'),
+      text = textEl.val(),
+      isStatic = _self.get('data');
+    data = data || [];
     /**
-     * 表单的选择器
-     * @cfg {String|HTMLElement|jQuery} form
+     * @private
+     * @ignore
+     */
+    function push(str,item){
+      if(BUI.isString(item)){
+        result.push(str);
+      }else{
+        result.push(item);
+      }
+    }
+    BUI.each(data, function(item){
+      var str = BUI.isString(item) ? item : _self._getItemText(item);
+      if(isStatic){
+        if(str.indexOf($.trim(text)) !== -1){
+          push(str,item);
+        }
+      }else{
+        push(str,item);
+      }
+    });
+    
+    return result;
+  },
+  /**
+   * 延迟执行指定函数 fn
+   * @protected
+   * @return {Object} 操作定时器的对象
+   */
+  later:function (fn, when, periodic) {
+    when = when || 0;
+    var r = periodic ? setInterval(fn, when) : setTimeout(fn, when);
+
+    return {
+      id:r,
+      interval:periodic,
+      cancel:function () {
+        if (this.interval) {
+          clearInterval(r);
+        } else {
+          clearTimeout(r);
+        }
+      }
+    };
+  }
+},{
+  ATTRS : 
+  {
+    /**
+     * 用于显示提示的数据源
+     * <pre><code>
+     *   var suggest = new Select.Suggest({
+     *     render:'#c2',
+     *     name:'suggest', //形成输入框的name
+     *     data:['1222224','234445','122','1111111']
+     *   });
+     * </code></pre>
+     * @cfg {Array} data
      */
     /**
-     * 表单的选择器
-     * @type {String|HTMLElement|jQuery}
-     */
-    form: {},
-    /**
-     * 表单提示项对象 {@link BUI.Form.TipItem}
-     * @readOnly
+     * 用于显示提示的数据源
      * @type {Array}
      */
-    items: {
-      valueFn: function() {
-        return [];
-      }
-    }
-  };
-  BUI.extend(Tips, BUI.Base);
-  BUI.augment(Tips, {
-    _init: function() {
-      var _self = this,
-        form = $(_self.get('form'));
-      if (form.length) {
-        BUI.each($.makeArray(form[0].elements), function(elem) {
-          var tipConfig = $(elem).attr(FIELD_TIP);
-          if (tipConfig) {
-            _self._initFormElement(elem, $.parseJSON(tipConfig));
-          }
-        });
-        form.addClass(CLS_TIP_CONTAINER);
-      }
-    },
-    _initFormElement: function(element, config) {
-      if (config) {
-        config.trigger = element;
-        //config.render = this.get('form');
-      }
-      var _self = this,
-        items = _self.get('items'),
-        item = new tipItem(config);
-      items.push(item);
+    data:{
+      value : null
     },
     /**
-     * 获取提示项
-     * @param {String} name 字段的名称
-     * @return {BUI.Form.TipItem} 提示项
+     * 输入框的值
+     * @type {String}
+     * @private
      */
-    getItem: function(name) {
-      var _self = this,
-        items = _self.get('items'),
-        result = null;
-      BUI.each(items, function(item) {
-        if ($(item.get('trigger')).attr('name') === name) {
-          result = item;
-          return false;
+    query:{
+      value : EMPTY
+    },
+    /**
+     * 是否允许缓存
+     * @cfg {Boolean} cacheable
+     */
+    /**
+     * 是否允许缓存
+     * @type {Boolean}
+     */
+    cacheable:{
+      value:false
+    },
+    /**
+     * 缓存的数据
+     * @private
+     */
+    dataCache:{
+      shared:false,
+      value:{}
+    },
+    /**
+     * 请求返回的数据格式默认为'jsonp'
+     * <pre><code>
+     *  var suggest = new Select.Suggest({
+     *    render:'#s1',
+     *    name:'suggest', 
+     *    dataType : 'json',
+     *    url:'server-data.php'
+     *  }); 
+     * </code></pre>
+     * @cfg {Object} [dataType = 'jsonp']
+     */
+    dataType : {
+      value : 'jsonp'
+    },
+    /**
+     * 请求数据的url
+     * <pre><code>
+     *  var suggest = new Select.Suggest({
+     *    render:'#s1',
+     *    name:'suggest', 
+     *    dataType : 'json',
+     *    url:'server-data.php'
+     *  }); 
+     * </code></pre>
+     * @cfg {String} url
+     */
+    url : {
+
+    },
+   
+    /**
+     * 请求完数据的回调函数
+     * <pre><code>
+     *  var suggest = new Select.Suggest({
+     *    render:'#s1',
+     *    name:'suggest', 
+     *    dataType : 'json',
+     *    callback : function(data){
+     *      //do something
+     *    },
+     *    url:'server-data.php'
+     *  }); 
+     * </code></pre>
+     * @type {Function}
+     */
+    callback : {
+
+    },
+    /**
+     * 触发的事件
+     * @cfg {String} triggerEvent
+     * @default 'click'
+     */
+    triggerEvent:{
+      valueFn:function(){
+        if(this.get('data')){
+          return 'click';
+        }
+        return 'keyup';
+      }
+    },
+    /**
+     * suggest不提供自动设置选中文本功能
+     * @type {Boolean}
+     */
+    autoSetValue:{
+      value:false
+    }
+  }
+},{
+  xclass:'suggest'
+});
+
+module.exports = suggest;
+
+});
+
+define("bui/form", ["bui/common","jquery","bui/overlay","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview form 命名空间入口
+ * @ignore
+ */
+var BUI = require("bui/common"),
+  Form = BUI.namespace('Form'),
+  Tips = require("bui/form/tips");
+
+BUI.mix(Form, {
+  Tips : Tips,
+  TipItem : Tips.Item,
+  FieldContainer : require("bui/form/fieldcontainer"),
+  Form : require("bui/form/form"),
+  Row : require("bui/form/row"),
+  Group : require("bui/form/fieldgroup"),
+  HForm : require("bui/form/hform"),
+  Rules : require("bui/form/rules"),
+  Field : require("bui/form/field"),
+  FieldGroup : require("bui/form/fieldgroup")
+});
+
+module.exports = Form;
+
+});
+define("bui/form/tips", ["jquery","bui/common","bui/overlay"], function(require, exports, module){
+/**
+ * @fileOverview 输入提示信息
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  prefix = BUI.prefix,
+  Overlay = require("bui/overlay").Overlay,
+  FIELD_TIP = 'data-tip',
+  CLS_TIP_CONTAINER = prefix + 'form-tip-container';
+
+/**
+ * 表单提示信息类
+ * xclass:'form-tip'
+ * @class BUI.Form.TipItem
+ * @extends BUI.Overlay.Overlay
+ */
+var tipItem = Overlay.extend(
+
+{
+  initializer : function(){
+    var _self = this,
+      render = _self.get('render');
+    if(!render){
+      var parent = $(_self.get('trigger')).parent();
+      _self.set('render',parent);
+    }
+  },
+  renderUI : function(){
+    var _self = this;
+
+    _self.resetVisible();
+    
+  },
+  /**
+   * 重置是否显示
+   */
+  resetVisible : function(){
+    var _self = this,
+      triggerEl = $(_self.get('trigger'));
+
+    if(triggerEl.val()){//如果默认有文本则不显示，否则显示
+      _self.set('visible',false);
+    }else{
+      _self.set('align',{
+        node:$(_self.get('trigger')),
+        points: ['cl','cl']
+      });
+      _self.set('visible',true);
+    }
+  },
+  bindUI : function(){
+    var _self = this,
+      triggerEl = $(_self.get('trigger'));
+
+    _self.get('el').on('click',function(){
+      _self.hide();
+      triggerEl.focus();
+    });
+    triggerEl.on('click focus',function(){
+      _self.hide();
+    });
+
+    triggerEl.on('blur',function(){
+      _self.resetVisible();
+    });
+  }
+},{
+  ATTRS : 
+  {
+    /**
+     * 提示的输入框 
+     * @cfg {String|HTMLElement|jQuery} trigger
+     */
+    /**
+     * 提示的输入框
+     * @type {String|HTMLElement|jQuery}
+     */
+    trigger:{
+
+    },
+    /**
+     * 提示文本
+     * @cfg {String} text
+     */
+    /**
+     * 提示文本
+     * @type {String}
+     */
+    text : {
+
+    },
+    /**
+     * 提示文本上显示的icon样式
+     * @cfg {String} iconCls
+     *     iconCls : icon-ok
+     */
+    /**
+     * 提示文本上显示的icon样式
+     * @type {String}
+     *     iconCls : icon-ok
+     */
+    iconCls:{
+
+    },
+    /**
+     * 默认的模版
+     * @type {String}
+     * @default '<span class="{iconCls}"></span><span class="tip-text">{text}</span>'
+     */
+    tpl:{
+      value:'<span class="{iconCls}"></span><span class="tip-text">{text}</span>'
+    }
+  }
+},{
+  xclass : 'form-tip'
+});
+
+/**
+ * 表单提示信息的管理类
+ * @class BUI.Form.Tips
+ * @extends BUI.Base
+ */
+var Tips = function(config){
+  if (this.constructor !== Tips){
+    return new Tips(config);
+  }
+
+  Tips.superclass.constructor.call(this,config);
+  this._init();
+};
+
+Tips.ATTRS = 
+{
+
+  /**
+   * 表单的选择器
+   * @cfg {String|HTMLElement|jQuery} form
+   */
+  /**
+   * 表单的选择器
+   * @type {String|HTMLElement|jQuery}
+   */
+  form : {
+
+  },
+  /**
+   * 表单提示项对象 {@link BUI.Form.TipItem}
+   * @readOnly
+   * @type {Array} 
+   */
+  items : {
+    valueFn:function(){
+      return [];
+    }
+  }
+};
+
+BUI.extend(Tips,BUI.Base);
+
+BUI.augment(Tips,{
+  _init : function(){
+    var _self = this,
+      form = $(_self.get('form'));
+    if(form.length){
+      BUI.each($.makeArray(form[0].elements),function(elem){
+        var tipConfig = $(elem).attr(FIELD_TIP);
+        if(tipConfig){
+          _self._initFormElement(elem,$.parseJSON(tipConfig));
         }
       });
-      return result;
-    },
-    /**
-     * 重置所有提示的可视状态
-     */
-    resetVisible: function() {
-      var _self = this,
-        items = _self.get('items');
-      BUI.each(items, function(item) {
-        item.resetVisible();
-      });
-    },
-    /**
-     * 生成 表单提示
-     */
-    render: function() {
-      var _self = this,
-        items = _self.get('items');
-      BUI.each(items, function(item) {
-        item.render();
-      });
-    },
-    /**
-     * 删除所有提示
-     */
-    destroy: function() {
-      var _self = this,
-        items = _self.get(items);
-      BUI.each(items, function(item) {
-        item.destroy();
-      });
+      form.addClass(CLS_TIP_CONTAINER);
     }
-  });
-  Tips.Item = tipItem;
-  module.exports = Tips;
-});
-define("bui/form/fieldcontainer", ["jquery", "bui/common", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
+  },
+  _initFormElement : function(element,config){
+    if(config){
+      config.trigger = element;
+      //config.render = this.get('form');
+    }
+    var _self = this,
+      items = _self.get('items'),
+      item = new tipItem(config);
+    items.push(item);
+  },
   /**
-   * @fileOverview 表单字段的容器扩展
-   * @ignore
+   * 获取提示项
+   * @param {String} name 字段的名称
+   * @return {BUI.Form.TipItem} 提示项
    */
-  var $ = require('jquery'),
-    BUI = require("bui/common"),
-    Field = require("bui/form/field"),
-    GroupValid = require("bui/form/groupvalid"),
-    PREFIX = BUI.prefix;
-  var FIELD_XCLASS = 'form-field',
-    CLS_FIELD = PREFIX + FIELD_XCLASS,
-    CLS_GROUP = PREFIX + 'form-group',
-    FIELD_TAGS = 'input,select,textarea';
+  getItem : function(name){
+    var _self = this,
+      items = _self.get('items'),
+      result = null;
+    BUI.each(items,function(item){
 
-  function isField(node) {
-    return node.is(FIELD_TAGS);
-  }
-  /**
-   * 获取节点需要封装的子节点
-   * @ignore
-   */
-  function getDecorateChilds(node, srcNode) {
-    if (node != srcNode) {
-      if (isField(node)) {
-        return [node];
+      if($(item.get('trigger')).attr('name') === name){
+        result = item;
+        return false;
       }
-      var cls = node.attr('class');
-      if (cls && (cls.indexOf(CLS_GROUP) !== -1 || cls.indexOf(CLS_FIELD) !== -1)) {
-        return [node];
-      }
-    }
-    var rst = [],
-      children = node.children();
-    BUI.each(children, function(subNode) {
-      rst = rst.concat(getDecorateChilds($(subNode), srcNode));
+
     });
-    return rst;
-  }
-  var containerView = BUI.Component.View.extend([GroupValid.View]);
+
+    return result;
+  },
   /**
-   * 表单字段容器的扩展类
-   * @class BUI.Form.FieldContainer
-   * @extends BUI.Component.Controller
-   * @mixins BUI.Form.GroupValid
+   * 重置所有提示的可视状态
    */
-  var container = BUI.Component.Controller.extend([GroupValid], {
+  resetVisible : function(){
+    var _self = this,
+      items = _self.get('items');
+
+    BUI.each(items,function(item){
+      item.resetVisible();
+    });
+  },
+  /**
+   * 生成 表单提示
+   */
+  render:function(){
+     var _self = this,
+      items = _self.get('items');
+    BUI.each(items,function(item){
+      item.render();
+    });
+  },
+  /**
+   * 删除所有提示
+   */
+  destroy:function(){
+    var _self = this,
+      items = _self.get(items);
+
+    BUI.each(items,function(item){
+      item.destroy();
+    });
+  }
+});
+
+Tips.Item = tipItem;
+
+module.exports = Tips;
+
+});
+define("bui/form/fieldcontainer", ["jquery","bui/common","bui/overlay","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 表单字段的容器扩展
+ * @ignore
+ */
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  Field = require("bui/form/field"),
+  GroupValid = require("bui/form/groupvalid"),
+  PREFIX = BUI.prefix;
+
+var FIELD_XCLASS = 'form-field',
+  CLS_FIELD = PREFIX + FIELD_XCLASS,
+  CLS_GROUP = PREFIX + 'form-group',
+  FIELD_TAGS = 'input,select,textarea';
+
+function isField(node){
+  return node.is(FIELD_TAGS);
+}
+/**
+ * 获取节点需要封装的子节点
+ * @ignore
+ */
+function getDecorateChilds(node,srcNode){
+
+  if(node != srcNode){
+
+    if(isField(node)){
+      return [node];
+    }
+    var cls = node.attr('class');
+    if(cls && (cls.indexOf(CLS_GROUP) !== -1 || cls.indexOf(CLS_FIELD) !== -1)){
+      return [node];
+    }
+  }
+  var rst = [],
+    children = node.children();
+  BUI.each(children,function(subNode){
+    rst = rst.concat(getDecorateChilds($(subNode),srcNode));
+  });
+  return rst;
+}
+
+var containerView = BUI.Component.View.extend([GroupValid.View]);
+
+/**
+ * 表单字段容器的扩展类
+ * @class BUI.Form.FieldContainer
+ * @extends BUI.Component.Controller
+ * @mixins BUI.Form.GroupValid
+ */
+var container = BUI.Component.Controller.extend([GroupValid],
+  {
     //同步数据
-    syncUI: function() {
+    syncUI : function(){
       var _self = this,
         fields = _self.getFields(),
         validators = _self.get('validators');
-      BUI.each(fields, function(field) {
+
+      BUI.each(fields,function(field){
         var name = field.get('name');
-        if (validators[name]) {
-          field.set('validator', validators[name]);
+        if(validators[name]){
+          field.set('validator',validators[name]);
         }
       });
-      BUI.each(validators, function(item, key) {
+      BUI.each(validators,function(item,key){
         //按照ID查找
-        if (key.indexOf('#') == 0) {
-          var id = key.replace('#', ''),
-            child = _self.getChild(id, true);
-          if (child) {
-            child.set('validator', item);
+        if(key.indexOf('#') == 0){
+          var id = key.replace('#',''),
+            child = _self.getChild(id,true);
+          if(child){
+            child.set('validator',item);
           }
         }
       });
@@ -20838,10 +21251,10 @@ define("bui/form/fieldcontainer", ["jquery", "bui/common", "bui/overlay", "bui/l
      * @protected
      * @override
      */
-    getDecorateElments: function() {
+    getDecorateElments : function(){
       var _self = this,
         el = _self.get('el');
-      var items = getDecorateChilds(el, el);
+      var items = getDecorateChilds(el,el);
       return items;
     },
     /**
@@ -20849,46 +21262,55 @@ define("bui/form/fieldcontainer", ["jquery", "bui/common", "bui/overlay", "bui/l
      * @protected
      * @override
      */
-    findXClassByNode: function(childNode, ignoreError) {
-      if (childNode.attr('type') === 'checkbox') {
+    findXClassByNode : function(childNode, ignoreError){
+
+
+      if(childNode.attr('type') === 'checkbox'){
         return FIELD_XCLASS + '-checkbox';
       }
-      if (childNode.attr('type') === 'radio') {
+
+      if(childNode.attr('type') === 'radio'){
         return FIELD_XCLASS + '-radio';
       }
-      if (childNode.attr('type') === 'number') {
+
+      if(childNode.attr('type') === 'number'){
         return FIELD_XCLASS + '-number';
       }
-      if (childNode.hasClass('calendar')) {
+
+      if(childNode.hasClass('calendar')){
         return FIELD_XCLASS + '-date';
       }
-      if (childNode[0].tagName == "SELECT") {
+
+      if(childNode[0].tagName == "SELECT"){
         return FIELD_XCLASS + '-select';
       }
-      if (isField(childNode)) {
+
+      if(isField(childNode)){
         return FIELD_XCLASS;
       }
-      return BUI.Component.Controller.prototype.findXClassByNode.call(this, childNode, ignoreError);
+
+      return BUI.Component.Controller.prototype.findXClassByNode.call(this,childNode, ignoreError);
     },
     /**
      * 获取表单编辑的对象
      * @return {Object} 编辑的对象
      */
-    getRecord: function() {
+    getRecord : function(){
       var _self = this,
         rst = {},
         fields = _self.getFields();
-      BUI.each(fields, function(field) {
+      BUI.each(fields,function(field){
         var name = field.get('name'),
           value = _self._getFieldValue(field);
-        if (!rst[name]) { //没有值，直接赋值
+
+        if(!rst[name]){//没有值，直接赋值
           rst[name] = value;
-        } else if (BUI.isArray(rst[name]) && value != null) { //已经存在值，并且是数组，加入数组
+        }else if(BUI.isArray(rst[name]) && value != null){//已经存在值，并且是数组，加入数组
           rst[name].push(value);
-        } else if (value != null) { //否则封装成数组，并加入数组
+        }else if(value != null){          //否则封装成数组，并加入数组
           var arr = [rst[name]]
           arr.push(value);
-          rst[name] = arr;
+          rst[name] = arr; 
         }
       });
       return rst;
@@ -20897,16 +21319,16 @@ define("bui/form/fieldcontainer", ["jquery", "bui/common", "bui/overlay", "bui/l
      * 获取表单字段
      * @return {Array} 表单字段
      */
-    getFields: function(name) {
+    getFields : function(name){
       var _self = this,
         rst = [],
         children = _self.get('children');
-      BUI.each(children, function(item) {
-        if (item instanceof Field) {
-          if (!name || item.get('name') == name) {
+      BUI.each(children,function(item){
+        if(item instanceof Field){
+          if(!name || item.get('name') == name){
             rst.push(item);
           }
-        } else if (item.getFields) {
+        }else if(item.getFields){
           rst = rst.concat(item.getFields(name));
         }
       });
@@ -20917,12 +21339,13 @@ define("bui/form/fieldcontainer", ["jquery", "bui/common", "bui/overlay", "bui/l
      * @param  {String} name 字段名
      * @return {BUI.Form.Field}  表单字段或者 null
      */
-    getField: function(name) {
+    getField : function(name){
       var _self = this,
         fields = _self.getFields(),
         rst = null;
-      BUI.each(fields, function(field) {
-        if (field.get('name') === name) {
+
+      BUI.each(fields,function(field){
+        if(field.get('name') === name){
           rst = field;
           return false;
         }
@@ -20934,7 +21357,7 @@ define("bui/form/fieldcontainer", ["jquery", "bui/common", "bui/overlay", "bui/l
      * @param  {Number} index 字段的索引
      * @return {String}   字段名称
      */
-    getFieldAt: function(index) {
+    getFieldAt : function (index) {
       return this.getFields()[index];
     },
     /**
@@ -20942,33 +21365,33 @@ define("bui/form/fieldcontainer", ["jquery", "bui/common", "bui/overlay", "bui/l
      * @param {String} name 字段名
      * @param {*} value 字段值
      */
-    setFieldValue: function(name, value) {
+    setFieldValue : function(name,value){
       var _self = this,
         fields = _self.getFields(name);
-      BUI.each(fields, function(field) {
-        _self._setFieldValue(field, value);
-      });
+        BUI.each(fields,function(field){
+          _self._setFieldValue(field,value);
+        });
     },
     //设置字段域的值
-    _setFieldValue: function(field, value) {
+    _setFieldValue : function(field,value){
       //如果字段不可用，则不能设置值
-      if (field.get('disabled')) {
+      if(field.get('disabled')){
         return;
       }
       //如果是可勾选的
-      if (field instanceof Field.Check) {
+      if(field instanceof Field.Check){
         var fieldValue = field.get('value');
-        if (value && (fieldValue === value || (BUI.isArray(value) && BUI.Array.contains(fieldValue, value)))) {
-          field.set('checked', true);
-        } else {
-          field.set('checked', false);
+        if(value && (fieldValue === value || (BUI.isArray(value) && BUI.Array.contains(fieldValue,value)))){
+          field.set('checked',true);
+        }else{
+          field.set('checked',false);
         }
-      } else {
-        if (value == null) {
+      }else{
+        if(value == null){
           value = '';
         }
-        field.clearErrors(true); //清理错误
-        field.set('value', value);
+        field.clearErrors(true);//清理错误
+        field.set('value',value);
       }
     },
     /**
@@ -20976,27 +21399,28 @@ define("bui/form/fieldcontainer", ["jquery", "bui/common", "bui/overlay", "bui/l
      * @param  {String} name 字段名
      * @return {*}  字段值
      */
-    getFieldValue: function(name) {
+    getFieldValue : function(name){
       var _self = this,
         fields = _self.getFields(name),
         rst = [];
-      BUI.each(fields, function(field) {
+
+      BUI.each(fields,function(field){
         var value = _self._getFieldValue(field);
-        if (value) {
+        if(value){
           rst.push(value);
         }
       });
-      if (rst.length === 0) {
+      if(rst.length === 0){
         return null;
       }
-      if (rst.length === 1) {
+      if(rst.length === 1){
         return rst[0]
       }
       return rst;
     },
     //获取字段域的值
-    _getFieldValue: function(field) {
-      if (!(field instanceof Field.Check) || field.get('checked')) {
+    _getFieldValue : function(field){
+      if(!(field instanceof Field.Check) || field.get('checked')){
         return field.get('value');
       }
       return null;
@@ -21004,7 +21428,7 @@ define("bui/form/fieldcontainer", ["jquery", "bui/common", "bui/overlay", "bui/l
     /**
      * 清除所有表单域的值
      */
-    clearFields: function() {
+    clearFields : function(){
       this.clearErrors(true);
       this.setRecord({})
     },
@@ -21012,58 +21436,62 @@ define("bui/form/fieldcontainer", ["jquery", "bui/common", "bui/overlay", "bui/l
      * 设置表单编辑的对象
      * @param {Object} record 编辑的对象
      */
-    setRecord: function(record) {
+    setRecord : function(record){
       var _self = this,
         fields = _self.getFields();
-      BUI.each(fields, function(field) {
+
+      BUI.each(fields,function(field){
         var name = field.get('name');
-        _self._setFieldValue(field, record[name]);
+        _self._setFieldValue(field,record[name]);
       });
     },
     /**
      * 更新表单编辑的对象
      * @param  {Object} record 编辑的对象
      */
-    updateRecord: function(record) {
+    updateRecord : function(record){
       var _self = this,
         fields = _self.getFields();
-      BUI.each(fields, function(field) {
+
+      BUI.each(fields,function(field){
         var name = field.get('name');
-        if (record.hasOwnProperty(name)) {
-          _self._setFieldValue(field, record[name]);
+        if(record.hasOwnProperty(name)){
+          _self._setFieldValue(field,record[name]);
         }
       });
     },
     /**
      * 设置控件获取焦点，设置第一个子控件获取焦点
      */
-    focus: function() {
+    focus : function(){
       var _self = this,
         fields = _self.getFields(),
         firstField = fields[0];
-      if (firstField) {
+      if(firstField){
         firstField.focus();
       }
     },
     //禁用控件
-    _uiSetDisabled: function(v) {
+    _uiSetDisabled : function(v){
       var _self = this,
         children = _self.get('children');
-      BUI.each(children, function(item) {
-        item.set('disabled', v);
+
+      BUI.each(children,function(item){
+        item.set('disabled',v);
       });
     }
-  }, {
-    ATTRS: {
+  },
+  {
+    ATTRS : {
       /**
        * 表单的数据记录，以键值对的形式存在
        * @type {Object}
        */
-      record: {
-        setter: function(v) {
+      record : {
+        setter : function(v){
           this.setRecord(v);
         },
-        getter: function() {
+        getter : function(){
           return this.getRecord();
         }
       },
@@ -21075,8 +21503,10 @@ define("bui/form/fieldcontainer", ["jquery", "bui/common", "bui/overlay", "bui/l
        * </ol>
        * @type {Object}
        */
-      validators: {
-        value: {}
+      validators : {
+        value : {
+
+        }
       },
       /**
        * 默认的加载控件内容的配置,默认值：
@@ -21088,4186 +21518,4502 @@ define("bui/form/fieldcontainer", ["jquery", "bui/common", "bui/overlay", "bui/l
        * </pre>
        * @type {Object}
        */
-      defaultLoaderCfg: {
-        value: {
-          property: 'children',
-          dataType: 'json'
+      defaultLoaderCfg  : {
+        value : {
+          property : 'children',
+          dataType : 'json'
         }
       },
-      disabled: {
-        sync: false
+      disabled : {
+        sync : false
       },
-      isDecorateChild: {
-        value: true
+      isDecorateChild : {
+        value : true
       },
-      xview: {
-        value: containerView
+      xview : {
+        value : containerView
       }
     }
-  }, {
-    xclass: 'form-field-container'
-  });
-  container.View = containerView;
-  module.exports = container;
+  },{
+    xclass : 'form-field-container'
+  }
+); 
+container.View = containerView;
+
+module.exports = container;
+
 });
-define("bui/form/field", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单域的入口文件
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    Field = require("bui/form/fields/base");
-  BUI.mix(Field, {
-    Text: require("bui/form/fields/text"),
-    Date: require("bui/form/fields/date"),
-    Select: require("bui/form/fields/select"),
-    Hidden: require("bui/form/fields/hidden"),
-    Number: require("bui/form/fields/number"),
-    Check: require("bui/form/fields/check"),
-    Radio: require("bui/form/fields/radio"),
-    Checkbox: require("bui/form/fields/checkbox"),
-    Plain: require("bui/form/fields/plain"),
-    List: require("bui/form/fields/list"),
-    TextArea: require("bui/form/fields/textarea"),
-    Uploader: require("bui/form/fields/uploader"),
-    CheckList: require("bui/form/fields/checklist"),
-    RadioList: require("bui/form/fields/radiolist")
-  });
-  module.exports = Field;
+define("bui/form/field", ["bui/common","jquery","bui/overlay","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 表单域的入口文件
+ * @ignore
+ */
+var BUI = require("bui/common"),
+  Field = require("bui/form/fields/base");
+
+BUI.mix(Field, {
+  Text : require("bui/form/fields/text"),
+  Date : require("bui/form/fields/date"),
+  Select : require("bui/form/fields/select"),
+  Hidden : require("bui/form/fields/hidden"),
+  Number : require("bui/form/fields/number"),
+  Check : require("bui/form/fields/check"),
+  Radio : require("bui/form/fields/radio"),
+  Checkbox : require("bui/form/fields/checkbox"),
+  Plain : require("bui/form/fields/plain"),
+  List : require("bui/form/fields/list"),
+  TextArea : require("bui/form/fields/textarea"),
+  Uploader : require("bui/form/fields/uploader"),
+  CheckList : require("bui/form/fields/checklist"),
+  RadioList : require("bui/form/fields/radiolist")
 });
-define("bui/form/fields/base", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单元素
-   * @ignore
-   */
-  var $ = require('jquery'),
-    BUI = require("bui/common"),
-    Component = BUI.Component,
-    TipItem = require("bui/form/tips").Item,
-    Valid = require("bui/form/valid"),
-    Remote = require("bui/form/remote"),
-    CLS_FIELD_ERROR = BUI.prefix + 'form-field-error',
-    CLS_TIP_CONTAINER = 'bui-form-tip-container',
-    DATA_ERROR = 'data-error';
-  /**
-   * 字段视图类
-   * @class BUI.Form.FieldView
-   * @private
-   */
-  var fieldView = Component.View.extend([Remote.View, Valid.View], {
-    //渲染DOM
-    renderUI: function() {
-      var _self = this,
-        control = _self.get('control');
-      if (!control) {
-        var controlTpl = _self.get('controlTpl'),
-          container = _self.getControlContainer();
-        if (controlTpl) {
-          var control = $(controlTpl).appendTo(container);
-          _self.set('control', control);
-        }
-      } else {
-        //var controlContainer = control.parent();
-        _self.set('controlContainer', control.parent());
+
+module.exports = Field;
+
+});
+define("bui/form/fields/base", ["jquery","bui/common","bui/overlay"], function(require, exports, module){
+/**
+ * @fileOverview 表单元素
+ * @ignore
+ */
+
+
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  Component = BUI.Component,
+  TipItem = require("bui/form/tips").Item,
+  Valid = require("bui/form/valid"),
+  Remote = require("bui/form/remote"),
+  CLS_FIELD_ERROR = BUI.prefix + 'form-field-error',
+  CLS_TIP_CONTAINER = 'bui-form-tip-container',
+  DATA_ERROR = 'data-error';
+
+/**
+ * 字段视图类
+ * @class BUI.Form.FieldView
+ * @private
+ */
+var fieldView = Component.View.extend([Remote.View,Valid.View],{
+  //渲染DOM
+  renderUI : function(){
+    var _self = this,
+      control = _self.get('control');
+
+    if(!control){
+      var controlTpl = _self.get('controlTpl'),
+        container = _self.getControlContainer();
+        
+      if(controlTpl){
+        var control = $(controlTpl).appendTo(container);
+        _self.set('control',control);
       }
-    },
-    /**
-     * 清理显示的错误信息
-     * @protected
-     */
-    clearErrors: function() {
-      var _self = this,
-        msgEl = _self.get('msgEl');
-      if (msgEl) {
-        msgEl.remove();
-        _self.set('msgEl', null);
-      }
-      _self.get('el').removeClass(CLS_FIELD_ERROR);
-    },
-    /**
-     * 显示错误信息
-     * @param {String} msg 错误信息
-     * @protected
-     */
-    showError: function(msg, errorTpl) {
-      var _self = this,
-        control = _self.get('control'),
-        errorMsg = BUI.substitute(errorTpl, {
-          error: msg
-        }),
-        el = $(errorMsg);
-      //_self.clearErrorMsg();
-      el.appendTo(control.parent());
-      _self.set('msgEl', el);
-      _self.get('el').addClass(CLS_FIELD_ERROR);
-    },
-    /**
-     * @internal 获取控件的容器
-     * @return {jQuery} 控件容器
-     */
-    getControlContainer: function() {
-      var _self = this,
-        el = _self.get('el'),
-        controlContainer = _self.get('controlContainer');
-      if (controlContainer) {
-        if (BUI.isString(controlContainer)) {
-          controlContainer = el.find(controlContainer);
-        }
-      }
-      return (controlContainer && controlContainer.length) ? controlContainer : el;
-    },
-    /**
-     * 获取显示加载状态的容器
-     * @protected
-     * @override
-     * @return {jQuery} 加载状态的容器
-     */
-    getLoadingContainer: function() {
-      return this.getControlContainer();
-    },
-    //设置名称
-    _uiSetName: function(v) {
-      var _self = this;
-      _self.get('control').attr('name', v);
+    }else{
+      //var controlContainer = control.parent();
+      _self.set('controlContainer',control.parent());
     }
-  }, {
-    ATTRS: {
-      error: {},
-      controlContainer: {},
-      msgEl: {},
-      control: {}
-    }
-  });
+  },
   /**
-   * 表单字段基类
-   * @class BUI.Form.Field
-   * @mixins BUI.Form.Remote
-   * @mixins BUI.Form.Valid
-   * @extends BUI.Component.Controller
+   * 清理显示的错误信息
+   * @protected
    */
-  var field = Component.Controller.extend([Remote, Valid], {
-    isField: true,
-    initializer: function() {
-      var _self = this;
-      _self.on('afterRenderUI', function() {
-        var tip = _self.get('tip');
-        if (tip) {
-          var trigger = _self.getTipTigger();
-          trigger && trigger.parent().addClass(CLS_TIP_CONTAINER);
-          tip.trigger = trigger;
-          tip.autoRender = true;
-          tip = new TipItem(tip);
-          _self.set('tip', tip);
+  clearErrors : function(){
+    var _self = this,
+      msgEl = _self.get('msgEl');
+    if(msgEl){
+      msgEl.remove();
+      _self.set('msgEl',null);
+    }
+    _self.get('el').removeClass(CLS_FIELD_ERROR);
+  },
+  /**
+   * 显示错误信息
+   * @param {String} msg 错误信息
+   * @protected
+   */
+  showError : function(msg,errorTpl){
+    var _self = this,
+      control = _self.get('control'),
+      errorMsg = BUI.substitute(errorTpl,{error : msg}),
+      el = $(errorMsg);
+    //_self.clearErrorMsg();
+    
+    el.appendTo(control.parent());
+    _self.set('msgEl',el);
+    _self.get('el').addClass(CLS_FIELD_ERROR);
+  },
+  /**
+   * @internal 获取控件的容器
+   * @return {jQuery} 控件容器
+   */
+  getControlContainer : function(){
+    var _self = this,
+      el = _self.get('el'),
+      controlContainer = _self.get('controlContainer');
+    if(controlContainer){
+      if(BUI.isString(controlContainer)){
+        controlContainer = el.find(controlContainer);
+      }
+    }
+    return (controlContainer && controlContainer.length) ? controlContainer : el;
+  },
+  /**
+   * 获取显示加载状态的容器
+   * @protected
+   * @override
+   * @return {jQuery} 加载状态的容器
+   */
+  getLoadingContainer : function () {
+    return this.getControlContainer();
+  },
+  //设置名称
+  _uiSetName : function(v){
+    var _self = this;
+    _self.get('control').attr('name',v);
+  }
+},
+{
+  ATTRS : {
+    error:{},
+    controlContainer : {},
+    msgEl: {},
+    control : {}
+  }
+});
+
+/**
+ * 表单字段基类
+ * @class BUI.Form.Field
+ * @mixins BUI.Form.Remote
+ * @mixins BUI.Form.Valid
+ * @extends BUI.Component.Controller
+ */
+var field = Component.Controller.extend([Remote,Valid],{
+  isField : true,
+  initializer : function(){
+    var _self = this;
+    _self.on('afterRenderUI',function(){
+      var tip = _self.get('tip');
+      if(tip){
+        var trigger = _self.getTipTigger();
+        trigger && trigger.parent().addClass(CLS_TIP_CONTAINER);
+        tip.trigger = trigger;
+        tip.autoRender = true;
+        tip = new TipItem(tip);
+        _self.set('tip',tip);
+      }
+    });
+  },
+  //绑定事件
+  bindUI : function(){
+    var _self = this,
+      validEvent = _self.get('validEvent'),
+      changeEvent = _self.get('changeEvent'),
+      firstValidEvent = _self.get('firstValidEvent'),
+      innerControl = _self.getInnerControl();
+
+    //选择框只使用 select事件
+    if(innerControl.is('select')){
+      validEvent = 'change';
+    }
+    //验证事件
+    innerControl.on(validEvent,function(){
+      var value = _self.getControlValue(innerControl);
+      _self.validControl(value);
+    });
+    if(firstValidEvent){
+      //未发生验证时，首次获取焦点/丢失焦点/点击，进行验证
+      innerControl.on(firstValidEvent,function(){
+        if(!_self.get('hasValid')){
+          var value = _self.getControlValue(innerControl);
+          _self.validControl(value);
         }
       });
-    },
-    //绑定事件
-    bindUI: function() {
-      var _self = this,
-        validEvent = _self.get('validEvent'),
-        changeEvent = _self.get('changeEvent'),
-        firstValidEvent = _self.get('firstValidEvent'),
-        innerControl = _self.getInnerControl();
-      //选择框只使用 select事件
-      if (innerControl.is('select')) {
-        validEvent = 'change';
-      }
-      //验证事件
-      innerControl.on(validEvent, function() {
-        var value = _self.getControlValue(innerControl);
-        _self.validControl(value);
-      });
-      if (firstValidEvent) {
-        //未发生验证时，首次获取焦点/丢失焦点/点击，进行验证
-        innerControl.on(firstValidEvent, function() {
-          if (!_self.get('hasValid')) {
-            var value = _self.getControlValue(innerControl);
-            _self.validControl(value);
-          }
-        });
-      }
-      //本来是监听控件的change事件，但是，如果控件还未触发change,但是通过get('value')来取值，则会出现错误，
-      //所以当通过验证时，即触发改变事件
-      _self.on(changeEvent, function() {
-        _self.onValid();
-      });
-      _self.on('remotecomplete', function(ev) {
-        _self._setError(ev.error);
-      });
-    },
-    /**
-     * 验证成功后执行的操作
-     * @protected
-     */
-    onValid: function() {
-      var _self = this,
-        value = _self.getControlValue();
-      value = _self.parseValue(value);
-      if (!_self.isCurrentValue(value)) {
-        _self.setInternal('value', value);
-        _self.onChange();
-      }
-    },
-    onChange: function() {
-      this.fire('change');
-    },
-    /**
-     * @protected
-     * 是否当前值，主要用于日期等特殊值的比较，不能用 == 进行比较
-     * @param  {*}  value 进行比较的值
-     * @return {Boolean}  是否当前值
-     */
-    isCurrentValue: function(value) {
-      return value == this.get('value');
-    },
-    //清理错误信息
-    _clearError: function() {
-      this.set('error', null);
-      this.get('view').clearErrors();
-    },
-    //设置错误信息
-    _setError: function(msg) {
-      this.set('error', msg);
-      this.showErrors();
-    },
-    /**
-     * 获取内部表单元素的值
-     * @protected
-     * @param  {jQuery} [innerControl] 内部表单元素
-     * @return {String|Boolean} 表单元素的值,checkbox，radio的返回值为 true,false
-     */
-    getControlValue: function(innerControl) {
-      var _self = this;
-      innerControl = innerControl || _self.getInnerControl();
-      return innerControl.val();
-    },
-    /**
-     * @protected
-     * 获取内部控件的容器
-     */
-    getControlContainer: function() {
-      return this.get('view').getControlContainer();
-    },
-    /**
-     * 获取异步验证的参数，对于表单字段域而言，是{[name] : [value]}
-     * @protected
-     * @override
-     * @return {Object} 参数键值对
-     */
-    getRemoteParams: function() {
-      var _self = this,
-        rst = {};
-      rst[_self.get('name')] = _self.getControlValue();
-      return rst;
-    },
-    /**
-     * 设置字段的值
-     * @protected
-     * @param {*} value 字段值
-     */
-    setControlValue: function(value) {
-      var _self = this,
-        innerControl = _self.getInnerControl();
-      innerControl.val(value);
-    },
-    /**
-     * 将字符串等格式转换成
-     * @protected
-     * @param  {String} value 原始数据
-     * @return {*}  该字段指定的类型
-     */
-    parseValue: function(value) {
-      return value;
-    },
-    valid: function() {
-      var _self = this;
-      _self.validControl();
-    },
-    /**
-     * 验证控件内容
-     * @return {Boolean} 是否通过验证
-     */
-    validControl: function(value) {
-      var _self = this,
-        errorMsg;
+    }
+    
+
+    //本来是监听控件的change事件，但是，如果控件还未触发change,但是通过get('value')来取值，则会出现错误，
+    //所以当通过验证时，即触发改变事件
+    _self.on(changeEvent,function(){
+      _self.onValid();
+    });
+
+    _self.on('remotecomplete',function (ev) {
+      _self._setError(ev.error);
+    });
+
+  },
+  /**
+   * 验证成功后执行的操作
+   * @protected
+   */
+  onValid : function(){
+    var _self = this,
+      value =  _self.getControlValue();
+
+    value = _self.parseValue(value);
+    if(!_self.isCurrentValue(value)){
+      _self.setInternal('value',value);
+      _self.onChange();
+    }
+  },
+  onChange : function () {
+    this.fire('change');
+  },
+  /**
+   * @protected
+   * 是否当前值，主要用于日期等特殊值的比较，不能用 == 进行比较
+   * @param  {*}  value 进行比较的值
+   * @return {Boolean}  是否当前值
+   */
+  isCurrentValue : function (value) {
+    return value == this.get('value');
+  },
+  //清理错误信息
+  _clearError : function(){
+    this.set('error',null);
+    this.get('view').clearErrors();
+  },
+  //设置错误信息
+  _setError : function(msg){
+    this.set('error',msg);
+    this.showErrors();
+  },
+
+  /**
+   * 获取内部表单元素的值
+   * @protected
+   * @param  {jQuery} [innerControl] 内部表单元素
+   * @return {String|Boolean} 表单元素的值,checkbox，radio的返回值为 true,false
+   */
+  getControlValue : function(innerControl){
+    var _self = this;
+    innerControl = innerControl || _self.getInnerControl();
+    return innerControl.val();
+  },
+  /**
+   * @protected
+   * 获取内部控件的容器
+   */
+  getControlContainer : function(){
+    return this.get('view').getControlContainer();
+  },
+  /**
+   * 获取异步验证的参数，对于表单字段域而言，是{[name] : [value]}
+   * @protected
+   * @override
+   * @return {Object} 参数键值对
+   */
+  getRemoteParams : function  () {
+    var _self = this,
+      rst = {};
+    rst[_self.get('name')] = _self.getControlValue();
+    return rst;
+  },
+  /**
+   * 设置字段的值
+   * @protected
+   * @param {*} value 字段值
+   */
+  setControlValue : function(value){
+    var _self = this,
+      innerControl = _self.getInnerControl();
+    innerControl.val(value);
+  },
+  /**
+   * 将字符串等格式转换成
+   * @protected
+   * @param  {String} value 原始数据
+   * @return {*}  该字段指定的类型
+   */
+  parseValue : function(value){
+    return value;
+  },
+  valid : function(){
+    var _self = this;
+    _self.validControl();
+  },
+  /**
+   * 验证控件内容
+   * @return {Boolean} 是否通过验证
+   */
+  validControl : function(value){
+    var _self = this, 
+      errorMsg;
       value = value || _self.getControlValue(),
       preError = _self.get('error');
-      errorMsg = _self.getValidError(value);
-      _self.setInternal('hasValid', true);
-      if (errorMsg) {
+    errorMsg = _self.getValidError(value);
+    _self.setInternal('hasValid',true);
+    if (errorMsg) {
         _self._setError(errorMsg);
-        _self.fire('error', {
-          msg: errorMsg,
-          value: value
-        });
-        if (preError !== errorMsg) { //验证错误信息改变，说明验证改变
-          _self.fire('validchange', {
-            valid: false
-          });
+        _self.fire('error', {msg:errorMsg, value:value});
+        if(preError !== errorMsg){//验证错误信息改变，说明验证改变
+          _self.fire('validchange',{ valid : false });
         }
-      } else {
+    } else {
         _self._clearError();
         _self.fire('valid');
-        if (preError) { //如果以前存在错误，那么验证结果改变
-          _self.fire('validchange', {
-            valid: true
-          });
+        if(preError){//如果以前存在错误，那么验证结果改变
+          _self.fire('validchange',{ valid : true });
         }
-      }
-      return !errorMsg;
-    },
-    /**
-     * 字段获得焦点
-     */
-    focus: function() {
-      this.getInnerControl().focus();
-    },
-    /**
-     * 字段发生改变
-     */
-    change: function() {
-      var control = this.getInnerControl();
-      control.change();
-    },
-    /**
-     * 字段丢失焦点
-     */
-    blur: function() {
-      this.getInnerControl().blur();
-    },
-    /**
-     * 是否通过验证,如果未发生过校验，则进行校验，否则不进行校验，直接根据已校验的结果判断。
-     * @return {Boolean} 是否通过验证
-     */
-    isValid: function() {
-      var _self = this;
-      if (!_self.get('hasValid')) {
-        _self.validControl();
-      }
-      return !_self.get('error');
-    },
-    /**
-     * 获取验证出错信息
-     * @return {String} 出错信息
-     */
-    getError: function() {
-      return this.get('error');
-    },
-    /**
-     * 获取验证出错信息集合
-     * @return {Array} 出错信息集合
-     */
-    getErrors: function() {
-      var error = this.getError();
-      if (error) {
-        return [error];
-      }
-      return [];
-    },
-    /**
-     * 清理出错信息，回滚到未出错状态
-     * @param {Boolean} reset 清除错误时，是否回滚上次正确的值
-     */
-    clearErrors: function(reset) {
-      var _self = this;
-      _self._clearError();
-      if (reset && _self.getControlValue() != _self.get('value')) {
-        _self.setControlValue(_self.get('value'));
-      }
-    },
-    /**
-     * 获取内部的表单元素或者内部控件
-     * @protected
-     * @return {jQuery|BUI.Component.Controller}
-     */
-    getInnerControl: function() {
-      return this.get('view').get('control');
-    },
-    /**
-     * 提示信息按照此元素对齐
-     * @protected
-     * @return {HTMLElement}
-     */
-    getTipTigger: function() {
-      return this.getInnerControl();
-    },
-    //析构函数
-    destructor: function() {
-      var _self = this,
-        tip = _self.get('tip');
-      if (tip && tip.destroy) {
-        tip.destroy();
-      }
-    },
-    /**
-     * @protected
-     * 设置内部元素宽度
-     */
-    setInnerWidth: function(width) {
-      var _self = this,
-        innerControl = _self.getInnerControl(),
-        siblings = innerControl.siblings(),
-        appendWidth = innerControl.outerWidth() - innerControl.width();
-      BUI.each(siblings, function(dom) {
-        appendWidth += $(dom).outerWidth();
-      });
-      innerControl.width(width - appendWidth);
-    },
-    //重置 提示信息是否可见
-    _resetTip: function() {
-      var _self = this,
-        tip = _self.get('tip');
-      if (tip) {
-        tip.resetVisible();
-      }
-    },
-    /**
-     * 重置显示提示信息
-     * field.resetTip();
-     */
-    resetTip: function() {
-      this._resetTip();
-    },
-    //设置值
-    _uiSetValue: function(v) {
-      var _self = this;
-      //v = v ? v.toString() : '';
-      _self.setControlValue(v);
-      if (_self.get('rendered')) {
-        _self.validControl();
-        _self.onChange();
-      }
-      _self._resetTip();
-    },
-    //禁用控件
-    _uiSetDisabled: function(v) {
-      var _self = this,
-        innerControl = _self.getInnerControl(),
-        children = _self.get('children');
-      innerControl.attr('disabled', v);
-      if (_self.get('rendered')) {
-        if (v) { //控件不可用，清除错误
-          _self.clearErrors();
-        }
-        if (!v) { //控件可用，执行重新验证
-          _self.valid();
-        }
-      }
-      BUI.each(children, function(child) {
-        child.set('disabled', v);
-      });
-    },
-    _uiSetWidth: function(v) {
-      var _self = this;
-      if (v != null && _self.get('forceFit')) {
-        _self.setInnerWidth(v);
-      }
     }
-  }, {
-    ATTRS: {
-      /**
-       * 是否发生过校验，初始值为空时，未进行赋值，不进行校验
-       * @type {Boolean}
-       */
-      hasValid: {
-        value: false
-      },
-      /**
-       * 内部元素是否根据控件宽度调整宽度
-       * @type {Boolean}
-       */
-      forceFit: {
-        value: false
-      },
-      /**
-       * 是否显示提示信息
-       * @type {Object}
-       */
-      tip: {},
-      /**
-       * 表单元素或者控件内容改变的事件
-       * @type {String}
-       */
-      changeEvent: {
-        value: 'valid'
-      },
-      /**
-       * 未发生验证时，首次获取/丢失焦点，进行验证
-       */
-      firstValidEvent: {
-        value: 'blur'
-      },
-      /**
-       * 表单元素或者控件触发此事件时，触发验证
-       * @type {String}
-       */
-      validEvent: {
-        value: 'keyup change'
-      },
-      /**
-       * 字段的name值
-       * @type {Object}
-       */
-      name: {
-        view: true
-      },
-      /**
-       * 是否显示错误
-       * @type {Boolean}
-       */
-      showError: {
-        view: true,
-        value: true
-      },
-      /**
-       * 字段的值,类型根据字段类型决定
-       * @cfg {*} value
-       */
-      value: {
-        view: true
-      },
-      /**
-       * 标题
-       * @type {String}
-       */
-      label: {},
-      /**
-       * 控件容器，如果为空直接添加在控件容器上
-       * @type {String|HTMLElement}
-       */
-      controlContainer: {
-        view: true
-      },
-      /**
-       * 内部表单元素的控件
-       * @protected
-       * @type {jQuery}
-       */
-      control: {
-        view: true
-      },
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        view: true,
-        value: '<input type="text"/>'
-      },
-      events: {
-        value: {
-          /**
-           * 未通过验证
-           * @event
-           */
-          error: false,
-          /**
-           * 通过验证
-           * @event
-           */
-          valid: false,
-          /**
-           * @event
-           * 值改变，仅当通过验证时触发
-           */
-          change: true,
-          /**
-           * @event
-           * 验证改变
-           * @param {Object} e 事件对象
-           * @param {Object} e.target 触发事件的对象
-           * @param {Boolean} e.valid 是否通过验证
-           */
-          validchange: true
-        }
-      },
-      tpl: {
-        value: '<label>{label}</label>'
-      },
-      xview: {
-        value: fieldView
-      }
-    },
-    PARSER: {
-      control: function(el) {
-        var control = el.find('input,select,textarea');
-        if (control.length) {
-          return control;
-        }
-        return el;
-      },
-      disabled: function(el) {
-        return !!el.attr('disabled');
-      },
-      value: function(el) {
-        var _self = this,
-          selector = 'select,input,textarea',
-          value = _self.get('value');
-        if (!value) {
-          if (el.is(selector)) {
-            value = el.val();
-            if (!value && el.is('select')) {
-              value = el.attr('value');
-            }
-          } else {
-            value = el.find(selector).val();
-          }
-        }
-        return value;
-      },
-      name: function(el) {
-        var _self = this,
-          selector = 'select,input,textarea',
-          name = _self.get('name');
-        if (!name) {
-          if (el.is(selector)) {
-            name = el.attr('name');
-          } else {
-            name = el.find(selector).attr('name');
-          }
-        }
-        return name;
-      }
-    }
-  }, {
-    xclass: 'form-field'
-  });
-  field.View = fieldView;
-  module.exports = field;
-});
-define("bui/form/valid", ["bui/common", "jquery"], function(require, exports, module) {
+    
+    return !errorMsg;
+  },
   /**
-   * @fileOverview 表单验证
-   * @ignore
+   * 字段获得焦点
    */
-  var BUI = require("bui/common"),
-    Rules = require("bui/form/rules");
+  focus : function(){
+    this.getInnerControl().focus();
+  },
   /**
-   * @class BUI.Form.ValidView
+   * 字段发生改变
+   */
+  change : function(){
+    var control = this.getInnerControl();
+    control.change();
+  },
+  /**
+   * 字段丢失焦点
+   */
+  blur : function(){
+    this.getInnerControl().blur();
+  },
+
+  /**
+   * 是否通过验证,如果未发生过校验，则进行校验，否则不进行校验，直接根据已校验的结果判断。
+   * @return {Boolean} 是否通过验证
+   */
+  isValid : function(){
+    var _self = this;
+    if(!_self.get('hasValid')){
+      _self.validControl();
+    }
+    return !_self.get('error');
+  },
+  /**
+   * 获取验证出错信息
+   * @return {String} 出错信息
+   */
+  getError : function(){
+    return this.get('error');
+  },
+  /**
+   * 获取验证出错信息集合
+   * @return {Array} 出错信息集合
+   */
+  getErrors : function(){
+    var error = this.getError();
+    if(error){
+      return [error];
+    }
+    return [];
+  },
+  /**
+   * 清理出错信息，回滚到未出错状态
+   * @param {Boolean} reset 清除错误时，是否回滚上次正确的值
+   */
+  clearErrors : function(reset){
+    var _self = this;
+    _self._clearError();
+    if(reset && _self.getControlValue()!= _self.get('value')){
+      _self.setControlValue(_self.get('value'));
+    }
+  },
+  /**
+   * 获取内部的表单元素或者内部控件
+   * @protected
+   * @return {jQuery|BUI.Component.Controller} 
+   */
+  getInnerControl : function(){
+    return this.get('view').get('control');
+  },
+  /**
+   * 提示信息按照此元素对齐
+   * @protected
+   * @return {HTMLElement}
+   */
+  getTipTigger : function(){
+    return this.getInnerControl();
+  },
+  //析构函数
+  destructor : function(){
+    var _self = this,
+      tip = _self.get('tip');
+    if(tip && tip.destroy){
+      tip.destroy();
+    }
+  },
+  /**
+   * @protected
+   * 设置内部元素宽度
+   */
+  setInnerWidth : function(width){
+    var _self = this,
+      innerControl = _self.getInnerControl(),
+      siblings = innerControl.siblings(),
+      appendWidth = innerControl.outerWidth() - innerControl.width();
+
+    BUI.each(siblings,function(dom){
+      appendWidth += $(dom).outerWidth();
+    });
+    
+    innerControl.width(width - appendWidth);
+  },
+  //重置 提示信息是否可见
+  _resetTip :function(){
+    var _self = this,
+      tip = _self.get('tip');
+    if(tip){
+      tip.resetVisible();
+    }
+  },
+  /**
+   * 重置显示提示信息
+   * field.resetTip();
+   */
+  resetTip : function(){
+    this._resetTip();
+  },
+  //设置值
+  _uiSetValue : function(v){
+    var _self = this;
+    //v = v ? v.toString() : '';
+    _self.setControlValue(v);
+    if(_self.get('rendered')){
+      _self.validControl();
+      _self.onChange();
+    } 
+    _self._resetTip();
+  },
+  //禁用控件
+  _uiSetDisabled : function(v){
+    var _self = this,
+      innerControl = _self.getInnerControl(),
+      children = _self.get('children');
+    innerControl.attr('disabled',v);
+    if(_self.get('rendered')){
+      if(v){//控件不可用，清除错误
+        _self.clearErrors();
+      }
+      if(!v){//控件可用，执行重新验证
+        _self.valid();
+      }
+    }
+
+    BUI.each(children,function(child){
+      child.set('disabled',v);
+    });
+
+  },
+  _uiSetWidth : function(v){
+    var _self = this;
+    if(v != null && _self.get('forceFit')){
+      _self.setInnerWidth(v);
+    }
+  }
+},{
+  ATTRS : {
+    /**
+     * 是否发生过校验，初始值为空时，未进行赋值，不进行校验
+     * @type {Boolean}
+     */
+    hasValid : {
+      value : false
+    },
+    /**
+     * 内部元素是否根据控件宽度调整宽度
+     * @type {Boolean}
+     */
+    forceFit : {
+      value : false
+    },
+    /**
+     * 是否显示提示信息
+     * @type {Object}
+     */
+    tip : {
+
+    },
+    /**
+     * 表单元素或者控件内容改变的事件
+     * @type {String}
+     */
+    changeEvent : {
+      value : 'valid'
+    },
+    /**
+     * 未发生验证时，首次获取/丢失焦点，进行验证
+     */
+    firstValidEvent : {
+      value : 'blur'
+    },
+    /**
+     * 表单元素或者控件触发此事件时，触发验证
+     * @type {String}
+     */
+    validEvent : {
+      value : 'keyup change'
+    },
+    /**
+     * 字段的name值
+     * @type {Object}
+     */
+    name : {
+      view :true
+    },
+    /**
+     * 是否显示错误
+     * @type {Boolean}
+     */
+    showError : {
+      view : true,
+      value : true
+    },
+    /**
+     * 字段的值,类型根据字段类型决定
+     * @cfg {*} value
+     */
+    value : {
+      view : true
+    },
+    /**
+     * 标题
+     * @type {String}
+     */
+    label : {
+
+    },
+    /**
+     * 控件容器，如果为空直接添加在控件容器上
+     * @type {String|HTMLElement}
+     */
+    controlContainer : {
+      view : true
+    },
+    /**
+     * 内部表单元素的控件
+     * @protected
+     * @type {jQuery}
+     */
+    control : {
+      view : true
+    },
+    /**
+     * 内部表单元素的容器
+     * @type {String}
+     */
+    controlTpl : {
+      view : true,
+      value : '<input type="text"/>'
+    },
+    events: {
+      value : {
+        /**
+         * 未通过验证
+         * @event
+         */
+        error : false,
+        /**
+         * 通过验证
+         * @event
+         */
+        valid : false,
+        /**
+         * @event
+         * 值改变，仅当通过验证时触发
+         */
+        change : true,
+
+        /**
+         * @event
+         * 验证改变
+         * @param {Object} e 事件对象
+         * @param {Object} e.target 触发事件的对象
+         * @param {Boolean} e.valid 是否通过验证
+         */
+        validchange : true
+      }  
+    },
+    tpl: {
+      value : '<label>{label}</label>'
+    },
+    xview : {
+      value : fieldView 
+    }
+  },
+  PARSER : {
+    control : function(el){
+      var control = el.find('input,select,textarea');
+      if(control.length){
+        return control;
+      }
+      return el;
+    },
+    disabled : function(el){
+      return !!el.attr('disabled');
+    },
+    value : function(el){
+      var _self = this,
+        selector = 'select,input,textarea',
+        value = _self.get('value');
+      if(!value){
+        if(el.is(selector)){
+          value = el.val();
+          if(!value && el.is('select')){
+            value = el.attr('value');
+          }
+        }else{
+          value = el.find(selector).val(); 
+        }
+        
+      }
+      return  value;
+    },
+    name : function(el){
+      var _self = this,
+        selector = 'select,input,textarea',
+        name = _self.get('name');
+      if(!name){
+        if(el.is(selector)){
+          name = el.attr('name');
+        }else{
+          name = el.find(selector).attr('name'); 
+        }
+        
+      }
+      return  name;
+    }
+    
+  }
+},{
+  xclass:'form-field'
+});
+
+field.View = fieldView;
+
+module.exports = field;
+
+});
+define("bui/form/valid", ["bui/common","jquery"], function(require, exports, module){
+/**
+ * @fileOverview 表单验证
+ * @ignore
+ */
+
+var BUI = require("bui/common"),
+  Rules = require("bui/form/rules");
+
+/**
+ * @class BUI.Form.ValidView
+ * @private
+ * 对控件内的字段域进行验证的视图
+ */
+var ValidView = function(){
+
+};
+
+ValidView.prototype = {
+  /**
+   * 获取错误信息的容器
+   * @protected
+   * @return {jQuery} 
+   */
+  getErrorsContainer : function(){
+    var _self = this,
+      errorContainer = _self.get('errorContainer');
+    if(errorContainer){
+      if(BUI.isString(errorContainer)){
+        return _self.get('el').find(errorContainer);
+      }
+      return errorContainer;
+    }
+    return _self.getContentElement();
+  },
+  /**
+   * 显示错误
+   */
+  showErrors : function(errors){
+    var _self = this,
+      errorsContainer = _self.getErrorsContainer(),
+      errorTpl = _self.get('errorTpl');     
+    _self.clearErrors(); 
+
+    if(!_self.get('showError')){
+      return ;
+    }
+    //如果仅显示第一条错误记录
+    if(_self.get('showOneError')){
+      if(errors && errors.length){
+        _self.showError(errors[0],errorTpl,errorsContainer);
+      }
+      return ;
+    }
+
+    BUI.each(errors,function(error){
+      if(error){
+        _self.showError(error,errorTpl,errorsContainer);
+      }
+    });
+  },
+  /**
+   * 显示一条错误
+   * @protected
+   * @template
+   * @param  {String} msg 错误信息
+   */
+  showError : function(msg,errorTpl,container){
+
+  },
+  /**
+   * @protected
+   * @template
+   * 清除错误
+   */
+  clearErrors : function(){
+
+  }
+};
+/**
+ * 对控件内的字段域进行验证
+ * @class  BUI.Form.Valid
+ */
+var Valid = function(){
+
+};
+
+Valid.ATTRS = {
+
+  /**
+   * 控件固有的验证规则，例如，日期字段域，有的date类型的验证
+   * @protected
+   * @type {Object}
+   */
+  defaultRules : {
+    value : {}
+  },
+  /**
+   * 控件固有的验证出错信息，例如，日期字段域，不是有效日期的验证字段
+   * @protected
+   * @type {Object}
+   */
+  defaultMessages : {
+    value : {}
+  },
+  /**
+   * 验证规则
+   * @type {Object}
+   */
+  rules : {
+    shared : false,
+    value : {}
+  },
+  /**
+   * 验证信息集合
+   * @type {Object}
+   */
+  messages : {
+    shared : false,
+    value : {}
+  },
+  /**
+   * 验证器 验证容器内的表单字段是否通过验证
+   * @type {Function}
+   */
+  validator : {
+
+  },
+  /**
+   * 存放错误信息容器的选择器，如果未提供则默认显示在控件中
    * @private
-   * 对控件内的字段域进行验证的视图
+   * @type {String}
    */
-  var ValidView = function() {};
-  ValidView.prototype = {
-    /**
-     * 获取错误信息的容器
-     * @protected
-     * @return {jQuery}
-     */
-    getErrorsContainer: function() {
-      var _self = this,
-        errorContainer = _self.get('errorContainer');
-      if (errorContainer) {
-        if (BUI.isString(errorContainer)) {
-          return _self.get('el').find(errorContainer);
-        }
-        return errorContainer;
-      }
-      return _self.getContentElement();
-    },
-    /**
-     * 显示错误
-     */
-    showErrors: function(errors) {
-      var _self = this,
-        errorsContainer = _self.getErrorsContainer(),
-        errorTpl = _self.get('errorTpl');
-      _self.clearErrors();
-      if (!_self.get('showError')) {
-        return;
-      }
-      //如果仅显示第一条错误记录
-      if (_self.get('showOneError')) {
-        if (errors && errors.length) {
-          _self.showError(errors[0], errorTpl, errorsContainer);
-        }
-        return;
-      }
-      BUI.each(errors, function(error) {
-        if (error) {
-          _self.showError(error, errorTpl, errorsContainer);
-        }
-      });
-    },
-    /**
-     * 显示一条错误
-     * @protected
-     * @template
-     * @param  {String} msg 错误信息
-     */
-    showError: function(msg, errorTpl, container) {},
-    /**
-     * @protected
-     * @template
-     * 清除错误
-     */
-    clearErrors: function() {}
-  };
+  errorContainer : {
+    view : true
+  },
   /**
-   * 对控件内的字段域进行验证
-   * @class  BUI.Form.Valid
+   * 显示错误信息的模板
+   * @type {Object}
    */
-  var Valid = function() {};
-  Valid.ATTRS = {
-    /**
-     * 控件固有的验证规则，例如，日期字段域，有的date类型的验证
-     * @protected
-     * @type {Object}
-     */
-    defaultRules: {
-      value: {}
-    },
-    /**
-     * 控件固有的验证出错信息，例如，日期字段域，不是有效日期的验证字段
-     * @protected
-     * @type {Object}
-     */
-    defaultMessages: {
-      value: {}
-    },
-    /**
-     * 验证规则
-     * @type {Object}
-     */
-    rules: {
-      shared: false,
-      value: {}
-    },
-    /**
-     * 验证信息集合
-     * @type {Object}
-     */
-    messages: {
-      shared: false,
-      value: {}
-    },
-    /**
-     * 验证器 验证容器内的表单字段是否通过验证
-     * @type {Function}
-     */
-    validator: {},
-    /**
-     * 存放错误信息容器的选择器，如果未提供则默认显示在控件中
-     * @private
-     * @type {String}
-     */
-    errorContainer: {
-      view: true
-    },
-    /**
-     * 显示错误信息的模板
-     * @type {Object}
-     */
-    errorTpl: {
-      view: true,
-      value: '<span class="x-field-error"><span class="x-icon x-icon-mini x-icon-error">!</span><label class="x-field-error-text">{error}</label></span>'
-    },
-    /**
-     * 显示错误
-     * @type {Boolean}
-     */
-    showError: {
-      view: true,
-      value: true
-    },
-    /**
-     * 是否仅显示一个错误
-     * @type {Boolean}
-     */
-    showOneError: {},
-    /**
-     * 错误信息，这个验证错误不包含子控件的验证错误
-     * @type {String}
-     */
-    error: {},
-    /**
-     * 暂停验证
-     * <pre><code>
-     *   field.set('pauseValid',true); //可以调用field.clearErrors()
-     *   field.set('pauseValid',false); //可以同时调用field.valid()
-     * </code></pre>
-     * @type {Boolean}
-     */
-    pauseValid: {
-      value: false
-    }
-  };
-  Valid.prototype = {
-    __bindUI: function() {
-      var _self = this;
-      //监听是否禁用
-      _self.on('afterDisabledChange', function(ev) {
+  errorTpl : {
+    view : true,
+    value : '<span class="x-field-error"><span class="x-icon x-icon-mini x-icon-error">!</span><label class="x-field-error-text">{error}</label></span>'
+  },
+  /**
+   * 显示错误
+   * @type {Boolean}
+   */
+  showError : {
+    view : true,
+    value : true
+  },
+  /**
+   * 是否仅显示一个错误
+   * @type {Boolean}
+   */
+  showOneError: {
+
+  },
+  /**
+   * 错误信息，这个验证错误不包含子控件的验证错误
+   * @type {String}
+   */
+  error : {
+
+  },
+  /**
+   * 暂停验证
+   * <pre><code>
+   *   field.set('pauseValid',true); //可以调用field.clearErrors()
+   *   field.set('pauseValid',false); //可以同时调用field.valid()
+   * </code></pre>
+   * @type {Boolean}
+   */
+  pauseValid : {
+    value : false
+  }
+};
+
+Valid.prototype = {
+
+  __bindUI : function(){
+    var _self = this;
+    //监听是否禁用
+    _self.on('afterDisabledChange',function(ev){
+      
         var disabled = ev.newVal;
-        if (disabled) {
-          _self.clearErrors(false, false);
-        } else {
+        if(disabled){
+          _self.clearErrors(false,false);
+        }else{
           _self.valid();
         }
-      });
-    },
-    /**
-     * 是否通过验证
-     * @template
-     * @return {Boolean} 是否通过验证
-     */
-    isValid: function() {},
-    /**
-     * 进行验证
-     */
-    valid: function() {},
-    /**
-     * @protected
-     * @template
-     * 验证自身的规则和验证器
-     */
-    validControl: function() {},
-    //验证规则
-    validRules: function(rules, value) {
-      if (!rules) {
-        return null;
-      }
-      if (this.get('pauseValid')) {
-        return null;
-      }
-      var _self = this,
-        messages = _self._getValidMessages(),
-        error = null;
-      for (var name in rules) {
-        if (rules.hasOwnProperty(name)) {
-          var baseValue = rules[name];
-          error = Rules.valid(name, value, baseValue, messages[name], _self);
-          if (error) {
-            break;
-          }
-        }
-      }
-      return error;
-    },
-    //获取验证错误信息
-    _getValidMessages: function() {
-      var _self = this,
-        defaultMessages = _self.get('defaultMessages'),
-        messages = _self.get('messages');
-      return BUI.merge(defaultMessages, messages);
-    },
-    /**
-     * @template
-     * @protected
-     * 控件本身是否通过验证，不考虑子控件
-     * @return {String} 验证的错误
-     */
-    getValidError: function(value) {
-      var _self = this,
-        validator = _self.get('validator'),
-        error = null;
-      error = _self.validRules(_self.get('defaultRules'), value) || _self.validRules(_self.get('rules'), value);
-      if (!error && !this.get('pauseValid')) {
-        if (_self.parseValue) {
-          value = _self.parseValue(value);
-        }
-        error = validator ? validator.call(this, value) : '';
-      }
-      return error;
-    },
-    /**
-     * 获取验证出错信息，包括自身和子控件的验证错误信息
-     * @return {Array} 出错信息
-     */
-    getErrors: function() {},
-    /**
-     * 显示错误
-     * @param {Array} errors 显示错误
-     */
-    showErrors: function(errors) {
-      var _self = this,
-        errors = errors || _self.getErrors();
-      _self.get('view').showErrors(errors);
-    },
-    /**
-     * 清除错误
-     * @param {Boolean} reset 清除错误时是否重置
-     * @param {Boolean} [deep = true] 是否清理子控件的错误
-     */
-    clearErrors: function(reset, deep) {
-      deep = deep == null ? true : deep;
-      var _self = this,
-        children = _self.get('children');
-      if (deep) {
-        BUI.each(children, function(item) {
-          if (item.clearErrors) {
-            if (item.field) {
-              item.clearErrors(reset);
-            } else {
-              item.clearErrors(reset, deep);
-            }
-          }
-        });
-      }
-      _self.set('error', null);
-      _self.get('view').clearErrors();
-    },
-    /**
-     * 添加验证规则
-     * @param {String} name 规则名称
-     * @param {*} [value] 规则进行校验的进行对比的值，如max : 10
-     * @param {String} [message] 出错信息,可以使模板
-     * <ol>
-     *   <li>如果 value 是单个值，例如最大值 value = 10,那么模板可以写成： '输入值不能大于{0}!'</li>
-     *   <li>如果 value 是个复杂对象，数组时，按照索引，对象时按照 key 阻止。如：value= {max:10,min:5} ，则'输入值不能大于{max},不能小于{min}'</li>
-     * </ol>
-     *         var field = form.getField('name');
-     *         field.addRule('required',true);
-     *
-     *         field.addRule('max',10,'不能大于{0}');
-     */
-    addRule: function(name, value, message) {
-      var _self = this,
-        rules = _self.get('rules'),
-        messages = _self.get('messages');
-      rules[name] = value;
-      if (message) {
-        messages[name] = message;
-      }
-    },
-    /**
-     * 添加多个验证规则
-     * @param {Object} rules 多个验证规则
-     * @param {Object} [messages] 验证规则的出错信息
-     *         var field = form.getField('name');
-     *         field.addRules({
-     *           required : true,
-     *           max : 10
-     *         });
-     */
-    addRules: function(rules, messages) {
-      var _self = this;
-      BUI.each(rules, function(value, name) {
-        var msg = messages ? messages[name] : null;
-        _self.addRule(name, value, msg);
-      });
-    },
-    /**
-     * 移除指定名称的验证规则
-     * @param  {String} name 验证规则名称
-     *         var field = form.getField('name');
-     *         field.remove('required');
-     */
-    removeRule: function(name) {
-      var _self = this,
-        rules = _self.get('rules');
-      delete rules[name];
-    },
-    /**
-     * 清理验证规则
-     */
-    clearRules: function() {
-      var _self = this;
-      _self.set('rules', {});
-    }
-  };
-  Valid.View = ValidView;
-  module.exports = Valid;
-});
-define("bui/form/rules", ["jquery", "bui/common"], function(require, exports, module) {
+    });
+  },
   /**
-   * @fileOverview 验证集合
-   * @ignore
+   * 是否通过验证
+   * @template
+   * @return {Boolean} 是否通过验证
    */
-  var $ = require('jquery'),
-    Rule = require("bui/form/rule");
+  isValid : function(){
 
-  function toNumber(value) {
-    return parseFloat(value);
-  }
-
-  function toDate(value) {
-    return BUI.Date.parse(value);
-  }
-  var ruleMap = {};
+  },
   /**
-   * @class BUI.Form.Rules
-   * @singleton
-   * 表单验证的验证规则管理器
+   * 进行验证
    */
-  var rules = {
-    /**
-     * 添加验证规则
-     * @param {Object|BUI.Form.Rule} rule 验证规则配置项或者验证规则对象
-     * @param  {String} name 规则名称
-     */
-    add: function(rule) {
-      var name;
-      if ($.isPlainObject(rule)) {
-        name = rule.name;
-        ruleMap[name] = new Rule(rule);
-      } else if (rule.get) {
-        name = rule.get('name');
-        ruleMap[name] = rule;
-      }
-      return ruleMap[name];
-    },
-    /**
-     * 删除验证规则
-     * @param  {String} name 规则名称
-     */
-    remove: function(name) {
-      delete ruleMap[name];
-    },
-    /**
-     * 获取验证规则
-     * @param  {String} name 规则名称
-     * @return {BUI.Form.Rule}  验证规则
-     */
-    get: function(name) {
-      return ruleMap[name];
-    },
-    /**
-     * 验证指定的规则
-     * @param  {String} name 规则类型
-     * @param  {*} value 验证值
-     * @param  {*} [baseValue] 用于验证的基础值
-     * @param  {String} [msg] 显示错误的模板
-     * @param  {BUI.Form.Field|BUI.Form.Group} [control] 显示错误的模板
-     * @return {String} 通过验证返回 null,否则返回错误信息
-     */
-    valid: function(name, value, baseValue, msg, control) {
-      var rule = rules.get(name);
-      if (rule) {
-        return rule.valid(value, baseValue, msg, control);
-      }
+  valid : function(){
+
+  },
+  /**
+   * @protected
+   * @template
+   * 验证自身的规则和验证器
+   */
+  validControl : function(){
+
+  },
+  //验证规则
+  validRules : function(rules,value){
+    if(!rules){
       return null;
-    },
-    /**
-     * 验证指定的规则
-     * @param  {String} name 规则类型
-     * @param  {*} values 验证值
-     * @param  {*} [baseValue] 用于验证的基础值
-     * @param  {BUI.Form.Field|BUI.Form.Group} [control] 显示错误的模板
-     * @return {Boolean} 是否通过验证
-     */
-    isValid: function(name, value, baseValue, control) {
-      return rules.valid(name, value, baseValue, control) == null;
     }
-  };
-  /**
-   * 非空验证,会对值去除空格
-   * <ol>
-   *  <li>name: required</li>
-   *  <li>msg: 不能为空！</li>
-   *  <li>required: boolean 类型</li>
-   * </ol>
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var required = rules.add({
-    name: 'required',
-    msg: '不能为空！',
-    validator: function(value, required, formatedMsg) {
-      if (required !== false && /^\s*$/.test(value)) {
-        return formatedMsg;
-      }
+    if(this.get('pauseValid')){
+      return null;
     }
-  });
-  /**
-   * 相等验证
-   * <ol>
-   *  <li>name: equalTo</li>
-   *  <li>msg: 两次输入不一致！</li>
-   *  <li>equalTo: 一个字符串，id（#id_name) 或者 name</li>
-   * </ol>
-   *         {
-   *           equalTo : '#password'
-   *         }
-   *         //或者
-   *         {
-   *           equalTo : 'password'
-   *         }
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var equalTo = rules.add({
-    name: 'equalTo',
-    msg: '两次输入不一致！',
-    validator: function(value, equalTo, formatedMsg) {
-      var el = $(equalTo);
-      if (el.length) {
-        equalTo = el.val();
-      }
-      return value === equalTo ? undefined : formatedMsg;
-    }
-  });
-  /**
-   * 不小于验证
-   * <ol>
-   *  <li>name: min</li>
-   *  <li>msg: 输入值不能小于{0}！</li>
-   *  <li>min: 数字，字符串</li>
-   * </ol>
-   *         {
-   *           min : 5
-   *         }
-   *         //字符串
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var min = rules.add({
-    name: 'min',
-    msg: '输入值不能小于{0}！',
-    validator: function(value, min, formatedMsg) {
-      if (BUI.isString(value)) {
-        value = value.replace(/\,/g, '');
-      }
-      if (value !== '' && toNumber(value) < toNumber(min)) {
-        return formatedMsg;
-      }
-    }
-  });
-  /**
-   * 不小于验证,用于数值比较
-   * <ol>
-   *  <li>name: max</li>
-   *  <li>msg: 输入值不能大于{0}！</li>
-   *  <li>max: 数字、字符串</li>
-   * </ol>
-   *         {
-   *           max : 100
-   *         }
-   *         //字符串
-   *         {
-   *           max : '100'
-   *         }
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var max = rules.add({
-    name: 'max',
-    msg: '输入值不能大于{0}！',
-    validator: function(value, max, formatedMsg) {
-      if (BUI.isString(value)) {
-        value = value.replace(/\,/g, '');
-      }
-      if (value !== '' && toNumber(value) > toNumber(max)) {
-        return formatedMsg;
-      }
-    }
-  });
-  /**
-   * 输入长度验证，必须是指定的长度
-   * <ol>
-   *  <li>name: length</li>
-   *  <li>msg: 输入值长度为{0}！</li>
-   *  <li>length: 数字</li>
-   * </ol>
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var length = rules.add({
-    name: 'length',
-    msg: '输入值长度为{0}！',
-    validator: function(value, len, formatedMsg) {
-      if (value != null) {
-        value = $.trim(value.toString());
-        if (len != value.length) {
-          return formatedMsg;
-        }
-      }
-    }
-  });
-  /**
-   * 最短长度验证,会对值去除空格
-   * <ol>
-   *  <li>name: minlength</li>
-   *  <li>msg: 输入值长度不小于{0}！</li>
-   *  <li>minlength: 数字</li>
-   * </ol>
-   *         {
-   *           minlength : 5
-   *         }
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var minlength = rules.add({
-    name: 'minlength',
-    msg: '输入值长度不小于{0}！',
-    validator: function(value, min, formatedMsg) {
-      if (value != null) {
-        value = $.trim(value.toString());
-        var len = value.length;
-        if (len < min) {
-          return formatedMsg;
-        }
-      }
-    }
-  });
-  /**
-   * 最短长度验证,会对值去除空格
-   * <ol>
-   *  <li>name: maxlength</li>
-   *  <li>msg: 输入值长度不大于{0}！</li>
-   *  <li>maxlength: 数字</li>
-   * </ol>
-   *         {
-   *           maxlength : 10
-   *         }
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var maxlength = rules.add({
-    name: 'maxlength',
-    msg: '输入值长度不大于{0}！',
-    validator: function(value, max, formatedMsg) {
-      if (value) {
-        value = $.trim(value.toString());
-        var len = value.length;
-        if (len > max) {
-          return formatedMsg;
-        }
-      }
-    }
-  });
-  /**
-   * 正则表达式验证,如果正则表达式为空，则不进行校验
-   * <ol>
-   *  <li>name: regexp</li>
-   *  <li>msg: 输入值不符合{0}！</li>
-   *  <li>regexp: 正则表达式</li>
-   * </ol>
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var regexp = rules.add({
-    name: 'regexp',
-    msg: '输入值不符合{0}！',
-    validator: function(value, regexp, formatedMsg) {
-      if (regexp) {
-        return regexp.test(value) ? undefined : formatedMsg;
-      }
-    }
-  });
-  /**
-   * 邮箱验证,会对值去除空格，无数据不进行校验
-   * <ol>
-   *  <li>name: email</li>
-   *  <li>msg: 不是有效的邮箱地址！</li>
-   * </ol>
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var email = rules.add({
-    name: 'email',
-    msg: '不是有效的邮箱地址！',
-    validator: function(value, baseValue, formatedMsg) {
-      value = $.trim(value);
-      if (value) {
-        return /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(value) ? undefined : formatedMsg;
-      }
-    }
-  });
-  /**
-   * 日期验证，会对值去除空格，无数据不进行校验，
-   * 如果传入的值不是字符串，而是数字，则认为是有效值
-   * <ol>
-   *  <li>name: date</li>
-   *  <li>msg: 不是有效的日期！</li>
-   * </ol>
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var date = rules.add({
-    name: 'date',
-    msg: '不是有效的日期！',
-    validator: function(value, baseValue, formatedMsg) {
-      if (BUI.isNumber(value)) { //数字认为是日期
-        return;
-      }
-      if (BUI.isDate(value)) {
-        return;
-      }
-      value = $.trim(value);
-      if (value) {
-        return BUI.Date.isDateString(value) ? undefined : formatedMsg;
-      }
-    }
-  });
-  /**
-   * 不小于验证
-   * <ol>
-   *  <li>name: minDate</li>
-   *  <li>msg: 输入日期不能小于{0}！</li>
-   *  <li>minDate: 日期，字符串</li>
-   * </ol>
-   *         {
-   *           minDate : '2001-01-01';
-   *         }
-   *         //字符串
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var minDate = rules.add({
-    name: 'minDate',
-    msg: '输入日期不能小于{0}！',
-    validator: function(value, minDate, formatedMsg) {
-      if (value) {
-        var date = toDate(value);
-        if (date && date < toDate(minDate)) {
-          return formatedMsg;
-        }
-      }
-    }
-  });
-  /**
-   * 不小于验证,用于数值比较
-   * <ol>
-   *  <li>name: maxDate</li>
-   *  <li>msg: 输入值不能大于{0}！</li>
-   *  <li>maxDate: 日期、字符串</li>
-   * </ol>
-   *         {
-   *           maxDate : '2001-01-01';
-   *         }
-   *         //或日期
-   *         {
-   *           maxDate : new Date('2001-01-01');
-   *         }
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var maxDate = rules.add({
-    name: 'maxDate',
-    msg: '输入日期不能大于{0}！',
-    validator: function(value, maxDate, formatedMsg) {
-      if (value) {
-        var date = toDate(value);
-        if (date && date > toDate(maxDate)) {
-          return formatedMsg;
-        }
-      }
-    }
-  });
-  /**
-   * 手机验证，11位手机数字
-   * <ol>
-   *  <li>name: mobile</li>
-   *  <li>msg: 不是有效的手机号码！</li>
-   * </ol>
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var mobile = rules.add({
-    name: 'mobile',
-    msg: '不是有效的手机号码！',
-    validator: function(value, baseValue, formatedMsg) {
-      value = $.trim(value);
-      if (value) {
-        return /^\d{11}$/.test(value) ? undefined : formatedMsg;
-      }
-    }
-  });
-  /**
-   * 数字验证，会对值去除空格，无数据不进行校验
-   * 允许千分符，例如： 12,000,000的格式
-   * <ol>
-   *  <li>name: number</li>
-   *  <li>msg: 不是有效的数字！</li>
-   * </ol>
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var number = rules.add({
-    name: 'number',
-    msg: '不是有效的数字！',
-    validator: function(value, baseValue, formatedMsg) {
-      if (BUI.isNumber(value)) {
-        return;
-      }
-      value = value.replace(/\,/g, '');
-      return !isNaN(value) ? undefined : formatedMsg;
-    }
-  });
-  //测试范围
-  function testRange(baseValue, curVal, prevVal) {
-    var allowEqual = baseValue && (baseValue.equals !== false);
-    if (allowEqual) {
-      return prevVal <= curVal;
-    }
-    return prevVal < curVal;
-  }
+    var _self = this,
+      messages = _self._getValidMessages(),
+      error = null;
 
-  function isEmpty(value) {
-    return value == '' || value == null;
-  }
-  //测试是否后面的数据大于前面的
-  function rangeValid(value, baseValue, formatedMsg, group) {
-    var fields = group.getFields(),
-      valid = true;
-    for (var i = 1; i < fields.length; i++) {
-      var cur = fields[i],
-        prev = fields[i - 1],
-        curVal,
-        prevVal;
-      if (cur && prev) {
-        curVal = cur.get('value');
-        prevVal = prev.get('value');
-        if (!isEmpty(curVal) && !isEmpty(prevVal) && !testRange(baseValue, curVal, prevVal)) {
-          valid = false;
+    for(var name in rules){
+      if(rules.hasOwnProperty(name)){
+        var baseValue = rules[name];
+        error = Rules.valid(name,value,baseValue,messages[name],_self);
+        if(error){
           break;
         }
       }
     }
-    if (!valid) {
+    return error;
+  },
+  //获取验证错误信息
+  _getValidMessages : function(){
+    var _self = this,
+      defaultMessages = _self.get('defaultMessages'),
+      messages = _self.get('messages');
+    return BUI.merge(defaultMessages,messages);
+  },
+  /**
+   * @template
+   * @protected
+   * 控件本身是否通过验证，不考虑子控件
+   * @return {String} 验证的错误
+   */
+  getValidError : function(value){
+    var _self = this,
+      validator = _self.get('validator'),
+      error = null;
+
+    error = _self.validRules(_self.get('defaultRules'),value) || _self.validRules(_self.get('rules'),value);
+
+    if(!error && !this.get('pauseValid')){
+      if(_self.parseValue){
+        value = _self.parseValue(value);
+      }
+      error = validator ? validator.call(this,value) : '';
+    }
+
+    return error;
+  },
+  /**
+   * 获取验证出错信息，包括自身和子控件的验证错误信息
+   * @return {Array} 出错信息
+   */
+  getErrors : function(){
+
+  },
+  /**
+   * 显示错误
+   * @param {Array} errors 显示错误
+   */
+  showErrors : function(errors){
+    var _self = this,
+      errors = errors || _self.getErrors();
+    _self.get('view').showErrors(errors);
+  },
+  /**
+   * 清除错误
+   * @param {Boolean} reset 清除错误时是否重置
+   * @param {Boolean} [deep = true] 是否清理子控件的错误 
+   */
+  clearErrors : function(reset,deep){
+    deep = deep == null ? true : deep;
+    var _self = this,
+      children = _self.get('children');
+    if(deep){
+      BUI.each(children,function(item){
+        if(item.clearErrors){
+          if(item.field){
+            item.clearErrors(reset);
+          }else{
+            item.clearErrors(reset,deep);
+          }
+        }
+      });
+    }
+    
+    _self.set('error',null);
+    _self.get('view').clearErrors();
+  },
+  /**
+   * 添加验证规则
+   * @param {String} name 规则名称
+   * @param {*} [value] 规则进行校验的进行对比的值，如max : 10 
+   * @param {String} [message] 出错信息,可以使模板
+   * <ol>
+   *   <li>如果 value 是单个值，例如最大值 value = 10,那么模板可以写成： '输入值不能大于{0}!'</li>
+   *   <li>如果 value 是个复杂对象，数组时，按照索引，对象时按照 key 阻止。如：value= {max:10,min:5} ，则'输入值不能大于{max},不能小于{min}'</li>
+   * </ol>
+   *         var field = form.getField('name');
+   *         field.addRule('required',true);
+   *
+   *         field.addRule('max',10,'不能大于{0}');
+   */
+  addRule : function(name,value,message){
+    var _self = this,
+      rules = _self.get('rules'),
+      messages = _self.get('messages');
+    rules[name] = value;
+    if(message){
+      messages[name] = message;
+    }
+    
+  },
+  /**
+   * 添加多个验证规则
+   * @param {Object} rules 多个验证规则
+   * @param {Object} [messages] 验证规则的出错信息
+   *         var field = form.getField('name');
+   *         field.addRules({
+   *           required : true,
+   *           max : 10
+   *         });
+   */
+  addRules : function(rules,messages){
+    var _self = this;
+
+    BUI.each(rules,function(value,name){
+      var msg = messages ? messages[name] : null;
+      _self.addRule(name,value,msg);
+    });
+  },
+  /**
+   * 移除指定名称的验证规则
+   * @param  {String} name 验证规则名称
+   *         var field = form.getField('name');
+   *         field.remove('required');   
+   */
+  removeRule : function(name){
+    var _self = this,
+      rules = _self.get('rules');
+    delete rules[name];
+  },
+  /**
+   * 清理验证规则
+   */
+  clearRules : function(){
+    var _self = this;
+    _self.set('rules',{});
+  }
+};
+
+Valid.View = ValidView;
+
+module.exports = Valid;
+
+});
+define("bui/form/rules", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview 验证集合
+ * @ignore
+ */
+
+
+var $ = require('jquery'),
+  Rule = require("bui/form/rule");
+
+function toNumber(value){
+  return parseFloat(value);
+}
+
+function toDate(value){
+  return BUI.Date.parse(value);
+}
+
+var ruleMap = {
+
+};
+
+/**
+ * @class BUI.Form.Rules
+ * @singleton
+ * 表单验证的验证规则管理器
+ */
+var rules = {
+  /**
+   * 添加验证规则
+   * @param {Object|BUI.Form.Rule} rule 验证规则配置项或者验证规则对象
+   * @param  {String} name 规则名称
+   */
+  add : function(rule){
+    var name;
+    if($.isPlainObject(rule)){
+      name = rule.name;
+      ruleMap[name] = new Rule(rule);        
+    }else if(rule.get){
+      name = rule.get('name'); 
+      ruleMap[name] = rule;
+    }
+    return ruleMap[name];
+  },
+  /**
+   * 删除验证规则
+   * @param  {String} name 规则名称
+   */
+  remove : function(name){
+    delete ruleMap[name];
+  },
+  /**
+   * 获取验证规则
+   * @param  {String} name 规则名称
+   * @return {BUI.Form.Rule}  验证规则
+   */
+  get : function(name){
+    return ruleMap[name];
+  },
+  /**
+   * 验证指定的规则
+   * @param  {String} name 规则类型
+   * @param  {*} value 验证值
+   * @param  {*} [baseValue] 用于验证的基础值
+   * @param  {String} [msg] 显示错误的模板
+   * @param  {BUI.Form.Field|BUI.Form.Group} [control] 显示错误的模板
+   * @return {String} 通过验证返回 null,否则返回错误信息
+   */
+  valid : function(name,value,baseValue,msg,control){
+    var rule = rules.get(name);
+    if(rule){
+      return rule.valid(value,baseValue,msg,control);
+    }
+    return null;
+  },
+  /**
+   * 验证指定的规则
+   * @param  {String} name 规则类型
+   * @param  {*} values 验证值
+   * @param  {*} [baseValue] 用于验证的基础值
+   * @param  {BUI.Form.Field|BUI.Form.Group} [control] 显示错误的模板
+   * @return {Boolean} 是否通过验证
+   */
+  isValid : function(name,value,baseValue,control){
+    return rules.valid(name,value,baseValue,control) == null;
+  }
+};
+
+/**
+ * 非空验证,会对值去除空格
+ * <ol>
+ *  <li>name: required</li>
+ *  <li>msg: 不能为空！</li>
+ *  <li>required: boolean 类型</li>
+ * </ol>
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}
+ */
+var required = rules.add({
+  name : 'required',
+  msg : '不能为空！',
+  validator : function(value,required,formatedMsg){
+    if(required !== false && /^\s*$/.test(value)){
       return formatedMsg;
+    }
+  }
+});
+
+/**
+ * 相等验证
+ * <ol>
+ *  <li>name: equalTo</li>
+ *  <li>msg: 两次输入不一致！</li>
+ *  <li>equalTo: 一个字符串，id（#id_name) 或者 name</li>
+ * </ol>
+ *         {
+ *           equalTo : '#password'
+ *         }
+ *         //或者
+ *         {
+ *           equalTo : 'password'
+ *         } 
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}
+ */
+var equalTo = rules.add({
+  name : 'equalTo',
+  msg : '两次输入不一致！',
+  validator : function(value,equalTo,formatedMsg){
+    var el = $(equalTo);
+    if(el.length){
+      equalTo = el.val();
+    } 
+    return value === equalTo ? undefined : formatedMsg;
+  }
+});
+
+
+/**
+ * 不小于验证
+ * <ol>
+ *  <li>name: min</li>
+ *  <li>msg: 输入值不能小于{0}！</li>
+ *  <li>min: 数字，字符串</li>
+ * </ol>
+ *         {
+ *           min : 5
+ *         }
+ *         //字符串
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}
+ */
+var min = rules.add({
+  name : 'min',
+  msg : '输入值不能小于{0}！',
+  validator : function(value,min,formatedMsg){
+    if(BUI.isString(value)){
+      value = value.replace(/\,/g,'');
+    }
+    if(value !== '' && toNumber(value) < toNumber(min)){
+      return formatedMsg;
+    }
+  }
+});
+
+/**
+ * 不小于验证,用于数值比较
+ * <ol>
+ *  <li>name: max</li>
+ *  <li>msg: 输入值不能大于{0}！</li>
+ *  <li>max: 数字、字符串</li>
+ * </ol>
+ *         {
+ *           max : 100
+ *         }
+ *         //字符串
+ *         {
+ *           max : '100'
+ *         }
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}
+ */
+var max = rules.add({
+  name : 'max',
+  msg : '输入值不能大于{0}！',
+  validator : function(value,max,formatedMsg){
+    if(BUI.isString(value)){
+      value = value.replace(/\,/g,'');
+    }
+    if(value !== '' && toNumber(value) > toNumber(max)){
+      return formatedMsg;
+    }
+  }
+});
+
+/**
+ * 输入长度验证，必须是指定的长度
+ * <ol>
+ *  <li>name: length</li>
+ *  <li>msg: 输入值长度为{0}！</li>
+ *  <li>length: 数字</li>
+ * </ol>
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}
+ */
+var length = rules.add({
+  name : 'length',
+  msg : '输入值长度为{0}！',
+  validator : function(value,len,formatedMsg){
+    if(value != null){
+      value = $.trim(value.toString());
+      if(len != value.length){
+        return formatedMsg;
+      }
+    }
+  }
+});
+/**
+ * 最短长度验证,会对值去除空格
+ * <ol>
+ *  <li>name: minlength</li>
+ *  <li>msg: 输入值长度不小于{0}！</li>
+ *  <li>minlength: 数字</li>
+ * </ol>
+ *         {
+ *           minlength : 5
+ *         }
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}
+ */
+var minlength = rules.add({
+  name : 'minlength',
+  msg : '输入值长度不小于{0}！',
+  validator : function(value,min,formatedMsg){
+    if(value != null){
+      value = $.trim(value.toString());
+      var len = value.length;
+      if(len < min){
+        return formatedMsg;
+      }
+    }
+  }
+});
+
+/**
+ * 最短长度验证,会对值去除空格
+ * <ol>
+ *  <li>name: maxlength</li>
+ *  <li>msg: 输入值长度不大于{0}！</li>
+ *  <li>maxlength: 数字</li>
+ * </ol>
+ *         {
+ *           maxlength : 10
+ *         }
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}   
+ */
+var maxlength = rules.add({
+  name : 'maxlength',
+  msg : '输入值长度不大于{0}！',
+  validator : function(value,max,formatedMsg){
+    if(value){
+      value = $.trim(value.toString());
+      var len = value.length;
+      if(len > max){
+        return formatedMsg;
+      }
+    }
+  }
+});
+
+/**
+ * 正则表达式验证,如果正则表达式为空，则不进行校验
+ * <ol>
+ *  <li>name: regexp</li>
+ *  <li>msg: 输入值不符合{0}！</li>
+ *  <li>regexp: 正则表达式</li>
+ * </ol> 
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}
+ */
+var regexp = rules.add({
+  name : 'regexp',
+  msg : '输入值不符合{0}！',
+  validator : function(value,regexp,formatedMsg){
+    if(regexp){
+      return regexp.test(value) ? undefined : formatedMsg;
+    }
+  }
+});
+
+/**
+ * 邮箱验证,会对值去除空格，无数据不进行校验
+ * <ol>
+ *  <li>name: email</li>
+ *  <li>msg: 不是有效的邮箱地址！</li>
+ * </ol>
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}
+ */
+var email = rules.add({
+  name : 'email',
+  msg : '不是有效的邮箱地址！',
+  validator : function(value,baseValue,formatedMsg){
+    value = $.trim(value);
+    if(value){
+      return /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(value) ? undefined : formatedMsg;
+    }
+  }
+});
+
+/**
+ * 日期验证，会对值去除空格，无数据不进行校验，
+ * 如果传入的值不是字符串，而是数字，则认为是有效值
+ * <ol>
+ *  <li>name: date</li>
+ *  <li>msg: 不是有效的日期！</li>
+ * </ol>
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}
+ */
+var date = rules.add({
+  name : 'date',
+  msg : '不是有效的日期！',
+  validator : function(value,baseValue,formatedMsg){
+    if(BUI.isNumber(value)){ //数字认为是日期
+      return;
+    }
+    if(BUI.isDate(value)){
+      return;
+    }
+    value = $.trim(value);
+    if(value){
+      return BUI.Date.isDateString(value) ? undefined : formatedMsg;
+    }
+  }
+});
+
+/**
+ * 不小于验证
+ * <ol>
+ *  <li>name: minDate</li>
+ *  <li>msg: 输入日期不能小于{0}！</li>
+ *  <li>minDate: 日期，字符串</li>
+ * </ol>
+ *         {
+ *           minDate : '2001-01-01';
+ *         }
+ *         //字符串
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}
+ */
+var minDate = rules.add({
+  name : 'minDate',
+  msg : '输入日期不能小于{0}！',
+  validator : function(value,minDate,formatedMsg){
+    if(value){
+      var date = toDate(value);
+      if(date && date < toDate(minDate)){
+         return formatedMsg;
+      }
+    }
+  }
+});
+
+/**
+ * 不小于验证,用于数值比较
+ * <ol>
+ *  <li>name: maxDate</li>
+ *  <li>msg: 输入值不能大于{0}！</li>
+ *  <li>maxDate: 日期、字符串</li>
+ * </ol>
+ *         {
+ *           maxDate : '2001-01-01';
+ *         }
+ *         //或日期
+ *         {
+ *           maxDate : new Date('2001-01-01');
+ *         }
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}
+ */
+var maxDate = rules.add({
+  name : 'maxDate',
+  msg : '输入日期不能大于{0}！',
+  validator : function(value,maxDate,formatedMsg){
+    if(value){
+      var date = toDate(value);
+      if(date && date > toDate(maxDate)){
+         return formatedMsg;
+      }
+    }
+  }
+});
+
+/**
+ * 手机验证，11位手机数字
+ * <ol>
+ *  <li>name: mobile</li>
+ *  <li>msg: 不是有效的手机号码！</li>
+ * </ol>
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}
+ */
+var mobile = rules.add({
+  name : 'mobile',
+  msg : '不是有效的手机号码！',
+  validator : function(value,baseValue,formatedMsg){
+    value = $.trim(value);
+    if(value){
+      return /^\d{11}$/.test(value) ? undefined : formatedMsg;
+    }
+  }
+});
+
+/**
+ * 数字验证，会对值去除空格，无数据不进行校验
+ * 允许千分符，例如： 12,000,000的格式
+ * <ol>
+ *  <li>name: number</li>
+ *  <li>msg: 不是有效的数字！</li>
+ * </ol>
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}
+ */
+var number = rules.add({
+  name : 'number',
+  msg : '不是有效的数字！',
+  validator : function(value,baseValue,formatedMsg){
+    if(BUI.isNumber(value)){
+      return;
+    }
+    value = value.replace(/\,/g,'');
+    return !isNaN(value) ? undefined : formatedMsg;
+  }
+});
+
+//测试范围
+function testRange (baseValue,curVal,prevVal) {
+  var allowEqual = baseValue && (baseValue.equals !== false);
+
+  if(allowEqual){
+    return prevVal <= curVal;
+  }
+
+  return prevVal < curVal;
+}
+function isEmpty(value){
+  return value == '' || value == null;
+}
+//测试是否后面的数据大于前面的
+function rangeValid(value,baseValue,formatedMsg,group){
+  var fields = group.getFields(),
+    valid = true;
+  for(var i = 1; i < fields.length ; i ++){
+    var cur = fields[i],
+      prev = fields[i-1],
+      curVal,
+      prevVal;
+    if(cur && prev){
+      curVal = cur.get('value');
+      prevVal = prev.get('value');
+      if(!isEmpty(curVal) && !isEmpty(prevVal) && !testRange(baseValue,curVal,prevVal)){
+        valid = false;
+        break;
+      }
+    }
+  }
+  if(!valid){
+    return formatedMsg;
+  }
+  return null;
+}
+/**
+ * 起始结束日期验证，前面的日期不能大于后面的日期
+ * <ol>
+ *  <li>name: dateRange</li>
+ *  <li>msg: 起始日期不能大于结束日期！</li>
+ *  <li>dateRange: 可以使true或者{equals : fasle}，标示是否允许相等</li>
+ * </ol>
+ *         {
+ *           dateRange : true
+ *         }
+ *         {
+ *           dateRange : {equals : false}
+ *         }
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}   
+ */
+var dateRange = rules.add({
+  name : 'dateRange',
+  msg : '结束日期不能小于起始日期！',
+  validator : rangeValid
+});
+
+/**
+ * 数字范围
+ * <ol>
+ *  <li>name: numberRange</li>
+ *  <li>msg: 起始数字不能大于结束数字！</li>
+ *  <li>numberRange: 可以使true或者{equals : fasle}，标示是否允许相等</li>
+ * </ol>
+ *         {
+ *           numberRange : true
+ *         }
+ *         {
+ *           numberRange : {equals : false}
+ *         }
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}   
+ */
+var numberRange = rules.add({
+  name : 'numberRange',
+  msg : '结束数字不能小于开始数字！',
+  validator : rangeValid
+});
+
+function getFieldName (self) {
+  var firstField = self.getFieldAt(0);
+  if(firstField){
+    return firstField.get('name');
+  }
+  return '';
+}
+
+function testCheckRange(value,range){
+  if(!BUI.isArray(range)){
+    range = [range];
+  }
+  //不存在值
+  if(!value || !range.length){
+    return false;
+  }
+  var len = !value ? 0 : !BUI.isArray(value) ? 1 : value.length;
+  //如果只有一个限定值
+  if(range.length == 1){
+    var number = range [0];
+    if(!number){//range = [0],则不必选
+      return true;
+    }
+    if(number > len){
+      return false;
+    }
+  }else{
+    var min = range [0],
+      max = range[1];
+    if(min > len || max < len){
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * 勾选的范围
+ * <ol>
+ *  <li>name: checkRange</li>
+ *  <li>msg: 必须选中{0}项！</li>
+ *  <li>checkRange: 勾选的项范围</li>
+ * </ol>
+ *         //至少勾选一项
+ *         {
+ *           checkRange : 1
+ *         }
+ *         //只能勾选两项
+ *         {
+ *           checkRange : [2,2]
+ *         }
+ *         //可以勾选2-4项
+ *         {
+ *           checkRange : [2,4
+ *           ]
+ *         }
+ * @member BUI.Form.Rules
+ * @type {BUI.Form.Rule}   
+ */
+var checkRange = rules.add({
+  name : 'checkRange',
+  msg : '必须选中{0}项！',
+  validator : function(record,baseValue,formatedMsg,group){
+    var name = getFieldName(group),
+      value,
+      range = baseValue;
+      
+    if(name && range){
+      value = record[name];
+      if(!testCheckRange(value,range)){
+        return formatedMsg;
+      }
     }
     return null;
   }
-  /**
-   * 起始结束日期验证，前面的日期不能大于后面的日期
-   * <ol>
-   *  <li>name: dateRange</li>
-   *  <li>msg: 起始日期不能大于结束日期！</li>
-   *  <li>dateRange: 可以使true或者{equals : fasle}，标示是否允许相等</li>
-   * </ol>
-   *         {
-   *           dateRange : true
-   *         }
-   *         {
-   *           dateRange : {equals : false}
-   *         }
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var dateRange = rules.add({
-    name: 'dateRange',
-    msg: '结束日期不能小于起始日期！',
-    validator: rangeValid
-  });
-  /**
-   * 数字范围
-   * <ol>
-   *  <li>name: numberRange</li>
-   *  <li>msg: 起始数字不能大于结束数字！</li>
-   *  <li>numberRange: 可以使true或者{equals : fasle}，标示是否允许相等</li>
-   * </ol>
-   *         {
-   *           numberRange : true
-   *         }
-   *         {
-   *           numberRange : {equals : false}
-   *         }
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var numberRange = rules.add({
-    name: 'numberRange',
-    msg: '结束数字不能小于开始数字！',
-    validator: rangeValid
-  });
-
-  function getFieldName(self) {
-    var firstField = self.getFieldAt(0);
-    if (firstField) {
-      return firstField.get('name');
-    }
-    return '';
-  }
-
-  function testCheckRange(value, range) {
-    if (!BUI.isArray(range)) {
-      range = [range];
-    }
-    //不存在值
-    if (!value || !range.length) {
-      return false;
-    }
-    var len = !value ? 0 : !BUI.isArray(value) ? 1 : value.length;
-    //如果只有一个限定值
-    if (range.length == 1) {
-      var number = range[0];
-      if (!number) { //range = [0],则不必选
-        return true;
-      }
-      if (number > len) {
-        return false;
-      }
-    } else {
-      var min = range[0],
-        max = range[1];
-      if (min > len || max < len) {
-        return false;
-      }
-    }
-    return true;
-  }
-  /**
-   * 勾选的范围
-   * <ol>
-   *  <li>name: checkRange</li>
-   *  <li>msg: 必须选中{0}项！</li>
-   *  <li>checkRange: 勾选的项范围</li>
-   * </ol>
-   *         //至少勾选一项
-   *         {
-   *           checkRange : 1
-   *         }
-   *         //只能勾选两项
-   *         {
-   *           checkRange : [2,2]
-   *         }
-   *         //可以勾选2-4项
-   *         {
-   *           checkRange : [2,4
-   *           ]
-   *         }
-   * @member BUI.Form.Rules
-   * @type {BUI.Form.Rule}
-   */
-  var checkRange = rules.add({
-    name: 'checkRange',
-    msg: '必须选中{0}项！',
-    validator: function(record, baseValue, formatedMsg, group) {
-      var name = getFieldName(group),
-        value,
-        range = baseValue;
-      if (name && range) {
-        value = record[name];
-        if (!testCheckRange(value, range)) {
-          return formatedMsg;
-        }
-      }
-      return null;
-    }
-  });
-  module.exports = rules;
 });
-define("bui/form/rule", ["jquery", "bui/common"], function(require, exports, module) {
+
+module.exports = rules;
+
+});
+define("bui/form/rule", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview 验证规则
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  BUI = require("bui/common");
+/**
+ * @class BUI.Form.Rule
+ * 验证规则
+ * @extends BUI.Base
+ */
+var Rule = function (config){
+  Rule.superclass.constructor.call(this,config);
+}
+
+BUI.extend(Rule,BUI.Base);
+
+Rule.ATTRS = {
   /**
-   * @fileOverview 验证规则
-   * @ignore
+   * 规则名称
+   * @type {String}
    */
-  var $ = require('jquery'),
-    BUI = require("bui/common");
+  name : {
+
+  },
   /**
-   * @class BUI.Form.Rule
-   * 验证规则
-   * @extends BUI.Base
+   * 验证失败信息
+   * @type {String}
    */
-  var Rule = function(config) {
-    Rule.superclass.constructor.call(this, config);
-  }
-  BUI.extend(Rule, BUI.Base);
-  Rule.ATTRS = {
-    /**
-     * 规则名称
-     * @type {String}
-     */
-    name: {},
-    /**
-     * 验证失败信息
-     * @type {String}
-     */
-    msg: {},
-    /**
-     * 验证函数
-     * @type {Function}
-     */
-    validator: {
-      value: function(value, baseValue, formatedMsg, control) {}
+  msg : {
+
+  },
+  /**
+   * 验证函数
+   * @type {Function}
+   */
+  validator : {
+    value : function(value,baseValue,formatedMsg,control){
+
     }
   }
-  //是否通过验证
-  function valid(self, value, baseValue, msg, control) {
-    if (BUI.isArray(baseValue) && BUI.isString(baseValue[1])) {
-      if (baseValue[1]) {
-        msg = baseValue[1];
-      }
-      baseValue = baseValue[0];
+}
+
+//是否通过验证
+function valid(self,value,baseValue,msg,control){
+  if(BUI.isArray(baseValue) && BUI.isString(baseValue[1])){
+    if(baseValue[1]){
+      msg = baseValue[1];
     }
-    var _self = self,
-      validator = _self.get('validator'),
-      formatedMsg = formatError(self, baseValue, msg),
-      valid = true;
-    value = value == null ? '' : value;
-    return validator.call(_self, value, baseValue, formatedMsg, control);
+    baseValue = baseValue[0];
+  }
+  var _self = self,
+    validator = _self.get('validator'),
+    formatedMsg = formatError(self,baseValue,msg),
+    valid = true;
+  value = value == null ? '' : value;
+  return validator.call(_self,value,baseValue,formatedMsg,control);
+}
+
+function parseParams(values){
+
+  if(values == null){
+    return {};
   }
 
-  function parseParams(values) {
-    if (values == null) {
-      return {};
-    }
-    if ($.isPlainObject(values)) {
-      return values;
-    }
-    var ars = values,
+  if($.isPlainObject(values)){
+    return values;
+  }
+
+  var ars = values,
       rst = {};
-    if (BUI.isArray(values)) {
-      for (var i = 0; i < ars.length; i++) {
-        rst[i] = ars[i];
-      }
-      return rst;
+  if(BUI.isArray(values)){
+
+    for(var i = 0; i < ars.length; i++){
+      rst[i] = ars[i];
     }
-    return {
-      '0': values
-    };
+    return rst;
   }
 
-  function formatError(self, values, msg) {
-    var ars = parseParams(values);
-    msg = msg || self.get('msg');
-    return BUI.substitute(msg, ars);
+  return {'0' : values};
+}
+
+function formatError(self,values,msg){
+  var ars = parseParams(values); 
+  msg = msg || self.get('msg');
+  return BUI.substitute(msg,ars);
+}
+
+BUI.augment(Rule,{
+
+  /**
+   * 是否通过验证，该函数可以接收多个参数
+   * @param  {*}  [value] 验证的值
+   * @param  {*} [baseValue] 跟传入值相比较的值
+   * @param {String} [msg] 验证失败后的错误信息，显示的错误中可以显示 baseValue中的信息
+   * @param {BUI.Form.Field|BUI.Form.Group} [control] 发生验证的控件
+   * @return {String}   通过验证返回 null ,未通过验证返回错误信息
+   * 
+   *         var msg = '输入数据必须在{0}和{1}之间！',
+   *           rangeRule = new Rule({
+   *             name : 'range',
+   *             msg : msg,
+   *             validator :function(value,range,msg){
+   *               var min = range[0], //此处我们把range定义为数组，也可以定义为{min:0,max:200},那么在传入校验时跟此处一致即可
+   *                 max = range[1];   //在错误信息中，使用用 '输入数据必须在{min}和{max}之间！',验证函数中的字符串已经进行格式化
+   *               if(value < min || value > max){
+   *                 return false;
+   *               }
+   *               return true;
+   *             }
+   *           });
+   *         var range = [0,200],
+   *           val = 100,
+   *           error = rangeRule.valid(val,range);//msg可以在此处重新传入
+   *         
+   */
+  valid : function(value,baseValue,msg,control){
+    var _self = this;
+    return valid(_self,value,baseValue,msg,control);
   }
-  BUI.augment(Rule, {
-    /**
-     * 是否通过验证，该函数可以接收多个参数
-     * @param  {*}  [value] 验证的值
-     * @param  {*} [baseValue] 跟传入值相比较的值
-     * @param {String} [msg] 验证失败后的错误信息，显示的错误中可以显示 baseValue中的信息
-     * @param {BUI.Form.Field|BUI.Form.Group} [control] 发生验证的控件
-     * @return {String}   通过验证返回 null ,未通过验证返回错误信息
-     *
-     *         var msg = '输入数据必须在{0}和{1}之间！',
-     *           rangeRule = new Rule({
-     *             name : 'range',
-     *             msg : msg,
-     *             validator :function(value,range,msg){
-     *               var min = range[0], //此处我们把range定义为数组，也可以定义为{min:0,max:200},那么在传入校验时跟此处一致即可
-     *                 max = range[1];   //在错误信息中，使用用 '输入数据必须在{min}和{max}之间！',验证函数中的字符串已经进行格式化
-     *               if(value < min || value > max){
-     *                 return false;
-     *               }
-     *               return true;
-     *             }
-     *           });
-     *         var range = [0,200],
-     *           val = 100,
-     *           error = rangeRule.valid(val,range);//msg可以在此处重新传入
-     *
-     */
-    valid: function(value, baseValue, msg, control) {
-      var _self = this;
-      return valid(_self, value, baseValue, msg, control);
-    }
-  });
-  module.exports = Rule;
 });
-define("bui/form/remote", ["jquery", "bui/common"], function(require, exports, module) {
+
+module.exports = Rule;
+
+});
+define("bui/form/remote", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview 表单异步请求，异步校验、远程获取数据
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  BUI = require("bui/common");
+
+/**
+ * @class BUI.Form.RemoteView
+ * @private
+ * 表单异步请求类的视图类
+ */
+var RemoteView = function () {
+  // body...
+};
+
+RemoteView.ATTRS = {
+  isLoading : {},
+  loadingEl : {}
+};
+
+RemoteView.prototype = {
+
   /**
-   * @fileOverview 表单异步请求，异步校验、远程获取数据
-   * @ignore
+   * 获取显示加载状态的容器
+   * @protected
+   * @template
+   * @return {jQuery} 加载状态的容器
    */
-  var $ = require('jquery'),
-    BUI = require("bui/common");
-  /**
-   * @class BUI.Form.RemoteView
-   * @private
-   * 表单异步请求类的视图类
-   */
-  var RemoteView = function() {
+  getLoadingContainer : function () {
     // body...
-  };
-  RemoteView.ATTRS = {
-    isLoading: {},
-    loadingEl: {}
-  };
-  RemoteView.prototype = {
-    /**
-     * 获取显示加载状态的容器
-     * @protected
-     * @template
-     * @return {jQuery} 加载状态的容器
-     */
-    getLoadingContainer: function() {
-      // body...
-    },
-    _setLoading: function() {
-      var _self = this,
-        loadingEl = _self.get('loadingEl'),
-        loadingTpl = _self.get('loadingTpl');
-      if (loadingTpl && !loadingEl) {
-        loadingEl = $(loadingTpl).appendTo(_self.getLoadingContainer());
-        _self.setInternal('loadingEl', loadingEl);
-      }
-    },
-    _clearLoading: function() {
-      var _self = this,
-        loadingEl = _self.get('loadingEl');
-      if (loadingEl) {
-        loadingEl.remove();
-        _self.setInternal('loadingEl', null);
-      }
-    },
-    _uiSetIsLoading: function(v) {
-      var _self = this;
-      if (v) {
-        _self._setLoading();
-      } else {
-        _self._clearLoading();
+  },
+  _setLoading : function () {
+    var _self = this,
+      loadingEl = _self.get('loadingEl'),
+      loadingTpl = _self.get('loadingTpl');
+    if(loadingTpl && !loadingEl){
+      loadingEl = $(loadingTpl).appendTo(_self.getLoadingContainer());
+      _self.setInternal('loadingEl',loadingEl);
+    }
+  },
+  _clearLoading : function () {
+    var _self = this,
+      loadingEl = _self.get('loadingEl');
+    if(loadingEl){
+      loadingEl.remove();
+      _self.setInternal('loadingEl',null);
+    }
+  },
+  _uiSetIsLoading : function (v) {
+    var _self = this;
+    if(v){
+      _self._setLoading();
+    }else{
+      _self._clearLoading();
+    }
+  }
+};
+
+/**
+ * @class  BUI.Form.Remote
+ * 表单异步请求，所有需要实现异步校验、异步请求的类可以使用。
+ */
+var Remote = function(){
+
+};
+
+Remote.ATTRS = {
+
+  /**
+   * 默认的异步请求配置项：
+   * method : 'GET',
+   * cache : true,
+   * dataType : 'text'
+   * @protected
+   * @type {Object}
+   */
+  defaultRemote : {
+    value : {
+      method : 'GET',
+      cache : true,
+      callback : function (data) {
+        return data;
       }
     }
-  };
+  },
   /**
-   * @class  BUI.Form.Remote
-   * 表单异步请求，所有需要实现异步校验、异步请求的类可以使用。
+   * 异步请求延迟的时间，当字段验证通过后，不马上进行异步请求，等待继续输入，
+   * 300（默认）毫秒后，发送请求，在这个过程中，继续输入，则取消异步请求。
+   * @type {Object}
    */
-  var Remote = function() {};
-  Remote.ATTRS = {
-    /**
-     * 默认的异步请求配置项：
-     * method : 'GET',
-     * cache : true,
-     * dataType : 'text'
-     * @protected
-     * @type {Object}
-     */
-    defaultRemote: {
-      value: {
-        method: 'GET',
-        cache: true,
-        callback: function(data) {
-          return data;
-        }
+  remoteDaly : {
+    value : 500
+  },
+  /**
+   * @private
+   * 缓存验证结果，如果验证过对应的值，则直接返回
+   * @type {Object}
+   */
+  cacheMap : {
+    value : {
+
+    }
+  },
+  /**
+   * 加载的模板
+   * @type {String}
+   */
+  loadingTpl : {
+    view : true,
+    value : '<img src="http://img02.taobaocdn.com/tps/i2/T1NU8nXCVcXXaHNz_X-16-16.gif" alt="loading"/>'
+  },
+  /**
+   * 是否正在等待异步请求结果
+   * @type {Boolean}
+   */
+  isLoading : {
+    view : true,
+    value : false
+  },
+  /**
+   * 异步请求的配置项，参考jQuery的 ajax配置项，如果为字符串则为 url。
+   * 请不要覆盖success属性，如果需要回调则使用 callback 属性
+   *
+   *        {
+   *          remote : {
+   *            url : 'test.php',
+   *            dataType:'json',//默认为字符串
+   *            callback : function(data){
+   *              if(data.success){ //data为默认返回的值
+   *                return ''  //返回值为空时，验证成功
+   *              }else{
+   *                return '验证失败，XX错误！' //显示返回的字符串为错误
+   *              }
+   *            }
+   *          }
+   *        }
+   * @type {String|Object}
+   */
+  remote : {
+    setter : function  (v) {
+      if(BUI.isString(v)){
+        v = {url : v}
       }
-    },
+      return v;
+    }
+  },
+  /**
+   * 异步请求的函数指针，仅内部使用
+   * @private
+   * @type {Number}
+   */
+  remoteHandler : {
+
+  },
+  events : {
+    value : {
+      /**
+       * 异步请求结束
+       * @event
+       * @param {Object} e 事件对象
+       * @param {*} e.error 是否验证成功
+       */
+      remotecomplete : false,
+      /**
+       * 异步请求开始
+       * @event
+       * @param {Object} e 事件对象
+       * @param {Object} e.data 发送的对象，是一个键值对，可以修改此对象，附加信息
+       */
+      remotestart : false
+    }
+  }
+};
+
+Remote.prototype = {
+
+  __bindUI : function(){
+    var _self = this;
+
+    _self.on('valid',function (ev) {
+      if(_self.get('remote') && _self.isValid() && !_self.get('pauseValid')){
+        var value = _self.getControlValue(),
+          data = _self.getRemoteParams();
+        _self._startRemote(data,value);
+      }
+    });
+
+    _self.on('error',function (ev) {
+      if(_self.get('remote')){
+        _self._cancelRemote();
+      }
+    });
+
+  },
+  //开始异步请求
+  _startRemote : function(data,value){
+    var _self = this,
+      remoteHandler = _self.get('remoteHandler'),
+      cacheMap = _self.get('cacheMap'),
+      remoteDaly = _self.get('remoteDaly');
+    if(remoteHandler){
+      //如果前面已经发送过异步请求，取消掉
+      _self._cancelRemote(remoteHandler);
+    }
+    if(cacheMap[value] != null){
+      _self._validResult(_self._getCallback(),cacheMap[value]);
+      return;
+    }
+    //使用闭包进行异步请求
+    function dalayFunc(){
+      _self._remoteValid(data,remoteHandler,value);
+      _self.set('isLoading',true);
+    }
+    remoteHandler = setTimeout(dalayFunc,remoteDaly);
+    _self.setInternal('remoteHandler',remoteHandler);
+    
+  },
+  _validResult : function(callback,data){
+    var _self = this,
+      error = callback(data);
+    _self.onRemoteComplete(error,data);
+  },
+  onRemoteComplete : function(error,data,remoteHandler){
+    var _self = this;
+    //确认当前返回的错误是当前请求的结果，防止覆盖后面的请求
+    if(remoteHandler == _self.get('remoteHandler')){
+        _self.fire('remotecomplete',{error : error,data : data});
+        _self.set('isLoading',false);
+        _self.setInternal('remoteHandler',null);
+    } 
+  },
+  _getOptions : function(data){
+    var _self = this,
+      remote = _self.get('remote'),
+      defaultRemote = _self.get('defaultRemote'),
+      options = BUI.merge(defaultRemote,remote,{data : data});
+    return options;
+  },
+  _getCallback : function(){
+    return this._getOptions().callback;
+  },
+  //异步请求
+  _remoteValid : function(data,remoteHandler,value){
+    var _self = this,
+      cacheMap = _self.get('cacheMap'),
+      options = _self._getOptions(data);
+    options.success = function (data) {
+      var callback = options.callback,
+        error = callback(data);
+      cacheMap[value] = data; //缓存异步结果
+      _self.onRemoteComplete(error,data,remoteHandler);
+    };
+
+    options.error = function (jqXHR, textStatus,errorThrown){
+      _self.onRemoteComplete(errorThrown,null,remoteHandler);
+    };
+
+    _self.fire('remotestart',{data : data});
+    $.ajax(options);
+  },
+  /**
+   * 获取异步请求的键值对
+   * @template
+   * @protected
+   * @return {Object} 远程验证的参数，键值对
+   */
+  getRemoteParams : function() {
+
+  },
+  /**
+   * 清楚异步验证的缓存
+   */
+  clearCache : function(){
+    this.set('cacheMap',{});
+  },
+  //取消异步请求
+  _cancelRemote : function(remoteHandler){
+    var _self = this;
+
+    remoteHandler = remoteHandler || _self.get('remoteHandler');
+    if(remoteHandler){
+      clearTimeout(remoteHandler);
+      _self.setInternal('remoteHandler',null);
+    }
+    _self.set('isLoading',false);
+  }
+
+};
+
+Remote.View = RemoteView;
+
+module.exports = Remote;
+
+});
+define("bui/form/fields/text", ["jquery","bui/common","bui/overlay"], function(require, exports, module){
+/**
+ * @fileOverview 表单文本域
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+var Field = require("bui/form/fields/base");
+
+/**
+ * 表单文本域
+ * @class BUI.Form.Field.Text
+ * @extends BUI.Form.Field
+ */
+var textField = Field.extend({
+
+},{
+  xclass : 'form-field-text'
+});
+
+module.exports = textField;
+
+});
+define("bui/form/fields/date", ["jquery","bui/common","bui/overlay"], function(require, exports, module){
+/**
+ * @fileOverview 表单日历域
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  Field = require("bui/form/fields/base"),
+  DateUtil = BUI.Date;/*,
+  DatePicker = require('bui-calendar').DatePicker*/
+
+/**
+ * 表单文本域
+ * @class BUI.Form.Field.Date
+ * @extends BUI.Form.Field
+ */
+var dateField = Field.extend({
+  //生成日期控件
+  renderUI : function(){
+    
+    var _self = this,
+      datePicker = _self.get('datePicker');
+    if($.isPlainObject(datePicker)){
+      _self.initDatePicker(datePicker);
+    }
+    if((datePicker.get && datePicker.get('showTime'))|| datePicker.showTime){
+      _self.getInnerControl().addClass('calendar-time');
+    }
+
+  },
+  //初始化日历控件
+  initDatePicker : function(datePicker){
+    var _self = this;
+
+    require.async('bui/calendar', function(Calendar){
+      datePicker.trigger = _self.getInnerControl();
+      datePicker.autoRender = true;
+      datePicker = new Calendar.DatePicker(datePicker);
+      _self.set('datePicker',datePicker);
+      _self.set('isCreatePicker',true);
+      _self.get('children').push(datePicker);
+    });
+  },
+  /**
+   * 设置字段的值
+   * @protected
+   * @param {Date} value 字段值
+   */
+  setControlValue : function(value){
+    var _self = this,
+      innerControl = _self.getInnerControl();
+    if(BUI.isDate(value)){
+      value = DateUtil.format(value,_self._getFormatMask());
+    }
+    innerControl.val(value);
+  },
+  //获取格式化函数
+  _getFormatMask : function(){
+    var _self = this,
+      datePicker = _self.get('datePicker');
+
+    if(datePicker.showTime || (datePicker.get && datePicker.get('showTime'))){
+      return 'yyyy-mm-dd HH:MM:ss';
+    }
+    return 'yyyy-mm-dd';
+  },
+   /**
+   * 将字符串等格式转换成日期
+   * @protected
+   * @override
+   * @param  {String} value 原始数据
+   * @return {Date}  该字段指定的类型
+   */
+  parseValue : function(value){
+    if(BUI.isNumber(value)){
+      return new Date(value);
+    }
+    return DateUtil.parse(value);
+  },
+  /**
+   * @override
+   * @protected
+   * 是否当前值
+   */
+  isCurrentValue : function (value) {
+    return DateUtil.isEquals(value,this.get('value'));
+  },
+  //设置最大值
+  _uiSetMax : function(v){
+    this.addRule('max',v);
+    var _self = this,
+      datePicker = _self.get('datePicker');
+    if(datePicker){
+      if(datePicker.set){
+        datePicker.set('maxDate',v);
+      }else{
+        datePicker.maxDate = v;
+      }
+      
+    }
+  },
+  //设置最小值
+  _uiSetMin : function(v){
+    this.addRule('min',v);
+    var _self = this,
+      datePicker = _self.get('datePicker');
+    if(datePicker){
+      if(datePicker.set){
+        datePicker.set('minDate',v);
+      }else{
+        datePicker.minDate = v;
+      }
+    }
+  }
+},{
+  ATTRS : {
     /**
-     * 异步请求延迟的时间，当字段验证通过后，不马上进行异步请求，等待继续输入，
-     * 300（默认）毫秒后，发送请求，在这个过程中，继续输入，则取消异步请求。
-     * @type {Object}
-     */
-    remoteDaly: {
-      value: 500
-    },
-    /**
-     * @private
-     * 缓存验证结果，如果验证过对应的值，则直接返回
-     * @type {Object}
-     */
-    cacheMap: {
-      value: {}
-    },
-    /**
-     * 加载的模板
+     * 内部表单元素的容器
      * @type {String}
      */
-    loadingTpl: {
-      view: true,
-      value: '<img src="http://img02.taobaocdn.com/tps/i2/T1NU8nXCVcXXaHNz_X-16-16.gif" alt="loading"/>'
+    controlTpl : {
+      value : '<input type="text" class="calendar"/>'
+    },
+    defaultRules : {
+      value : {
+        date : true
+      }
     },
     /**
-     * 是否正在等待异步请求结果
-     * @type {Boolean}
+     * 最大值
+     * @type {Date|String}
      */
-    isLoading: {
-      view: true,
-      value: false
+    max : {
+
     },
     /**
-     * 异步请求的配置项，参考jQuery的 ajax配置项，如果为字符串则为 url。
-     * 请不要覆盖success属性，如果需要回调则使用 callback 属性
-     *
-     *        {
-     *          remote : {
-     *            url : 'test.php',
-     *            dataType:'json',//默认为字符串
-     *            callback : function(data){
-     *              if(data.success){ //data为默认返回的值
-     *                return ''  //返回值为空时，验证成功
-     *              }else{
-     *                return '验证失败，XX错误！' //显示返回的字符串为错误
-     *              }
-     *            }
-     *          }
-     *        }
-     * @type {String|Object}
+     * 最小值
+     * @type {Date|String}
      */
-    remote: {
-      setter: function(v) {
-        if (BUI.isString(v)) {
-          v = {
-            url: v
-          }
+    min : {
+
+    },
+    value : {
+      setter : function(v){
+        if(BUI.isNumber(v)){//将数字转换成日期类型
+          return new Date(v);
         }
         return v;
       }
     },
     /**
-     * 异步请求的函数指针，仅内部使用
-     * @private
+     * 时间选择控件
+     * @type {Object|BUI.Calendar.DatePicker}
+     */
+    datePicker : {
+      shared : false,
+      value : {
+        
+      }
+    },
+    /**
+     * 时间选择器是否是由此控件创建
+     * @type {Boolean}
+     * @readOnly
+     */
+    isCreatePicker : {
+      value : true
+    }
+  },
+  PARSER : {
+    datePicker : function(el){
+      var _self = this,
+        cfg = _self.get('datePicker') || {};
+      if(el.hasClass('calendar-time')){
+        BUI.mix(cfg,{
+          showTime : true
+        }) ;
+      }
+      return cfg;
+    }
+  }
+},{
+  xclass : 'form-field-date'
+});
+
+module.exports = dateField;
+
+});
+define("bui/form/fields/select", ["jquery","bui/common","bui/overlay"], function(require, exports, module){
+/**
+ * @fileOverview 模拟选择框在表单中
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  Field = require("bui/form/fields/base");
+
+function resetOptions (select,options,self) {
+  select.children().remove();
+  var emptyText = self.get('emptyText');
+  if(emptyText && self.get('showBlank')){
+    appendItem('',emptyText,select);
+  }
+  BUI.each(options,function (option) {
+    appendItem(option.value,option.text,select);
+  });
+}
+
+function appendItem(value,text,select){
+  // var str = '<option value="' + value +'">'+text+'</option>'
+  // $(str).appendTo(select);
+  
+  // 上面那种写法在ie6下会报一个奇怪的错误，使用new Option则不会有这个问题
+  var option = new Option(text, value),
+    options = select[0].options;
+  options[options.length] = option;
+}
+/**
+ * 表单选择域
+ * @class BUI.Form.Field.Select
+ * @extends BUI.Form.Field
+ */
+var selectField = Field.extend({
+  //生成select
+  renderUI : function(){
+    var _self = this,
+      innerControl = _self.getInnerControl(),
+      select = _self.get('select');
+    if(_self.get('srcNode') && innerControl.is('select')){ //如果使用现有DOM生成，不使用自定义选择框控件
+      return;
+    }
+    //select = select || {};
+    if($.isPlainObject(select)){
+      _self._initSelect(select);
+    }
+  },
+  _initSelect : function(select){
+    var _self = this,
+      items = _self.get('items');
+    require.async('bui/select',function(Select){
+      select.render = _self.getControlContainer();
+      select.valueField = _self.getInnerControl();
+      select.autoRender = true;
+     
+      select = new Select.Select(select);
+      _self.set('select',select);
+      _self.set('isCreate',true);
+      _self.get('children').push(select);
+      select.on('change',function(ev){
+        var val = select.getSelectedValue();
+        _self.set('value',val);
+      });
+    })
+  },
+  /**
+   * 重新设置选项集合
+   * @param {Array} items 选项集合
+   */
+  setItems : function (items) {
+    var _self = this,
+      select = _self.get('select');
+
+    if($.isPlainObject(items)){
+      var tmp = [];
+      BUI.each(items,function(v,n){
+        tmp.push({value : n,text : v});
+      });
+      items = tmp;
+    }
+
+    var control = _self.getInnerControl();
+    if(control.is('select')){
+      resetOptions(control,items,_self);
+      _self.setControlValue(_self.get('value'));
+      if(!_self.getControlValue()){
+        _self.setInternal('value','');
+      }
+    }
+
+    if(select){
+      if(select.set){
+        select.set('items',items);
+      }else{
+        select.items = items;
+      }
+    }
+  },
+  /**
+   * 设置字段的值
+   * @protected
+   * @param {*} value 字段值
+   */
+  setControlValue : function(value){
+    var _self = this,
+      select = _self.get('select'),
+      innerControl = _self.getInnerControl();
+    innerControl.val(value);
+    if(select && select.set &&  select.getSelectedValue() !== value){
+      select.setSelectedValue(value);
+    }
+  },
+  /**
+   * 获取选中的文本
+   * @return {String} 选中的文本
+   */
+  getSelectedText : function(){
+    var _self = this,
+      select = _self.get('select'),
+      innerControl = _self.getInnerControl();
+    if(innerControl.is('select')){
+      var dom = innerControl[0],
+        item = dom.options[dom.selectedIndex];
+      return item ? item.text : '';
+    }else{
+      return select.getSelectedText();
+    }
+  },
+  /**
+   * 获取tip显示对应的元素
+   * @protected
+   * @override
+   * @return {HTMLElement} 
+   */
+  getTipTigger : function(){
+    var _self = this,
+      select = _self.get('select');
+    if(select && select.rendered){
+      return select.get('el').find('input');
+    }
+    return _self.get('el');
+  },
+  //设置选项
+  _uiSetItems : function(v){
+    if(v){
+      this.setItems(v);
+    }
+  },
+  /**
+   * @protected
+   * 设置内部元素宽度
+   */
+  setInnerWidth : function(width){
+    var _self = this,
+      innerControl = _self.getInnerControl(),
+      select = _self.get('select'),
+      appendWidth = innerControl.outerWidth() - innerControl.width();
+    innerControl.width(width - appendWidth);
+    if(select && select.set){
+      select.set('width',width);
+    }
+  }
+},{
+  ATTRS : {
+    /**
+     * 选项
+     * @type {Array}
+     */
+    items : {
+
+    },
+    /**
+     * 内部表单元素的容器
+     * @type {String}
+     */
+    controlTpl : {
+      value : '<input type="hidden"/>'
+    },
+    /**
+     * 是否显示为空的文本
+     * @type {Boolean}
+     */
+    showBlank : {
+      value : true
+    },
+    /**
+     * 选择为空时的文本
+     * @type {String}
+     */
+    emptyText : {
+      value : '请选择'
+    },
+    /**
+     * 内部的Select控件的配置项
+     * @cfg {Object} select
+     */
+    /**
+     * 内部的Select控件
+     * @type {BUI.Select.Select}
+     */
+    select : {
+      shared : false,
+      value : {}
+    }
+  },
+  PARSER : {
+    emptyText : function(el){
+      if(!this.get('showBlank')){
+        return '';
+      }
+      var options = el.find('option'),
+        rst = this.get('emptyText');
+      if(options.length){
+        rst = $(options[0]).text();
+      }
+      return rst;
+    }
+  }
+},{
+  xclass : 'form-field-select'
+});
+
+module.exports = selectField;
+
+});
+define("bui/form/fields/hidden", ["jquery","bui/common","bui/overlay"], function(require, exports, module){
+/**
+* @fileOverview 隐藏字段
+* @ignore
+* @author dxq613@gmail.com
+*/
+
+var Field = require("bui/form/fields/base");
+/**
+ * 表单隐藏域
+ * @class BUI.Form.Field.Hidden
+ * @extends BUI.Form.Field
+ */
+var hiddenField = Field.extend({
+
+},{
+  ATTRS : {
+    /**
+     * 内部表单元素的容器
+     * @type {String}
+     */
+    controlTpl : {
+      value : '<input type="hidden"/>'
+    },
+    tpl : {
+      value : ''
+    }
+  }
+},{
+  xclass : 'form-field-hidden'
+});
+
+module.exports = hiddenField;
+
+});
+define("bui/form/fields/number", ["jquery","bui/common","bui/overlay"], function(require, exports, module){
+/**
+ * @fileOverview 表单文本域
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+/**
+ * 表单数字域
+ * @class BUI.Form.Field.Number
+ * @extends BUI.Form.Field
+ */
+var Field = require("bui/form/fields/base"),
+  numberField = Field.extend({
+
+   /**
+   * 将字符串等格式转换成数字
+   * @protected
+   * @param  {String} value 原始数据
+   * @return {Number}  该字段指定的类型
+   */
+  parseValue : function(value){
+    if(value == '' || value == null){
+      return null;
+    }
+    if(BUI.isNumber(value)){
+      return value;
+    }
+    var _self = this,
+      allowDecimals = _self.get('allowDecimals');
+    value = value.replace(/\,/g,'');
+    if(!allowDecimals){
+      return parseInt(value,10);
+    }
+    return parseFloat(parseFloat(value).toFixed(_self.get('decimalPrecision')));
+  },
+  _uiSetMax : function(v){
+    this.addRule('max',v);
+  },
+  _uiSetMin : function(v){
+    this.addRule('min',v);
+  }
+},{
+  ATTRS : {
+    /**
+     * 最大值
      * @type {Number}
      */
-    remoteHandler: {},
-    events: {
-      value: {
-        /**
-         * 异步请求结束
-         * @event
-         * @param {Object} e 事件对象
-         * @param {*} e.error 是否验证成功
-         */
-        remotecomplete: false,
-        /**
-         * 异步请求开始
-         * @event
-         * @param {Object} e 事件对象
-         * @param {Object} e.data 发送的对象，是一个键值对，可以修改此对象，附加信息
-         */
-        remotestart: false
-      }
-    }
-  };
-  Remote.prototype = {
-    __bindUI: function() {
-      var _self = this;
-      _self.on('valid', function(ev) {
-        if (_self.get('remote') && _self.isValid() && !_self.get('pauseValid')) {
-          var value = _self.getControlValue(),
-            data = _self.getRemoteParams();
-          _self._startRemote(data, value);
-        }
-      });
-      _self.on('error', function(ev) {
-        if (_self.get('remote')) {
-          _self._cancelRemote();
-        }
-      });
-    },
-    //开始异步请求
-    _startRemote: function(data, value) {
-      var _self = this,
-        remoteHandler = _self.get('remoteHandler'),
-        cacheMap = _self.get('cacheMap'),
-        remoteDaly = _self.get('remoteDaly');
-      if (remoteHandler) {
-        //如果前面已经发送过异步请求，取消掉
-        _self._cancelRemote(remoteHandler);
-      }
-      if (cacheMap[value] != null) {
-        _self._validResult(_self._getCallback(), cacheMap[value]);
-        return;
-      }
-      //使用闭包进行异步请求
-      function dalayFunc() {
-        _self._remoteValid(data, remoteHandler, value);
-        _self.set('isLoading', true);
-      }
-      remoteHandler = setTimeout(dalayFunc, remoteDaly);
-      _self.setInternal('remoteHandler', remoteHandler);
-    },
-    _validResult: function(callback, data) {
-      var _self = this,
-        error = callback(data);
-      _self.onRemoteComplete(error, data);
-    },
-    onRemoteComplete: function(error, data, remoteHandler) {
-      var _self = this;
-      //确认当前返回的错误是当前请求的结果，防止覆盖后面的请求
-      if (remoteHandler == _self.get('remoteHandler')) {
-        _self.fire('remotecomplete', {
-          error: error,
-          data: data
-        });
-        _self.set('isLoading', false);
-        _self.setInternal('remoteHandler', null);
-      }
-    },
-    _getOptions: function(data) {
-      var _self = this,
-        remote = _self.get('remote'),
-        defaultRemote = _self.get('defaultRemote'),
-        options = BUI.merge(defaultRemote, remote, {
-          data: data
-        });
-      return options;
-    },
-    _getCallback: function() {
-      return this._getOptions().callback;
-    },
-    //异步请求
-    _remoteValid: function(data, remoteHandler, value) {
-      var _self = this,
-        cacheMap = _self.get('cacheMap'),
-        options = _self._getOptions(data);
-      options.success = function(data) {
-        var callback = options.callback,
-          error = callback(data);
-        cacheMap[value] = data; //缓存异步结果
-        _self.onRemoteComplete(error, data, remoteHandler);
-      };
-      options.error = function(jqXHR, textStatus, errorThrown) {
-        _self.onRemoteComplete(errorThrown, null, remoteHandler);
-      };
-      _self.fire('remotestart', {
-        data: data
-      });
-      $.ajax(options);
-    },
-    /**
-     * 获取异步请求的键值对
-     * @template
-     * @protected
-     * @return {Object} 远程验证的参数，键值对
-     */
-    getRemoteParams: function() {},
-    /**
-     * 清楚异步验证的缓存
-     */
-    clearCache: function() {
-      this.set('cacheMap', {});
-    },
-    //取消异步请求
-    _cancelRemote: function(remoteHandler) {
-      var _self = this;
-      remoteHandler = remoteHandler || _self.get('remoteHandler');
-      if (remoteHandler) {
-        clearTimeout(remoteHandler);
-        _self.setInternal('remoteHandler', null);
-      }
-      _self.set('isLoading', false);
-    }
-  };
-  Remote.View = RemoteView;
-  module.exports = Remote;
-});
-define("bui/form/fields/text", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单文本域
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var Field = require("bui/form/fields/base");
-  /**
-   * 表单文本域
-   * @class BUI.Form.Field.Text
-   * @extends BUI.Form.Field
-   */
-  var textField = Field.extend({}, {
-    xclass: 'form-field-text'
-  });
-  module.exports = textField;
-});
-define("bui/form/fields/date", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单日历域
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require('jquery'),
-    BUI = require("bui/common"),
-    Field = require("bui/form/fields/base"),
-    DateUtil = BUI.Date;
-  /*,
-  DatePicker = require('bui-calendar').DatePicker*/
-  /**
-   * 表单文本域
-   * @class BUI.Form.Field.Date
-   * @extends BUI.Form.Field
-   */
-  var dateField = Field.extend({
-    //生成日期控件
-    renderUI: function() {
-      var _self = this,
-        datePicker = _self.get('datePicker');
-      if ($.isPlainObject(datePicker)) {
-        _self.initDatePicker(datePicker);
-      }
-      if ((datePicker.get && datePicker.get('showTime')) || datePicker.showTime) {
-        _self.getInnerControl().addClass('calendar-time');
-      }
-    },
-    //初始化日历控件
-    initDatePicker: function(datePicker) {
-      var _self = this;
-      require.async('bui/calendar', function(Calendar) {
-        datePicker.trigger = _self.getInnerControl();
-        datePicker.autoRender = true;
-        datePicker = new Calendar.DatePicker(datePicker);
-        _self.set('datePicker', datePicker);
-        _self.set('isCreatePicker', true);
-        _self.get('children').push(datePicker);
-      });
-    },
-    /**
-     * 设置字段的值
-     * @protected
-     * @param {Date} value 字段值
-     */
-    setControlValue: function(value) {
-      var _self = this,
-        innerControl = _self.getInnerControl();
-      if (BUI.isDate(value)) {
-        value = DateUtil.format(value, _self._getFormatMask());
-      }
-      innerControl.val(value);
-    },
-    //获取格式化函数
-    _getFormatMask: function() {
-      var _self = this,
-        datePicker = _self.get('datePicker');
-      if (datePicker.showTime || (datePicker.get && datePicker.get('showTime'))) {
-        return 'yyyy-mm-dd HH:MM:ss';
-      }
-      return 'yyyy-mm-dd';
-    },
-    /**
-     * 将字符串等格式转换成日期
-     * @protected
-     * @override
-     * @param  {String} value 原始数据
-     * @return {Date}  该字段指定的类型
-     */
-    parseValue: function(value) {
-      if (BUI.isNumber(value)) {
-        return new Date(value);
-      }
-      return DateUtil.parse(value);
-    },
-    /**
-     * @override
-     * @protected
-     * 是否当前值
-     */
-    isCurrentValue: function(value) {
-      return DateUtil.isEquals(value, this.get('value'));
-    },
-    //设置最大值
-    _uiSetMax: function(v) {
-      this.addRule('max', v);
-      var _self = this,
-        datePicker = _self.get('datePicker');
-      if (datePicker) {
-        if (datePicker.set) {
-          datePicker.set('maxDate', v);
-        } else {
-          datePicker.maxDate = v;
-        }
-      }
-    },
-    //设置最小值
-    _uiSetMin: function(v) {
-      this.addRule('min', v);
-      var _self = this,
-        datePicker = _self.get('datePicker');
-      if (datePicker) {
-        if (datePicker.set) {
-          datePicker.set('minDate', v);
-        } else {
-          datePicker.minDate = v;
-        }
-      }
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        value: '<input type="text" class="calendar"/>'
-      },
-      defaultRules: {
-        value: {
-          date: true
-        }
-      },
-      /**
-       * 最大值
-       * @type {Date|String}
-       */
-      max: {},
-      /**
-       * 最小值
-       * @type {Date|String}
-       */
-      min: {},
-      value: {
-        setter: function(v) {
-          if (BUI.isNumber(v)) { //将数字转换成日期类型
-            return new Date(v);
-          }
-          return v;
-        }
-      },
-      /**
-       * 时间选择控件
-       * @type {Object|BUI.Calendar.DatePicker}
-       */
-      datePicker: {
-        shared: false,
-        value: {}
-      },
-      /**
-       * 时间选择器是否是由此控件创建
-       * @type {Boolean}
-       * @readOnly
-       */
-      isCreatePicker: {
-        value: true
-      }
-    },
-    PARSER: {
-      datePicker: function(el) {
-        var _self = this,
-          cfg = _self.get('datePicker') || {};
-        if (el.hasClass('calendar-time')) {
-          BUI.mix(cfg, {
-            showTime: true
-          });
-        }
-        return cfg;
-      }
-    }
-  }, {
-    xclass: 'form-field-date'
-  });
-  module.exports = dateField;
-});
-define("bui/form/fields/select", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
-  /**
-   * @fileOverview 模拟选择框在表单中
-   * @ignore
-   */
-  var $ = require('jquery'),
-    BUI = require("bui/common"),
-    Field = require("bui/form/fields/base");
+    max : {
 
-  function resetOptions(select, options, self) {
-    select.children().remove();
-    var emptyText = self.get('emptyText');
-    if (emptyText && self.get('showBlank')) {
-      appendItem('', emptyText, select);
+    },
+    /**
+     * 最小值
+     * @type {Number}
+     */
+    min : {
+
+    },
+    decorateCfgFields : {
+      value : {
+        min : true,
+        max : true
+      }
+    },
+    /**
+     * 表单元素或者控件触发此事件时，触发验证
+     * @type {String}
+     */
+    validEvent : {
+      value : 'keyup change'
+    },
+    defaultRules : {
+      value : {
+        number : true
+      }
+    },
+    /**
+     * 是否允许小数，如果不允许，则最终结果转换成整数
+     * @type {Boolean}
+     */
+    allowDecimals : {
+      value : true
+    },
+    /**
+     * 允许小数时的，小数位
+     * @type {Number}
+     */
+    decimalPrecision : {
+      value : 2
+    },
+    /**
+     * 对数字进行微调时，每次增加或减小的数字
+     * @type {Object}
+     */
+    step : {
+      value : 1
     }
-    BUI.each(options, function(option) {
-      appendItem(option.value, option.text, select);
+  }
+},{
+  xclass : 'form-field-number'
+});
+
+module.exports = numberField;
+
+});
+define("bui/form/fields/check", ["jquery","bui/common","bui/overlay"], function(require, exports, module){
+/**
+ * @fileOverview  可勾选字段
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  Field = require("bui/form/fields/base");
+
+/**
+ * 可选中菜单域
+ * @class BUI.Form.Field.Check
+ * @extends BUI.Form.Field
+ */
+var checkField = Field.extend({
+  /**
+   * 验证成功后执行的操作
+   * @protected
+   */
+  onValid : function(){
+    var _self = this,
+      checked = _self._getControlChecked();
+    _self.setInternal('checked',checked);
+    _self.fire('change');
+    if(checked){
+      _self.fire('checked');
+    }else{
+      _self.fire('unchecked');
+    }
+  },
+  //设置是否勾选
+  _setControlChecked : function(checked){
+    var _self = this,
+      innerControl = _self.getInnerControl();
+    innerControl.attr('checked',!!checked);
+  },
+  //获取是否勾选
+  _getControlChecked : function(){
+    var _self = this,
+      innerControl = _self.getInnerControl();
+    return !!innerControl.attr('checked');
+  },
+  //覆盖 设置值的方法
+  _uiSetValue : function(v){
+    this.setControlValue(v);
+  },
+  //覆盖不设置宽度
+  _uiSetWidth : function(v){
+
+  },
+  //设置是否勾选
+  _uiSetChecked : function(v){
+    var _self = this;
+    _self._setControlChecked(v);
+    if(_self.get('rendered')){
+      _self.onValid();
+    }
+  }
+},{
+  ATTRS : {
+    /**
+     * 触发验证事件，进而引起change事件
+     * @override
+     * @type {String}
+     */
+    validEvent : {
+      value : 'click'
+    },
+    /**
+     * 是否选中
+     * @cfg {String} checked
+     */
+    /**
+     * 是否选中
+     * @type {String}
+     */
+    checked : {
+      value : false
+    },
+    events : {
+      value : {
+        /**
+         * @event
+         * 选中事件
+         */
+        'checked' : false,
+        /**
+         * @event
+         * 取消选中事件
+         */
+        'unchecked' : false
+      }
+    }
+  },
+  PARSER : {
+    checked : function(el){
+      return !!el.attr('checked');
+    }
+  }
+},{
+  xclass : 'form-check-field'
+});
+
+module.exports = checkField;
+
+});
+define("bui/form/fields/radio", ["jquery","bui/common","bui/overlay"], function(require, exports, module){
+/**
+ * @fileOverview  单选框表单域
+ * @ignore
+ */
+
+  
+var CheckField = require("bui/form/fields/check");
+
+/**
+ * 表单单选域
+ * @class BUI.Form.Field.Radio
+ * @extends BUI.Form.Field.Check
+ */
+var RadioField = CheckField.extend({
+  bindUI : function(){
+    var _self = this,
+      parent = _self.get('parent'),
+      name = _self.get('name');
+
+    if(parent){
+      _self.getInnerControl().on('click',function(ev){
+        var fields = parent.getFields(name);
+        BUI.each(fields,function(field){
+          if(field != _self){
+            field.set('checked',false);
+          }
+        });
+      });
+    }
+  }
+},{
+  ATTRS : {
+    /**
+     * 内部表单元素的容器
+     * @type {String}
+     */
+    controlTpl : {
+      view : true,
+      value : '<input type="radio"/>'
+    },
+    /**
+     * 控件容器，如果为空直接添加在控件容器上
+     * @type {String|HTMLElement}
+     */
+    controlContainer : {
+      value : '.radio'
+    },
+    tpl : {
+      value : '<label><span class="radio"></span>{label}</label>'
+    }
+  }
+},{
+  xclass : 'form-field-radio'
+});
+
+module.exports = RadioField;
+
+});
+define("bui/form/fields/checkbox", ["jquery","bui/common","bui/overlay"], function(require, exports, module){
+/**
+ * @fileOverview  复选框表单域
+ * @ignore
+ */
+
+var CheckField = require("bui/form/fields/check");
+
+ /**
+ * 表单复选域
+ * @class BUI.Form.Field.Checkbox
+ * @extends BUI.Form.Field.Check
+ */
+var CheckBoxField = CheckField.extend({
+
+},{
+  ATTRS : {
+    /**
+     * 内部表单元素的容器
+     * @type {String}
+     */
+    controlTpl : {
+      view : true,
+      value : '<input type="checkbox"/>'
+    },
+     /**
+     * 控件容器，如果为空直接添加在控件容器上
+     * @type {String|HTMLElement}
+     */
+    controlContainer : {
+      value : '.checkbox'
+    },
+    tpl : {
+      value : '<label><span class="checkbox"></span>{label}</label>'
+    }
+  }
+},{
+  xclass : 'form-field-checkbox'
+});
+
+module.exports = CheckBoxField;
+
+});
+define("bui/form/fields/plain", ["jquery","bui/common","bui/overlay"], function(require, exports, module){
+/**
+ * @fileOverview 仅仅用于显示文本，不能编辑的字段
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  Field = require("bui/form/fields/base");
+
+
+var PlainFieldView = Field.View.extend({
+
+  _uiSetValue : function(v){
+    var _self = this,
+      textEl = _self.get('textEl'),
+      container = _self.getControlContainer(),
+      renderer = _self.get('renderer'), 
+      text = renderer ? renderer(v) : v,
+      width = _self.get('width'),
+      appendWidth = 0,
+      textTpl;
+    if(textEl){
+      
+      textEl.remove();
+    }
+    text = text || '&nbsp;';
+    textTpl = BUI.substitute(_self.get('textTpl'),{text : text});
+    textEl = $(textTpl).appendTo(container);
+    appendWidth = textEl.outerWidth() - textEl.width();
+    textEl.width(width - appendWidth);
+    _self.set('textEl',textEl);
+  }
+
+},{
+  ATTRS : {
+    textEl : {},
+    value : {}
+  }
+},{
+  xclass : 'form-field-plain-view'
+});
+
+/**
+ * 表单文本域，不能编辑
+ * @class BUI.Form.Field.Plain
+ * @extends BUI.Form.Field
+ */
+var PlainField = Field.extend({
+
+},{
+  ATTRS : {
+    /**
+     * 内部表单元素的容器
+     * @type {String}
+     */
+    controlTpl : {
+      value : '<input type="hidden"/>'
+    },
+    /**
+     * 显示文本的模板
+     * @type {String}
+     */
+    textTpl : {
+      view : true,
+      value : '<span class="x-form-text">{text}</span>'
+    },
+    /**
+     * 将字段的值格式化输出
+     * @type {Function}
+     */
+    renderer : {
+      view : true,
+      value : function(value){
+        return value;
+      }
+    },
+    tpl : {
+      value : ''
+    },
+    xview : {
+      value : PlainFieldView
+    }
+  }
+},{
+  xclass : 'form-field-plain'
+});
+
+module.exports = PlainField;
+
+});
+define("bui/form/fields/list", ["jquery","bui/common","bui/list","bui/data","bui/overlay"], function(require, exports, module){
+/**
+ * @fileOverview 表单中的列表，每个列表后有个隐藏域用来存储数据
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  List = require("bui/list"),
+  Field = require("bui/form/fields/base");
+
+function parseItems(items){
+  var rst = items;
+  if($.isPlainObject(items)){
+    rst = [];
+    BUI.each(items,function(v,k){
+      rst.push({text : v,value : k});
     });
   }
+  return rst;
+}
 
-  function appendItem(value, text, select) {
-    // var str = '<option value="' + value +'">'+text+'</option>'
-    // $(str).appendTo(select);
-    // 上面那种写法在ie6下会报一个奇怪的错误，使用new Option则不会有这个问题
-    var option = new Option(text, value),
-      options = select[0].options;
-    options[options.length] = option;
-  }
-  /**
-   * 表单选择域
-   * @class BUI.Form.Field.Select
-   * @extends BUI.Form.Field
-   */
-  var selectField = Field.extend({
-    //生成select
-    renderUI: function() {
-      var _self = this,
-        innerControl = _self.getInnerControl(),
-        select = _self.get('select');
-      if (_self.get('srcNode') && innerControl.is('select')) { //如果使用现有DOM生成，不使用自定义选择框控件
-        return;
-      }
-      //select = select || {};
-      if ($.isPlainObject(select)) {
-        _self._initSelect(select);
-      }
-    },
-    _initSelect: function(select) {
-      var _self = this,
-        items = _self.get('items');
-      require.async('bui/select', function(Select) {
-        select.render = _self.getControlContainer();
-        select.valueField = _self.getInnerControl();
-        select.autoRender = true;
-        select = new Select.Select(select);
-        _self.set('select', select);
-        _self.set('isCreate', true);
-        _self.get('children').push(select);
-        select.on('change', function(ev) {
-          var val = select.getSelectedValue();
-          _self.set('value', val);
-        });
-      })
-    },
-    /**
-     * 重新设置选项集合
-     * @param {Array} items 选项集合
-     */
-    setItems: function(items) {
-      var _self = this,
-        select = _self.get('select');
-      if ($.isPlainObject(items)) {
-        var tmp = [];
-        BUI.each(items, function(v, n) {
-          tmp.push({
-            value: n,
-            text: v
-          });
-        });
-        items = tmp;
-      }
-      var control = _self.getInnerControl();
-      if (control.is('select')) {
-        resetOptions(control, items, _self);
-        _self.setControlValue(_self.get('value'));
-        if (!_self.getControlValue()) {
-          _self.setInternal('value', '');
-        }
-      }
-      if (select) {
-        if (select.set) {
-          select.set('items', items);
-        } else {
-          select.items = items;
-        }
-      }
-    },
-    /**
-     * 设置字段的值
-     * @protected
-     * @param {*} value 字段值
-     */
-    setControlValue: function(value) {
-      var _self = this,
-        select = _self.get('select'),
-        innerControl = _self.getInnerControl();
-      innerControl.val(value);
-      if (select && select.set && select.getSelectedValue() !== value) {
-        select.setSelectedValue(value);
-      }
-    },
-    /**
-     * 获取选中的文本
-     * @return {String} 选中的文本
-     */
-    getSelectedText: function() {
-      var _self = this,
-        select = _self.get('select'),
-        innerControl = _self.getInnerControl();
-      if (innerControl.is('select')) {
-        var dom = innerControl[0],
-          item = dom.options[dom.selectedIndex];
-        return item ? item.text : '';
-      } else {
-        return select.getSelectedText();
-      }
-    },
-    /**
-     * 获取tip显示对应的元素
-     * @protected
-     * @override
-     * @return {HTMLElement}
-     */
-    getTipTigger: function() {
-      var _self = this,
-        select = _self.get('select');
-      if (select && select.rendered) {
-        return select.get('el').find('input');
-      }
-      return _self.get('el');
-    },
-    //设置选项
-    _uiSetItems: function(v) {
-      if (v) {
-        this.setItems(v);
-      }
-    },
-    /**
-     * @protected
-     * 设置内部元素宽度
-     */
-    setInnerWidth: function(width) {
-      var _self = this,
-        innerControl = _self.getInnerControl(),
-        select = _self.get('select'),
-        appendWidth = innerControl.outerWidth() - innerControl.width();
-      innerControl.width(width - appendWidth);
-      if (select && select.set) {
-        select.set('width', width);
-      }
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 选项
-       * @type {Array}
-       */
-      items: {},
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        value: '<input type="hidden"/>'
-      },
-      /**
-       * 是否显示为空的文本
-       * @type {Boolean}
-       */
-      showBlank: {
-        value: true
-      },
-      /**
-       * 选择为空时的文本
-       * @type {String}
-       */
-      emptyText: {
-        value: '请选择'
-      },
-      /**
-       * 内部的Select控件的配置项
-       * @cfg {Object} select
-       */
-      /**
-       * 内部的Select控件
-       * @type {BUI.Select.Select}
-       */
-      select: {
-        shared: false,
-        value: {}
-      }
-    },
-    PARSER: {
-      emptyText: function(el) {
-        if (!this.get('showBlank')) {
-          return '';
-        }
-        var options = el.find('option'),
-          rst = this.get('emptyText');
-        if (options.length) {
-          rst = $(options[0]).text();
-        }
-        return rst;
-      }
-    }
-  }, {
-    xclass: 'form-field-select'
-  });
-  module.exports = selectField;
-});
-define("bui/form/fields/hidden", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
-  /**
-   * @fileOverview 隐藏字段
-   * @ignore
-   * @author dxq613@gmail.com
-   */
-  var Field = require("bui/form/fields/base");
-  /**
-   * 表单隐藏域
-   * @class BUI.Form.Field.Hidden
-   * @extends BUI.Form.Field
-   */
-  var hiddenField = Field.extend({}, {
-    ATTRS: {
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        value: '<input type="hidden"/>'
-      },
-      tpl: {
-        value: ''
-      }
-    }
-  }, {
-    xclass: 'form-field-hidden'
-  });
-  module.exports = hiddenField;
-});
-define("bui/form/fields/number", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单文本域
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  /**
-   * 表单数字域
-   * @class BUI.Form.Field.Number
-   * @extends BUI.Form.Field
-   */
-  var Field = require("bui/form/fields/base"),
-    numberField = Field.extend({
-      /**
-       * 将字符串等格式转换成数字
-       * @protected
-       * @param  {String} value 原始数据
-       * @return {Number}  该字段指定的类型
-       */
-      parseValue: function(value) {
-        if (value == '' || value == null) {
-          return null;
-        }
-        if (BUI.isNumber(value)) {
-          return value;
-        }
-        var _self = this,
-          allowDecimals = _self.get('allowDecimals');
-        value = value.replace(/\,/g, '');
-        if (!allowDecimals) {
-          return parseInt(value, 10);
-        }
-        return parseFloat(parseFloat(value).toFixed(_self.get('decimalPrecision')));
-      },
-      _uiSetMax: function(v) {
-        this.addRule('max', v);
-      },
-      _uiSetMin: function(v) {
-        this.addRule('min', v);
-      }
-    }, {
-      ATTRS: {
-        /**
-         * 最大值
-         * @type {Number}
-         */
-        max: {},
-        /**
-         * 最小值
-         * @type {Number}
-         */
-        min: {},
-        decorateCfgFields: {
-          value: {
-            min: true,
-            max: true
-          }
-        },
-        /**
-         * 表单元素或者控件触发此事件时，触发验证
-         * @type {String}
-         */
-        validEvent: {
-          value: 'keyup change'
-        },
-        defaultRules: {
-          value: {
-            number: true
-          }
-        },
-        /**
-         * 是否允许小数，如果不允许，则最终结果转换成整数
-         * @type {Boolean}
-         */
-        allowDecimals: {
-          value: true
-        },
-        /**
-         * 允许小数时的，小数位
-         * @type {Number}
-         */
-        decimalPrecision: {
-          value: 2
-        },
-        /**
-         * 对数字进行微调时，每次增加或减小的数字
-         * @type {Object}
-         */
-        step: {
-          value: 1
-        }
-      }
-    }, {
-      xclass: 'form-field-number'
-    });
-  module.exports = numberField;
-});
-define("bui/form/fields/check", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
-  /**
-   * @fileOverview  可勾选字段
-   * @ignore
-   */
-  var $ = require('jquery'),
-    Field = require("bui/form/fields/base");
-  /**
-   * 可选中菜单域
-   * @class BUI.Form.Field.Check
-   * @extends BUI.Form.Field
-   */
-  var checkField = Field.extend({
-    /**
-     * 验证成功后执行的操作
-     * @protected
-     */
-    onValid: function() {
-      var _self = this,
-        checked = _self._getControlChecked();
-      _self.setInternal('checked', checked);
-      _self.fire('change');
-      if (checked) {
-        _self.fire('checked');
-      } else {
-        _self.fire('unchecked');
-      }
-    },
-    //设置是否勾选
-    _setControlChecked: function(checked) {
-      var _self = this,
-        innerControl = _self.getInnerControl();
-      innerControl.attr('checked', !!checked);
-    },
-    //获取是否勾选
-    _getControlChecked: function() {
-      var _self = this,
-        innerControl = _self.getInnerControl();
-      return !!innerControl.attr('checked');
-    },
-    //覆盖 设置值的方法
-    _uiSetValue: function(v) {
-      this.setControlValue(v);
-    },
-    //覆盖不设置宽度
-    _uiSetWidth: function(v) {},
-    //设置是否勾选
-    _uiSetChecked: function(v) {
-      var _self = this;
-      _self._setControlChecked(v);
-      if (_self.get('rendered')) {
-        _self.onValid();
-      }
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 触发验证事件，进而引起change事件
-       * @override
-       * @type {String}
-       */
-      validEvent: {
-        value: 'click'
-      },
-      /**
-       * 是否选中
-       * @cfg {String} checked
-       */
-      /**
-       * 是否选中
-       * @type {String}
-       */
-      checked: {
-        value: false
-      },
-      events: {
-        value: {
-          /**
-           * @event
-           * 选中事件
-           */
-          'checked': false,
-          /**
-           * @event
-           * 取消选中事件
-           */
-          'unchecked': false
-        }
-      }
-    },
-    PARSER: {
-      checked: function(el) {
-        return !!el.attr('checked');
-      }
-    }
-  }, {
-    xclass: 'form-check-field'
-  });
-  module.exports = checkField;
-});
-define("bui/form/fields/radio", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
-  /**
-   * @fileOverview  单选框表单域
-   * @ignore
-   */
-  var CheckField = require("bui/form/fields/check");
-  /**
-   * 表单单选域
-   * @class BUI.Form.Field.Radio
-   * @extends BUI.Form.Field.Check
-   */
-  var RadioField = CheckField.extend({
-    bindUI: function() {
-      var _self = this,
-        parent = _self.get('parent'),
-        name = _self.get('name');
-      if (parent) {
-        _self.getInnerControl().on('click', function(ev) {
-          var fields = parent.getFields(name);
-          BUI.each(fields, function(field) {
-            if (field != _self) {
-              field.set('checked', false);
-            }
-          });
-        });
-      }
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        view: true,
-        value: '<input type="radio"/>'
-      },
-      /**
-       * 控件容器，如果为空直接添加在控件容器上
-       * @type {String|HTMLElement}
-       */
-      controlContainer: {
-        value: '.radio'
-      },
-      tpl: {
-        value: '<label><span class="radio"></span>{label}</label>'
-      }
-    }
-  }, {
-    xclass: 'form-field-radio'
-  });
-  module.exports = RadioField;
-});
-define("bui/form/fields/checkbox", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
-  /**
-   * @fileOverview  复选框表单域
-   * @ignore
-   */
-  var CheckField = require("bui/form/fields/check");
-  /**
-   * 表单复选域
-   * @class BUI.Form.Field.Checkbox
-   * @extends BUI.Form.Field.Check
-   */
-  var CheckBoxField = CheckField.extend({}, {
-    ATTRS: {
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        view: true,
-        value: '<input type="checkbox"/>'
-      },
-      /**
-       * 控件容器，如果为空直接添加在控件容器上
-       * @type {String|HTMLElement}
-       */
-      controlContainer: {
-        value: '.checkbox'
-      },
-      tpl: {
-        value: '<label><span class="checkbox"></span>{label}</label>'
-      }
-    }
-  }, {
-    xclass: 'form-field-checkbox'
-  });
-  module.exports = CheckBoxField;
-});
-define("bui/form/fields/plain", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
-  /**
-   * @fileOverview 仅仅用于显示文本，不能编辑的字段
-   * @ignore
-   */
-  var $ = require('jquery'),
-    Field = require("bui/form/fields/base");
-  var PlainFieldView = Field.View.extend({
-    _uiSetValue: function(v) {
-      var _self = this,
-        textEl = _self.get('textEl'),
-        container = _self.getControlContainer(),
-        renderer = _self.get('renderer'),
-        text = renderer ? renderer(v) : v,
-        width = _self.get('width'),
-        appendWidth = 0,
-        textTpl;
-      if (textEl) {
-        textEl.remove();
-      }
-      text = text || '&nbsp;';
-      textTpl = BUI.substitute(_self.get('textTpl'), {
-        text: text
-      });
-      textEl = $(textTpl).appendTo(container);
-      appendWidth = textEl.outerWidth() - textEl.width();
-      textEl.width(width - appendWidth);
-      _self.set('textEl', textEl);
-    }
-  }, {
-    ATTRS: {
-      textEl: {},
-      value: {}
-    }
-  }, {
-    xclass: 'form-field-plain-view'
-  });
-  /**
-   * 表单文本域，不能编辑
-   * @class BUI.Form.Field.Plain
-   * @extends BUI.Form.Field
-   */
-  var PlainField = Field.extend({}, {
-    ATTRS: {
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        value: '<input type="hidden"/>'
-      },
-      /**
-       * 显示文本的模板
-       * @type {String}
-       */
-      textTpl: {
-        view: true,
-        value: '<span class="x-form-text">{text}</span>'
-      },
-      /**
-       * 将字段的值格式化输出
-       * @type {Function}
-       */
-      renderer: {
-        view: true,
-        value: function(value) {
-          return value;
-        }
-      },
-      tpl: {
-        value: ''
-      },
-      xview: {
-        value: PlainFieldView
-      }
-    }
-  }, {
-    xclass: 'form-field-plain'
-  });
-  module.exports = PlainField;
-});
-define("bui/form/fields/list", ["jquery", "bui/common", "bui/list", "bui/data", "bui/overlay"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单中的列表，每个列表后有个隐藏域用来存储数据
-   * @ignore
-   */
-  var $ = require('jquery'),
-    BUI = require("bui/common"),
-    List = require("bui/list"),
-    Field = require("bui/form/fields/base");
+/**
+ * @class BUI.Form.Field.List
+ * 表单中的列表
+ * @extends BUI.Form.Field
+ */
+var List = Field.extend({
 
-  function parseItems(items) {
-    var rst = items;
-    if ($.isPlainObject(items)) {
-      rst = [];
-      BUI.each(items, function(v, k) {
-        rst.push({
-          text: v,
-          value: k
-        });
-      });
-    }
-    return rst;
-  }
-  /**
-   * @class BUI.Form.Field.List
-   * 表单中的列表
-   * @extends BUI.Form.Field
-   */
-  var List = Field.extend({
-    initializer: function() {
-      var _self = this;
-      //if(!_self.get('srcNode')){
+  initializer : function(){
+    var _self = this;
+    //if(!_self.get('srcNode')){
       _self._initList();
-      //}
-    },
-    _getList: function() {
-      var _self = this,
-        children = _self.get('children');
-      return children[0];
-    },
-    bindUI: function() {
-      var _self = this,
-        list = _self._getList();
-      if (list) {
-        list.on('selectedchange', function() {
-          var value = _self._getListValue(list);
-          _self.set('value', value);
-        });
+    //}
+  },
+  _getList : function(){
+    var _self = this,
+      children = _self.get('children');
+    return children[0];
+  },
+  bindUI : function(){
+    var _self = this,
+      list = _self._getList();
+    if(list){
+      list.on('selectedchange',function(){
+        var value = _self._getListValue(list);
+        _self.set('value',value);
+      });
+    }
+  },
+  //获取列表值
+  _getListValue : function(list){
+    var _self = this;
+    list = list || _self._getList();
+    return list.getSelectionValues().join(',');
+  },
+  /**
+   * 设置字段的值
+   * @protected
+   * @param {*} value 字段值
+   */
+  setControlValue : function(value){
+    var _self = this,
+      innerControl = _self.getInnerControl(),
+      list = _self._getList();
+    innerControl.val(value);
+    if(_self._getListValue(list) !== value && list.getCount()){
+      if(list.get('multipleSelect')){
+        list.clearSelection();
       }
-    },
-    //获取列表值
-    _getListValue: function(list) {
-      var _self = this;
-      list = list || _self._getList();
-      return list.getSelectionValues().join(',');
-    },
-    /**
-     * 设置字段的值
-     * @protected
-     * @param {*} value 字段值
-     */
-    setControlValue: function(value) {
-      var _self = this,
-        innerControl = _self.getInnerControl(),
-        list = _self._getList();
-      innerControl.val(value);
-      if (_self._getListValue(list) !== value && list.getCount()) {
-        if (list.get('multipleSelect')) {
-          list.clearSelection();
-        }
-        list.setSelectionByField(value.split(','));
-      }
-    },
-    //同步数据
-    syncUI: function() {
-      this.set('list', this._getList());
-    },
-    //初始化列表
-    _initList: function() {
-      var _self = this,
-        defaultListCfg = _self.get('defaultListCfg'),
-        children = _self.get('children'),
-        list = _self.get('list') || {};
-      if (children[0]) {
-        return;
-      }
-      if ($.isPlainObject(list)) {
-        BUI.mix(list, defaultListCfg);
-      }
-      children.push(list);
-    },
-    /**
-     * 设置选项
-     * @param {Array} items 选项记录
-     */
-    setItems: function(items) {
-      var _self = this,
-        value = _self.get('value'),
-        list = _self._getList();
-      list.set('items', parseItems(items));
       list.setSelectionByField(value.split(','));
-    },
-    //设置选项集合
-    _uiSetItems: function(v) {
-      if (v) {
-        this.setItems(v);
-      }
     }
-  }, {
-    ATTRS: {
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        value: '<input type="hidden"/>'
-      },
-      /**
-       * @protected
-       * 默认的列表配置
-       * @type {Object}
-       */
-      defaultListCfg: {
-        value: {
-          xclass: 'simple-list'
-        }
-      },
-      /**
-       * 选项
-       * @type {Array}
-       */
-      items: {
-        setter: function(v) {
-          if ($.isPlainObject(v)) {
-            var rst = [];
-            BUI.each(v, function(v, k) {
-              rst.push({
-                value: k,
-                text: v
-              });
-            });
-            v = rst;
-          }
-          return v;
-        }
-      },
-      /**
-       * 列表
-       * @type {BUI.List.SimpleList}
-       */
-      list: {}
-    },
-    PARSER: {
-      list: function(el) {
-        var listEl = el.find('.bui-simple-list');
-        if (listEl.length) {
-          return {
-            srcNode: listEl
-          };
-        }
-      }
+  },
+  //同步数据
+  syncUI : function(){
+     this.set('list',this._getList());
+  },
+  //初始化列表
+  _initList : function(){
+    var _self = this,
+      defaultListCfg = _self.get('defaultListCfg'),
+      children = _self.get('children'),
+      list = _self.get('list') || {};
+    if(children[0]){
+      return;
     }
-  }, {
-    xclass: 'form-field-list'
-  });
-  module.exports = List;
-});
-define("bui/form/fields/textarea", ["jquery", "bui/common", "bui/overlay"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单文本域
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var Field = require("bui/form/fields/base");
-  /**
-   * 表单文本域
-   * @class BUI.Form.Field.TextArea
-   * @extends BUI.Form.Field
-   */
-  var TextAreaField = Field.extend({
-    //设置行
-    _uiSetRows: function(v) {
-      var _self = this,
-        innerControl = _self.getInnerControl();
-      if (v) {
-        innerControl.attr('rows', v);
-      }
-    },
-    //设置列
-    _uiSetCols: function(v) {
-      var _self = this,
-        innerControl = _self.getInnerControl();
-      if (v) {
-        innerControl.attr('cols', v);
-      }
+    if($.isPlainObject(list)){
+      BUI.mix(list,defaultListCfg);
     }
-  }, {
-    ATTRS: {
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        value: '<textarea></textarea>'
-      },
-      /**
-       * 行
-       * @type {Number}
-       */
-      rows: {},
-      /**
-       * 列
-       * @type {Number}
-       */
-      cols: {},
-      decorateCfgFields: {
-        value: {
-          'rows': true,
-          'cols': true
-        }
-      }
+    children.push(list);
+  },
+  /**
+   * 设置选项
+   * @param {Array} items 选项记录
+   */
+  setItems : function(items){
+    var _self = this,
+      value = _self.get('value'),
+      list = _self._getList();
+    list.set('items',parseItems(items));
+    list.setSelectionByField(value.split(','));
+  },
+  //设置选项集合
+  _uiSetItems : function(v){
+    if(v){
+      this.setItems(v);
     }
-  }, {
-    xclass: 'form-field-textarea'
-  });
-  module.exports = TextAreaField;
-});
-define("bui/form/fields/uploader", ["bui/common", "jquery", "bui/overlay"], function(require, exports, module) {
-  /**
-   * @fileOverview 模拟选择框在表单中
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    JSON = BUI.JSON,
-    Field = require("bui/form/fields/base"),
-    Rules = require("bui/form/rules");
-  /**
-   * 表单上传域
-   * @class BUI.Form.Field.Upload
-   * @extends BUI.Form.Field
-   */
-  var uploaderField = Field.extend({
-    //生成upload
-    renderUI: function() {
-      var _self = this,
-        innerControl = _self.getInnerControl();
-      if (_self.get('srcNode') && innerControl.get(0).type === 'file') { //如果使用现有DOM生成，不使用上传组件
-        return;
-      }
-      _self._initControlValue();
-      _self._initUpload();
-    },
-    _initUpload: function() {
-      var _self = this,
-        children = _self.get('children'),
-        uploader = _self.get('uploader') || {};
-      require.async('bui/uploader', function(Uploader) {
-        uploader.render = _self.getControlContainer();
-        uploader.autoRender = true;
-        uploader = new Uploader.Uploader(uploader);
-        _self.set('uploader', uploader);
-        _self.set('isCreate', true);
-        _self.get('children').push(uploader);
-        _self._initQueue(uploader.get('queue'));
-        uploader.on('success', function(ev) {
-          var result = _self._getUploaderResult();
-          _self.setControlValue(result);
-        });
-        uploader.get('queue').on('itemremoved', function() {
-          var result = _self._getUploaderResult();
-          _self.setControlValue(result);
-        })
-      });
-    },
-    _getUploaderResult: function() {
-      var _self = this,
-        uploader = _self.get('uploader'),
-        queue = uploader.get('queue'),
-        items = queue.getItems(),
-        result = [];
-      BUI.each(items, function(item) {
-        item.result && result.push(item.result);
-      });
-      return result;
-    },
-    setControlValue: function(items) {
-      var _self = this,
-        innerControl = _self.getInnerControl();
-      // _self.fire('change');
-      innerControl.val(JSON.stringify(items));
-    },
-    _initControlValue: function() {
-      var _self = this,
-        textValue = _self.getControlValue(),
-        value;
-      if (textValue) {
-        value = BUI.JSON.parse(textValue);
-        _self.set('value', value);
-      }
-    },
-    _initQueue: function(queue) {
-      var _self = this,
-        value = _self.get('value'),
-        result = [];
-      //初始化对列默认成功
-      BUI.each(value, function(item) {
-        var newItem = BUI.cloneObject(item);
-        newItem.success = true;
-        newItem.result = item;
-        result.push(newItem);
-      });
-      queue && queue.setItems(result);
-    } //,
-    // valid: function(){
-    //   var _self = this,
-    //     uploader = _self.get('uploader');
-    //   uploaderField.superclass.valid.call(_self);
-    //   uploader.valid();
-    // }
-  }, {
-    ATTRS: {
-      /**
-       * 内部表单元素的容器
-       * @type {String}
-       */
-      controlTpl: {
-        value: '<input type="hidden"/>'
-      },
-      uploader: {
-        setter: function(v) {
-          var disabled = this.get('disabled');
-          v && v.isController && v.set('disabled', disabled);
-          return v;
-        }
-      },
-      disabled: {
-        setter: function(v) {
-          var _self = this,
-            uploader = _self.get('uploader');
-          uploader && uploader.isController && uploader.set('disabled', v);
-        }
-      },
-      value: {
-        shared: false,
-        value: []
-      },
-      defaultRules: function() {
-        uploader: true
-      }
-    }
-  }, {
-    xclass: 'form-field-uploader'
-  });
-  Rules.add({
-    name: 'uploader', //规则名称
-    msg: '上传文件选择有误！', //默认显示的错误信息
-    validator: function(value, baseValue, formatMsg, field) { //验证函数，验证值、基准值、格式化后的错误信息
-      var uploader = field.get('uploader');
-      if (uploader && !uploader.isValid()) {
-        return formatMsg;
-      }
-    }
-  });
-  module.exports = uploaderField;
-});
-define("bui/form/fields/checklist", ["bui/common", "jquery", "bui/list", "bui/data", "bui/overlay"], function(require, exports, module) {
-  /**
-   * @fileOverview 可勾选的列表，模拟多个checkbox
-   * @ignore
-   */
-  'use strict';
-  var BUI = require("bui/common"),
-    ListField = require("bui/form/fields/list");
-  /**
-   * @class BUI.Form.Field.CheckList
-   * 可勾选的列表，模拟多个checkbox
-   * @extends BUI.Form.Field.List
-   */
-  var CheckList = ListField.extend({}, {
-    ATTRS: {
-      /**
-       * @protected
-       * 默认的列表配置
-       * @type {Object}
-       */
-      defaultListCfg: {
-        value: {
-          itemTpl: '<li><span class="x-checkbox"></span>{text}</li>',
-          multipleSelect: true,
-          allowTextSelection: false
-        }
-      }
-    }
-  }, {
-    xclass: 'form-field-checklist'
-  });
-  module.exports = CheckList;
-});
-define("bui/form/fields/radiolist", ["bui/common", "jquery", "bui/list", "bui/data", "bui/overlay"], function(require, exports, module) {
-  /**
-   * @fileOverview 可勾选的列表，模拟多个radio
-   * @ignore
-   */
-  'use strict';
-  var BUI = require("bui/common"),
-    ListField = require("bui/form/fields/list");
-  /**
-   * @class BUI.Form.Field.RadioList
-   * 可勾选的列表，模拟多个radio
-   * @extends BUI.Form.Field.List
-   */
-  var RadioList = ListField.extend({}, {
-    ATTRS: {
-      /**
-       * @protected
-       * 默认的列表配置
-       * @type {Object}
-       */
-      defaultListCfg: {
-        value: {
-          itemTpl: '<li><span class="x-radio"></span>{text}</li>',
-          allowTextSelection: false
-        }
-      }
-    }
-  }, {
-    xclass: 'form-field-radiolist'
-  });
-  module.exports = RadioList;
-});
-define("bui/form/groupvalid", ["jquery", "bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单分组验证
-   * @ignore
-   */
-  var $ = require('jquery'),
-    CLS_ERROR = 'x-form-error',
-    Valid = require("bui/form/valid");
-  /**
-   * @class BUI.Form.GroupValidView
-   * @private
-   * 表单分组验证视图
-   * @extends BUI.Form.ValidView
-   */
-  function GroupValidView() {}
-  BUI.augment(GroupValidView, Valid.View, {
+  }
+},{
+  ATTRS : {
     /**
-     * 显示一条错误
-     * @private
-     * @param  {String} msg 错误信息
+     * 内部表单元素的容器
+     * @type {String}
      */
-    showError: function(msg, errorTpl, container) {
-      var errorMsg = BUI.substitute(errorTpl, {
-          error: msg
-        }),
-        el = $(errorMsg);
+    controlTpl : {
+      value : '<input type="hidden"/>'
+    },
+    /**
+     * @protected
+     * 默认的列表配置
+     * @type {Object}
+     */
+    defaultListCfg : {
+      value : {
+        xclass : 'simple-list'
+      }
+    },
+    /**
+     * 选项
+     * @type {Array}
+     */
+    items : {
+      setter : function(v){
+        if($.isPlainObject(v)){
+          var rst = [];
+          BUI.each(v,function(v,k){
+            rst.push({value : k,text :v});
+          });
+          v = rst;
+        }
+        return v;
+      }
+    },
+    /**
+     * 列表
+     * @type {BUI.List.SimpleList}
+     */
+    list : {
+
+    }
+  },
+  PARSER : {
+    list : function(el){
+      var listEl = el.find('.bui-simple-list');
+      if(listEl.length){
+        return {
+          srcNode : listEl
+        };
+      }
+    }
+  }
+},{
+  xclass : 'form-field-list'
+});
+
+module.exports = List;
+
+});
+define("bui/form/fields/textarea", ["jquery","bui/common","bui/overlay"], function(require, exports, module){
+/**
+ * @fileOverview 表单文本域
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+var Field = require("bui/form/fields/base");
+
+/**
+ * 表单文本域
+ * @class BUI.Form.Field.TextArea
+ * @extends BUI.Form.Field
+ */
+var TextAreaField = Field.extend({
+  //设置行
+  _uiSetRows : function(v){
+    var _self = this,
+      innerControl = _self.getInnerControl();
+    if(v){
+      innerControl.attr('rows',v);
+    }
+  },
+  //设置列
+  _uiSetCols : function(v){
+    var _self = this,
+      innerControl = _self.getInnerControl();
+    if(v){
+      innerControl.attr('cols',v);
+    }
+  }
+},{
+  ATTRS : {
+    /**
+     * 内部表单元素的容器
+     * @type {String}
+     */
+    controlTpl : {
+      value : '<textarea></textarea>'
+    },
+    /**
+     * 行
+     * @type {Number}
+     */
+    rows : {
+
+    },
+    /**
+     * 列
+     * @type {Number}
+     */
+    cols : {
+
+    },
+    decorateCfgFields : {
+      value : {
+        'rows' : true,
+        'cols' : true
+      }
+    }
+  }
+},{
+  xclass : 'form-field-textarea'
+});
+
+module.exports = TextAreaField;
+
+});
+define("bui/form/fields/uploader", ["bui/common","jquery","bui/overlay"], function(require, exports, module){
+/**
+ * @fileOverview 模拟选择框在表单中
+ * @ignore
+ */
+
+
+var BUI = require("bui/common"),
+  JSON = BUI.JSON,
+  Field = require("bui/form/fields/base"),
+  Rules = require("bui/form/rules");
+
+/**
+ * 表单上传域
+ * @class BUI.Form.Field.Upload
+ * @extends BUI.Form.Field
+ */
+var uploaderField = Field.extend({
+  //生成upload
+  renderUI : function(){
+    var _self = this,
+      innerControl = _self.getInnerControl();
+    if(_self.get('srcNode') && innerControl.get(0).type === 'file'){ //如果使用现有DOM生成，不使用上传组件
+      return;
+    }
+    _self._initControlValue();
+    _self._initUpload();
+  },
+  _initUpload: function(){
+    var _self = this,
+      children = _self.get('children'),
+      uploader = _self.get('uploader') || {};
+
+    require.async('bui/uploader', function(Uploader){
+      uploader.render = _self.getControlContainer();
+      uploader.autoRender = true;
+      uploader = new Uploader.Uploader(uploader);
+      _self.set('uploader', uploader);
+      _self.set('isCreate',true);
+      _self.get('children').push(uploader);
+
+      
+      _self._initQueue(uploader.get('queue'));
+      
+      uploader.on('success', function(ev){
+        var result = _self._getUploaderResult();
+        _self.setControlValue(result);
+      });
+      uploader.get('queue').on('itemremoved', function(){
+        var result = _self._getUploaderResult();
+        _self.setControlValue(result);
+      })
+    });
+  },
+  _getUploaderResult: function(){
+    var _self = this,
+      uploader = _self.get('uploader'),
+      queue = uploader.get('queue'),
+      items = queue.getItems(),
+      result = [];
+
+    BUI.each(items, function(item){
+      item.result && result.push(item.result);
+    });
+    return result;
+  },
+  setControlValue: function(items){
+    var _self = this,
+      innerControl = _self.getInnerControl();
+    // _self.fire('change');
+    innerControl.val(JSON.stringify(items));
+  },
+  _initControlValue: function(){
+    var _self = this,
+      textValue = _self.getControlValue(),
+      value;
+    if(textValue){
+      value = BUI.JSON.parse(textValue);
+      _self.set('value', value);
+    }
+  },
+  _initQueue: function(queue){
+    var _self = this,
+      value = _self.get('value'),
+      result = [];
+    //初始化对列默认成功
+    BUI.each(value, function(item){
+      var newItem = BUI.cloneObject(item);
+      newItem.success = true;
+      newItem.result = item;
+      result.push(newItem);
+    });
+    queue && queue.setItems(result);
+  }//,
+  // valid: function(){
+  //   var _self = this,
+  //     uploader = _self.get('uploader');
+  //   uploaderField.superclass.valid.call(_self);
+  //   uploader.valid();
+  // }
+},{
+  ATTRS : {
+    /**
+     * 内部表单元素的容器
+     * @type {String}
+     */
+    controlTpl : {
+      value : '<input type="hidden"/>'
+    },
+    uploader: {
+      setter: function(v){
+        var disabled = this.get('disabled');
+        v && v.isController && v.set('disabled', disabled);
+        return v;
+      }
+    },
+
+    disabled: {
+      setter: function(v){
+        var _self = this,
+          uploader = _self.get('uploader');
+        uploader && uploader.isController && uploader.set('disabled', v);
+      }
+    },
+    value:{
+      shared : false,
+      value: []
+    },
+    defaultRules: function(){
+      uploader: true
+    }
+  }
+},{
+  xclass : 'form-field-uploader'
+});
+
+
+Rules.add({
+  name : 'uploader',  //规则名称
+  msg : '上传文件选择有误！',//默认显示的错误信息
+  validator : function(value, baseValue, formatMsg, field){ //验证函数，验证值、基准值、格式化后的错误信息
+    var uploader = field.get('uploader');
+    if(uploader && !uploader.isValid()){
+      return formatMsg;
+    }
+  }
+}); 
+module.exports = uploaderField;
+
+});
+define("bui/form/fields/checklist", ["bui/common","jquery","bui/list","bui/data","bui/overlay"], function(require, exports, module){
+/**
+ * @fileOverview 可勾选的列表，模拟多个checkbox
+ * @ignore
+ */
+
+'use strict';
+var BUI = require("bui/common"),
+  ListField = require("bui/form/fields/list");
+
+/**
+ * @class BUI.Form.Field.CheckList
+ * 可勾选的列表，模拟多个checkbox
+ * @extends BUI.Form.Field.List
+ */
+var CheckList = ListField.extend({
+
+},{
+  ATTRS : {
+    /**
+     * @protected
+     * 默认的列表配置
+     * @type {Object}
+     */
+    defaultListCfg : {
+      value : {
+        itemTpl : '<li><span class="x-checkbox"></span>{text}</li>',
+        multipleSelect : true,
+        allowTextSelection : false
+      }
+    }
+  }
+},{
+  xclass : 'form-field-checklist'
+});
+
+module.exports = CheckList;
+
+});
+define("bui/form/fields/radiolist", ["bui/common","jquery","bui/list","bui/data","bui/overlay"], function(require, exports, module){
+/**
+ * @fileOverview 可勾选的列表，模拟多个radio
+ * @ignore
+ */
+
+'use strict';
+var BUI = require("bui/common"),
+  ListField = require("bui/form/fields/list");
+
+/**
+ * @class BUI.Form.Field.RadioList
+ * 可勾选的列表，模拟多个radio
+ * @extends BUI.Form.Field.List
+ */
+var RadioList = ListField.extend({
+
+},{
+  ATTRS : {
+    /**
+     * @protected
+     * 默认的列表配置
+     * @type {Object}
+     */
+    defaultListCfg : {
+      value : {
+        itemTpl : '<li><span class="x-radio"></span>{text}</li>',
+        allowTextSelection : false
+      }
+    }
+  }
+},{
+  xclass : 'form-field-radiolist'
+});
+
+module.exports = RadioList;
+
+});
+define("bui/form/groupvalid", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview 表单分组验证
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  CLS_ERROR = 'x-form-error',
+  Valid = require("bui/form/valid");
+
+ /**
+ * @class BUI.Form.GroupValidView
+ * @private
+ * 表单分组验证视图
+ * @extends BUI.Form.ValidView
+ */
+function GroupValidView(){
+
+}
+
+BUI.augment(GroupValidView,Valid.View,{
+  /**
+   * 显示一条错误
+   * @private
+   * @param  {String} msg 错误信息
+   */
+  showError : function(msg,errorTpl,container){
+    var errorMsg = BUI.substitute(errorTpl,{error : msg}),
+         el = $(errorMsg);
       el.appendTo(container);
       el.addClass(CLS_ERROR);
-    },
-    /**
-     * 清除错误
-     */
-    clearErrors: function() {
-      var _self = this,
-        errorContainer = _self.getErrorsContainer();
-      errorContainer.children('.' + CLS_ERROR).remove();
-    }
-  });
+  },
   /**
-   * @class BUI.Form.GroupValid
-   * 表单分组验证
-   * @extends BUI.Form.Valid
+   * 清除错误
    */
-  function GroupValid() {}
-  GroupValid.ATTRS = ATTRS = BUI.merge(true, Valid.ATTRS, {
-    events: {
-      value: {
-        /**
-         * @event
-         * 验证结果发生改变，从true变成false或者相反
-         * @param {Object} ev 事件对象
-         * @param {Object} ev.target 触发事件的子控件
-         * @param {Boolean} ev.valid 是否通过验证
-         */
-        validchange: true,
-        /**
-         * @event
-         * 值改变，仅当通过验证时触发
-         * @param {Object} ev 事件对象
-         * @param {Object} ev.target 触发事件的子控件
-         */
-        change: true
-      }
+  clearErrors : function(){
+    var _self = this,
+      errorContainer = _self.getErrorsContainer();
+    errorContainer.children('.' + CLS_ERROR).remove();
+  }
+});
+
+/**
+ * @class BUI.Form.GroupValid
+ * 表单分组验证
+ * @extends BUI.Form.Valid
+ */
+function GroupValid(){
+
+}
+
+GroupValid.ATTRS = ATTRS =BUI.merge(true,Valid.ATTRS,{
+  events: {
+    value : {
+      /**
+       * @event
+       * 验证结果发生改变，从true变成false或者相反
+       * @param {Object} ev 事件对象
+       * @param {Object} ev.target 触发事件的子控件
+       * @param {Boolean} ev.valid 是否通过验证
+       */
+      validchange : true,
+      /**
+       * @event
+       * 值改变，仅当通过验证时触发
+       * @param {Object} ev 事件对象
+       * @param {Object} ev.target 触发事件的子控件
+       */
+      change : true
     }
-  });
-  BUI.augment(GroupValid, Valid, {
-    __bindUI: function() {
-      var _self = this,
-        validEvent = 'validchange change';
-      //当不需要显示子控件错误时，仅需要监听'change'事件即可
-      _self.on(validEvent, function(ev) {
-        var sender = ev.target;
-        if (sender != this && _self.get('showError')) {
-          var valid = sender.isValid();
-          //是否所有的子节点都进行过验证
-          if (_self._hasAllChildrenValid()) {
-            valid = valid && _self.isChildrenValid();
-            if (valid) {
-              _self.validControl(_self.getRecord());
-              valid = _self.isSelfValid();
-            }
-          }
-          if (!valid) {
-            _self.showErrors();
-          } else {
-            _self.clearErrors();
+  }
+});
+
+BUI.augment(GroupValid,Valid,{
+  __bindUI : function(){
+    var _self = this,
+      validEvent =  'validchange change';
+
+    //当不需要显示子控件错误时，仅需要监听'change'事件即可
+    _self.on(validEvent,function(ev){
+      var sender = ev.target;
+      if(sender != this && _self.get('showError')){
+
+        var valid = sender.isValid();
+        //是否所有的子节点都进行过验证
+        if(_self._hasAllChildrenValid()){
+          valid = valid && _self.isChildrenValid();
+          if(valid){
+            _self.validControl(_self.getRecord());
+            valid = _self.isSelfValid();
           }
         }
-      });
-    },
-    /**
-     * 是否通过验证
-     */
-    isValid: function() {
-      if (this.get('disabled')) { //如果被禁用，则不进行验证，并且认为true
-        return true;
+        
+        if(!valid){
+          _self.showErrors();
+        }else{
+          _self.clearErrors();
+        }
       }
-      var _self = this,
-        isValid = _self.isChildrenValid();
-      return isValid && _self.isSelfValid();
-    },
-    /**
-     * 进行验证
-     */
-    valid: function() {
-      var _self = this,
-        children = _self.get('children');
-      if (_self.get('disabled')) { //禁用时不进行验证
+    });
+  },
+  /**
+   * 是否通过验证
+   */
+  isValid : function(){
+    if(this.get('disabled')){ //如果被禁用，则不进行验证，并且认为true
+      return true;
+    }
+    var _self = this,
+      isValid = _self.isChildrenValid();
+    return isValid && _self.isSelfValid();
+  },
+  /**
+   * 进行验证
+   */
+  valid : function(){
+    var _self = this,
+      children = _self.get('children');
+    if(_self.get('disabled')){ //禁用时不进行验证
+      return;
+    }
+    BUI.each(children,function(item){
+      if(!item.get('disabled')){
+        item.valid();
+      }
+    });
+  },
+  /**
+   * 是否所有的子节点进行过校验,如果子节点
+   * @private
+   */
+  _hasAllChildrenValid : function(){
+    var _self = this,
+      children = _self.get('children'),
+      rst = true;
+    BUI.each(children,function(item){
+      if(!item.get('disabled') && item.get('hasValid') === false){
+        rst = false;
+        return false;
+      }
+    });  
+    return rst;
+  },
+  /**
+   * 所有子控件是否通过验证
+   * @protected
+   * @return {Boolean} 所有子控件是否通过验证
+   */
+  isChildrenValid : function(){
+    var _self = this,
+      children = _self.get('children'),
+      isValid = true;
+
+    BUI.each(children,function(item){
+      if(!item.get('disabled') && !item.isValid()){
+        isValid = false;
+        return false;
+      }
+    });
+    return isValid;
+  },
+  isSelfValid : function () {
+    return !this.get('error');
+  },
+  /**
+   * 验证控件内容
+   * @protected
+   * @return {Boolean} 是否通过验证
+   */
+  validControl : function (record) {
+    var _self = this,
+      error = _self.getValidError(record);
+    _self.set('error',error);
+  },
+  /**
+   * 获取验证出错信息，包括自身和子控件的验证错误信息
+   * @return {Array} 出错信息
+   */
+  getErrors : function(){
+    var _self = this,
+      children = _self.get('children'),
+      showChildError = _self.get('showChildError'),
+      validError = null,
+      rst = [];
+    if(showChildError){
+      BUI.each(children,function(child){
+        if(child.getErrors){
+          rst = rst.concat(child.getErrors());
+        }
+      });
+    }
+    //如果所有子控件通过验证，才显示自己的错误
+    if(_self._hasAllChildrenValid() && _self.isChildrenValid()){
+      validError = _self.get('error');
+      if(validError){
+        rst.push(validError);
+      }
+    }
+    
+    return rst;
+  },  
+  //设置错误模板时，覆盖子控件设置的错误模板
+  _uiSetErrorTpl : function(v){
+    var _self = this,
+      children = _self.get('children');
+
+    BUI.each(children,function(item){
+      if(!item.get('userConfig')['errorTpl']){ //未定义错误模板时
+        item.set('errorTpl',v);
+      }
+    });
+  }
+});
+
+GroupValid.View = GroupValidView;
+
+module.exports = GroupValid;
+
+});
+define("bui/form/form", ["jquery","bui/common","bui/overlay","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 创建表单
+ * @ignore
+ */
+
+  
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  FieldContainer = require("bui/form/fieldcontainer"),
+  Component = BUI.Component,
+  TYPE_SUBMIT = {
+    NORMAL : 'normal',
+    AJAX : 'ajax',
+    IFRAME : 'iframe'
+  };
+
+var FormView = FieldContainer.View.extend({
+  _uiSetMethod : function(v){
+    this.get('el').attr('method',v);
+  },
+  _uiSetAction : function(v){
+    this.get('el').attr('action',v);
+  }
+},{
+  ATTRS : {
+    method : {},
+    action : {}
+  }
+},{
+  xclass: 'form-view'
+});
+
+/**
+ * @class BUI.Form.Form
+ * 表单控件,表单相关的类图：
+ * <img src="../assets/img/class-form.jpg"/>
+ * @extends BUI.Form.FieldContainer
+ */
+var Form = FieldContainer.extend({
+  renderUI : function(){
+    var _self = this,
+      buttonBar = _self.get('buttonBar'),
+      cfg;
+    if($.isPlainObject(buttonBar) && _self.get('buttons')){
+      cfg = BUI.merge(_self.getDefaultButtonBarCfg(),buttonBar);
+      _self._initButtonBar(cfg);
+    }
+    _self._initSubmitMask();
+  },
+  _initButtonBar : function(cfg){
+    var _self = this;
+
+    require.async('bui/toolbar', function(Toolbar){
+      buttonBar = new Toolbar.Bar(cfg);
+      _self.set('buttonBar',buttonBar);
+    });
+  },
+  bindUI : function(){
+    var _self = this,
+      formEl = _self.get('el');
+
+    formEl.on('submit',function(ev){
+      _self.valid();
+      if(!_self.isValid() || _self.onBeforeSubmit() === false){
+        ev.preventDefault();
+        _self.focusError();
         return;
       }
-      BUI.each(children, function(item) {
-        if (!item.get('disabled')) {
-          item.valid();
-        }
-      });
-    },
-    /**
-     * 是否所有的子节点进行过校验,如果子节点
-     * @private
-     */
-    _hasAllChildrenValid: function() {
-      var _self = this,
-        children = _self.get('children'),
-        rst = true;
-      BUI.each(children, function(item) {
-        if (!item.get('disabled') && item.get('hasValid') === false) {
-          rst = false;
-          return false;
-        }
-      });
-      return rst;
-    },
-    /**
-     * 所有子控件是否通过验证
-     * @protected
-     * @return {Boolean} 所有子控件是否通过验证
-     */
-    isChildrenValid: function() {
-      var _self = this,
-        children = _self.get('children'),
-        isValid = true;
-      BUI.each(children, function(item) {
-        if (!item.get('disabled') && !item.isValid()) {
-          isValid = false;
-          return false;
-        }
-      });
-      return isValid;
-    },
-    isSelfValid: function() {
-      return !this.get('error');
-    },
-    /**
-     * 验证控件内容
-     * @protected
-     * @return {Boolean} 是否通过验证
-     */
-    validControl: function(record) {
-      var _self = this,
-        error = _self.getValidError(record);
-      _self.set('error', error);
-    },
-    /**
-     * 获取验证出错信息，包括自身和子控件的验证错误信息
-     * @return {Array} 出错信息
-     */
-    getErrors: function() {
-      var _self = this,
-        children = _self.get('children'),
-        showChildError = _self.get('showChildError'),
-        validError = null,
-        rst = [];
-      if (showChildError) {
-        BUI.each(children, function(child) {
-          if (child.getErrors) {
-            rst = rst.concat(child.getErrors());
-          }
-        });
+      if(_self.isValid() && _self.get('submitType') === TYPE_SUBMIT.AJAX){
+        ev.preventDefault();
+        _self.ajaxSubmit();
       }
-      //如果所有子控件通过验证，才显示自己的错误
-      if (_self._hasAllChildrenValid() && _self.isChildrenValid()) {
-        validError = _self.get('error');
-        if (validError) {
-          rst.push(validError);
-        }
-      }
-      return rst;
-    },
-    //设置错误模板时，覆盖子控件设置的错误模板
-    _uiSetErrorTpl: function(v) {
-      var _self = this,
-        children = _self.get('children');
-      BUI.each(children, function(item) {
-        if (!item.get('userConfig')['errorTpl']) { //未定义错误模板时
-          item.set('errorTpl', v);
-        }
-      });
-    }
-  });
-  GroupValid.View = GroupValidView;
-  module.exports = GroupValid;
-});
-define("bui/form/form", ["jquery", "bui/common", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
+
+    });
+  },
   /**
-   * @fileOverview 创建表单
-   * @ignore
+   * 获取按钮栏默认的配置项
+   * @protected
+   * @return {Object} 
    */
-  var $ = require('jquery'),
-    BUI = require("bui/common"),
-    FieldContainer = require("bui/form/fieldcontainer"),
-    Component = BUI.Component,
-    TYPE_SUBMIT = {
-      NORMAL: 'normal',
-      AJAX: 'ajax',
-      IFRAME: 'iframe'
+  getDefaultButtonBarCfg : function(){
+    var _self = this,
+      buttons = _self.get('buttons');
+    return {
+      autoRender : true,
+      elCls :'toolbar',
+      render : _self.get('el'),
+      items : buttons,
+      defaultChildClass : 'bar-item-button'
     };
-  var FormView = FieldContainer.View.extend({
-    _uiSetMethod: function(v) {
-      this.get('el').attr('method', v);
-    },
-    _uiSetAction: function(v) {
-      this.get('el').attr('action', v);
-    }
-  }, {
-    ATTRS: {
-      method: {},
-      action: {}
-    }
-  }, {
-    xclass: 'form-view'
-  });
+  },
   /**
-   * @class BUI.Form.Form
-   * 表单控件,表单相关的类图：
-   * <img src="../assets/img/class-form.jpg"/>
-   * @extends BUI.Form.FieldContainer
+   * 将焦点定位到第一个错误字段
    */
-  var Form = FieldContainer.extend({
-    renderUI: function() {
-      var _self = this,
-        buttonBar = _self.get('buttonBar'),
-        cfg;
-      if ($.isPlainObject(buttonBar) && _self.get('buttons')) {
-        cfg = BUI.merge(_self.getDefaultButtonBarCfg(), buttonBar);
-        _self._initButtonBar(cfg);
+  focusError : function(){
+    var _self = this,
+      fields = _self.getFields();
+    
+    BUI.each(fields,function(field){
+      if(field.get('visible') && !field.get('disabled') && !field.isValid()){
+        try{
+          field.focus();
+        }catch(e){
+          BUI.log(e);
+        }
+        
+        return false;
       }
-      _self._initSubmitMask();
-    },
-    _initButtonBar: function(cfg) {
-      var _self = this;
-      require.async('bui/toolbar', function(Toolbar) {
-        buttonBar = new Toolbar.Bar(cfg);
-        _self.set('buttonBar', buttonBar);
-      });
-    },
-    bindUI: function() {
-      var _self = this,
-        formEl = _self.get('el');
-      formEl.on('submit', function(ev) {
-        _self.valid();
-        if (!_self.isValid() || _self.onBeforeSubmit() === false) {
-          ev.preventDefault();
-          _self.focusError();
-          return;
-        }
-        if (_self.isValid() && _self.get('submitType') === TYPE_SUBMIT.AJAX) {
-          ev.preventDefault();
-          _self.ajaxSubmit();
-        }
-      });
-    },
-    /**
-     * 获取按钮栏默认的配置项
-     * @protected
-     * @return {Object}
-     */
-    getDefaultButtonBarCfg: function() {
-      var _self = this,
-        buttons = _self.get('buttons');
-      return {
-        autoRender: true,
-        elCls: 'toolbar',
-        render: _self.get('el'),
-        items: buttons,
-        defaultChildClass: 'bar-item-button'
-      };
-    },
-    /**
-     * 将焦点定位到第一个错误字段
-     */
-    focusError: function() {
-      var _self = this,
-        fields = _self.getFields();
-      BUI.each(fields, function(field) {
-        if (field.get('visible') && !field.get('disabled') && !field.isValid()) {
-          try {
-            field.focus();
-          } catch (e) {
-            BUI.log(e);
-          }
-          return false;
-        }
-      });
-    },
-    /**
-     * 表单提交，如果未通过验证，则阻止提交
-     */
-    submit: function(options) {
-      var _self = this,
-        submitType = _self.get('submitType');
-      _self.valid();
-      if (_self.isValid()) {
-        if (_self.onBeforeSubmit() == false) {
-          return;
-        }
-        if (submitType === TYPE_SUBMIT.NORMAL) {
-          _self.get('el')[0].submit();
-        } else if (submitType === TYPE_SUBMIT.AJAX) {
-          _self.ajaxSubmit(options);
-        }
-      } else {
-        _self.focusError();
-      }
-    },
-    /**
-     * 异步提交表单
-     */
-    ajaxSubmit: function(options) {
-      var _self = this,
-        method = _self.get('method'),
-        action = _self.get('action'),
-        callback = _self.get('callback'),
-        submitMask = _self.get('submitMask'),
-        data = _self.serializeToObject(), //获取表单数据
-        success,
-        ajaxParams = BUI.merge(true, { //合并请求参数
-          url: action,
-          type: method,
-          dataType: 'json',
-          data: data
-        }, options);
-      if (options && options.success) {
-        success = options.success;
-      }
-      ajaxParams.success = function(data) { //封装success方法
-        if (submitMask && submitMask.hide) {
-          submitMask.hide();
-        }
-        if (success) {
-          success(data);
-        }
-        callback && callback.call(_self, data);
-      }
-      if (submitMask && submitMask.show) {
-        submitMask.show();
-      }
-      $.ajax(ajaxParams);
-    },
-    //获取提交的屏蔽层
-    _initSubmitMask: function() {
-      var _self = this,
-        submitType = _self.get('submitType'),
-        submitMask = _self.get('submitMask');
-      if (submitType === TYPE_SUBMIT.AJAX && submitMask) {
-        require.async('bui/mask', function(Mask) {
-          var cfg = $.isPlainObject(submitMask) ? submitMask : {};
-          submitMask = new Mask.LoadMask(BUI.mix({
-            el: _self.get('el')
-          }, cfg));
-          _self.set('submitMask', submitMask);
-        });
-      }
-    },
-    /**
-     * 序列化表单成对象，所有的键值都是字符串
-     * @return {Object} 序列化成对象
-     */
-    serializeToObject: function() {
-      return BUI.FormHelper.serializeToObject(this.get('el')[0]);
-    },
-    /**
-     * serializeToObject 的缩写，所有的键值都是字符串
-     * @return {Object} 序列化成对象
-     */
-    toObject: function() {
-      return this.serializeToObject();
-    },
-    /**
-     * 表单提交前
-     * @protected
-     * @return {Boolean} 是否取消提交
-     */
-    onBeforeSubmit: function() {
-      return this.fire('beforesubmit');
-    },
-    /**
-     * 表单恢复初始值
-     */
-    reset: function() {
-      var _self = this,
-        initRecord = _self.get('initRecord');
-      _self.setRecord(initRecord);
-    },
-    /**
-     * 重置提示信息，因为在表单隐藏状态下，提示信息定位错误
-     * <pre><code>
-     * dialog.on('show',function(){
-     *   form.resetTips();
-     * });
-     *
-     * </code></pre>
-     */
-    resetTips: function() {
-      var _self = this,
-        fields = _self.getFields();
-      BUI.each(fields, function(field) {
-        field.resetTip();
-      });
-    },
-    /**
-     * @protected
-     * @ignore
-     */
-    destructor: function() {
-      var _self = this,
-        buttonBar = _self.get('buttonBar'),
-        submitMask = _self.get('submitMask');
-      if (buttonBar && buttonBar.destroy) {
-        buttonBar.destroy();
-      }
-      if (submitMask && submitMask.destroy) {
-        submitMask.destroy();
-      }
-    },
-    //设置表单的初始数据
-    _uiSetInitRecord: function(v) {
-      //if(v){
-      this.setRecord(v);
-      //}
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 提交的路径
-       * @type {String}
-       */
-      action: {
-        view: true,
-        value: ''
-      },
-      allowTextSelection: {
-        value: true
-      },
-      events: {
-        value: {
-          /**
-           * @event
-           * 表单提交前触发，如果返回false会阻止表单提交
-           */
-          beforesubmit: false
-        }
-      },
-      /**
-       * 提交的方式
-       * @type {String}
-       */
-      method: {
-        view: true,
-        value: 'get'
-      },
-      /**
-       * 默认的loader配置
-       * <pre>
-       * {
-       *   autoLoad : true,
-       *   property : 'record',
-       *   dataType : 'json'
-       * }
-       * </pre>
-       * @type {Object}
-       */
-      defaultLoaderCfg: {
-        value: {
-          autoLoad: true,
-          property: 'record',
-          dataType: 'json'
-        }
-      },
-      /**
-       * 异步提交表单时的屏蔽
-       * @type {BUI.Mask.LoadMask|Object}
-       */
-      submitMask: {
-        value: {
-          msg: '正在提交。。。'
-        }
-      },
-      /**
-       * 提交表单的方式
-       *
-       *  - normal 普通方式，直接提交表单
-       *  - ajax 异步提交方式，在submit指定参数
-       *  - iframe 使用iframe提交,开发中。。。
-       * @cfg {String} [submitType='normal']
-       */
-      submitType: {
-        value: 'normal'
-      },
-      /**
-       * 表单提交前，如果存在错误，是否将焦点定位到第一个错误
-       * @type {Object}
-       */
-      focusError: {
-        value: true
-      },
-      /**
-       * 表单提交成功后的回调函数，普通提交方式 submitType = 'normal'，不会调用
-       * @type {Object}
-       */
-      callback: {},
-      decorateCfgFields: {
-        value: {
-          'method': true,
-          'action': true
-        }
-      },
-      /**
-       * 默认的子控件时文本域
-       * @type {String}
-       */
-      defaultChildClass: {
-        value: 'form-field'
-      },
-      /**
-       * 使用的标签，为form
-       * @type {String}
-       */
-      elTagName: {
-        value: 'form'
-      },
-      /**
-       * 表单按钮
-       * @type {Array}
-       */
-      buttons: {},
-      /**
-       * 按钮栏
-       * @type {BUI.Toolbar.Bar}
-       */
-      buttonBar: {
-        shared: false,
-        value: {}
-      },
-      childContainer: {
-        value: '.x-form-fields'
-      },
-      /**
-       * 表单初始化的数据，用于初始化或者表单回滚
-       * @type {Object}
-       */
-      initRecord: {},
-      /**
-       * 表单默认不显示错误，不影响表单分组和表单字段
-       * @type {Boolean}
-       */
-      showError: {
-        value: false
-      },
-      xview: {
-        value: FormView
-      },
-      tpl: {
-        value: '<div class="x-form-fields"></div>'
-      }
-    }
-  }, {
-    xclass: 'form'
-  });
-  Form.View = FormView;
-  module.exports = Form;
-});
-define("bui/form/row", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
+    });
+  },
   /**
-   * @fileOverview 表单里的一行元素
+   * 表单提交，如果未通过验证，则阻止提交
+   */
+  submit : function(options){
+    var _self = this,
+      submitType = _self.get('submitType');
+    _self.valid();
+    if(_self.isValid()){
+      if(_self.onBeforeSubmit() == false){
+        return;
+      }
+      if(submitType === TYPE_SUBMIT.NORMAL){
+        _self.get('el')[0].submit();
+      }else if(submitType === TYPE_SUBMIT.AJAX){
+        _self.ajaxSubmit(options);
+      }
+    }else{
+      _self.focusError();
+    }
+  },
+  /**
+   * 异步提交表单
+   */
+  ajaxSubmit : function(options){
+    var _self = this,
+      method = _self.get('method'),
+      action = _self.get('action'),
+      callback = _self.get('callback'),
+      submitMask = _self.get('submitMask'),
+      data = _self.serializeToObject(), //获取表单数据
+      success,
+      ajaxParams = BUI.merge(true,{ //合并请求参数
+        url : action,
+        type : method,
+        dataType : 'json',
+        data : data
+      },options);
+
+    if(options && options.success){
+      success = options.success;
+    }
+    ajaxParams.success = function(data){ //封装success方法
+      if(submitMask && submitMask.hide){
+        submitMask.hide();
+      }
+      if(success){
+        success(data);
+      }
+      callback && callback.call(_self,data);
+    } 
+    if(submitMask && submitMask.show){
+      submitMask.show();
+    }
+    $.ajax(ajaxParams); 
+  },
+  //获取提交的屏蔽层
+  _initSubmitMask : function(){
+    var _self = this,
+      submitType = _self.get('submitType'),
+      submitMask = _self.get('submitMask');
+    if(submitType === TYPE_SUBMIT.AJAX && submitMask){
+      require.async('bui/mask',function(Mask){
+        var cfg = $.isPlainObject(submitMask) ? submitMask : {};
+        submitMask = new Mask.LoadMask(BUI.mix({el : _self.get('el')},cfg));
+        _self.set('submitMask',submitMask);
+      });
+    }
+  },
+  /**
+   * 序列化表单成对象，所有的键值都是字符串
+   * @return {Object} 序列化成对象
+   */
+  serializeToObject : function(){
+    return BUI.FormHelper.serializeToObject(this.get('el')[0]);
+  },
+  /**
+   * serializeToObject 的缩写，所有的键值都是字符串
+   * @return {Object} 序列化成对象
+   */
+  toObject : function(){
+    return this.serializeToObject();
+  },
+  /**
+   * 表单提交前
+   * @protected
+   * @return {Boolean} 是否取消提交
+   */
+  onBeforeSubmit : function(){
+    return this.fire('beforesubmit');
+  },
+  /**
+   * 表单恢复初始值
+   */
+  reset : function(){
+    var _self = this,
+      initRecord = _self.get('initRecord');
+    _self.setRecord(initRecord);
+  },
+  /**
+   * 重置提示信息，因为在表单隐藏状态下，提示信息定位错误
+   * <pre><code>
+   * dialog.on('show',function(){
+   *   form.resetTips();
+   * });
+   *   
+   * </code></pre>
+   */
+  resetTips : function(){
+    var _self = this,
+      fields = _self.getFields();
+    BUI.each(fields,function(field){
+      field.resetTip();
+    });
+  },
+  /**
+   * @protected
    * @ignore
    */
-  var BUI = require("bui/common"),
-    FieldContainer = require("bui/form/fieldcontainer");
-  /**
-   * @class BUI.Form.Row
-   * 表单行
-   * @extends BUI.Form.FieldContainer
-   */
-  var Row = FieldContainer.extend({}, {
-    ATTRS: {
-      elCls: {
-        value: 'row'
-      },
-      defaultChildCfg: {
-        value: {
-          tpl: ' <label class="control-label">{label}</label>\
+  destructor : function(){
+    var _self = this,
+      buttonBar = _self.get('buttonBar'),
+      submitMask = _self.get('submitMask');
+    if(buttonBar && buttonBar.destroy){
+      buttonBar.destroy();
+    }
+    if(submitMask && submitMask.destroy){
+      submitMask.destroy();
+    }
+  },
+  //设置表单的初始数据
+  _uiSetInitRecord : function(v){
+    //if(v){
+      this.setRecord(v);
+    //}
+    
+  }
+},{
+  ATTRS : {
+    /**
+     * 提交的路径
+     * @type {String}
+     */
+    action : {
+      view : true,
+      value : ''
+    },
+    allowTextSelection:{
+      value : true
+    },
+    events : {
+      value : {
+        /**
+         * @event
+         * 表单提交前触发，如果返回false会阻止表单提交
+         */
+        beforesubmit : false
+      }
+    },
+    /**
+     * 提交的方式
+     * @type {String}
+     */
+    method : {
+      view : true,
+      value : 'get'
+    },
+    /**
+     * 默认的loader配置
+     * <pre>
+     * {
+     *   autoLoad : true,
+     *   property : 'record',
+     *   dataType : 'json'
+     * }
+     * </pre>
+     * @type {Object}
+     */
+    defaultLoaderCfg : {
+      value : {
+        autoLoad : true,
+        property : 'record',
+        dataType : 'json'
+      }
+    },
+    /**
+     * 异步提交表单时的屏蔽
+     * @type {BUI.Mask.LoadMask|Object}
+     */
+    submitMask : {
+      value : {
+        msg : '正在提交。。。'
+      }
+    },
+    /**
+     * 提交表单的方式
+     *
+     *  - normal 普通方式，直接提交表单
+     *  - ajax 异步提交方式，在submit指定参数
+     *  - iframe 使用iframe提交,开发中。。。
+     * @cfg {String} [submitType='normal']
+     */
+    submitType : {
+      value : 'normal'
+    },
+    /**
+     * 表单提交前，如果存在错误，是否将焦点定位到第一个错误
+     * @type {Object}
+     */
+    focusError : {
+      value : true
+    },
+    /**
+     * 表单提交成功后的回调函数，普通提交方式 submitType = 'normal'，不会调用
+     * @type {Object}
+     */
+    callback : {
+
+    },
+    decorateCfgFields : {
+      value : {
+        'method' : true,
+        'action' : true
+      }
+    },
+    /**
+     * 默认的子控件时文本域
+     * @type {String}
+     */
+    defaultChildClass : {
+      value : 'form-field'
+    },
+    /**
+     * 使用的标签，为form
+     * @type {String}
+     */
+    elTagName : {
+      value : 'form'
+    },
+    /**
+     * 表单按钮
+     * @type {Array}
+     */
+    buttons : {
+
+    },
+    /**
+     * 按钮栏
+     * @type {BUI.Toolbar.Bar}
+     */
+    buttonBar : {
+      shared : false,
+      value : {}
+    },
+    childContainer : {
+      value : '.x-form-fields'
+    },
+    /**
+     * 表单初始化的数据，用于初始化或者表单回滚
+     * @type {Object}
+     */
+    initRecord : {
+
+    },
+    /**
+     * 表单默认不显示错误，不影响表单分组和表单字段
+     * @type {Boolean}
+     */
+    showError : {
+      value : false
+    },
+    xview : {
+      value : FormView
+    },
+    tpl : {
+      value : '<div class="x-form-fields"></div>'
+    }
+  }
+},{
+  xclass : 'form'
+});
+
+Form.View = FormView;
+
+module.exports = Form;
+
+});
+define("bui/form/row", ["bui/common","jquery","bui/overlay","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 表单里的一行元素
+ * @ignore
+ */
+
+var BUI = require("bui/common"),
+  FieldContainer = require("bui/form/fieldcontainer");
+
+/**
+ * @class BUI.Form.Row
+ * 表单行
+ * @extends BUI.Form.FieldContainer
+ */
+var Row = FieldContainer.extend({
+
+},{
+  ATTRS : {
+    elCls : {
+      value : 'row'
+    },
+    defaultChildCfg:{
+      value : {
+        tpl : ' <label class="control-label">{label}</label>\
               <div class="controls">\
               </div>',
-          childContainer: '.controls',
-          showOneError: true,
-          controlContainer: '.controls',
-          elCls: 'control-group span8',
-          errorTpl: '<span class="valid-text"><span class="estate error"><span class="x-icon x-icon-mini x-icon-error">!</span><em>{error}</em></span></span>'
-        }
-      },
-      defaultChildClass: {
-        value: 'form-field-text'
+        childContainer : '.controls',
+        showOneError : true,
+        controlContainer : '.controls',
+        elCls : 'control-group span8',
+        errorTpl : '<span class="valid-text"><span class="estate error"><span class="x-icon x-icon-mini x-icon-error">!</span><em>{error}</em></span></span>'
       }
+      
+    },
+    defaultChildClass : {
+      value : 'form-field-text'
     }
-  }, {
-    xclass: 'form-row'
-  });
-  module.exports = Row;
-});
-define("bui/form/fieldgroup", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单文本域组，可以包含一个至多个字段
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    Group = require("bui/form/group/base");
-  BUI.mix(Group, {
-    Range: require("bui/form/group/range"),
-    Check: require("bui/form/group/check"),
-    Select: require("bui/form/group/select")
-  });
-  return Group;
-});
-define("bui/form/group/base", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
-  /**
-   * @fileOverview 表单文本域组，可以包含一个至多个字段
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    FieldContainer = require("bui/form/fieldcontainer");
-  /**
-   * @class BUI.Form.Group
-   * 表单字段分组
-   * @extends BUI.Form.FieldContainer
-   */
-  var Group = FieldContainer.extend({}, {
-    ATTRS: {
-      /**
-       * 标题
-       * @type {String}
-       */
-      label: {
-        view: true
-      },
-      defaultChildClass: {
-        value: 'form-field'
-      }
-    }
-  }, {
-    xclass: 'form-group'
-  });
-  module.exports = Group;
-});
-define("bui/form/group/range", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
-  /**
-   * @fileOverview 范围的字段组，比如日期范围等
-   * @ignore
-   */
-  var Group = require("bui/form/group/base");
-
-  function testRange(self, curVal, prevVal) {
-    var allowEqual = self.get('allowEqual');
-    if (allowEqual) {
-      return prevVal <= curVal;
-    }
-    return prevVal < curVal;
   }
-  /**
-   * @class BUI.Form.Group.Range
-   * 字段范围分组，用于日期范围，数字范围等场景
-   * @extends BUI.Form.Group
-   */
-  var Range = Group.extend({}, {
-    ATTRS: {
-      /**
-       * 默认的验证函数失败后显示的文本。
-       * @type {Object}
-       */
-      rangeText: {
-        value: '开始不能大于结束！'
-      },
-      /**
-       * 是否允许前后相等
-       * @type {Boolean}
-       */
-      allowEqual: {
-        value: true
-      },
-      /**
-       * 验证器
-       * @override
-       * @type {Function}
-       */
-      validator: {
-        value: function(record) {
-          var _self = this,
-            fields = _self.getFields(),
-            valid = true;
-          for (var i = 1; i < fields.length; i++) {
-            var cur = fields[i],
-              prev = fields[i - 1],
-              curVal,
-              prevVal;
-            if (cur && prev) {
-              curVal = cur.get('value');
-              prevVal = prev.get('value');
-              if (!testRange(_self, curVal, prevVal)) {
-                valid = false;
-                break;
-              }
+},{
+  xclass:'form-row'
+});
+
+module.exports = Row;
+
+});
+define("bui/form/fieldgroup", ["bui/common","jquery","bui/overlay","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 表单文本域组，可以包含一个至多个字段
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+var BUI = require("bui/common"),
+  Group = require("bui/form/group/base");
+
+BUI.mix(Group,{
+  Range : require("bui/form/group/range"),
+  Check : require("bui/form/group/check"),
+  Select : require("bui/form/group/select")
+});
+return Group;
+
+});
+define("bui/form/group/base", ["bui/common","jquery","bui/overlay","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 表单文本域组，可以包含一个至多个字段
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+var BUI = require("bui/common"),
+  FieldContainer = require("bui/form/fieldcontainer");
+
+/**
+ * @class BUI.Form.Group
+ * 表单字段分组
+ * @extends BUI.Form.FieldContainer
+ */
+var Group = FieldContainer.extend({
+  
+},{
+  ATTRS : {
+    /**
+     * 标题
+     * @type {String}
+     */
+    label : {
+      view : true
+    },
+    defaultChildClass : {
+      value : 'form-field'
+    }
+  }
+},{
+  xclass:'form-group'
+});
+
+module.exports = Group;
+
+});
+define("bui/form/group/range", ["bui/common","jquery","bui/overlay","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 范围的字段组，比如日期范围等
+ * @ignore
+ */
+
+var Group = require("bui/form/group/base");
+
+function testRange (self,curVal,prevVal) {
+  var allowEqual = self.get('allowEqual');
+
+  if(allowEqual){
+    return prevVal <= curVal;
+  }
+
+  return prevVal < curVal;
+}
+/**
+ * @class BUI.Form.Group.Range
+ * 字段范围分组，用于日期范围，数字范围等场景
+ * @extends BUI.Form.Group
+ */
+var Range = Group.extend({
+
+},{
+  ATTRS : {
+    /**
+     * 默认的验证函数失败后显示的文本。
+     * @type {Object}
+     */
+    rangeText : {
+      value : '开始不能大于结束！'
+    },
+    /**
+     * 是否允许前后相等
+     * @type {Boolean}
+     */
+    allowEqual : {
+      value : true
+    },
+    /**
+     * 验证器
+     * @override
+     * @type {Function}
+     */
+    validator : {
+      value : function (record) {
+        var _self = this,
+          fields = _self.getFields(),
+          valid = true;
+        for(var i = 1; i < fields.length ; i ++){
+          var cur = fields[i],
+            prev = fields[i-1],
+            curVal,
+            prevVal;
+          if(cur && prev){
+            curVal = cur.get('value');
+            prevVal = prev.get('value');
+            if(!testRange(_self,curVal,prevVal)){
+              valid = false;
+              break;
             }
           }
-          if (!valid) {
-            return _self.get('rangeText');
-          }
-          return null;
         }
+        if(!valid){
+          return _self.get('rangeText');
+        }
+        return null;
       }
     }
-  }, {
-    xclass: 'form-group-range'
-  });
-  module.exports = Range;
-});
-define("bui/form/group/check", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
-  /**
-   * @fileOverview 选择分组，包含，checkbox,radio
-   * @ignore
-   */
-  var Group = require("bui/form/group/base");
-
-  function getFieldName(self) {
-    var firstField = self.getFieldAt(0);
-    if (firstField) {
-      return firstField.get('name');
-    }
-    return '';
   }
-  /**
-   * @class BUI.Form.Group.Check
-   * 单选，复选分组，只能包含同name的checkbox,radio
-   * @extends BUI.Form.Group
-   */
-  var Check = Group.extend({
-    bindUI: function() {
-      var _self = this;
-      _self.on('change', function(ev) {
-        var name = getFieldName(_self),
-          range = _self.get('range'),
-          record = _self.getRecord(),
-          value = record[name],
-          max = range[1];
-        if (value && value.length >= max) {
-          _self._setFieldsEnable(name, false);
-        } else {
-          _self._setFieldsEnable(name, true);
-        }
-      });
-    },
-    _setFieldsEnable: function(name, enable) {
-      var _self = this,
-        fields = _self.getFields(name);
-      BUI.each(fields, function(field) {
-        if (enable) {
-          field.enable();
-        } else {
-          if (!field.get('checked')) {
-            field.disable();
-          }
-        }
-      });
-    },
-    _uiSetRange: function(v) {
-      this.addRule('checkRange', v);
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 需要选中的字段,
-       * <ol>
-       *   <li>如果 range:1，range:2 最少勾选1个，2个。</li>
-       *   <li>如果 range :0,可以全部不选中。</li>
-       *   <li>如果 range:[1,2],则必须选中1-2个。</li>
-       * </ol>
-       * @type {Array|Number}
-       */
-      range: {
-        setter: function(v) {
-          if (BUI.isString(v) || BUI.isNumber(v)) {
-            v = [parseInt(v, 10)];
-          }
-          return v;
-        }
-      }
-    }
-  }, {
-    xclass: 'form-group-check'
-  });
-  module.exports = Check;
+},{
+  xclass : 'form-group-range'
 });
-define("bui/form/group/select", ["bui/common", "jquery", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
-  /**
-   * @fileOverview 选择框分组
-   * @ignore
-   */
-  var Group = require("bui/form/group/base"),
-    Data = require("bui/data"),
-    Bindable = BUI.Component.UIBase.Bindable;
 
-  function getItems(nodes) {
-    var items = [];
-    BUI.each(nodes, function(node) {
-      items.push({
-        text: node.text,
-        value: node.id
-      });
+module.exports = Range;
+
+});
+define("bui/form/group/check", ["bui/common","jquery","bui/overlay","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 选择分组，包含，checkbox,radio
+ * @ignore
+ */
+
+var Group = require("bui/form/group/base");
+
+function getFieldName (self) {
+  var firstField = self.getFieldAt(0);
+  if(firstField){
+    return firstField.get('name');
+  }
+  return '';
+}
+/**
+ * @class BUI.Form.Group.Check
+ * 单选，复选分组，只能包含同name的checkbox,radio
+ * @extends BUI.Form.Group
+ */
+var Check = Group.extend({
+  bindUI : function(){
+    var _self = this;
+    _self.on('change',function(ev){
+      var name = getFieldName(_self),
+        range = _self.get('range'),
+        record = _self.getRecord(),
+        value = record[name],
+        max = range[1];
+      if(value && value.length >= max){
+        _self._setFieldsEnable(name,false);
+      }else{
+        _self._setFieldsEnable(name,true);
+      }
     });
-    return items;
+  },
+  _setFieldsEnable : function(name,enable){
+
+    var _self = this,
+      fields = _self.getFields(name);
+    BUI.each(fields,function(field){
+      if(enable){
+        field.enable();
+      }else{
+        if(!field.get('checked')){
+          field.disable();
+        }
+      }
+    });
+  },
+  _uiSetRange : function(v){
+    this.addRule('checkRange',v);
   }
-  /**
-   * @class BUI.Form.Group.Select
-   * 级联选择框分组
-   * @extends BUI.Form.Group
-   * @mixins BUI.Component.UIBase.Bindable
-   */
-  var Select = Group.extend([Bindable], {
-    initializer: function() {
-      var _self = this,
-        url = _self.get('url'),
-        store = _self.get('store') || _self._getStore();
-      if (!store.isStore) {
-        store.autoLoad = true;
-        if (url) {
-          store.url = url;
-        }
-        store = new Data.TreeStore(store);
-      }
-      _self.set('store', store);
-    },
-    bindUI: function() {
-      var _self = this;
-      _self.on('change', function(ev) {
-        var target = ev.target;
-        if (target != _self) {
-          var field = target,
-            value = field.get('value'),
-            level = _self._getFieldIndex(field) + 1;
-          _self._valueChange(value, level);
-        }
-      });
-    },
-    onLoad: function(e) {
-      var _self = this,
-        node = e ? e.node : _self.get('store').get('root');
-      _self._setFieldItems(node.level, node.children);
-    },
-    //获取store的配置项
-    _getStore: function() {
-      var _self = this,
-        type = _self.get('type');
-      if (type && TypeMap[type]) {
-        return TypeMap[type];
-      }
-      return {};
-    },
-    _valueChange: function(value, level) {
-      var _self = this,
-        store = _self.get('store');
-      if (value) {
-        var node = store.findNode(value);
-        if (!node) {
-          return;
-        }
-        if (store.isLoaded(node)) {
-          _self._setFieldItems(level, node.children);
-        } else {
-          store.loadNode(node);
-        }
-      } else {
-        _self._setFieldItems(level, []);
-      }
-    },
-    _setFieldItems: function(level, nodes) {
-      var _self = this,
-        field = _self.getFieldAt(level),
-        items = getItems(nodes);
-      if (field) {
-        field.setItems(items);
-        _self._valueChange(field.get('value'), level + 1);
-      }
-    },
-    //获取字段的索引位置
-    _getFieldIndex: function(field) {
-      var _self = this,
-        fields = _self.getFields();
-      return BUI.Array.indexOf(field, fields);
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 级联选择框的类型,目前仅内置了 'city'一个类型，用于选择省、市、县,
-       * 可以自定义添加类型
-       *         Select.addType('city',{
-       *           proxy : {
-       *             url : 'http://lp.taobao.com/go/rgn/citydistrictdata.php',
-       *             dataType : 'jsonp'
-       *           },
-       *           map : {
-       *             isleaf : 'leaf',
-       *             value : 'text'
-       *           }
-       *         });
-       * @type {String}
-       */
-      type: {},
-      store: {}
-    }
-  }, {
-    xclass: 'form-group-select'
-  });
-  var TypeMap = {};
-  /**
-   * 添加一个类型的级联选择框，目前仅内置了 'city'一个类型，用于选择省、市、县
-   * @static
-   * @param {String} name 类型名称
-   * @param {Object} cfg  配置项，详细信息请参看： @see{BUI.Data.TreeStore}
-   */
-  Select.addType = function(name, cfg) {
-    TypeMap[name] = cfg;
-  };
-  Select.addType('city', {
-    proxy: {
-      url: 'http://lp.taobao.com/go/rgn/citydistrictdata.php',
-      dataType: 'jsonp'
-    },
-    map: {
-      isleaf: 'leaf',
-      value: 'text'
-    }
-  });
-  module.exports = Select;
-});
-define("bui/form/hform", ["jquery", "bui/common", "bui/overlay", "bui/list", "bui/data"], function(require, exports, module) {
-  /**
-   * @fileOverview 垂直表单
-   * @ignore
-   */
-  var $ = require('jquery'),
-    BUI = require("bui/common"),
-    Form = require("bui/form/form");
-  /**
-   * @class BUI.Form.HForm
-   * 水平表单，字段水平排列
-   * @extends BUI.Form.Form
-   *
-   */
-  var Horizontal = Form.extend({
+
+},{
+  ATTRS : {
     /**
-     * 获取按钮栏默认的配置项
-     * @protected
-     * @return {Object}
+     * 需要选中的字段,
+     * <ol>
+     *   <li>如果 range:1，range:2 最少勾选1个，2个。</li>
+     *   <li>如果 range :0,可以全部不选中。</li>
+     *   <li>如果 range:[1,2],则必须选中1-2个。</li>
+     * </ol>
+     * @type {Array|Number}
      */
-    getDefaultButtonBarCfg: function() {
-      var _self = this,
-        buttons = _self.get('buttons');
-      return {
-        autoRender: true,
-        elCls: 'actions-bar toolbar row',
-        tpl: '<div class="form-actions span21 offset3"></div>',
-        childContainer: '.form-actions',
-        render: _self.get('el'),
-        items: buttons,
-        defaultChildClass: 'bar-item-button'
-      };
-    }
-  }, {
-    ATTRS: {
-      defaultChildClass: {
-        value: 'form-row'
-      },
-      errorTpl: {
-        value: '<span class="valid-text"><span class="estate error"><span class="x-icon x-icon-mini x-icon-error">!</span><em>{error}</em></span></span>'
-      },
-      elCls: {
-        value: 'form-horizontal'
+    range : {
+      setter : function (v) {
+        if(BUI.isString(v) || BUI.isNumber(v)){
+          v = [parseInt(v,10)];
+        }
+        return v;
       }
-    },
-    PARSER: {}
-  }, {
-    xclass: 'form-horizontal'
+    }
+  }
+},{
+  xclass : 'form-group-check'
+});
+
+module.exports = Check;
+
+});
+define("bui/form/group/select", ["bui/common","jquery","bui/overlay","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 选择框分组
+ * @ignore
+ */
+
+var Group = require("bui/form/group/base"),
+  Data = require("bui/data"),
+  Bindable = BUI.Component.UIBase.Bindable;
+
+function getItems(nodes){
+  var items = [];
+  BUI.each(nodes,function(node){
+    items.push({
+      text : node.text,
+      value : node.id
+    });
   });
-  module.exports = Horizontal;
+  return items;
+}
+
+/**
+ * @class BUI.Form.Group.Select
+ * 级联选择框分组
+ * @extends BUI.Form.Group
+ * @mixins BUI.Component.UIBase.Bindable
+ */
+var Select = Group.extend([Bindable],{
+  initializer : function(){
+    var _self = this,
+      url = _self.get('url'),
+      store = _self.get('store') || _self._getStore();
+    if(!store.isStore){
+      store.autoLoad = true;
+      if(url){
+        store.url = url;
+      }
+      store = new Data.TreeStore(store);
+    }
+    _self.set('store',store);
+  },
+  bindUI : function  () {
+    var _self = this;
+    _self.on('change',function (ev) {
+      var target = ev.target;
+      if(target != _self){
+        var field = target,
+          value = field.get('value'),
+          level = _self._getFieldIndex(field) + 1;
+        _self._valueChange(value,level);
+      }
+    });
+  },
+  onLoad : function(e){
+    var _self = this,
+      node = e ? e.node : _self.get('store').get('root');
+    _self._setFieldItems(node.level,node.children); 
+  },
+  //获取store的配置项
+  _getStore : function(){
+    var _self = this,
+      type = _self.get('type');
+    if(type && TypeMap[type]){
+      return TypeMap[type];
+    }
+    return {};
+  },
+  _valueChange : function(value,level){
+    var _self = this,
+      store = _self.get('store');
+    if(value){
+      var node = store.findNode(value);
+      if(!node){
+        return;
+      }
+      if(store.isLoaded(node)){
+        _self._setFieldItems(level,node.children);
+      }else{
+        store.loadNode(node);
+      }
+    }else{
+      _self._setFieldItems(level,[]);
+    }
+  },
+  _setFieldItems : function(level,nodes){
+    var _self = this,
+      field = _self.getFieldAt(level),
+      items = getItems(nodes);
+    if(field){
+      field.setItems(items);
+      _self._valueChange(field.get('value'),level + 1);
+    }
+  },
+  //获取字段的索引位置
+  _getFieldIndex : function (field) {
+    var _self = this,
+      fields = _self.getFields();
+    return  BUI.Array.indexOf(field,fields);
+  }
+},{
+  ATTRS : {
+    /**
+     * 级联选择框的类型,目前仅内置了 'city'一个类型，用于选择省、市、县,
+     * 可以自定义添加类型
+     *         Select.addType('city',{
+     *           proxy : {
+     *             url : 'http://lp.taobao.com/go/rgn/citydistrictdata.php',
+     *             dataType : 'jsonp'
+     *           },
+     *           map : {
+     *             isleaf : 'leaf',
+     *             value : 'text'
+     *           }
+     *         });
+     * @type {String}
+     */
+    type : {
+
+    },
+    store : {
+
+    }
+  }
+},{
+  xclass : 'form-group-select'
+});
+
+var TypeMap = {};
+
+/**
+ * 添加一个类型的级联选择框，目前仅内置了 'city'一个类型，用于选择省、市、县
+ * @static
+ * @param {String} name 类型名称
+ * @param {Object} cfg  配置项，详细信息请参看： @see{BUI.Data.TreeStore}
+ */
+Select.addType = function(name,cfg){
+  TypeMap[name] = cfg;
+};
+
+Select.addType('city',{
+  proxy : {
+    url : 'http://lp.taobao.com/go/rgn/citydistrictdata.php',
+    dataType : 'jsonp'
+  },
+  map : {
+    isleaf : 'leaf',
+    value : 'text'
+  }
+});
+
+module.exports = Select;
+
+});
+define("bui/form/hform", ["jquery","bui/common","bui/overlay","bui/list","bui/data"], function(require, exports, module){
+/**
+ * @fileOverview 垂直表单
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  Form = require("bui/form/form");
+
+/**
+ * @class BUI.Form.HForm
+ * 水平表单，字段水平排列
+ * @extends BUI.Form.Form
+ * 
+ */
+var Horizontal = Form.extend({
+  /**
+   * 获取按钮栏默认的配置项
+   * @protected
+   * @return {Object} 
+   */
+  getDefaultButtonBarCfg : function(){
+    var _self = this,
+      buttons = _self.get('buttons');
+    return {
+      autoRender : true,
+      elCls : 'actions-bar toolbar row',
+      tpl : '<div class="form-actions span21 offset3"></div>',
+      childContainer : '.form-actions',
+      render : _self.get('el'),
+      items : buttons,
+      defaultChildClass : 'bar-item-button'
+    };
+  }
+},{
+  ATTRS : {
+    defaultChildClass : {
+      value : 'form-row'
+    },
+    errorTpl : {
+      value : '<span class="valid-text"><span class="estate error"><span class="x-icon x-icon-mini x-icon-error">!</span><em>{error}</em></span></span>'
+    },
+    elCls : {
+      value : 'form-horizontal'
+    }
+  },
+  PARSER : {
+    
+  }
+},{
+  xclass : 'form-horizontal'
+});
+
+module.exports = Horizontal;
+
 });

@@ -22,3 +22,4 @@ _site
 spm_modules
 .cache
 docs
+dist

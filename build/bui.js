@@ -1006,55 +1006,2571 @@ seajs.config = function(configData) {
     }
   }();
 }());
-define("bui/common", ["jquery"], function(require, exports, module) {
-  var BUI = require("bui/common/util");
-  BUI.mix(BUI, {
-    UA: require("bui/common/ua"),
-    JSON: require("bui/common/json"),
-    Date: require("bui/common/date"),
-    Array: require("bui/common/array"),
-    KeyCode: require("bui/common/keycode"),
-    Observable: require("bui/common/observable"),
-    Base: require("bui/common/base"),
-    Component: require("bui/common/component/component")
-  });
-  module.exports = BUI;
+define("bui/common", ["jquery"], function(require, exports, module){
+var BUI = require("bui/common/util");
+
+BUI.mix(BUI, {
+  UA: require("bui/common/ua"),
+  JSON: require("bui/common/json"),
+  Date: require("bui/common/date"),
+  Array: require("bui/common/array"),
+  KeyCode: require("bui/common/keycode"),
+  Observable: require("bui/common/observable"),
+  Base: require("bui/common/base"),
+  Component: require("bui/common/component/component")
 });
-define("bui/common/util", ["jquery"], function(require, exports, module) {
-  /**
-   * @class BUI
-   * 控件库的工具方法，这些工具方法直接绑定到BUI对象上
-   * <pre><code>
-   *   BUI.isString(str);
-   *
-   *   BUI.extend(A,B);
-   *
-   *   BUI.mix(A,{a:'a'});
-   * </code></pre>
-   * @singleton
-   */
-  var $ = require('jquery');
-  //兼容jquery 1.6以下
-  (function($) {
-    if ($.fn) {
-      $.fn.on = $.fn.on || $.fn.bind;
-      $.fn.off = $.fn.off || $.fn.unbind;
+
+module.exports = BUI;
+
+});
+define("bui/common/util", ["jquery"], function(require, exports, module){
+/**
+ * @class BUI
+ * 控件库的工具方法，这些工具方法直接绑定到BUI对象上
+ * <pre><code>
+ *   BUI.isString(str);
+ *
+ *   BUI.extend(A,B);
+ *
+ *   BUI.mix(A,{a:'a'});
+ * </code></pre>
+ * @singleton
+ */
+
+var $ = require('jquery');
+
+//兼容jquery 1.6以下
+(function($) {
+  if ($.fn) {
+    $.fn.on = $.fn.on || $.fn.bind;
+    $.fn.off = $.fn.off || $.fn.unbind;
+  }
+})($);
+/**
+ * @ignore
+ * 处于效率的目的，复制属性
+ */
+function mixAttrs(to, from) {
+
+  for (var c in from) {
+    if (from.hasOwnProperty(c)) {
+      to[c] = to[c] || {};
+      mixAttr(to[c], from[c]);
     }
-  })($);
-  /**
-   * @ignore
-   * 处于效率的目的，复制属性
-   */
-  function mixAttrs(to, from) {
-      for (var c in from) {
-        if (from.hasOwnProperty(c)) {
-          to[c] = to[c] || {};
-          mixAttr(to[c], from[c]);
+  }
+
+}
+//合并属性
+function mixAttr(attr, attrConfig) {
+  for (var p in attrConfig) {
+    if (attrConfig.hasOwnProperty(p)) {
+      if (p == 'value') {
+        if (BUI.isObject(attrConfig[p])) {
+          attr[p] = attr[p] || {};
+          BUI.mix( /*true,*/ attr[p], attrConfig[p]);
+        } else if (BUI.isArray(attrConfig[p])) {
+          attr[p] = attr[p] || [];
+          //BUI.mix(/*true,*/attr[p], attrConfig[p]);
+          attr[p] = attr[p].concat(attrConfig[p]);
+        } else {
+          attr[p] = attrConfig[p];
         }
+      } else {
+        attr[p] = attrConfig[p];
       }
     }
-    //合并属性
-  function mixAttr(attr, attrConfig) {
+  };
+}
+
+var win = window,
+  doc = document,
+  objectPrototype = Object.prototype,
+  toString = objectPrototype.toString,
+  BODY = 'body',
+  DOC_ELEMENT = 'documentElement',
+  SCROLL = 'scroll',
+  SCROLL_WIDTH = SCROLL + 'Width',
+  SCROLL_HEIGHT = SCROLL + 'Height',
+  ATTRS = 'ATTRS',
+  PARSER = 'PARSER',
+  GUID_DEFAULT = 'guid';
+
+window.BUI = window.BUI || {};
+
+$.extend(BUI, {
+  /**
+   * 版本号
+   * @memberOf BUI
+   * @type {Number}
+   */
+  version: '1.1.0',
+  /**
+   * 是否为函数
+   * @param  {*} fn 对象
+   * @return {Boolean}  是否函数
+   */
+  isFunction: function(fn) {
+    return typeof(fn) === 'function';
+  },
+  /**
+   * 是否数组
+   * @method
+   * @param  {*}  obj 是否数组
+   * @return {Boolean}  是否数组
+   */
+  isArray: ('isArray' in Array) ? Array.isArray : function(value) {
+    return toString.call(value) === '[object Array]';
+  },
+  /**
+   * 是否日期
+   * @param  {*}  value 对象
+   * @return {Boolean}  是否日期
+   */
+  isDate: function(value) {
+    return toString.call(value) === '[object Date]';
+  },
+  /**
+   * 是否是javascript对象
+   * @param {Object} value The value to test
+   * @return {Boolean}
+   * @method
+   */
+  isObject: (toString.call(null) === '[object Object]') ?
+    function(value) {
+      // check ownerDocument here as well to exclude DOM nodes
+      return value !== null && value !== undefined && toString.call(value) === '[object Object]' && value.ownerDocument === undefined;
+  } : function(value) {
+    return toString.call(value) === '[object Object]';
+  },
+  /**
+   * 是否是数字或者数字字符串
+   * @param  {String}  value 数字字符串
+   * @return {Boolean}  是否是数字或者数字字符串
+   */
+  isNumeric: function(value) {
+    return !isNaN(parseFloat(value)) && isFinite(value);
+  },
+  /**
+   * 将指定的方法或属性放到构造函数的原型链上，
+   * 函数支持多于2个变量，后面的变量同s1一样将其成员复制到构造函数的原型链上。
+   * @param  {Function} r  构造函数
+   * @param  {Object} s1 将s1 的成员复制到构造函数的原型链上
+   *      @example
+   *      BUI.augment(class1,{
+   *        method1: function(){
+   *
+   *        }
+   *      });
+   */
+  augment: function(r, s1) {
+    if (!BUI.isFunction(r)) {
+      return r;
+    }
+    for (var i = 1; i < arguments.length; i++) {
+      BUI.mix(r.prototype, arguments[i].prototype || arguments[i]);
+    };
+    return r;
+  },
+  /**
+   * 拷贝对象
+   * @param  {Object} obj 要拷贝的对象
+   * @return {Object} 拷贝生成的对象
+   */
+  cloneObject: function(obj) {
+    var result = BUI.isArray(obj) ? [] : {};
+
+    return BUI.mix(true, result, obj);
+  },
+  /**
+   * 抛出错误
+   */
+  error: function(msg) {
+    if (BUI.debug) {
+      throw msg;
+    }
+  },
+
+  /**
+   * 实现类的继承，通过父类生成子类
+   * @param  {Function} subclass
+   * @param  {Function} superclass 父类构造函数
+   * @param  {Object} overrides  子类的属性或者方法
+   * @return {Function} 返回的子类构造函数
+   * 示例:
+   *    @example
+   *    //父类
+   *    function base(){
+   *
+   *    }
+   *
+   *    function sub(){
+   *
+   *    }
+   *    //子类
+   *    BUI.extend(sub,base,{
+   *      method : function(){
+   *
+   *      }
+   *    });
+   *
+   *    //或者
+   *    var sub = BUI.extend(base,{});
+   */
+  extend: function(subclass, superclass, overrides, staticOverrides) {
+    //如果只提供父类构造函数，则自动生成子类构造函数
+    if (!BUI.isFunction(superclass)) {
+
+      overrides = superclass;
+      superclass = subclass;
+      subclass = function() {};
+    }
+
+    var create = Object.create ?
+      function(proto, c) {
+        return Object.create(proto, {
+          constructor: {
+            value: c
+          }
+        });
+      } :
+      function(proto, c) {
+        function F() {}
+
+        F.prototype = proto;
+
+        var o = new F();
+        o.constructor = c;
+        return o;
+      };
+    var superObj = create(superclass.prototype, subclass); //new superclass(),//实例化父类作为子类的prototype
+    subclass.prototype = BUI.mix(superObj, subclass.prototype); //指定子类的prototype
+    subclass.superclass = create(superclass.prototype, superclass);
+    BUI.mix(superObj, overrides);
+    BUI.mix(subclass, staticOverrides);
+    return subclass;
+  },
+  /**
+   * 生成唯一的Id
+   * @method
+   * @param {String} prefix 前缀
+   * @default 'bui-guid'
+   * @return {String} 唯一的编号
+   */
+  guid: (function() {
+    var map = {};
+    return function(prefix) {
+      prefix = prefix || BUI.prefix + GUID_DEFAULT;
+      if (!map[prefix]) {
+        map[prefix] = 1;
+      } else {
+        map[prefix] += 1;
+      }
+      return prefix + map[prefix];
+    };
+  })(),
+  /**
+   * 判断是否是字符串
+   * @return {Boolean} 是否是字符串
+   */
+  isString: function(value) {
+    return typeof value === 'string';
+  },
+  /**
+   * 判断是否数字，由于$.isNumberic方法会把 '123'认为数字
+   * @return {Boolean} 是否数字
+   */
+  isNumber: function(value) {
+    return typeof value === 'number';
+  },
+  /**
+   * 是否是布尔类型
+   *
+   * @param {Object} value 测试的值
+   * @return {Boolean}
+   */
+  isBoolean: function(value) {
+    return typeof value === 'boolean';
+  },
+  /**
+   * 控制台输出日志
+   * @param  {Object} obj 输出的数据
+   */
+  log: function(obj) {
+    if (BUI.debug && win.console && win.console.log) {
+      win.console.log(obj);
+    }
+  },
+  /**
+   * 将多个对象的属性复制到一个新的对象
+   */
+  merge: function() {
+    var args = $.makeArray(arguments),
+      first = args[0];
+    if (BUI.isBoolean(first)) {
+      args.shift();
+      args.unshift({});
+      args.unshift(first);
+    } else {
+      args.unshift({});
+    }
+
+    return BUI.mix.apply(null, args);
+
+  },
+  /**
+   * 封装 jQuery.extend 方法，将多个对象的属性merge到第一个对象中
+   * @return {Object}
+   */
+  mix: function() {
+    return $.extend.apply(null, arguments);
+  },
+  /**
+   * 创造顶层的命名空间，附加到window对象上,
+   * 包含namespace方法
+   */
+  app: function(name) {
+    if (!window[name]) {
+      window[name] = {
+        namespace: function(nsName) {
+          return BUI.namespace(nsName, window[name]);
+        }
+      };
+    }
+    return window[name];
+  },
+
+  mixAttrs: mixAttrs,
+
+  mixAttr: mixAttr,
+
+  /**
+   * 将其他类作为mixin集成到指定类上面
+   * @param {Function} c 构造函数
+   * @param {Array} mixins 扩展类
+   * @param {Array} attrs 扩展的静态属性，默认为['ATTRS']
+   * @return {Function} 传入的构造函数
+   */
+  mixin: function(c, mixins, attrs) {
+    attrs = attrs || [ATTRS, PARSER];
+    var extensions = mixins;
+    if (extensions) {
+      c.mixins = extensions;
+
+      var desc = {
+          // ATTRS:
+          // HTML_PARSER:
+        },
+        constructors = extensions['concat'](c);
+
+      // [ex1,ex2]，扩展类后面的优先，ex2 定义的覆盖 ex1 定义的
+      // 主类最优先
+      BUI.each(constructors, function(ext) {
+        if (ext) {
+          // 合并 ATTRS/HTML_PARSER 到主类
+          BUI.each(attrs, function(K) {
+            if (ext[K]) {
+              desc[K] = desc[K] || {};
+              // 不覆盖主类上的定义，因为继承层次上扩展类比主类层次高
+              // 但是值是对象的话会深度合并
+              // 注意：最好值是简单对象，自定义 new 出来的对象就会有问题(用 function return 出来)!
+              if (K == 'ATTRS') {
+                //BUI.mix(true,desc[K], ext[K]);
+                mixAttrs(desc[K], ext[K]);
+              } else {
+                BUI.mix(desc[K], ext[K]);
+              }
+
+            }
+          });
+        }
+      });
+
+      BUI.each(desc, function(v, k) {
+        c[k] = v;
+      });
+
+      var prototype = {};
+
+      // 主类最优先
+      BUI.each(constructors, function(ext) {
+        if (ext) {
+          var proto = ext.prototype;
+          // 合并功能代码到主类，不覆盖
+          for (var p in proto) {
+            // 不覆盖主类，但是主类的父类还是覆盖吧
+            if (proto.hasOwnProperty(p)) {
+              prototype[p] = proto[p];
+            }
+          }
+        }
+      });
+
+      BUI.each(prototype, function(v, k) {
+        c.prototype[k] = v;
+      });
+    }
+    return c;
+  },
+  /**
+   * 生成命名空间
+   * @param  {String} name 命名空间的名称
+   * @param  {Object} baseNS 在已有的命名空间上创建命名空间，默认“BUI”
+   * @return {Object} 返回的命名空间对象
+   *    @example
+   *    BUI.namespace("Grid"); // BUI.Grid
+   */
+  namespace: function(name, baseNS) {
+    baseNS = baseNS || BUI;
+    if (!name) {
+      return baseNS;
+    }
+    var list = name.split('.'),
+      //firstNS = win[list[0]],
+      curNS = baseNS;
+
+    for (var i = 0; i < list.length; i++) {
+      var nsName = list[i];
+      if (!curNS[nsName]) {
+        curNS[nsName] = {};
+      }
+      curNS = curNS[nsName];
+    };
+    return curNS;
+  },
+  /**
+   * BUI 控件的公用前缀
+   * @type {String}
+   */
+  prefix: 'bui-',
+  /**
+   * 替换字符串中的字段.
+   * @param {String} str 模版字符串
+   * @param {Object} o json data
+   * @param {RegExp} [regexp] 匹配字符串的正则表达式
+   */
+  substitute: function(str, o, regexp) {
+    if (!BUI.isString(str) || (!BUI.isObject(o)) && !BUI.isArray(o)) {
+      return str;
+    }
+
+    return str.replace(regexp || /\\?\{([^{}]+)\}/g, function(match, name) {
+      if (match.charAt(0) === '\\') {
+        return match.slice(1);
+      }
+      return (o[name] === undefined) ? '' : o[name];
+    });
+  },
+  /**
+   * 将$.param的反操作
+   * jquery只提供param方法
+   * @return {[type]} [description]
+   */
+  unparam: function(str){
+    if (typeof str != 'string' || !(str = $.trim(str))) {
+      return {};
+    }
+    var pairs = str.split('&'),
+      pairsArr,
+      rst = {};
+    for(var i = pairs.length - 1; i >= 0; i--) {
+      pairsArr = pairs[i].split('=');
+      rst[pairsArr[0]] = decodeURIComponent(pairsArr[1]);
+    }
+    return rst;
+  },
+  /**
+   * 使第一个字母变成大写
+   * @param  {String} s 字符串
+   * @return {String} 首字母大写后的字符串
+   */
+  ucfirst: function(s) {
+    s += '';
+    return s.charAt(0).toUpperCase() + s.substring(1);
+  },
+  /**
+   * 页面上的一点是否在用户的视图内
+   * @param {Object} offset 坐标，left,top
+   * @return {Boolean} 是否在视图内
+   */
+  isInView: function(offset) {
+    var left = offset.left,
+      top = offset.top,
+      viewWidth = BUI.viewportWidth(),
+      wiewHeight = BUI.viewportHeight(),
+      scrollTop = BUI.scrollTop(),
+      scrollLeft = BUI.scrollLeft();
+    //判断横坐标
+    if (left < scrollLeft || left > scrollLeft + viewWidth) {
+      return false;
+    }
+    //判断纵坐标
+    if (top < scrollTop || top > scrollTop + wiewHeight) {
+      return false;
+    }
+    return true;
+  },
+  /**
+   * 页面上的一点纵向坐标是否在用户的视图内
+   * @param {Object} top  纵坐标
+   * @return {Boolean} 是否在视图内
+   */
+  isInVerticalView: function(top) {
+    var wiewHeight = BUI.viewportHeight(),
+      scrollTop = BUI.scrollTop();
+
+    //判断纵坐标
+    if (top < scrollTop || top > scrollTop + wiewHeight) {
+      return false;
+    }
+    return true;
+  },
+  /**
+   * 页面上的一点横向坐标是否在用户的视图内
+   * @param {Object} left 横坐标
+   * @return {Boolean} 是否在视图内
+   */
+  isInHorizontalView: function(left) {
+    var viewWidth = BUI.viewportWidth(),
+      scrollLeft = BUI.scrollLeft();
+    //判断横坐标
+    if (left < scrollLeft || left > scrollLeft + viewWidth) {
+      return false;
+    }
+    return true;
+  },
+  /**
+   * 获取窗口可视范围宽度
+   * @return {Number} 可视区宽度
+   */
+  viewportWidth: function() {
+    return $(window).width();
+  },
+  /**
+   * 获取窗口可视范围高度
+   * @return {Number} 可视区高度
+   */
+  viewportHeight: function() {
+    return $(window).height();
+  },
+  /**
+   * 滚动到窗口的left位置
+   */
+  scrollLeft: function() {
+    return $(window).scrollLeft();
+  },
+  /**
+   * 滚动到横向位置
+   */
+  scrollTop: function() {
+    return $(window).scrollTop();
+  },
+  /**
+   * 窗口宽度
+   * @return {Number} 窗口宽度
+   */
+  docWidth: function() {
+    return Math.max(this.viewportWidth(), doc[DOC_ELEMENT][SCROLL_WIDTH], doc[BODY][SCROLL_WIDTH]);
+  },
+  /**
+   * 窗口高度
+   * @return {Number} 窗口高度
+   */
+  docHeight: function() {
+    return Math.max(this.viewportHeight(), doc[DOC_ELEMENT][SCROLL_HEIGHT], doc[BODY][SCROLL_HEIGHT]);
+  },
+  /**
+   * 遍历数组或者对象
+   * @param {Object|Array} element/Object 数组中的元素或者对象的值
+   * @param {Function} func 遍历的函数 function(elememt,index){} 或者 function(value,key){}
+   */
+  each: function(elements, func) {
+    if (!elements) {
+      return;
+    }
+    $.each(elements, function(k, v) {
+      return func(v, k);
+    });
+  },
+  /**
+   * 封装事件，便于使用上下文this,和便于解除事件时使用
+   * @protected
+   * @param  {Object} self   对象
+   * @param  {String} action 事件名称
+   */
+  wrapBehavior: function(self, action) {
+    return self['__bui_wrap_' + action] = function(e) {
+      if (!self.get('disabled')) {
+        self[action](e);
+      }
+    };
+  },
+  /**
+   * 获取封装的事件
+   * @protected
+   * @param  {Object} self   对象
+   * @param  {String} action 事件名称
+   */
+  getWrapBehavior: function(self, action) {
+    return self['__bui_wrap_' + action];
+  },
+  /**
+   * 获取页面上使用了此id的控件
+   * @param  {String} id 控件id
+   * @return {BUI.Component.Controller}  查找的控件
+   */
+  getControl: function(id) {
+    return BUI.Component.Manager.getComponent(id);
+  }
+
+});
+
+/**
+ * 表单帮助类，序列化、反序列化，设置值
+ * @class BUI.FormHelper
+ * @singleton
+ */
+var FormHelper = {
+  /**
+   * 将表单格式化成键值对形式
+   * @param {HTMLElement} form 表单
+   * @return {Object} 键值对的对象
+   */
+  serializeToObject: function(form) {
+    var array = $(form).serializeArray(),
+      result = {};
+    BUI.each(array, function(item) {
+      var name = item.name;
+      if (!result[name]) { //如果是单个值，直接赋值
+        result[name] = item.value;
+      } else { //多值使用数组
+        if (!BUI.isArray(result[name])) {
+          result[name] = [result[name]];
+        }
+        result[name].push(item.value);
+      }
+    });
+    return result;
+  },
+  /**
+   * 设置表单的值
+   * @param {HTMLElement} form 表单
+   * @param {Object} obj  键值对
+   */
+  setFields: function(form, obj) {
+    for (var name in obj) {
+      if (obj.hasOwnProperty(name)) {
+        BUI.FormHelper.setField(form, name, obj[name]);
+      }
+    }
+  },
+  /**
+   * 清空表单
+   * @param  {HTMLElement} form 表单元素
+   */
+  clear: function(form) {
+    var elements = $.makeArray(form.elements);
+
+    BUI.each(elements, function(element) {
+      if (element.type === 'checkbox' || element.type === 'radio') {
+        $(element).attr('checked', false);
+      } else {
+        $(element).val('');
+      }
+      $(element).change();
+    });
+  },
+  /**
+   * 设置表单字段
+   * @param {HTMLElement} form 表单元素
+   * @param {string} field 字段名
+   * @param {string} value 字段值
+   */
+  setField: function(form, fieldName, value) {
+    var fields = form.elements[fieldName];
+    if (fields && fields.type) {
+      formHelper._setFieldValue(fields, value);
+    } else if (BUI.isArray(fields) || (fields && fields.length)) {
+      BUI.each(fields, function(field) {
+        formHelper._setFieldValue(field, value);
+      });
+    }
+  },
+  //设置字段的值
+  _setFieldValue: function(field, value) {
+    if (field.type === 'checkbox') {
+      if (field.value == '' + value || (BUI.isArray(value) && BUI.Array.indexOf(field.value, value) !== -1)) {
+        $(field).attr('checked', true);
+      } else {
+        $(field).attr('checked', false);
+      }
+    } else if (field.type === 'radio') {
+      if (field.value == '' + value) {
+        $(field).attr('checked', true);
+      } else {
+        $(field).attr('checked', false);
+      }
+    } else {
+      $(field).val(value);
+    }
+  },
+  /**
+   * 获取表单字段值
+   * @param {HTMLElement} form 表单元素
+   * @param {string} field 字段名
+   * @return {String}   字段值
+   */
+  getField: function(form, fieldName) {
+    return BUI.FormHelper.serializeToObject(form)[fieldName];
+  }
+};
+
+
+BUI.FormHelper = FormHelper;
+
+module.exports = BUI;
+
+});
+define("bui/common/ua", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview UA,jQuery的 $.browser 对象非常难使用
+ * @ignore
+ * @author dxq613@gmail.com
+ */
+
+var $ = require('jquery');
+
+function numberify(s) {
+  var c = 0;
+  // convert '1.2.3.4' to 1.234
+  return parseFloat(s.replace(/\./g, function() {
+    return (c++ === 0) ? '.' : '';
+  }));
+};
+
+function uaMatch(s) {
+  s = s.toLowerCase();
+  var r = /(chrome)[ \/]([\w.]+)/.exec(s) || /(webkit)[ \/]([\w.]+)/.exec(s) || /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(s) || /(msie) ([\w.]+)/.exec(s) || s.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(s) || [],
+    a = {
+      browser: r[1] || "",
+      version: r[2] || "0"
+    },
+    b = {};
+  a.browser && (b[a.browser] = !0, b.version = a.version),
+  b.chrome ? b.webkit = !0 : b.webkit && (b.safari = !0);
+  return b;
+}
+
+var UA = $.UA || (function() {
+  var browser = $.browser || uaMatch(navigator.userAgent),
+    versionNumber = numberify(browser.version),
+    /**
+     * 浏览器版本检测
+     * @class BUI.UA
+     * @singleton
+     */
+    ua = {
+      /**
+       * ie 版本
+       * @type {Number}
+       */
+      ie: browser.msie && versionNumber,
+
+      /**
+       * webkit 版本
+       * @type {Number}
+       */
+      webkit: browser.webkit && versionNumber,
+      /**
+       * opera 版本
+       * @type {Number}
+       */
+      opera: browser.opera && versionNumber,
+      /**
+       * mozilla 火狐版本
+       * @type {Number}
+       */
+      mozilla: browser.mozilla && versionNumber
+    };
+  return ua;
+})();
+
+module.exports = UA;
+
+});
+define("bui/common/json", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview 由于jQuery只有 parseJSON ，没有stringify所以使用过程不方便
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  UA = require("bui/common/ua"),
+  win = window,
+  JSON = win.JSON;
+
+// ie 8.0.7600.16315@win7 json 有问题
+if (!JSON || UA['ie'] < 9) {
+  JSON = win.JSON = {};
+}
+
+function f(n) {
+  // Format integers to have at least two digits.
+  return n < 10 ? '0' + n : n;
+}
+
+if (typeof Date.prototype.toJSON !== 'function') {
+
+  Date.prototype.toJSON = function(key) {
+
+    return isFinite(this.valueOf()) ?
+      this.getUTCFullYear() + '-' +
+      f(this.getUTCMonth() + 1) + '-' +
+      f(this.getUTCDate()) + 'T' +
+      f(this.getUTCHours()) + ':' +
+      f(this.getUTCMinutes()) + ':' +
+      f(this.getUTCSeconds()) + 'Z' : null;
+  };
+
+  String.prototype.toJSON =
+    Number.prototype.toJSON =
+    Boolean.prototype.toJSON = function(key) {
+      return this.valueOf();
+  };
+}
+
+
+var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+  escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+  gap,
+  indent,
+  meta = { // table of character substitutions
+    '\b': '\\b',
+    '\t': '\\t',
+    '\n': '\\n',
+    '\f': '\\f',
+    '\r': '\\r',
+    '"': '\\"',
+    '\\': '\\\\'
+  },
+  rep;
+
+function quote(string) {
+
+  // If the string contains no control characters, no quote characters, and no
+  // backslash characters, then we can safely slap some quotes around it.
+  // Otherwise we must also replace the offending characters with safe escape
+  // sequences.
+
+  escapable['lastIndex'] = 0;
+  return escapable.test(string) ?
+    '"' + string.replace(escapable, function(a) {
+      var c = meta[a];
+      return typeof c === 'string' ? c :
+        '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+    }) + '"' :
+    '"' + string + '"';
+}
+
+function str(key, holder) {
+
+  // Produce a string from holder[key].
+
+  var i, // The loop counter.
+    k, // The member key.
+    v, // The member value.
+    length,
+    mind = gap,
+    partial,
+    value = holder[key];
+
+  // If the value has a toJSON method, call it to obtain a replacement value.
+
+  if (value && typeof value === 'object' &&
+    typeof value.toJSON === 'function') {
+    value = value.toJSON(key);
+  }
+
+  // If we were called with a replacer function, then call the replacer to
+  // obtain a replacement value.
+
+  if (typeof rep === 'function') {
+    value = rep.call(holder, key, value);
+  }
+
+  // What happens next depends on the value's type.
+
+  switch (typeof value) {
+    case 'string':
+      return quote(value);
+
+    case 'number':
+
+      // JSON numbers must be finite. Encode non-finite numbers as null.
+
+      return isFinite(value) ? String(value) : 'null';
+
+    case 'boolean':
+    case 'null':
+
+      // If the value is a boolean or null, convert it to a string. Note:
+      // typeof null does not produce 'null'. The case is included here in
+      // the remote chance that this gets fixed someday.
+
+      return String(value);
+
+      // If the type is 'object', we might be dealing with an object or an array or
+      // null.
+
+    case 'object':
+
+      // Due to a specification blunder in ECMAScript, typeof null is 'object',
+      // so watch out for that case.
+
+      if (!value) {
+        return 'null';
+      }
+
+      // Make an array to hold the partial results of stringifying this object value.
+
+      gap += indent;
+      partial = [];
+
+      // Is the value an array?
+
+      if (Object.prototype.toString.apply(value) === '[object Array]') {
+
+        // The value is an array. Stringify every element. Use null as a placeholder
+        // for non-JSON values.
+
+        length = value.length;
+        for (i = 0; i < length; i += 1) {
+          partial[i] = str(i, value) || 'null';
+        }
+
+        // Join all of the elements together, separated with commas, and wrap them in
+        // brackets.
+
+        v = partial.length === 0 ? '[]' :
+          gap ? '[\n' + gap +
+          partial.join(',\n' + gap) + '\n' +
+          mind + ']' :
+          '[' + partial.join(',') + ']';
+        gap = mind;
+        return v;
+      }
+
+      // If the replacer is an array, use it to select the members to be stringified.
+
+      if (rep && typeof rep === 'object') {
+        length = rep.length;
+        for (i = 0; i < length; i += 1) {
+          k = rep[i];
+          if (typeof k === 'string') {
+            v = str(k, value);
+            if (v) {
+              partial.push(quote(k) + (gap ? ': ' : ':') + v);
+            }
+          }
+        }
+      } else {
+
+        // Otherwise, iterate through all of the keys in the object.
+
+        for (k in value) {
+          if (Object.hasOwnProperty.call(value, k)) {
+            v = str(k, value);
+            if (v) {
+              partial.push(quote(k) + (gap ? ': ' : ':') + v);
+            }
+          }
+        }
+      }
+
+      // Join all of the member texts together, separated with commas,
+      // and wrap them in braces.
+
+      v = partial.length === 0 ? '{}' :
+        gap ? '{\n' + gap + partial.join(',\n' + gap) + '\n' +
+        mind + '}' : '{' + partial.join(',') + '}';
+      gap = mind;
+      return v;
+  }
+}
+
+if (typeof JSON.stringify !== 'function') {
+  JSON.stringify = function(value, replacer, space) {
+
+    // The stringify method takes a value and an optional replacer, and an optional
+    // space parameter, and returns a JSON text. The replacer can be a function
+    // that can replace values, or an array of strings that will select the keys.
+    // A default replacer method can be provided. Use of the space parameter can
+    // produce text that is more easily readable.
+
+    var i;
+    gap = '';
+    indent = '';
+
+    // If the space parameter is a number, make an indent string containing that
+    // many spaces.
+
+    if (typeof space === 'number') {
+      for (i = 0; i < space; i += 1) {
+        indent += ' ';
+      }
+
+      // If the space parameter is a string, it will be used as the indent string.
+
+    } else if (typeof space === 'string') {
+      indent = space;
+    }
+
+    // If there is a replacer, it must be a function or an array.
+    // Otherwise, throw an error.
+
+    rep = replacer;
+    if (replacer && typeof replacer !== 'function' &&
+      (typeof replacer !== 'object' ||
+        typeof replacer.length !== 'number')) {
+      throw new Error('JSON.stringify');
+    }
+
+    // Make a fake root object containing our value under the key of ''.
+    // Return the result of stringifying the value.
+
+    return str('', {
+      '': value
+    });
+  };
+}
+
+function looseParse(data) {
+  try {
+    return new Function('return ' + data + ';')();
+  } catch (e) {
+    throw 'Json parse error!';
+  }
+}
+/**
+ * JSON 格式化
+ * @class BUI.JSON
+ * @singleton
+ */
+var JSON = {
+  /**
+   * 转成json 等同于$.parseJSON
+   * @method
+   * @param {String} jsonstring 合法的json 字符串
+   */
+  parse: $.parseJSON,
+  /**
+   * 业务中有些字符串组成的json数据不是严格的json数据，如使用单引号，或者属性名不是字符串
+   * 如 ： {a:'abc'}
+   * @method
+   * @param {String} jsonstring
+   */
+  looseParse: looseParse,
+  /**
+   * 将Json转成字符串
+   * @method
+   * @param {Object} json json 对象
+   */
+  stringify: JSON.stringify
+}
+
+module.exports = JSON;
+
+});
+define("bui/common/date", [], function(require, exports, module){
+/*
+ * @fileOverview Date Format 1.2.3
+ * @ignore
+ * (c) 2007-2009 Steven Levithan <stevenlevithan.com>
+ * MIT license
+ *
+ * Includes enhancements by Scott Trenda <scott.trenda.net>
+ * and Kris Kowal <cixar.com/~kris.kowal/>
+ *
+ * Accepts a date, a mask, or a date and a mask.
+ * Returns a formatted version of the given date.
+ * The date defaults to the current date/time.
+ * The mask defaults to dateFormat.masks.default.
+ *
+ * Last modified by jayli 拔赤 2010-09-09
+ * - 增加中文的支持
+ * - 简单的本地化，对w（星期x）的支持
+ *
+ */
+
+var dateRegex = /^(?:(?!0000)[0-9]{4}([-/.]+)(?:(?:0?[1-9]|1[0-2])\1(?:0?[1-9]|1[0-9]|2[0-8])|(?:0?[13-9]|1[0-2])\1(?:29|30)|(?:0?[13578]|1[02])\1(?:31))|(?:[0-9]{2}(?:0[48]|[2468][048]|[13579][26])|(?:0[48]|[2468][048]|[13579][26])00)([-/.]?)0?2\2(?:29))(\s+([01]|([01][0-9]|2[0-3])):([0-9]|[0-5][0-9]):([0-9]|[0-5][0-9]))?$/;
+
+function dateParse(val, format) {
+  if (val instanceof Date) {
+    return val;
+  }
+  if (typeof(format) == "undefined" || format == null || format == "") {
+    var checkList = new Array('y-m-d', 'yyyy-mm-dd', 'yyyy-mm-dd HH:MM:ss', 'H:M:s');
+    for (var i = 0; i < checkList.length; i++) {
+      var d = dateParse(val, checkList[i]);
+      if (d != null) {
+        return d;
+      }
+    }
+    return null;
+  };
+  val = val + "";
+  var i_val = 0;
+  var i_format = 0;
+  var c = "";
+  var token = "";
+  var x, y;
+  var now = new Date();
+  var year = now.getYear();
+  var month = now.getMonth() + 1;
+  var date = 1;
+  var hh = 00;
+  var mm = 00;
+  var ss = 00;
+  this.isInteger = function(val) {
+    return /^\d*$/.test(val);
+  };
+  this.getInt = function(str, i, minlength, maxlength) {
+    for (var x = maxlength; x >= minlength; x--) {
+      var token = str.substring(i, i + x);
+      if (token.length < minlength) {
+        return null;
+      }
+      if (this.isInteger(token)) {
+        return token;
+      }
+    }
+    return null;
+  };
+
+  while (i_format < format.length) {
+    c = format.charAt(i_format);
+    token = "";
+    while ((format.charAt(i_format) == c) && (i_format < format.length)) {
+      token += format.charAt(i_format++);
+    }
+    if (token == "yyyy" || token == "yy" || token == "y") {
+      if (token == "yyyy") {
+        x = 4;
+        y = 4;
+      }
+      if (token == "yy") {
+        x = 2;
+        y = 2;
+      }
+      if (token == "y") {
+        x = 2;
+        y = 4;
+      }
+      year = this.getInt(val, i_val, x, y);
+      if (year == null) {
+        return null;
+      }
+      i_val += year.length;
+      if (year.length == 2) {
+        year = year > 70 ? 1900 + (year - 0) : 2000 + (year - 0);
+      }
+    } else if (token == "mm" || token == "m") {
+      month = this.getInt(val, i_val, token.length, 2);
+      if (month == null || (month < 1) || (month > 12)) {
+        return null;
+      }
+      i_val += month.length;
+    } else if (token == "dd" || token == "d") {
+      date = this.getInt(val, i_val, token.length, 2);
+      if (date == null || (date < 1) || (date > 31)) {
+        return null;
+      }
+      i_val += date.length;
+    } else if (token == "hh" || token == "h") {
+      hh = this.getInt(val, i_val, token.length, 2);
+      if (hh == null || (hh < 1) || (hh > 12)) {
+        return null;
+      }
+      i_val += hh.length;
+    } else if (token == "HH" || token == "H") {
+      hh = this.getInt(val, i_val, token.length, 2);
+      if (hh == null || (hh < 0) || (hh > 23)) {
+        return null;
+      }
+      i_val += hh.length;
+    } else if (token == "MM" || token == "M") {
+      mm = this.getInt(val, i_val, token.length, 2);
+      if (mm == null || (mm < 0) || (mm > 59)) {
+        return null;
+      }
+      i_val += mm.length;
+    } else if (token == "ss" || token == "s") {
+      ss = this.getInt(val, i_val, token.length, 2);
+      if (ss == null || (ss < 0) || (ss > 59)) {
+        return null;
+      }
+      i_val += ss.length;
+    } else {
+      if (val.substring(i_val, i_val + token.length) != token) {
+        return null;
+      } else {
+        i_val += token.length;
+      }
+    }
+  }
+  if (i_val != val.length) {
+    return null;
+  }
+  if (month == 2) {
+    if (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0)) { // leap year
+      if (date > 29) {
+        return null;
+      }
+    } else {
+      if (date > 28) {
+        return null;
+      }
+    }
+  }
+  if ((month == 4) || (month == 6) || (month == 9) || (month == 11)) {
+    if (date > 30) {
+      return null;
+    }
+  }
+  return new Date(year, month - 1, date, hh, mm, ss);
+}
+
+function DateAdd(strInterval, NumDay, dtDate) {
+  var dtTmp = new Date(dtDate);
+  if (isNaN(dtTmp)) {
+    dtTmp = new Date();
+  }
+  NumDay = parseInt(NumDay, 10);
+  switch (strInterval) {
+    case 's':
+      dtTmp = new Date(dtTmp.getTime() + (1000 * NumDay));
+      break;
+    case 'n':
+      dtTmp = new Date(dtTmp.getTime() + (60000 * NumDay));
+      break;
+    case 'h':
+      dtTmp = new Date(dtTmp.getTime() + (3600000 * NumDay));
+      break;
+    case 'd':
+      dtTmp = new Date(dtTmp.getTime() + (86400000 * NumDay));
+      break;
+    case 'w':
+      dtTmp = new Date(dtTmp.getTime() + ((86400000 * 7) * NumDay));
+      break;
+    case 'm':
+      dtTmp = new Date(dtTmp.getFullYear(), (dtTmp.getMonth()) + NumDay, dtTmp.getDate(), dtTmp.getHours(), dtTmp.getMinutes(), dtTmp.getSeconds());
+      break;
+    case 'y':
+      //alert(dtTmp.getFullYear());
+      dtTmp = new Date(dtTmp.getFullYear() + NumDay, dtTmp.getMonth(), dtTmp.getDate(), dtTmp.getHours(), dtTmp.getMinutes(), dtTmp.getSeconds());
+      //alert(dtTmp);
+      break;
+  }
+  return dtTmp;
+}
+
+var dateFormat = function() {
+  var token = /w{1}|d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g,
+    timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g,
+    timezoneClip = /[^-+\dA-Z]/g,
+    pad = function(val, len) {
+      val = String(val);
+      len = len || 2;
+      while (val.length < len) {
+        val = '0' + val;
+      }
+      return val;
+    },
+    // Some common format strings
+    masks = {
+      'default': 'ddd mmm dd yyyy HH:MM:ss',
+      shortDate: 'm/d/yy',
+      //mediumDate:   'mmm d, yyyy',
+      longDate: 'mmmm d, yyyy',
+      fullDate: 'dddd, mmmm d, yyyy',
+      shortTime: 'h:MM TT',
+      //mediumTime:   'h:MM:ss TT',
+      longTime: 'h:MM:ss TT Z',
+      isoDate: 'yyyy-mm-dd',
+      isoTime: 'HH:MM:ss',
+      isoDateTime: "yyyy-mm-dd'T'HH:MM:ss",
+      isoUTCDateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss'Z'",
+
+      //added by jayli
+      localShortDate: 'yy年mm月dd日',
+      localShortDateTime: 'yy年mm月dd日 hh:MM:ss TT',
+      localLongDate: 'yyyy年mm月dd日',
+      localLongDateTime: 'yyyy年mm月dd日 hh:MM:ss TT',
+      localFullDate: 'yyyy年mm月dd日 w',
+      localFullDateTime: 'yyyy年mm月dd日 w hh:MM:ss TT'
+
+    },
+
+    // Internationalization strings
+    i18n = {
+      dayNames: [
+        'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat',
+        'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+        '星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'
+      ],
+      monthNames: [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+        'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
+      ]
+    };
+
+  // Regexes and supporting functions are cached through closure
+  return function(date, mask, utc) {
+
+    // You can't provide utc if you skip other args (use the "UTC:" mask prefix)
+    if (arguments.length === 1 && Object.prototype.toString.call(date) === '[object String]' && !/\d/.test(date)) {
+      mask = date;
+      date = undefined;
+    }
+
+    // Passing date through Date applies Date.parse, if necessary
+    date = date ? new Date(date) : new Date();
+    if (isNaN(date)) {
+      throw SyntaxError('invalid date');
+    }
+
+    mask = String(masks[mask] || mask || masks['default']);
+
+    // Allow setting the utc argument via the mask
+    if (mask.slice(0, 4) === 'UTC:') {
+      mask = mask.slice(4);
+      utc = true;
+    }
+
+    var _ = utc ? 'getUTC' : 'get',
+      d = date[_ + 'Date'](),
+      D = date[_ + 'Day'](),
+      m = date[_ + 'Month'](),
+      y = date[_ + 'FullYear'](),
+      H = date[_ + 'Hours'](),
+      M = date[_ + 'Minutes'](),
+      s = date[_ + 'Seconds'](),
+      L = date[_ + 'Milliseconds'](),
+      o = utc ? 0 : date.getTimezoneOffset(),
+      flags = {
+        d: d,
+        dd: pad(d, undefined),
+        ddd: i18n.dayNames[D],
+        dddd: i18n.dayNames[D + 7],
+        w: i18n.dayNames[D + 14],
+        m: m + 1,
+        mm: pad(m + 1, undefined),
+        mmm: i18n.monthNames[m],
+        mmmm: i18n.monthNames[m + 12],
+        yy: String(y).slice(2),
+        yyyy: y,
+        h: H % 12 || 12,
+        hh: pad(H % 12 || 12, undefined),
+        H: H,
+        HH: pad(H, undefined),
+        M: M,
+        MM: pad(M, undefined),
+        s: s,
+        ss: pad(s, undefined),
+        l: pad(L, 3),
+        L: pad(L > 99 ? Math.round(L / 10) : L, undefined),
+        t: H < 12 ? 'a' : 'p',
+        tt: H < 12 ? 'am' : 'pm',
+        T: H < 12 ? 'A' : 'P',
+        TT: H < 12 ? 'AM' : 'PM',
+        Z: utc ? 'UTC' : (String(date).match(timezone) || ['']).pop().replace(timezoneClip, ''),
+        o: (o > 0 ? '-' : '+') + pad(Math.floor(Math.abs(o) / 60) * 100 + Math.abs(o) % 60, 4),
+        S: ['th', 'st', 'nd', 'rd'][d % 10 > 3 ? 0 : (d % 100 - d % 10 !== 10) * d % 10]
+      };
+
+    return mask.replace(token, function($0) {
+      return $0 in flags ? flags[$0] : $0.slice(1, $0.length - 1);
+    });
+  };
+}();
+
+/**
+ * 日期的工具方法
+ * @class BUI.Date
+ */
+var DateUtil = {
+  /**
+   * 日期加法
+   * @param {String} strInterval 加法的类型，s(秒),n(分),h(时),d(天),w(周),m(月),y(年)
+   * @param {Number} Num     数量，如果为负数，则为减法
+   * @param {Date} dtDate    起始日期，默认为此时
+   */
+  add: function(strInterval, Num, dtDate) {
+    return DateAdd(strInterval, Num, dtDate);
+  },
+  /**
+   * 小时的加法
+   * @param {Number} hours 小时
+   * @param {Date} date 起始日期
+   */
+  addHour: function(hours, date) {
+    return DateAdd('h', hours, date);
+  },
+  /**
+   * 分的加法
+   * @param {Number} minutes 分
+   * @param {Date} date 起始日期
+   */
+  addMinute: function(minutes, date) {
+    return DateAdd('n', minutes, date);
+  },
+  /**
+   * 秒的加法
+   * @param {Number} seconds 秒
+   * @param {Date} date 起始日期
+   */
+  addSecond: function(seconds, date) {
+    return DateAdd('s', seconds, date);
+  },
+  /**
+   * 天的加法
+   * @param {Number} days 天数
+   * @param {Date} date 起始日期
+   */
+  addDay: function(days, date) {
+    return DateAdd('d', days, date);
+  },
+  /**
+   * 增加周
+   * @param {Number} weeks 周数
+   * @param {Date} date  起始日期
+   */
+  addWeek: function(weeks, date) {
+    return DateAdd('w', weeks, date);
+  },
+  /**
+   * 增加月
+   * @param {Number} months 月数
+   * @param {Date} date  起始日期
+   */
+  addMonths: function(months, date) {
+    return DateAdd('m', months, date);
+  },
+  /**
+   * 增加年
+   * @param {Number} years 年数
+   * @param {Date} date  起始日期
+   */
+  addYear: function(years, date) {
+    return DateAdd('y', years, date);
+  },
+  /**
+   * 日期是否相等，忽略时间
+   * @param  {Date}  d1 日期对象
+   * @param  {Date}  d2 日期对象
+   * @return {Boolean}  是否相等
+   */
+  isDateEquals: function(d1, d2) {
+
+    return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+  },
+  /**
+   * 日期时间是否相等，包含时间
+   * @param  {Date}  d1 日期对象
+   * @param  {Date}  d2 日期对象
+   * @return {Boolean}  是否相等
+   */
+  isEquals: function(d1, d2) {
+    if (d1 == d2) {
+      return true;
+    }
+    if (!d1 || !d2) {
+      return false;
+    }
+    if (!d1.getTime || !d2.getTime) {
+      return false;
+    }
+    return d1.getTime() == d2.getTime();
+  },
+  /**
+   * 字符串是否是有效的日期类型
+   * @param {String} str 字符串
+   * @return 字符串是否能转换成日期
+   */
+  isDateString: function(str) {
+    return dateRegex.test(str);
+  },
+  /**
+   * 将日期格式化成字符串
+   * @param  {Date} date 日期
+   * @param  {String} mask 格式化方式
+   * @param  {Date} utc  是否utc时间
+   * @return {String}    日期的字符串
+   */
+  format: function(date, mask, utc) {
+    return dateFormat(date, mask, utc);
+  },
+  /**
+   * 转换成日期
+   * @param  {String|Date} date 字符串或者日期
+   * @param  {String} dateMask  日期的格式,如:yyyy-MM-dd
+   * @return {Date}    日期对象
+   */
+  parse: function(date, s) {
+    if (BUI.isString(date)) {
+      date = date.replace('\/', '-');
+    }
+    return dateParse(date, s);
+  },
+  /**
+   * 当前天
+   * @return {Date} 当前天 00:00:00
+   */
+  today: function() {
+    var now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  },
+  /**
+   * 返回当前日期
+   * @return {Date} 日期的 00:00:00
+   */
+  getDate: function(date) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  }
+};
+
+module.exports = DateUtil;
+
+});
+define("bui/common/array", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview 数组帮助类
+ * @ignore
+ */
+
+/**
+ * @class BUI
+ * 控件库的基础命名空间
+ * @singleton
+ */
+
+
+var BUI = require("bui/common/util");
+/**
+ * @class BUI.Array
+ * 数组帮助类
+ */
+var ArrayUtil = {
+  /**
+   * 返回数组的最后一个对象
+   * @param {Array} array 数组或者类似于数组的对象.
+   * @return {*} 数组的最后一项.
+   */
+  peek: function(array) {
+    return array[array.length - 1];
+  },
+  /**
+   * 查找记录所在的位置
+   * @param  {*} value 值
+   * @param  {Array} array 数组或者类似于数组的对象
+   * @param  {Number} [fromIndex=0] 起始项，默认为0
+   * @return {Number} 位置，如果为 -1则不在数组内
+   */
+  indexOf: function(value, array, opt_fromIndex) {
+    var fromIndex = opt_fromIndex == null ?
+      0 : (opt_fromIndex < 0 ?
+        Math.max(0, array.length + opt_fromIndex) : opt_fromIndex);
+
+    for (var i = fromIndex; i < array.length; i++) {
+      if (i in array && array[i] === value)
+        return i;
+    }
+    return -1;
+  },
+  /**
+   * 数组是否存在指定值
+   * @param  {*} value 值
+   * @param  {Array} array 数组或者类似于数组的对象
+   * @return {Boolean} 是否存在于数组中
+   */
+  contains: function(value, array) {
+    return ArrayUtil.indexOf(value, array) >= 0;
+  },
+  /**
+   * 遍历数组或者对象
+   * @method
+   * @param {Object|Array} element/Object 数组中的元素或者对象的值
+   * @param {Function} func 遍历的函数 function(elememt,index){} 或者 function(value,key){}
+   */
+  each: BUI.each,
+  /**
+   * 2个数组内部的值是否相等
+   * @param  {Array} a1 数组1
+   * @param  {Array} a2 数组2
+   * @return {Boolean} 2个数组相等或者内部元素是否相等
+   */
+  equals: function(a1, a2) {
+    if (a1 == a2) {
+      return true;
+    }
+    if (!a1 || !a2) {
+      return false;
+    }
+
+    if (a1.length != a2.length) {
+      return false;
+    }
+    var rst = true;
+    for (var i = 0; i < a1.length; i++) {
+      if (a1[i] !== a2[i]) {
+        rst = false;
+        break;
+      }
+    }
+    return rst;
+  },
+
+  /**
+   * 过滤数组
+   * @param {Object|Array} element/Object 数组中的元素或者对象的值
+   * @param {Function} func 遍历的函数 function(elememt,index){} 或者 function(value,key){},如果返回true则添加到结果集
+   * @return {Array} 过滤的结果集
+   */
+  filter: function(array, func) {
+    var result = [];
+    ArrayUtil.each(array, function(value, index) {
+      if (func(value, index)) {
+        result.push(value);
+      }
+    });
+    return result;
+  },
+  /**
+   * 转换数组数组
+   * @param {Object|Array} element/Object 数组中的元素或者对象的值
+   * @param {Function} func 遍历的函数 function(elememt,index){} 或者 function(value,key){},将返回的结果添加到结果集
+   * @return {Array} 过滤的结果集
+   */
+  map: function(array, func) {
+    var result = [];
+    ArrayUtil.each(array, function(value, index) {
+      result.push(func(value, index));
+    });
+    return result;
+  },
+  /**
+   * 获取第一个符合条件的数据
+   * @param  {Array} array 数组
+   * @param  {Function} func  匹配函数
+   * @return {*}  符合条件的数据
+   */
+  find: function(array, func) {
+    var i = ArrayUtil.findIndex(array, func);
+    return i < 0 ? null : array[i];
+  },
+  /**
+   * 获取第一个符合条件的数据的索引值
+   * @param  {Array} array 数组
+   * @param  {Function} func  匹配函数
+   * @return {Number} 符合条件的数据的索引值
+   */
+  findIndex: function(array, func) {
+    var result = -1;
+    ArrayUtil.each(array, function(value, index) {
+      if (func(value, index)) {
+        result = index;
+        return false;
+      }
+    });
+    return result;
+  },
+  /**
+   * 数组是否为空
+   * @param  {Array}  array 数组
+   * @return {Boolean}  是否为空
+   */
+  isEmpty: function(array) {
+    return array.length == 0;
+  },
+  /**
+   * 插入数组
+   * @param  {Array} array 数组
+   * @param  {Number} index 位置
+   * @param {*} value 插入的数据
+   */
+  add: function(array, value) {
+    array.push(value);
+  },
+  /**
+   * 将数据插入数组指定的位置
+   * @param  {Array} array 数组
+   * @param {*} value 插入的数据
+   * @param  {Number} index 位置
+   */
+  addAt: function(array, value, index) {
+    ArrayUtil.splice(array, index, 0, value);
+  },
+  /**
+   * 清空数组
+   * @param  {Array} array 数组
+   * @return {Array}  清空后的数组
+   */
+  empty: function(array) {
+    if (!(array instanceof(Array))) {
+      for (var i = array.length - 1; i >= 0; i--) {
+        delete array[i];
+      }
+    }
+    array.length = 0;
+  },
+  /**
+   * 移除记录
+   * @param  {Array} array 数组
+   * @param  {*} value 记录
+   * @return {Boolean}   是否移除成功
+   */
+  remove: function(array, value) {
+    var i = ArrayUtil.indexOf(value, array);
+    var rv;
+    if ((rv = i >= 0)) {
+      ArrayUtil.removeAt(array, i);
+    }
+    return rv;
+  },
+  /**
+   * 移除指定位置的记录
+   * @param  {Array} array 数组
+   * @param  {Number} index 索引值
+   * @return {Boolean}   是否移除成功
+   */
+  removeAt: function(array, index) {
+    return ArrayUtil.splice(array, index, 1).length == 1;
+  },
+  /**
+   * @private
+   */
+  slice: function(arr, start, opt_end) {
+    if (arguments.length <= 2) {
+      return Array.prototype.slice.call(arr, start);
+    } else {
+      return Array.prototype.slice.call(arr, start, opt_end);
+    }
+  },
+  /**
+   * @private
+   */
+  splice: function(arr, index, howMany, var_args) {
+    return Array.prototype.splice.apply(arr, ArrayUtil.slice(arguments, 1))
+  }
+
+};
+
+module.exports = ArrayUtil;
+
+});
+define("bui/common/keycode", [], function(require, exports, module){
+/**
+ * @fileOverview 键盘值
+ * @ignore
+ */
+
+/**
+ * 键盘按键对应的数字值
+ * @class BUI.KeyCode
+ * @singleton
+ */
+var keyCode = {
+  /** Key constant @type Number */
+  BACKSPACE: 8,
+  /** Key constant @type Number */
+  TAB: 9,
+  /** Key constant @type Number */
+  NUM_CENTER: 12,
+  /** Key constant @type Number */
+  ENTER: 13,
+  /** Key constant @type Number */
+  RETURN: 13,
+  /** Key constant @type Number */
+  SHIFT: 16,
+  /** Key constant @type Number */
+  CTRL: 17,
+  /** Key constant @type Number */
+  ALT: 18,
+  /** Key constant @type Number */
+  PAUSE: 19,
+  /** Key constant @type Number */
+  CAPS_LOCK: 20,
+  /** Key constant @type Number */
+  ESC: 27,
+  /** Key constant @type Number */
+  SPACE: 32,
+  /** Key constant @type Number */
+  PAGE_UP: 33,
+  /** Key constant @type Number */
+  PAGE_DOWN: 34,
+  /** Key constant @type Number */
+  END: 35,
+  /** Key constant @type Number */
+  HOME: 36,
+  /** Key constant @type Number */
+  LEFT: 37,
+  /** Key constant @type Number */
+  UP: 38,
+  /** Key constant @type Number */
+  RIGHT: 39,
+  /** Key constant @type Number */
+  DOWN: 40,
+  /** Key constant @type Number */
+  PRINT_SCREEN: 44,
+  /** Key constant @type Number */
+  INSERT: 45,
+  /** Key constant @type Number */
+  DELETE: 46,
+  /** Key constant @type Number */
+  ZERO: 48,
+  /** Key constant @type Number */
+  ONE: 49,
+  /** Key constant @type Number */
+  TWO: 50,
+  /** Key constant @type Number */
+  THREE: 51,
+  /** Key constant @type Number */
+  FOUR: 52,
+  /** Key constant @type Number */
+  FIVE: 53,
+  /** Key constant @type Number */
+  SIX: 54,
+  /** Key constant @type Number */
+  SEVEN: 55,
+  /** Key constant @type Number */
+  EIGHT: 56,
+  /** Key constant @type Number */
+  NINE: 57,
+  /** Key constant @type Number */
+  A: 65,
+  /** Key constant @type Number */
+  B: 66,
+  /** Key constant @type Number */
+  C: 67,
+  /** Key constant @type Number */
+  D: 68,
+  /** Key constant @type Number */
+  E: 69,
+  /** Key constant @type Number */
+  F: 70,
+  /** Key constant @type Number */
+  G: 71,
+  /** Key constant @type Number */
+  H: 72,
+  /** Key constant @type Number */
+  I: 73,
+  /** Key constant @type Number */
+  J: 74,
+  /** Key constant @type Number */
+  K: 75,
+  /** Key constant @type Number */
+  L: 76,
+  /** Key constant @type Number */
+  M: 77,
+  /** Key constant @type Number */
+  N: 78,
+  /** Key constant @type Number */
+  O: 79,
+  /** Key constant @type Number */
+  P: 80,
+  /** Key constant @type Number */
+  Q: 81,
+  /** Key constant @type Number */
+  R: 82,
+  /** Key constant @type Number */
+  S: 83,
+  /** Key constant @type Number */
+  T: 84,
+  /** Key constant @type Number */
+  U: 85,
+  /** Key constant @type Number */
+  V: 86,
+  /** Key constant @type Number */
+  W: 87,
+  /** Key constant @type Number */
+  X: 88,
+  /** Key constant @type Number */
+  Y: 89,
+  /** Key constant @type Number */
+  Z: 90,
+  /** Key constant @type Number */
+  CONTEXT_MENU: 93,
+  /** Key constant @type Number */
+  NUM_ZERO: 96,
+  /** Key constant @type Number */
+  NUM_ONE: 97,
+  /** Key constant @type Number */
+  NUM_TWO: 98,
+  /** Key constant @type Number */
+  NUM_THREE: 99,
+  /** Key constant @type Number */
+  NUM_FOUR: 100,
+  /** Key constant @type Number */
+  NUM_FIVE: 101,
+  /** Key constant @type Number */
+  NUM_SIX: 102,
+  /** Key constant @type Number */
+  NUM_SEVEN: 103,
+  /** Key constant @type Number */
+  NUM_EIGHT: 104,
+  /** Key constant @type Number */
+  NUM_NINE: 105,
+  /** Key constant @type Number */
+  NUM_MULTIPLY: 106,
+  /** Key constant @type Number */
+  NUM_PLUS: 107,
+  /** Key constant @type Number */
+  NUM_MINUS: 109,
+  /** Key constant @type Number */
+  NUM_PERIOD: 110,
+  /** Key constant @type Number */
+  NUM_DIVISION: 111,
+  /** Key constant @type Number */
+  F1: 112,
+  /** Key constant @type Number */
+  F2: 113,
+  /** Key constant @type Number */
+  F3: 114,
+  /** Key constant @type Number */
+  F4: 115,
+  /** Key constant @type Number */
+  F5: 116,
+  /** Key constant @type Number */
+  F6: 117,
+  /** Key constant @type Number */
+  F7: 118,
+  /** Key constant @type Number */
+  F8: 119,
+  /** Key constant @type Number */
+  F9: 120,
+  /** Key constant @type Number */
+  F10: 121,
+  /** Key constant @type Number */
+  F11: 122,
+  /** Key constant @type Number */
+  F12: 123
+};
+
+module.exports = keyCode;
+
+});
+define("bui/common/observable", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview 观察者模式实现事件
+ * @ignore
+ */
+
+var $ = require('jquery');
+
+var BUI = require("bui/common/util"),
+  ArrayUtil = require("bui/common/array");
+/**
+ * @private
+ * @class BUI.Observable.Callbacks
+ * jquery 1.7 时存在 $.Callbacks,但是fireWith的返回结果是$.Callbacks 对象，
+ * 而我们想要的效果是：当其中有一个函数返回为false时，阻止后面的执行，并返回false
+ */
+var Callbacks = function() {
+  this._init();
+};
+
+BUI.augment(Callbacks, {
+
+  _functions: null,
+
+  _init: function() {
+    var _self = this;
+
+    _self._functions = [];
+  },
+  /**
+   * 添加回调函数
+   * @param {Function} fn 回调函数
+   */
+  add: function(fn) {
+    this._functions.push(fn);
+  },
+  /**
+   * 移除回调函数
+   * @param  {Function} fn 回调函数
+   */
+  remove: function(fn) {
+    var functions = this._functions;
+    index = ArrayUtil.indexOf(fn, functions);
+    if (index >= 0) {
+      functions.splice(index, 1);
+    }
+  },
+  /**
+   * 清空事件
+   */
+  empty: function() {
+    var length = this._functions.length; //ie6,7下，必须指定需要删除的数量
+    this._functions.splice(0, length);
+  },
+  /**
+   * 暂停事件
+   */
+  pause: function() {
+    this._paused = true;
+  },
+  /**
+   * 唤醒事件
+   */
+  resume: function() {
+    this._paused = false;
+  },
+  /**
+   * 触发回调
+   * @param  {Object} scope 上下文
+   * @param  {Array} args  回调函数的参数
+   * @return {Boolean|undefined} 当其中有一个函数返回为false时，阻止后面的执行，并返回false
+   */
+  fireWith: function(scope, args) {
+    var _self = this,
+      rst;
+    if (_self._paused) {
+      return;
+    }
+    BUI.each(_self._functions, function(fn) {
+      rst = fn.apply(scope, args);
+      if (rst === false) {
+        return false;
+      }
+    });
+    return rst;
+  }
+});
+
+function getCallbacks() {
+  return new Callbacks();
+}
+/**
+ * 支持事件的对象，参考观察者模式
+ *  - 此类提供事件绑定
+ *  - 提供事件冒泡机制
+ *
+ * <pre><code>
+ *   var control = new Control();
+ *   control.on('click',function(ev){
+ *
+ *   });
+ *
+ *   control.off();  //移除所有事件
+ * </code></pre>
+ * @class BUI.Observable
+ * @abstract
+ * @param {Object} config 配置项键值对
+ */
+var Observable = function(config) {
+  this._events = [];
+  this._eventMap = {};
+  this._bubblesEvents = [];
+  this._initEvents(config);
+};
+
+BUI.augment(Observable, {
+
+  /**
+   * @cfg {Object} listeners
+   *  初始化事件,快速注册事件
+   *  <pre><code>
+   *    var list = new BUI.List.SimpleList({
+   *      listeners : {
+   *        itemclick : function(ev){},
+   *        itemrendered : function(ev){}
+   *      },
+   *      items : []
+   *    });
+   *    list.render();
+   *  </code></pre>
+   */
+
+  /**
+   * @cfg {Function} handler
+   * 点击事件的处理函数，快速配置点击事件而不需要写listeners属性
+   * <pre><code>
+   *    var list = new BUI.List.SimpleList({
+   *      handler : function(ev){} //click 事件
+   *    });
+   *    list.render();
+   *  </code></pre>
+   */
+
+  /**
+   * 支持的事件名列表
+   * @private
+   */
+  _events: [],
+
+  /**
+   * 绑定的事件
+   * @private
+   */
+  _eventMap: {},
+
+  _bubblesEvents: [],
+
+  _bubbleTarget: null,
+
+  //获取回调集合
+  _getCallbacks: function(eventType) {
+    var _self = this,
+      eventMap = _self._eventMap;
+    return eventMap[eventType];
+  },
+  //初始化事件列表
+  _initEvents: function(config) {
+    var _self = this,
+      listeners = null;
+
+    if (!config) {
+      return;
+    }
+    listeners = config.listeners || {};
+    if (config.handler) {
+      listeners.click = config.handler;
+    }
+    if (listeners) {
+      for (var name in listeners) {
+        if (listeners.hasOwnProperty(name)) {
+          _self.on(name, listeners[name]);
+        }
+      };
+    }
+  },
+  //事件是否支持冒泡
+  _isBubbles: function(eventType) {
+    return ArrayUtil.indexOf(eventType, this._bubblesEvents) >= 0;
+  },
+  /**
+   * 添加冒泡的对象
+   * @protected
+   * @param {Object} target  冒泡的事件源
+   */
+  addTarget: function(target) {
+    this._bubbleTarget = target;
+  },
+  /**
+   * 添加支持的事件
+   * @protected
+   * @param {String|String[]} events 事件
+   */
+  addEvents: function(events) {
+    var _self = this,
+      existEvents = _self._events,
+      eventMap = _self._eventMap;
+
+    function addEvent(eventType) {
+      if (ArrayUtil.indexOf(eventType, existEvents) === -1) {
+        eventMap[eventType] = getCallbacks();
+        existEvents.push(eventType);
+      }
+    }
+    if (BUI.isArray(events)) {
+      BUI.each(events, function(eventType) {
+        addEvent(eventType);
+      });
+    } else {
+      addEvent(events);
+    }
+  },
+  /**
+   * 移除所有绑定的事件
+   * @protected
+   */
+  clearListeners: function() {
+    var _self = this,
+      eventMap = _self._eventMap;
+    for (var name in eventMap) {
+      if (eventMap.hasOwnProperty(name)) {
+        eventMap[name].empty();
+      }
+    }
+  },
+  /**
+   * 触发事件
+   * <pre><code>
+   *   //绑定事件
+   *   list.on('itemclick',function(ev){
+   *     alert('21');
+   *   });
+   *   //触发事件
+   *   list.fire('itemclick');
+   * </code></pre>
+   * @param  {String} eventType 事件类型
+   * @param  {Object} eventData 事件触发时传递的数据
+   * @return {Boolean|undefined}  如果其中一个事件处理器返回 false , 则返回 false, 否则返回最后一个事件处理器的返回值
+   */
+  fire: function(eventType, eventData) {
+    var _self = this,
+      callbacks = _self._getCallbacks(eventType),
+      args = $.makeArray(arguments),
+      result;
+    if (!eventData) {
+      eventData = {};
+      args.push(eventData);
+    }
+    if (!eventData.target) {
+      eventData.target = _self;
+    }
+    if (callbacks) {
+      result = callbacks.fireWith(_self, Array.prototype.slice.call(args, 1));
+    }
+    if (_self._isBubbles(eventType)) {
+      var bubbleTarget = _self._bubbleTarget;
+      if (bubbleTarget && bubbleTarget.fire) {
+        bubbleTarget.fire(eventType, eventData);
+      }
+    }
+    return result;
+  },
+  /**
+   * 暂停事件的执行
+   * <pre><code>
+   *  list.pauseEvent('itemclick');
+   * </code></pre>
+   * @param  {String} eventType 事件类型
+   */
+  pauseEvent: function(eventType) {
+    var _self = this,
+      callbacks = _self._getCallbacks(eventType);
+    callbacks && callbacks.pause();
+  },
+  /**
+   * 唤醒事件
+   * <pre><code>
+   *  list.resumeEvent('itemclick');
+   * </code></pre>
+   * @param  {String} eventType 事件类型
+   */
+  resumeEvent: function(eventType) {
+    var _self = this,
+      callbacks = _self._getCallbacks(eventType);
+    callbacks && callbacks.resume();
+  },
+  /**
+   * 添加绑定事件
+   * <pre><code>
+   *   //绑定单个事件
+   *   list.on('itemclick',function(ev){
+   *     alert('21');
+   *   });
+   *   //绑定多个事件
+   *   list.on('itemrendered itemupdated',function(){
+   *     //列表项创建、更新时触发操作
+   *   });
+   * </code></pre>
+   * @param  {String}   eventType 事件类型
+   * @param  {Function} fn        回调函数
+   */
+  on: function(eventType, fn) {
+    //一次监听多个事件
+    var arr = eventType.split(' '),
+      _self = this,
+      callbacks = null;
+    if (arr.length > 1) {
+      BUI.each(arr, function(name) {
+        _self.on(name, fn);
+      });
+    } else {
+      callbacks = _self._getCallbacks(eventType);
+      if (callbacks) {
+        callbacks.add(fn);
+      } else {
+        _self.addEvents(eventType);
+        _self.on(eventType, fn);
+      }
+    }
+    return _self;
+  },
+  /**
+   * 移除绑定的事件
+   * <pre><code>
+   *  //移除所有事件
+   *  list.off();
+   *
+   *  //移除特定事件
+   *  function callback(ev){}
+   *  list.on('click',callback);
+   *
+   *  list.off('click',callback);//需要保存回调函数的引用
+   *
+   * </code></pre>
+   * @param  {String}   eventType 事件类型
+   * @param  {Function} fn        回调函数
+   */
+  off: function(eventType, fn) {
+    if (!eventType && !fn) {
+      this.clearListeners();
+      return this;
+    }
+    var _self = this,
+      callbacks = _self._getCallbacks(eventType);
+    if (callbacks) {
+      if (fn) {
+        callbacks.remove(fn);
+      } else {
+        callbacks.empty();
+      }
+
+    }
+    return _self;
+  },
+  /**
+   * 配置事件是否允许冒泡
+   * @protected
+   * @param  {String} eventType 支持冒泡的事件
+   * @param  {Object} cfg 配置项
+   * @param {Boolean} cfg.bubbles 是否支持冒泡
+   */
+  publish: function(eventType, cfg) {
+    var _self = this,
+      bubblesEvents = _self._bubblesEvents;
+
+    if (cfg.bubbles) {
+      if (BUI.Array.indexOf(eventType, bubblesEvents) === -1) {
+        bubblesEvents.push(eventType);
+      }
+    } else {
+      var index = BUI.Array.indexOf(eventType, bubblesEvents);
+      if (index !== -1) {
+        bubblesEvents.splice(index, 1);
+      }
+    }
+  }
+});
+
+module.exports = Observable;
+
+});
+define("bui/common/base", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview  Base UI控件的最基础的类
+ * @author yiminghe@gmail.com
+ * copied by dxq613@gmail.com
+ * @ignore
+ */
+
+var $ = require('jquery');
+
+var INVALID = {},
+  Observable = require("bui/common/observable");
+
+function ensureNonEmpty(obj, name, create) {
+  var ret = obj[name] || {};
+  if (create) {
+    obj[name] = ret;
+  }
+  return ret;
+}
+
+function normalFn(host, method) {
+  if (BUI.isString(method)) {
+    return host[method];
+  }
+  return method;
+}
+
+function __fireAttrChange(self, when, name, prevVal, newVal) {
+  var attrName = name;
+  return self.fire(when + BUI.ucfirst(name) + 'Change', {
+    attrName: attrName,
+    prevVal: prevVal,
+    newVal: newVal
+  });
+}
+
+function setInternal(self, name, value, opts, attrs) {
+  opts = opts || {};
+
+  var ret,
+    subVal,
+    prevVal;
+
+  prevVal = self.get(name);
+
+  //如果未改变值不进行修改
+  if (!$.isPlainObject(value) && !BUI.isArray(value) && prevVal === value) {
+    return undefined;
+  }
+  // check before event
+  if (!opts['silent']) {
+    if (false === __fireAttrChange(self, 'before', name, prevVal, value)) {
+      return false;
+    }
+  }
+  // set it
+  ret = self._set(name, value, opts);
+
+  if (ret === false) {
+    return ret;
+  }
+
+  // fire after event
+  if (!opts['silent']) {
+    value = self.__attrVals[name];
+    __fireAttrChange(self, 'after', name, prevVal, value);
+  }
+  return self;
+}
+
+function initClassAttrs(c) {
+  if (c._attrs || c == Base) {
+    return;
+  }
+
+  var superCon = c.superclass.constructor;
+  if (superCon && !superCon._attrs) {
+    initClassAttrs(superCon);
+  }
+  c._attrs = {};
+
+  BUI.mixAttrs(c._attrs, superCon._attrs);
+  BUI.mixAttrs(c._attrs, c.ATTRS);
+}
+/**
+ * 基础类，此类提供以下功能
+ *  - 提供设置获取属性
+ *  - 提供事件支持
+ *  - 属性变化时会触发对应的事件
+ *  - 将配置项自动转换成属性
+ *
+ * ** 创建类，继承BUI.Base类 **
+ * <pre><code>
+ *   var Control = function(cfg){
+ *     Control.superclass.constructor.call(this,cfg); //调用BUI.Base的构造方法，将配置项变成属性
+ *   };
+ *
+ *   BUI.extend(Control,BUI.Base);
+ * </code></pre>
+ *
+ * ** 声明默认属性 **
+ * <pre><code>
+ *   Control.ATTRS = {
+ *     id : {
+ *       value : 'id' //value 是此属性的默认值
+ *     },
+ *     renderTo : {
+ *
+ *     },
+ *     el : {
+ *       valueFn : function(){                 //第一次调用的时候将renderTo的DOM转换成el属性
+ *         return $(this.get('renderTo'));
+ *       }
+ *     },
+ *     text : {
+ *       getter : function(){ //getter 用于获取值，而不是设置的值
+ *         return this.get('el').val();
+ *       },
+ *       setter : function(v){ //不仅仅是设置值，可以进行相应的操作
+ *         this.get('el').val(v);
+ *       }
+ *     }
+ *   };
+ * </code></pre>
+ *
+ * ** 声明类的方法 **
+ * <pre><code>
+ *   BUI.augment(Control,{
+ *     getText : function(){
+ *       return this.get('text');   //可以用get方法获取属性值
+ *     },
+ *     setText : function(txt){
+ *       this.set('text',txt);      //使用set 设置属性值
+ *     }
+ *   });
+ * </code></pre>
+ *
+ * ** 创建对象 **
+ * <pre><code>
+ *   var c = new Control({
+ *     id : 'oldId',
+ *     text : '测试文本',
+ *     renderTo : '#t1'
+ *   });
+ *
+ *   var el = c.get(el); //$(#t1);
+ *   el.val(); //text的值 ： '测试文本'
+ *   c.set('text','修改的值');
+ *   el.val();  //'修改的值'
+ *
+ *   c.set('id','newId') //会触发2个事件： beforeIdChange,afterIdChange 2个事件 ev.newVal 和ev.prevVal标示新旧值
+ * </code></pre>
+ * @class BUI.Base
+ * @abstract
+ * @extends BUI.Observable
+ * @param {Object} config 配置项
+ */
+var Base = function(config) {
+  var _self = this,
+    c = _self.constructor,
+    constructors = [];
+  this.__attrs = {};
+  this.__attrVals = {};
+  Observable.apply(this, arguments);
+  // define
+  while (c) {
+    constructors.push(c);
+    if (c.extensions) { //延迟执行mixin
+      BUI.mixin(c, c.extensions);
+      delete c.extensions;
+    }
+    //_self.addAttrs(c['ATTRS']);
+    c = c.superclass ? c.superclass.constructor : null;
+  }
+  //以当前对象的属性最终添加到属性中，覆盖之前的属性
+  /*for (var i = constructors.length - 1; i >= 0; i--) {
+        _self.addAttrs(constructors[i]['ATTRS'],true);
+      };*/
+  var con = _self.constructor;
+  initClassAttrs(con);
+  _self._initStaticAttrs(con._attrs);
+  _self._initAttrs(config);
+};
+
+Base.INVALID = INVALID;
+
+BUI.extend(Base, Observable);
+
+BUI.augment(Base, {
+  _initStaticAttrs: function(attrs) {
+    var _self = this,
+      __attrs;
+
+    __attrs = _self.__attrs = {};
+    for (var p in attrs) {
+      if (attrs.hasOwnProperty(p)) {
+        var attr = attrs[p];
+        /*if(BUI.isObject(attr.value) || BUI.isArray(attr.value) || attr.valueFn){*/
+        if (attr.shared === false || attr.valueFn) {
+          __attrs[p] = {};
+          BUI.mixAttr(__attrs[p], attrs[p]);
+        } else {
+          __attrs[p] = attrs[p];
+        }
+      }
+    };
+  },
+  /**
+   * 添加属性定义
+   * @protected
+   * @param {String} name       属性名
+   * @param {Object} attrConfig 属性定义
+   * @param {Boolean} overrides 是否覆盖字段
+   */
+  addAttr: function(name, attrConfig, overrides) {
+    var _self = this,
+      attrs = _self.__attrs,
+      attr = attrs[name];
+
+    if (!attr) {
+      attr = attrs[name] = {};
+    }
     for (var p in attrConfig) {
       if (attrConfig.hasOwnProperty(p)) {
         if (p == 'value') {
@@ -1063,8 +3579,7 @@ define("bui/common/util", ["jquery"], function(require, exports, module) {
             BUI.mix( /*true,*/ attr[p], attrConfig[p]);
           } else if (BUI.isArray(attrConfig[p])) {
             attr[p] = attr[p] || [];
-            //BUI.mix(/*true,*/attr[p], attrConfig[p]);
-            attr[p] = attr[p].concat(attrConfig[p]);
+            BUI.mix( /*true,*/ attr[p], attrConfig[p]);
           } else {
             attr[p] = attrConfig[p];
           }
@@ -1072,4395 +3587,2343 @@ define("bui/common/util", ["jquery"], function(require, exports, module) {
           attr[p] = attrConfig[p];
         }
       }
+
     };
-  }
-  var win = window,
-    doc = document,
-    objectPrototype = Object.prototype,
-    toString = objectPrototype.toString,
-    BODY = 'body',
-    DOC_ELEMENT = 'documentElement',
-    SCROLL = 'scroll',
-    SCROLL_WIDTH = SCROLL + 'Width',
-    SCROLL_HEIGHT = SCROLL + 'Height',
-    ATTRS = 'ATTRS',
-    PARSER = 'PARSER',
-    GUID_DEFAULT = 'guid';
-  window.BUI = window.BUI || {};
-  $.extend(BUI, {
-    /**
-     * 版本号
-     * @memberOf BUI
-     * @type {Number}
-     */
-    version: '1.1.0',
-    /**
-     * 是否为函数
-     * @param  {*} fn 对象
-     * @return {Boolean}  是否函数
-     */
-    isFunction: function(fn) {
-      return typeof(fn) === 'function';
-    },
-    /**
-     * 是否数组
-     * @method
-     * @param  {*}  obj 是否数组
-     * @return {Boolean}  是否数组
-     */
-    isArray: ('isArray' in Array) ? Array.isArray : function(value) {
-      return toString.call(value) === '[object Array]';
-    },
-    /**
-     * 是否日期
-     * @param  {*}  value 对象
-     * @return {Boolean}  是否日期
-     */
-    isDate: function(value) {
-      return toString.call(value) === '[object Date]';
-    },
-    /**
-     * 是否是javascript对象
-     * @param {Object} value The value to test
-     * @return {Boolean}
-     * @method
-     */
-    isObject: (toString.call(null) === '[object Object]') ? function(value) {
-      // check ownerDocument here as well to exclude DOM nodes
-      return value !== null && value !== undefined && toString.call(value) === '[object Object]' && value.ownerDocument === undefined;
-    } : function(value) {
-      return toString.call(value) === '[object Object]';
-    },
-    /**
-     * 是否是数字或者数字字符串
-     * @param  {String}  value 数字字符串
-     * @return {Boolean}  是否是数字或者数字字符串
-     */
-    isNumeric: function(value) {
-      return !isNaN(parseFloat(value)) && isFinite(value);
-    },
-    /**
-     * 将指定的方法或属性放到构造函数的原型链上，
-     * 函数支持多于2个变量，后面的变量同s1一样将其成员复制到构造函数的原型链上。
-     * @param  {Function} r  构造函数
-     * @param  {Object} s1 将s1 的成员复制到构造函数的原型链上
-     *      @example
-     *      BUI.augment(class1,{
-     *        method1: function(){
-     *
-     *        }
-     *      });
-     */
-    augment: function(r, s1) {
-      if (!BUI.isFunction(r)) {
-        return r;
-      }
-      for (var i = 1; i < arguments.length; i++) {
-        BUI.mix(r.prototype, arguments[i].prototype || arguments[i]);
-      };
-      return r;
-    },
-    /**
-     * 拷贝对象
-     * @param  {Object} obj 要拷贝的对象
-     * @return {Object} 拷贝生成的对象
-     */
-    cloneObject: function(obj) {
-      var result = BUI.isArray(obj) ? [] : {};
-      return BUI.mix(true, result, obj);
-    },
-    /**
-     * 抛出错误
-     */
-    error: function(msg) {
-      if (BUI.debug) {
-        throw msg;
-      }
-    },
-    /**
-     * 实现类的继承，通过父类生成子类
-     * @param  {Function} subclass
-     * @param  {Function} superclass 父类构造函数
-     * @param  {Object} overrides  子类的属性或者方法
-     * @return {Function} 返回的子类构造函数
-     * 示例:
-     *    @example
-     *    //父类
-     *    function base(){
-     *
-     *    }
-     *
-     *    function sub(){
-     *
-     *    }
-     *    //子类
-     *    BUI.extend(sub,base,{
-     *      method : function(){
-     *
-     *      }
-     *    });
-     *
-     *    //或者
-     *    var sub = BUI.extend(base,{});
-     */
-    extend: function(subclass, superclass, overrides, staticOverrides) {
-      //如果只提供父类构造函数，则自动生成子类构造函数
-      if (!BUI.isFunction(superclass)) {
-        overrides = superclass;
-        superclass = subclass;
-        subclass = function() {};
-      }
-      var create = Object.create ? function(proto, c) {
-        return Object.create(proto, {
-          constructor: {
-            value: c
-          }
-        });
-      } : function(proto, c) {
-        function F() {}
-        F.prototype = proto;
-        var o = new F();
-        o.constructor = c;
-        return o;
-      };
-      var superObj = create(superclass.prototype, subclass); //new superclass(),//实例化父类作为子类的prototype
-      subclass.prototype = BUI.mix(superObj, subclass.prototype); //指定子类的prototype
-      subclass.superclass = create(superclass.prototype, superclass);
-      BUI.mix(superObj, overrides);
-      BUI.mix(subclass, staticOverrides);
-      return subclass;
-    },
-    /**
-     * 生成唯一的Id
-     * @method
-     * @param {String} prefix 前缀
-     * @default 'bui-guid'
-     * @return {String} 唯一的编号
-     */
-    guid: (function() {
-      var map = {};
-      return function(prefix) {
-        prefix = prefix || BUI.prefix + GUID_DEFAULT;
-        if (!map[prefix]) {
-          map[prefix] = 1;
-        } else {
-          map[prefix] += 1;
-        }
-        return prefix + map[prefix];
-      };
-    })(),
-    /**
-     * 判断是否是字符串
-     * @return {Boolean} 是否是字符串
-     */
-    isString: function(value) {
-      return typeof value === 'string';
-    },
-    /**
-     * 判断是否数字，由于$.isNumberic方法会把 '123'认为数字
-     * @return {Boolean} 是否数字
-     */
-    isNumber: function(value) {
-      return typeof value === 'number';
-    },
-    /**
-     * 是否是布尔类型
-     *
-     * @param {Object} value 测试的值
-     * @return {Boolean}
-     */
-    isBoolean: function(value) {
-      return typeof value === 'boolean';
-    },
-    /**
-     * 控制台输出日志
-     * @param  {Object} obj 输出的数据
-     */
-    log: function(obj) {
-      if (BUI.debug && win.console && win.console.log) {
-        win.console.log(obj);
-      }
-    },
-    /**
-     * 将多个对象的属性复制到一个新的对象
-     */
-    merge: function() {
-      var args = $.makeArray(arguments),
-        first = args[0];
-      if (BUI.isBoolean(first)) {
-        args.shift();
-        args.unshift({});
-        args.unshift(first);
-      } else {
-        args.unshift({});
-      }
-      return BUI.mix.apply(null, args);
-    },
-    /**
-     * 封装 jQuery.extend 方法，将多个对象的属性merge到第一个对象中
-     * @return {Object}
-     */
-    mix: function() {
-      return $.extend.apply(null, arguments);
-    },
-    /**
-     * 创造顶层的命名空间，附加到window对象上,
-     * 包含namespace方法
-     */
-    app: function(name) {
-      if (!window[name]) {
-        window[name] = {
-          namespace: function(nsName) {
-            return BUI.namespace(nsName, window[name]);
-          }
-        };
-      }
-      return window[name];
-    },
-    mixAttrs: mixAttrs,
-    mixAttr: mixAttr,
-    /**
-     * 将其他类作为mixin集成到指定类上面
-     * @param {Function} c 构造函数
-     * @param {Array} mixins 扩展类
-     * @param {Array} attrs 扩展的静态属性，默认为['ATTRS']
-     * @return {Function} 传入的构造函数
-     */
-    mixin: function(c, mixins, attrs) {
-      attrs = attrs || [ATTRS, PARSER];
-      var extensions = mixins;
-      if (extensions) {
-        c.mixins = extensions;
-        var desc = {
-            // ATTRS:
-            // HTML_PARSER:
-          },
-          constructors = extensions['concat'](c);
-        // [ex1,ex2]，扩展类后面的优先，ex2 定义的覆盖 ex1 定义的
-        // 主类最优先
-        BUI.each(constructors, function(ext) {
-          if (ext) {
-            // 合并 ATTRS/HTML_PARSER 到主类
-            BUI.each(attrs, function(K) {
-              if (ext[K]) {
-                desc[K] = desc[K] || {};
-                // 不覆盖主类上的定义，因为继承层次上扩展类比主类层次高
-                // 但是值是对象的话会深度合并
-                // 注意：最好值是简单对象，自定义 new 出来的对象就会有问题(用 function return 出来)!
-                if (K == 'ATTRS') {
-                  //BUI.mix(true,desc[K], ext[K]);
-                  mixAttrs(desc[K], ext[K]);
-                } else {
-                  BUI.mix(desc[K], ext[K]);
-                }
-              }
-            });
-          }
-        });
-        BUI.each(desc, function(v, k) {
-          c[k] = v;
-        });
-        var prototype = {};
-        // 主类最优先
-        BUI.each(constructors, function(ext) {
-          if (ext) {
-            var proto = ext.prototype;
-            // 合并功能代码到主类，不覆盖
-            for (var p in proto) {
-              // 不覆盖主类，但是主类的父类还是覆盖吧
-              if (proto.hasOwnProperty(p)) {
-                prototype[p] = proto[p];
-              }
-            }
-          }
-        });
-        BUI.each(prototype, function(v, k) {
-          c.prototype[k] = v;
-        });
-      }
-      return c;
-    },
-    /**
-     * 生成命名空间
-     * @param  {String} name 命名空间的名称
-     * @param  {Object} baseNS 在已有的命名空间上创建命名空间，默认“BUI”
-     * @return {Object} 返回的命名空间对象
-     *    @example
-     *    BUI.namespace("Grid"); // BUI.Grid
-     */
-    namespace: function(name, baseNS) {
-      baseNS = baseNS || BUI;
-      if (!name) {
-        return baseNS;
-      }
-      var list = name.split('.'),
-        //firstNS = win[list[0]],
-        curNS = baseNS;
-      for (var i = 0; i < list.length; i++) {
-        var nsName = list[i];
-        if (!curNS[nsName]) {
-          curNS[nsName] = {};
-        }
-        curNS = curNS[nsName];
-      };
-      return curNS;
-    },
-    /**
-     * BUI 控件的公用前缀
-     * @type {String}
-     */
-    prefix: 'bui-',
-    /**
-     * 替换字符串中的字段.
-     * @param {String} str 模版字符串
-     * @param {Object} o json data
-     * @param {RegExp} [regexp] 匹配字符串的正则表达式
-     */
-    substitute: function(str, o, regexp) {
-      if (!BUI.isString(str) || (!BUI.isObject(o)) && !BUI.isArray(o)) {
-        return str;
-      }
-      return str.replace(regexp || /\\?\{([^{}]+)\}/g, function(match, name) {
-        if (match.charAt(0) === '\\') {
-          return match.slice(1);
-        }
-        return (o[name] === undefined) ? '' : o[name];
-      });
-    },
-    /**
-     * 将$.param的反操作
-     * jquery只提供param方法
-     * @return {[type]} [description]
-     */
-    unparam: function(str) {
-      if (typeof str != 'string' || !(str = $.trim(str))) {
-        return {};
-      }
-      var pairs = str.split('&'),
-        pairsArr,
-        rst = {};
-      for (var i = pairs.length - 1; i >= 0; i--) {
-        pairsArr = pairs[i].split('=');
-        rst[pairsArr[0]] = decodeURIComponent(pairsArr[1]);
-      }
-      return rst;
-    },
-    /**
-     * 使第一个字母变成大写
-     * @param  {String} s 字符串
-     * @return {String} 首字母大写后的字符串
-     */
-    ucfirst: function(s) {
-      s += '';
-      return s.charAt(0).toUpperCase() + s.substring(1);
-    },
-    /**
-     * 页面上的一点是否在用户的视图内
-     * @param {Object} offset 坐标，left,top
-     * @return {Boolean} 是否在视图内
-     */
-    isInView: function(offset) {
-      var left = offset.left,
-        top = offset.top,
-        viewWidth = BUI.viewportWidth(),
-        wiewHeight = BUI.viewportHeight(),
-        scrollTop = BUI.scrollTop(),
-        scrollLeft = BUI.scrollLeft();
-      //判断横坐标
-      if (left < scrollLeft || left > scrollLeft + viewWidth) {
-        return false;
-      }
-      //判断纵坐标
-      if (top < scrollTop || top > scrollTop + wiewHeight) {
-        return false;
-      }
-      return true;
-    },
-    /**
-     * 页面上的一点纵向坐标是否在用户的视图内
-     * @param {Object} top  纵坐标
-     * @return {Boolean} 是否在视图内
-     */
-    isInVerticalView: function(top) {
-      var wiewHeight = BUI.viewportHeight(),
-        scrollTop = BUI.scrollTop();
-      //判断纵坐标
-      if (top < scrollTop || top > scrollTop + wiewHeight) {
-        return false;
-      }
-      return true;
-    },
-    /**
-     * 页面上的一点横向坐标是否在用户的视图内
-     * @param {Object} left 横坐标
-     * @return {Boolean} 是否在视图内
-     */
-    isInHorizontalView: function(left) {
-      var viewWidth = BUI.viewportWidth(),
-        scrollLeft = BUI.scrollLeft();
-      //判断横坐标
-      if (left < scrollLeft || left > scrollLeft + viewWidth) {
-        return false;
-      }
-      return true;
-    },
-    /**
-     * 获取窗口可视范围宽度
-     * @return {Number} 可视区宽度
-     */
-    viewportWidth: function() {
-      return $(window).width();
-    },
-    /**
-     * 获取窗口可视范围高度
-     * @return {Number} 可视区高度
-     */
-    viewportHeight: function() {
-      return $(window).height();
-    },
-    /**
-     * 滚动到窗口的left位置
-     */
-    scrollLeft: function() {
-      return $(window).scrollLeft();
-    },
-    /**
-     * 滚动到横向位置
-     */
-    scrollTop: function() {
-      return $(window).scrollTop();
-    },
-    /**
-     * 窗口宽度
-     * @return {Number} 窗口宽度
-     */
-    docWidth: function() {
-      return Math.max(this.viewportWidth(), doc[DOC_ELEMENT][SCROLL_WIDTH], doc[BODY][SCROLL_WIDTH]);
-    },
-    /**
-     * 窗口高度
-     * @return {Number} 窗口高度
-     */
-    docHeight: function() {
-      return Math.max(this.viewportHeight(), doc[DOC_ELEMENT][SCROLL_HEIGHT], doc[BODY][SCROLL_HEIGHT]);
-    },
-    /**
-     * 遍历数组或者对象
-     * @param {Object|Array} element/Object 数组中的元素或者对象的值
-     * @param {Function} func 遍历的函数 function(elememt,index){} 或者 function(value,key){}
-     */
-    each: function(elements, func) {
-      if (!elements) {
-        return;
-      }
-      $.each(elements, function(k, v) {
-        return func(v, k);
-      });
-    },
-    /**
-     * 封装事件，便于使用上下文this,和便于解除事件时使用
-     * @protected
-     * @param  {Object} self   对象
-     * @param  {String} action 事件名称
-     */
-    wrapBehavior: function(self, action) {
-      return self['__bui_wrap_' + action] = function(e) {
-        if (!self.get('disabled')) {
-          self[action](e);
-        }
-      };
-    },
-    /**
-     * 获取封装的事件
-     * @protected
-     * @param  {Object} self   对象
-     * @param  {String} action 事件名称
-     */
-    getWrapBehavior: function(self, action) {
-      return self['__bui_wrap_' + action];
-    },
-    /**
-     * 获取页面上使用了此id的控件
-     * @param  {String} id 控件id
-     * @return {BUI.Component.Controller}  查找的控件
-     */
-    getControl: function(id) {
-      return BUI.Component.Manager.getComponent(id);
-    }
-  });
+    return _self;
+  },
   /**
-   * 表单帮助类，序列化、反序列化，设置值
-   * @class BUI.FormHelper
-   * @singleton
+   * 添加属性定义
+   * @protected
+   * @param {Object} attrConfigs  An object with attribute name/configuration pairs.
+   * @param {Object} initialValues user defined initial values
+   * @param {Boolean} overrides 是否覆盖字段
    */
-  var FormHelper = {
-    /**
-     * 将表单格式化成键值对形式
-     * @param {HTMLElement} form 表单
-     * @return {Object} 键值对的对象
-     */
-    serializeToObject: function(form) {
-      var array = $(form).serializeArray(),
-        result = {};
-      BUI.each(array, function(item) {
-        var name = item.name;
-        if (!result[name]) { //如果是单个值，直接赋值
-          result[name] = item.value;
-        } else { //多值使用数组
-          if (!BUI.isArray(result[name])) {
-            result[name] = [result[name]];
-          }
-          result[name].push(item.value);
-        }
-      });
-      return result;
-    },
-    /**
-     * 设置表单的值
-     * @param {HTMLElement} form 表单
-     * @param {Object} obj  键值对
-     */
-    setFields: function(form, obj) {
-      for (var name in obj) {
-        if (obj.hasOwnProperty(name)) {
-          BUI.FormHelper.setField(form, name, obj[name]);
-        }
-      }
-    },
-    /**
-     * 清空表单
-     * @param  {HTMLElement} form 表单元素
-     */
-    clear: function(form) {
-      var elements = $.makeArray(form.elements);
-      BUI.each(elements, function(element) {
-        if (element.type === 'checkbox' || element.type === 'radio') {
-          $(element).attr('checked', false);
-        } else {
-          $(element).val('');
-        }
-        $(element).change();
-      });
-    },
-    /**
-     * 设置表单字段
-     * @param {HTMLElement} form 表单元素
-     * @param {string} field 字段名
-     * @param {string} value 字段值
-     */
-    setField: function(form, fieldName, value) {
-      var fields = form.elements[fieldName];
-      if (fields && fields.type) {
-        formHelper._setFieldValue(fields, value);
-      } else if (BUI.isArray(fields) || (fields && fields.length)) {
-        BUI.each(fields, function(field) {
-          formHelper._setFieldValue(field, value);
-        });
-      }
-    },
-    //设置字段的值
-    _setFieldValue: function(field, value) {
-      if (field.type === 'checkbox') {
-        if (field.value == '' + value || (BUI.isArray(value) && BUI.Array.indexOf(field.value, value) !== -1)) {
-          $(field).attr('checked', true);
-        } else {
-          $(field).attr('checked', false);
-        }
-      } else if (field.type === 'radio') {
-        if (field.value == '' + value) {
-          $(field).attr('checked', true);
-        } else {
-          $(field).attr('checked', false);
-        }
-      } else {
-        $(field).val(value);
-      }
-    },
-    /**
-     * 获取表单字段值
-     * @param {HTMLElement} form 表单元素
-     * @param {string} field 字段名
-     * @return {String}   字段值
-     */
-    getField: function(form, fieldName) {
-      return BUI.FormHelper.serializeToObject(form)[fieldName];
-    }
-  };
-  BUI.FormHelper = FormHelper;
-  module.exports = BUI;
-});
-define("bui/common/ua", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview UA,jQuery的 $.browser 对象非常难使用
-   * @ignore
-   * @author dxq613@gmail.com
-   */
-  var $ = require('jquery');
-
-  function numberify(s) {
-    var c = 0;
-    // convert '1.2.3.4' to 1.234
-    return parseFloat(s.replace(/\./g, function() {
-      return (c++ === 0) ? '.' : '';
-    }));
-  };
-
-  function uaMatch(s) {
-    s = s.toLowerCase();
-    var r = /(chrome)[ \/]([\w.]+)/.exec(s) || /(webkit)[ \/]([\w.]+)/.exec(s) || /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(s) || /(msie) ([\w.]+)/.exec(s) || s.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(s) || [],
-      a = {
-        browser: r[1] || "",
-        version: r[2] || "0"
-      },
-      b = {};
-    a.browser && (b[a.browser] = !0, b.version = a.version),
-      b.chrome ? b.webkit = !0 : b.webkit && (b.safari = !0);
-    return b;
-  }
-  var UA = $.UA || (function() {
-    var browser = $.browser || uaMatch(navigator.userAgent),
-      versionNumber = numberify(browser.version),
-      /**
-       * 浏览器版本检测
-       * @class BUI.UA
-       * @singleton
-       */
-      ua = {
-        /**
-         * ie 版本
-         * @type {Number}
-         */
-        ie: browser.msie && versionNumber,
-        /**
-         * webkit 版本
-         * @type {Number}
-         */
-        webkit: browser.webkit && versionNumber,
-        /**
-         * opera 版本
-         * @type {Number}
-         */
-        opera: browser.opera && versionNumber,
-        /**
-         * mozilla 火狐版本
-         * @type {Number}
-         */
-        mozilla: browser.mozilla && versionNumber
-      };
-    return ua;
-  })();
-  module.exports = UA;
-});
-define("bui/common/json", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview 由于jQuery只有 parseJSON ，没有stringify所以使用过程不方便
-   * @ignore
-   */
-  var $ = require('jquery'),
-    UA = require("bui/common/ua"),
-    win = window,
-    JSON = win.JSON;
-  // ie 8.0.7600.16315@win7 json 有问题
-  if (!JSON || UA['ie'] < 9) {
-    JSON = win.JSON = {};
-  }
-
-  function f(n) {
-    // Format integers to have at least two digits.
-    return n < 10 ? '0' + n : n;
-  }
-  if (typeof Date.prototype.toJSON !== 'function') {
-    Date.prototype.toJSON = function(key) {
-      return isFinite(this.valueOf()) ? this.getUTCFullYear() + '-' + f(this.getUTCMonth() + 1) + '-' + f(this.getUTCDate()) + 'T' + f(this.getUTCHours()) + ':' + f(this.getUTCMinutes()) + ':' + f(this.getUTCSeconds()) + 'Z' : null;
-    };
-    String.prototype.toJSON = Number.prototype.toJSON = Boolean.prototype.toJSON = function(key) {
-      return this.valueOf();
-    };
-  }
-  var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
-    escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
-    gap,
-    indent,
-    meta = { // table of character substitutions
-      '\b': '\\b',
-      '\t': '\\t',
-      '\n': '\\n',
-      '\f': '\\f',
-      '\r': '\\r',
-      '"': '\\"',
-      '\\': '\\\\'
-    },
-    rep;
-
-  function quote(string) {
-    // If the string contains no control characters, no quote characters, and no
-    // backslash characters, then we can safely slap some quotes around it.
-    // Otherwise we must also replace the offending characters with safe escape
-    // sequences.
-    escapable['lastIndex'] = 0;
-    return escapable.test(string) ? '"' + string.replace(escapable, function(a) {
-      var c = meta[a];
-      return typeof c === 'string' ? c : '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
-    }) + '"' : '"' + string + '"';
-  }
-
-  function str(key, holder) {
-    // Produce a string from holder[key].
-    var i, // The loop counter.
-      k, // The member key.
-      v, // The member value.
-      length,
-      mind = gap,
-      partial,
-      value = holder[key];
-    // If the value has a toJSON method, call it to obtain a replacement value.
-    if (value && typeof value === 'object' && typeof value.toJSON === 'function') {
-      value = value.toJSON(key);
-    }
-    // If we were called with a replacer function, then call the replacer to
-    // obtain a replacement value.
-    if (typeof rep === 'function') {
-      value = rep.call(holder, key, value);
-    }
-    // What happens next depends on the value's type.
-    switch (typeof value) {
-      case 'string':
-        return quote(value);
-      case 'number':
-        // JSON numbers must be finite. Encode non-finite numbers as null.
-        return isFinite(value) ? String(value) : 'null';
-      case 'boolean':
-      case 'null':
-        // If the value is a boolean or null, convert it to a string. Note:
-        // typeof null does not produce 'null'. The case is included here in
-        // the remote chance that this gets fixed someday.
-        return String(value);
-        // If the type is 'object', we might be dealing with an object or an array or
-        // null.
-      case 'object':
-        // Due to a specification blunder in ECMAScript, typeof null is 'object',
-        // so watch out for that case.
-        if (!value) {
-          return 'null';
-        }
-        // Make an array to hold the partial results of stringifying this object value.
-        gap += indent;
-        partial = [];
-        // Is the value an array?
-        if (Object.prototype.toString.apply(value) === '[object Array]') {
-          // The value is an array. Stringify every element. Use null as a placeholder
-          // for non-JSON values.
-          length = value.length;
-          for (i = 0; i < length; i += 1) {
-            partial[i] = str(i, value) || 'null';
-          }
-          // Join all of the elements together, separated with commas, and wrap them in
-          // brackets.
-          v = partial.length === 0 ? '[]' : gap ? '[\n' + gap + partial.join(',\n' + gap) + '\n' + mind + ']' : '[' + partial.join(',') + ']';
-          gap = mind;
-          return v;
-        }
-        // If the replacer is an array, use it to select the members to be stringified.
-        if (rep && typeof rep === 'object') {
-          length = rep.length;
-          for (i = 0; i < length; i += 1) {
-            k = rep[i];
-            if (typeof k === 'string') {
-              v = str(k, value);
-              if (v) {
-                partial.push(quote(k) + (gap ? ': ' : ':') + v);
-              }
-            }
-          }
-        } else {
-          // Otherwise, iterate through all of the keys in the object.
-          for (k in value) {
-            if (Object.hasOwnProperty.call(value, k)) {
-              v = str(k, value);
-              if (v) {
-                partial.push(quote(k) + (gap ? ': ' : ':') + v);
-              }
-            }
-          }
-        }
-        // Join all of the member texts together, separated with commas,
-        // and wrap them in braces.
-        v = partial.length === 0 ? '{}' : gap ? '{\n' + gap + partial.join(',\n' + gap) + '\n' + mind + '}' : '{' + partial.join(',') + '}';
-        gap = mind;
-        return v;
-    }
-  }
-  if (typeof JSON.stringify !== 'function') {
-    JSON.stringify = function(value, replacer, space) {
-      // The stringify method takes a value and an optional replacer, and an optional
-      // space parameter, and returns a JSON text. The replacer can be a function
-      // that can replace values, or an array of strings that will select the keys.
-      // A default replacer method can be provided. Use of the space parameter can
-      // produce text that is more easily readable.
-      var i;
-      gap = '';
-      indent = '';
-      // If the space parameter is a number, make an indent string containing that
-      // many spaces.
-      if (typeof space === 'number') {
-        for (i = 0; i < space; i += 1) {
-          indent += ' ';
-        }
-        // If the space parameter is a string, it will be used as the indent string.
-      } else if (typeof space === 'string') {
-        indent = space;
-      }
-      // If there is a replacer, it must be a function or an array.
-      // Otherwise, throw an error.
-      rep = replacer;
-      if (replacer && typeof replacer !== 'function' && (typeof replacer !== 'object' || typeof replacer.length !== 'number')) {
-        throw new Error('JSON.stringify');
-      }
-      // Make a fake root object containing our value under the key of ''.
-      // Return the result of stringifying the value.
-      return str('', {
-        '': value
-      });
-    };
-  }
-
-  function looseParse(data) {
-      try {
-        return new Function('return ' + data + ';')();
-      } catch (e) {
-        throw 'Json parse error!';
-      }
-    }
-    /**
-     * JSON 格式化
-     * @class BUI.JSON
-     * @singleton
-     */
-  var JSON = {
-    /**
-     * 转成json 等同于$.parseJSON
-     * @method
-     * @param {String} jsonstring 合法的json 字符串
-     */
-    parse: $.parseJSON,
-    /**
-     * 业务中有些字符串组成的json数据不是严格的json数据，如使用单引号，或者属性名不是字符串
-     * 如 ： {a:'abc'}
-     * @method
-     * @param {String} jsonstring
-     */
-    looseParse: looseParse,
-    /**
-     * 将Json转成字符串
-     * @method
-     * @param {Object} json json 对象
-     */
-    stringify: JSON.stringify
-  }
-  module.exports = JSON;
-});
-define("bui/common/date", [], function(require, exports, module) {
-  /*
-   * @fileOverview Date Format 1.2.3
-   * @ignore
-   * (c) 2007-2009 Steven Levithan <stevenlevithan.com>
-   * MIT license
-   *
-   * Includes enhancements by Scott Trenda <scott.trenda.net>
-   * and Kris Kowal <cixar.com/~kris.kowal/>
-   *
-   * Accepts a date, a mask, or a date and a mask.
-   * Returns a formatted version of the given date.
-   * The date defaults to the current date/time.
-   * The mask defaults to dateFormat.masks.default.
-   *
-   * Last modified by jayli 拔赤 2010-09-09
-   * - 增加中文的支持
-   * - 简单的本地化，对w（星期x）的支持
-   *
-   */
-  var dateRegex = /^(?:(?!0000)[0-9]{4}([-/.]+)(?:(?:0?[1-9]|1[0-2])\1(?:0?[1-9]|1[0-9]|2[0-8])|(?:0?[13-9]|1[0-2])\1(?:29|30)|(?:0?[13578]|1[02])\1(?:31))|(?:[0-9]{2}(?:0[48]|[2468][048]|[13579][26])|(?:0[48]|[2468][048]|[13579][26])00)([-/.]?)0?2\2(?:29))(\s+([01]|([01][0-9]|2[0-3])):([0-9]|[0-5][0-9]):([0-9]|[0-5][0-9]))?$/;
-
-  function dateParse(val, format) {
-    if (val instanceof Date) {
-      return val;
-    }
-    if (typeof(format) == "undefined" || format == null || format == "") {
-      var checkList = new Array('y-m-d', 'yyyy-mm-dd', 'yyyy-mm-dd HH:MM:ss', 'H:M:s');
-      for (var i = 0; i < checkList.length; i++) {
-        var d = dateParse(val, checkList[i]);
-        if (d != null) {
-          return d;
-        }
-      }
-      return null;
-    };
-    val = val + "";
-    var i_val = 0;
-    var i_format = 0;
-    var c = "";
-    var token = "";
-    var x, y;
-    var now = new Date();
-    var year = now.getYear();
-    var month = now.getMonth() + 1;
-    var date = 1;
-    var hh = 00;
-    var mm = 00;
-    var ss = 00;
-    this.isInteger = function(val) {
-      return /^\d*$/.test(val);
-    };
-    this.getInt = function(str, i, minlength, maxlength) {
-      for (var x = maxlength; x >= minlength; x--) {
-        var token = str.substring(i, i + x);
-        if (token.length < minlength) {
-          return null;
-        }
-        if (this.isInteger(token)) {
-          return token;
-        }
-      }
-      return null;
-    };
-    while (i_format < format.length) {
-      c = format.charAt(i_format);
-      token = "";
-      while ((format.charAt(i_format) == c) && (i_format < format.length)) {
-        token += format.charAt(i_format++);
-      }
-      if (token == "yyyy" || token == "yy" || token == "y") {
-        if (token == "yyyy") {
-          x = 4;
-          y = 4;
-        }
-        if (token == "yy") {
-          x = 2;
-          y = 2;
-        }
-        if (token == "y") {
-          x = 2;
-          y = 4;
-        }
-        year = this.getInt(val, i_val, x, y);
-        if (year == null) {
-          return null;
-        }
-        i_val += year.length;
-        if (year.length == 2) {
-          year = year > 70 ? 1900 + (year - 0) : 2000 + (year - 0);
-        }
-      } else if (token == "mm" || token == "m") {
-        month = this.getInt(val, i_val, token.length, 2);
-        if (month == null || (month < 1) || (month > 12)) {
-          return null;
-        }
-        i_val += month.length;
-      } else if (token == "dd" || token == "d") {
-        date = this.getInt(val, i_val, token.length, 2);
-        if (date == null || (date < 1) || (date > 31)) {
-          return null;
-        }
-        i_val += date.length;
-      } else if (token == "hh" || token == "h") {
-        hh = this.getInt(val, i_val, token.length, 2);
-        if (hh == null || (hh < 1) || (hh > 12)) {
-          return null;
-        }
-        i_val += hh.length;
-      } else if (token == "HH" || token == "H") {
-        hh = this.getInt(val, i_val, token.length, 2);
-        if (hh == null || (hh < 0) || (hh > 23)) {
-          return null;
-        }
-        i_val += hh.length;
-      } else if (token == "MM" || token == "M") {
-        mm = this.getInt(val, i_val, token.length, 2);
-        if (mm == null || (mm < 0) || (mm > 59)) {
-          return null;
-        }
-        i_val += mm.length;
-      } else if (token == "ss" || token == "s") {
-        ss = this.getInt(val, i_val, token.length, 2);
-        if (ss == null || (ss < 0) || (ss > 59)) {
-          return null;
-        }
-        i_val += ss.length;
-      } else {
-        if (val.substring(i_val, i_val + token.length) != token) {
-          return null;
-        } else {
-          i_val += token.length;
-        }
-      }
-    }
-    if (i_val != val.length) {
-      return null;
-    }
-    if (month == 2) {
-      if (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0)) { // leap year
-        if (date > 29) {
-          return null;
-        }
-      } else {
-        if (date > 28) {
-          return null;
-        }
-      }
-    }
-    if ((month == 4) || (month == 6) || (month == 9) || (month == 11)) {
-      if (date > 30) {
-        return null;
-      }
-    }
-    return new Date(year, month - 1, date, hh, mm, ss);
-  }
-
-  function DateAdd(strInterval, NumDay, dtDate) {
-    var dtTmp = new Date(dtDate);
-    if (isNaN(dtTmp)) {
-      dtTmp = new Date();
-    }
-    NumDay = parseInt(NumDay, 10);
-    switch (strInterval) {
-      case 's':
-        dtTmp = new Date(dtTmp.getTime() + (1000 * NumDay));
-        break;
-      case 'n':
-        dtTmp = new Date(dtTmp.getTime() + (60000 * NumDay));
-        break;
-      case 'h':
-        dtTmp = new Date(dtTmp.getTime() + (3600000 * NumDay));
-        break;
-      case 'd':
-        dtTmp = new Date(dtTmp.getTime() + (86400000 * NumDay));
-        break;
-      case 'w':
-        dtTmp = new Date(dtTmp.getTime() + ((86400000 * 7) * NumDay));
-        break;
-      case 'm':
-        dtTmp = new Date(dtTmp.getFullYear(), (dtTmp.getMonth()) + NumDay, dtTmp.getDate(), dtTmp.getHours(), dtTmp.getMinutes(), dtTmp.getSeconds());
-        break;
-      case 'y':
-        //alert(dtTmp.getFullYear());
-        dtTmp = new Date(dtTmp.getFullYear() + NumDay, dtTmp.getMonth(), dtTmp.getDate(), dtTmp.getHours(), dtTmp.getMinutes(), dtTmp.getSeconds());
-        //alert(dtTmp);
-        break;
-    }
-    return dtTmp;
-  }
-  var dateFormat = function() {
-    var token = /w{1}|d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g,
-      timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g,
-      timezoneClip = /[^-+\dA-Z]/g,
-      pad = function(val, len) {
-        val = String(val);
-        len = len || 2;
-        while (val.length < len) {
-          val = '0' + val;
-        }
-        return val;
-      },
-      // Some common format strings
-      masks = {
-        'default': 'ddd mmm dd yyyy HH:MM:ss',
-        shortDate: 'm/d/yy',
-        //mediumDate:   'mmm d, yyyy',
-        longDate: 'mmmm d, yyyy',
-        fullDate: 'dddd, mmmm d, yyyy',
-        shortTime: 'h:MM TT',
-        //mediumTime:   'h:MM:ss TT',
-        longTime: 'h:MM:ss TT Z',
-        isoDate: 'yyyy-mm-dd',
-        isoTime: 'HH:MM:ss',
-        isoDateTime: "yyyy-mm-dd'T'HH:MM:ss",
-        isoUTCDateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss'Z'",
-        //added by jayli
-        localShortDate: 'yy年mm月dd日',
-        localShortDateTime: 'yy年mm月dd日 hh:MM:ss TT',
-        localLongDate: 'yyyy年mm月dd日',
-        localLongDateTime: 'yyyy年mm月dd日 hh:MM:ss TT',
-        localFullDate: 'yyyy年mm月dd日 w',
-        localFullDateTime: 'yyyy年mm月dd日 w hh:MM:ss TT'
-      },
-      // Internationalization strings
-      i18n = {
-        dayNames: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', '星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
-        monthNames: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-      };
-    // Regexes and supporting functions are cached through closure
-    return function(date, mask, utc) {
-      // You can't provide utc if you skip other args (use the "UTC:" mask prefix)
-      if (arguments.length === 1 && Object.prototype.toString.call(date) === '[object String]' && !/\d/.test(date)) {
-        mask = date;
-        date = undefined;
-      }
-      // Passing date through Date applies Date.parse, if necessary
-      date = date ? new Date(date) : new Date();
-      if (isNaN(date)) {
-        throw SyntaxError('invalid date');
-      }
-      mask = String(masks[mask] || mask || masks['default']);
-      // Allow setting the utc argument via the mask
-      if (mask.slice(0, 4) === 'UTC:') {
-        mask = mask.slice(4);
-        utc = true;
-      }
-      var _ = utc ? 'getUTC' : 'get',
-        d = date[_ + 'Date'](),
-        D = date[_ + 'Day'](),
-        m = date[_ + 'Month'](),
-        y = date[_ + 'FullYear'](),
-        H = date[_ + 'Hours'](),
-        M = date[_ + 'Minutes'](),
-        s = date[_ + 'Seconds'](),
-        L = date[_ + 'Milliseconds'](),
-        o = utc ? 0 : date.getTimezoneOffset(),
-        flags = {
-          d: d,
-          dd: pad(d, undefined),
-          ddd: i18n.dayNames[D],
-          dddd: i18n.dayNames[D + 7],
-          w: i18n.dayNames[D + 14],
-          m: m + 1,
-          mm: pad(m + 1, undefined),
-          mmm: i18n.monthNames[m],
-          mmmm: i18n.monthNames[m + 12],
-          yy: String(y).slice(2),
-          yyyy: y,
-          h: H % 12 || 12,
-          hh: pad(H % 12 || 12, undefined),
-          H: H,
-          HH: pad(H, undefined),
-          M: M,
-          MM: pad(M, undefined),
-          s: s,
-          ss: pad(s, undefined),
-          l: pad(L, 3),
-          L: pad(L > 99 ? Math.round(L / 10) : L, undefined),
-          t: H < 12 ? 'a' : 'p',
-          tt: H < 12 ? 'am' : 'pm',
-          T: H < 12 ? 'A' : 'P',
-          TT: H < 12 ? 'AM' : 'PM',
-          Z: utc ? 'UTC' : (String(date).match(timezone) || ['']).pop().replace(timezoneClip, ''),
-          o: (o > 0 ? '-' : '+') + pad(Math.floor(Math.abs(o) / 60) * 100 + Math.abs(o) % 60, 4),
-          S: ['th', 'st', 'nd', 'rd'][d % 10 > 3 ? 0 : (d % 100 - d % 10 !== 10) * d % 10]
-        };
-      return mask.replace(token, function($0) {
-        return $0 in flags ? flags[$0] : $0.slice(1, $0.length - 1);
-      });
-    };
-  }();
-  /**
-   * 日期的工具方法
-   * @class BUI.Date
-   */
-  var DateUtil = {
-    /**
-     * 日期加法
-     * @param {String} strInterval 加法的类型，s(秒),n(分),h(时),d(天),w(周),m(月),y(年)
-     * @param {Number} Num     数量，如果为负数，则为减法
-     * @param {Date} dtDate    起始日期，默认为此时
-     */
-    add: function(strInterval, Num, dtDate) {
-      return DateAdd(strInterval, Num, dtDate);
-    },
-    /**
-     * 小时的加法
-     * @param {Number} hours 小时
-     * @param {Date} date 起始日期
-     */
-    addHour: function(hours, date) {
-      return DateAdd('h', hours, date);
-    },
-    /**
-     * 分的加法
-     * @param {Number} minutes 分
-     * @param {Date} date 起始日期
-     */
-    addMinute: function(minutes, date) {
-      return DateAdd('n', minutes, date);
-    },
-    /**
-     * 秒的加法
-     * @param {Number} seconds 秒
-     * @param {Date} date 起始日期
-     */
-    addSecond: function(seconds, date) {
-      return DateAdd('s', seconds, date);
-    },
-    /**
-     * 天的加法
-     * @param {Number} days 天数
-     * @param {Date} date 起始日期
-     */
-    addDay: function(days, date) {
-      return DateAdd('d', days, date);
-    },
-    /**
-     * 增加周
-     * @param {Number} weeks 周数
-     * @param {Date} date  起始日期
-     */
-    addWeek: function(weeks, date) {
-      return DateAdd('w', weeks, date);
-    },
-    /**
-     * 增加月
-     * @param {Number} months 月数
-     * @param {Date} date  起始日期
-     */
-    addMonths: function(months, date) {
-      return DateAdd('m', months, date);
-    },
-    /**
-     * 增加年
-     * @param {Number} years 年数
-     * @param {Date} date  起始日期
-     */
-    addYear: function(years, date) {
-      return DateAdd('y', years, date);
-    },
-    /**
-     * 日期是否相等，忽略时间
-     * @param  {Date}  d1 日期对象
-     * @param  {Date}  d2 日期对象
-     * @return {Boolean}  是否相等
-     */
-    isDateEquals: function(d1, d2) {
-      return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
-    },
-    /**
-     * 日期时间是否相等，包含时间
-     * @param  {Date}  d1 日期对象
-     * @param  {Date}  d2 日期对象
-     * @return {Boolean}  是否相等
-     */
-    isEquals: function(d1, d2) {
-      if (d1 == d2) {
-        return true;
-      }
-      if (!d1 || !d2) {
-        return false;
-      }
-      if (!d1.getTime || !d2.getTime) {
-        return false;
-      }
-      return d1.getTime() == d2.getTime();
-    },
-    /**
-     * 字符串是否是有效的日期类型
-     * @param {String} str 字符串
-     * @return 字符串是否能转换成日期
-     */
-    isDateString: function(str) {
-      return dateRegex.test(str);
-    },
-    /**
-     * 将日期格式化成字符串
-     * @param  {Date} date 日期
-     * @param  {String} mask 格式化方式
-     * @param  {Date} utc  是否utc时间
-     * @return {String}    日期的字符串
-     */
-    format: function(date, mask, utc) {
-      return dateFormat(date, mask, utc);
-    },
-    /**
-     * 转换成日期
-     * @param  {String|Date} date 字符串或者日期
-     * @param  {String} dateMask  日期的格式,如:yyyy-MM-dd
-     * @return {Date}    日期对象
-     */
-    parse: function(date, s) {
-      if (BUI.isString(date)) {
-        date = date.replace('\/', '-');
-      }
-      return dateParse(date, s);
-    },
-    /**
-     * 当前天
-     * @return {Date} 当前天 00:00:00
-     */
-    today: function() {
-      var now = new Date();
-      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    },
-    /**
-     * 返回当前日期
-     * @return {Date} 日期的 00:00:00
-     */
-    getDate: function(date) {
-      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    }
-  };
-  module.exports = DateUtil;
-});
-define("bui/common/array", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview 数组帮助类
-   * @ignore
-   */
-  /**
-   * @class BUI
-   * 控件库的基础命名空间
-   * @singleton
-   */
-  var BUI = require("bui/common/util");
-  /**
-   * @class BUI.Array
-   * 数组帮助类
-   */
-  var ArrayUtil = {
-    /**
-     * 返回数组的最后一个对象
-     * @param {Array} array 数组或者类似于数组的对象.
-     * @return {*} 数组的最后一项.
-     */
-    peek: function(array) {
-      return array[array.length - 1];
-    },
-    /**
-     * 查找记录所在的位置
-     * @param  {*} value 值
-     * @param  {Array} array 数组或者类似于数组的对象
-     * @param  {Number} [fromIndex=0] 起始项，默认为0
-     * @return {Number} 位置，如果为 -1则不在数组内
-     */
-    indexOf: function(value, array, opt_fromIndex) {
-      var fromIndex = opt_fromIndex == null ? 0 : (opt_fromIndex < 0 ? Math.max(0, array.length + opt_fromIndex) : opt_fromIndex);
-      for (var i = fromIndex; i < array.length; i++) {
-        if (i in array && array[i] === value) return i;
-      }
-      return -1;
-    },
-    /**
-     * 数组是否存在指定值
-     * @param  {*} value 值
-     * @param  {Array} array 数组或者类似于数组的对象
-     * @return {Boolean} 是否存在于数组中
-     */
-    contains: function(value, array) {
-      return ArrayUtil.indexOf(value, array) >= 0;
-    },
-    /**
-     * 遍历数组或者对象
-     * @method
-     * @param {Object|Array} element/Object 数组中的元素或者对象的值
-     * @param {Function} func 遍历的函数 function(elememt,index){} 或者 function(value,key){}
-     */
-    each: BUI.each,
-    /**
-     * 2个数组内部的值是否相等
-     * @param  {Array} a1 数组1
-     * @param  {Array} a2 数组2
-     * @return {Boolean} 2个数组相等或者内部元素是否相等
-     */
-    equals: function(a1, a2) {
-      if (a1 == a2) {
-        return true;
-      }
-      if (!a1 || !a2) {
-        return false;
-      }
-      if (a1.length != a2.length) {
-        return false;
-      }
-      var rst = true;
-      for (var i = 0; i < a1.length; i++) {
-        if (a1[i] !== a2[i]) {
-          rst = false;
-          break;
-        }
-      }
-      return rst;
-    },
-    /**
-     * 过滤数组
-     * @param {Object|Array} element/Object 数组中的元素或者对象的值
-     * @param {Function} func 遍历的函数 function(elememt,index){} 或者 function(value,key){},如果返回true则添加到结果集
-     * @return {Array} 过滤的结果集
-     */
-    filter: function(array, func) {
-      var result = [];
-      ArrayUtil.each(array, function(value, index) {
-        if (func(value, index)) {
-          result.push(value);
-        }
-      });
-      return result;
-    },
-    /**
-     * 转换数组数组
-     * @param {Object|Array} element/Object 数组中的元素或者对象的值
-     * @param {Function} func 遍历的函数 function(elememt,index){} 或者 function(value,key){},将返回的结果添加到结果集
-     * @return {Array} 过滤的结果集
-     */
-    map: function(array, func) {
-      var result = [];
-      ArrayUtil.each(array, function(value, index) {
-        result.push(func(value, index));
-      });
-      return result;
-    },
-    /**
-     * 获取第一个符合条件的数据
-     * @param  {Array} array 数组
-     * @param  {Function} func  匹配函数
-     * @return {*}  符合条件的数据
-     */
-    find: function(array, func) {
-      var i = ArrayUtil.findIndex(array, func);
-      return i < 0 ? null : array[i];
-    },
-    /**
-     * 获取第一个符合条件的数据的索引值
-     * @param  {Array} array 数组
-     * @param  {Function} func  匹配函数
-     * @return {Number} 符合条件的数据的索引值
-     */
-    findIndex: function(array, func) {
-      var result = -1;
-      ArrayUtil.each(array, function(value, index) {
-        if (func(value, index)) {
-          result = index;
-          return false;
-        }
-      });
-      return result;
-    },
-    /**
-     * 数组是否为空
-     * @param  {Array}  array 数组
-     * @return {Boolean}  是否为空
-     */
-    isEmpty: function(array) {
-      return array.length == 0;
-    },
-    /**
-     * 插入数组
-     * @param  {Array} array 数组
-     * @param  {Number} index 位置
-     * @param {*} value 插入的数据
-     */
-    add: function(array, value) {
-      array.push(value);
-    },
-    /**
-     * 将数据插入数组指定的位置
-     * @param  {Array} array 数组
-     * @param {*} value 插入的数据
-     * @param  {Number} index 位置
-     */
-    addAt: function(array, value, index) {
-      ArrayUtil.splice(array, index, 0, value);
-    },
-    /**
-     * 清空数组
-     * @param  {Array} array 数组
-     * @return {Array}  清空后的数组
-     */
-    empty: function(array) {
-      if (!(array instanceof(Array))) {
-        for (var i = array.length - 1; i >= 0; i--) {
-          delete array[i];
-        }
-      }
-      array.length = 0;
-    },
-    /**
-     * 移除记录
-     * @param  {Array} array 数组
-     * @param  {*} value 记录
-     * @return {Boolean}   是否移除成功
-     */
-    remove: function(array, value) {
-      var i = ArrayUtil.indexOf(value, array);
-      var rv;
-      if ((rv = i >= 0)) {
-        ArrayUtil.removeAt(array, i);
-      }
-      return rv;
-    },
-    /**
-     * 移除指定位置的记录
-     * @param  {Array} array 数组
-     * @param  {Number} index 索引值
-     * @return {Boolean}   是否移除成功
-     */
-    removeAt: function(array, index) {
-      return ArrayUtil.splice(array, index, 1).length == 1;
-    },
-    /**
-     * @private
-     */
-    slice: function(arr, start, opt_end) {
-      if (arguments.length <= 2) {
-        return Array.prototype.slice.call(arr, start);
-      } else {
-        return Array.prototype.slice.call(arr, start, opt_end);
-      }
-    },
-    /**
-     * @private
-     */
-    splice: function(arr, index, howMany, var_args) {
-      return Array.prototype.splice.apply(arr, ArrayUtil.slice(arguments, 1))
-    }
-  };
-  module.exports = ArrayUtil;
-});
-define("bui/common/keycode", [], function(require, exports, module) {
-  /**
-   * @fileOverview 键盘值
-   * @ignore
-   */
-  /**
-   * 键盘按键对应的数字值
-   * @class BUI.KeyCode
-   * @singleton
-   */
-  var keyCode = {
-    /** Key constant @type Number */
-    BACKSPACE: 8,
-    /** Key constant @type Number */
-    TAB: 9,
-    /** Key constant @type Number */
-    NUM_CENTER: 12,
-    /** Key constant @type Number */
-    ENTER: 13,
-    /** Key constant @type Number */
-    RETURN: 13,
-    /** Key constant @type Number */
-    SHIFT: 16,
-    /** Key constant @type Number */
-    CTRL: 17,
-    /** Key constant @type Number */
-    ALT: 18,
-    /** Key constant @type Number */
-    PAUSE: 19,
-    /** Key constant @type Number */
-    CAPS_LOCK: 20,
-    /** Key constant @type Number */
-    ESC: 27,
-    /** Key constant @type Number */
-    SPACE: 32,
-    /** Key constant @type Number */
-    PAGE_UP: 33,
-    /** Key constant @type Number */
-    PAGE_DOWN: 34,
-    /** Key constant @type Number */
-    END: 35,
-    /** Key constant @type Number */
-    HOME: 36,
-    /** Key constant @type Number */
-    LEFT: 37,
-    /** Key constant @type Number */
-    UP: 38,
-    /** Key constant @type Number */
-    RIGHT: 39,
-    /** Key constant @type Number */
-    DOWN: 40,
-    /** Key constant @type Number */
-    PRINT_SCREEN: 44,
-    /** Key constant @type Number */
-    INSERT: 45,
-    /** Key constant @type Number */
-    DELETE: 46,
-    /** Key constant @type Number */
-    ZERO: 48,
-    /** Key constant @type Number */
-    ONE: 49,
-    /** Key constant @type Number */
-    TWO: 50,
-    /** Key constant @type Number */
-    THREE: 51,
-    /** Key constant @type Number */
-    FOUR: 52,
-    /** Key constant @type Number */
-    FIVE: 53,
-    /** Key constant @type Number */
-    SIX: 54,
-    /** Key constant @type Number */
-    SEVEN: 55,
-    /** Key constant @type Number */
-    EIGHT: 56,
-    /** Key constant @type Number */
-    NINE: 57,
-    /** Key constant @type Number */
-    A: 65,
-    /** Key constant @type Number */
-    B: 66,
-    /** Key constant @type Number */
-    C: 67,
-    /** Key constant @type Number */
-    D: 68,
-    /** Key constant @type Number */
-    E: 69,
-    /** Key constant @type Number */
-    F: 70,
-    /** Key constant @type Number */
-    G: 71,
-    /** Key constant @type Number */
-    H: 72,
-    /** Key constant @type Number */
-    I: 73,
-    /** Key constant @type Number */
-    J: 74,
-    /** Key constant @type Number */
-    K: 75,
-    /** Key constant @type Number */
-    L: 76,
-    /** Key constant @type Number */
-    M: 77,
-    /** Key constant @type Number */
-    N: 78,
-    /** Key constant @type Number */
-    O: 79,
-    /** Key constant @type Number */
-    P: 80,
-    /** Key constant @type Number */
-    Q: 81,
-    /** Key constant @type Number */
-    R: 82,
-    /** Key constant @type Number */
-    S: 83,
-    /** Key constant @type Number */
-    T: 84,
-    /** Key constant @type Number */
-    U: 85,
-    /** Key constant @type Number */
-    V: 86,
-    /** Key constant @type Number */
-    W: 87,
-    /** Key constant @type Number */
-    X: 88,
-    /** Key constant @type Number */
-    Y: 89,
-    /** Key constant @type Number */
-    Z: 90,
-    /** Key constant @type Number */
-    CONTEXT_MENU: 93,
-    /** Key constant @type Number */
-    NUM_ZERO: 96,
-    /** Key constant @type Number */
-    NUM_ONE: 97,
-    /** Key constant @type Number */
-    NUM_TWO: 98,
-    /** Key constant @type Number */
-    NUM_THREE: 99,
-    /** Key constant @type Number */
-    NUM_FOUR: 100,
-    /** Key constant @type Number */
-    NUM_FIVE: 101,
-    /** Key constant @type Number */
-    NUM_SIX: 102,
-    /** Key constant @type Number */
-    NUM_SEVEN: 103,
-    /** Key constant @type Number */
-    NUM_EIGHT: 104,
-    /** Key constant @type Number */
-    NUM_NINE: 105,
-    /** Key constant @type Number */
-    NUM_MULTIPLY: 106,
-    /** Key constant @type Number */
-    NUM_PLUS: 107,
-    /** Key constant @type Number */
-    NUM_MINUS: 109,
-    /** Key constant @type Number */
-    NUM_PERIOD: 110,
-    /** Key constant @type Number */
-    NUM_DIVISION: 111,
-    /** Key constant @type Number */
-    F1: 112,
-    /** Key constant @type Number */
-    F2: 113,
-    /** Key constant @type Number */
-    F3: 114,
-    /** Key constant @type Number */
-    F4: 115,
-    /** Key constant @type Number */
-    F5: 116,
-    /** Key constant @type Number */
-    F6: 117,
-    /** Key constant @type Number */
-    F7: 118,
-    /** Key constant @type Number */
-    F8: 119,
-    /** Key constant @type Number */
-    F9: 120,
-    /** Key constant @type Number */
-    F10: 121,
-    /** Key constant @type Number */
-    F11: 122,
-    /** Key constant @type Number */
-    F12: 123
-  };
-  module.exports = keyCode;
-});
-define("bui/common/observable", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview 观察者模式实现事件
-   * @ignore
-   */
-  var $ = require('jquery');
-  var BUI = require("bui/common/util"),
-    ArrayUtil = require("bui/common/array");
-  /**
-   * @private
-   * @class BUI.Observable.Callbacks
-   * jquery 1.7 时存在 $.Callbacks,但是fireWith的返回结果是$.Callbacks 对象，
-   * 而我们想要的效果是：当其中有一个函数返回为false时，阻止后面的执行，并返回false
-   */
-  var Callbacks = function() {
-    this._init();
-  };
-  BUI.augment(Callbacks, {
-    _functions: null,
-    _init: function() {
-      var _self = this;
-      _self._functions = [];
-    },
-    /**
-     * 添加回调函数
-     * @param {Function} fn 回调函数
-     */
-    add: function(fn) {
-      this._functions.push(fn);
-    },
-    /**
-     * 移除回调函数
-     * @param  {Function} fn 回调函数
-     */
-    remove: function(fn) {
-      var functions = this._functions;
-      index = ArrayUtil.indexOf(fn, functions);
-      if (index >= 0) {
-        functions.splice(index, 1);
-      }
-    },
-    /**
-     * 清空事件
-     */
-    empty: function() {
-      var length = this._functions.length; //ie6,7下，必须指定需要删除的数量
-      this._functions.splice(0, length);
-    },
-    /**
-     * 暂停事件
-     */
-    pause: function() {
-      this._paused = true;
-    },
-    /**
-     * 唤醒事件
-     */
-    resume: function() {
-      this._paused = false;
-    },
-    /**
-     * 触发回调
-     * @param  {Object} scope 上下文
-     * @param  {Array} args  回调函数的参数
-     * @return {Boolean|undefined} 当其中有一个函数返回为false时，阻止后面的执行，并返回false
-     */
-    fireWith: function(scope, args) {
-      var _self = this,
-        rst;
-      if (_self._paused) {
-        return;
-      }
-      BUI.each(_self._functions, function(fn) {
-        rst = fn.apply(scope, args);
-        if (rst === false) {
-          return false;
-        }
-      });
-      return rst;
-    }
-  });
-
-  function getCallbacks() {
-      return new Callbacks();
-    }
-    /**
-     * 支持事件的对象，参考观察者模式
-     *  - 此类提供事件绑定
-     *  - 提供事件冒泡机制
-     *
-     * <pre><code>
-     *   var control = new Control();
-     *   control.on('click',function(ev){
-     *
-     *   });
-     *
-     *   control.off();  //移除所有事件
-     * </code></pre>
-     * @class BUI.Observable
-     * @abstract
-     * @param {Object} config 配置项键值对
-     */
-  var Observable = function(config) {
-    this._events = [];
-    this._eventMap = {};
-    this._bubblesEvents = [];
-    this._initEvents(config);
-  };
-  BUI.augment(Observable, {
-    /**
-     * @cfg {Object} listeners
-     *  初始化事件,快速注册事件
-     *  <pre><code>
-     *    var list = new BUI.List.SimpleList({
-     *      listeners : {
-     *        itemclick : function(ev){},
-     *        itemrendered : function(ev){}
-     *      },
-     *      items : []
-     *    });
-     *    list.render();
-     *  </code></pre>
-     */
-    /**
-     * @cfg {Function} handler
-     * 点击事件的处理函数，快速配置点击事件而不需要写listeners属性
-     * <pre><code>
-     *    var list = new BUI.List.SimpleList({
-     *      handler : function(ev){} //click 事件
-     *    });
-     *    list.render();
-     *  </code></pre>
-     */
-    /**
-     * 支持的事件名列表
-     * @private
-     */
-    _events: [],
-    /**
-     * 绑定的事件
-     * @private
-     */
-    _eventMap: {},
-    _bubblesEvents: [],
-    _bubbleTarget: null,
-    //获取回调集合
-    _getCallbacks: function(eventType) {
-      var _self = this,
-        eventMap = _self._eventMap;
-      return eventMap[eventType];
-    },
-    //初始化事件列表
-    _initEvents: function(config) {
-      var _self = this,
-        listeners = null;
-      if (!config) {
-        return;
-      }
-      listeners = config.listeners || {};
-      if (config.handler) {
-        listeners.click = config.handler;
-      }
-      if (listeners) {
-        for (var name in listeners) {
-          if (listeners.hasOwnProperty(name)) {
-            _self.on(name, listeners[name]);
-          }
-        };
-      }
-    },
-    //事件是否支持冒泡
-    _isBubbles: function(eventType) {
-      return ArrayUtil.indexOf(eventType, this._bubblesEvents) >= 0;
-    },
-    /**
-     * 添加冒泡的对象
-     * @protected
-     * @param {Object} target  冒泡的事件源
-     */
-    addTarget: function(target) {
-      this._bubbleTarget = target;
-    },
-    /**
-     * 添加支持的事件
-     * @protected
-     * @param {String|String[]} events 事件
-     */
-    addEvents: function(events) {
-      var _self = this,
-        existEvents = _self._events,
-        eventMap = _self._eventMap;
-
-      function addEvent(eventType) {
-        if (ArrayUtil.indexOf(eventType, existEvents) === -1) {
-          eventMap[eventType] = getCallbacks();
-          existEvents.push(eventType);
-        }
-      }
-      if (BUI.isArray(events)) {
-        BUI.each(events, function(eventType) {
-          addEvent(eventType);
-        });
-      } else {
-        addEvent(events);
-      }
-    },
-    /**
-     * 移除所有绑定的事件
-     * @protected
-     */
-    clearListeners: function() {
-      var _self = this,
-        eventMap = _self._eventMap;
-      for (var name in eventMap) {
-        if (eventMap.hasOwnProperty(name)) {
-          eventMap[name].empty();
-        }
-      }
-    },
-    /**
-     * 触发事件
-     * <pre><code>
-     *   //绑定事件
-     *   list.on('itemclick',function(ev){
-     *     alert('21');
-     *   });
-     *   //触发事件
-     *   list.fire('itemclick');
-     * </code></pre>
-     * @param  {String} eventType 事件类型
-     * @param  {Object} eventData 事件触发时传递的数据
-     * @return {Boolean|undefined}  如果其中一个事件处理器返回 false , 则返回 false, 否则返回最后一个事件处理器的返回值
-     */
-    fire: function(eventType, eventData) {
-      var _self = this,
-        callbacks = _self._getCallbacks(eventType),
-        args = $.makeArray(arguments),
-        result;
-      if (!eventData) {
-        eventData = {};
-        args.push(eventData);
-      }
-      if (!eventData.target) {
-        eventData.target = _self;
-      }
-      if (callbacks) {
-        result = callbacks.fireWith(_self, Array.prototype.slice.call(args, 1));
-      }
-      if (_self._isBubbles(eventType)) {
-        var bubbleTarget = _self._bubbleTarget;
-        if (bubbleTarget && bubbleTarget.fire) {
-          bubbleTarget.fire(eventType, eventData);
-        }
-      }
-      return result;
-    },
-    /**
-     * 暂停事件的执行
-     * <pre><code>
-     *  list.pauseEvent('itemclick');
-     * </code></pre>
-     * @param  {String} eventType 事件类型
-     */
-    pauseEvent: function(eventType) {
-      var _self = this,
-        callbacks = _self._getCallbacks(eventType);
-      callbacks && callbacks.pause();
-    },
-    /**
-     * 唤醒事件
-     * <pre><code>
-     *  list.resumeEvent('itemclick');
-     * </code></pre>
-     * @param  {String} eventType 事件类型
-     */
-    resumeEvent: function(eventType) {
-      var _self = this,
-        callbacks = _self._getCallbacks(eventType);
-      callbacks && callbacks.resume();
-    },
-    /**
-     * 添加绑定事件
-     * <pre><code>
-     *   //绑定单个事件
-     *   list.on('itemclick',function(ev){
-     *     alert('21');
-     *   });
-     *   //绑定多个事件
-     *   list.on('itemrendered itemupdated',function(){
-     *     //列表项创建、更新时触发操作
-     *   });
-     * </code></pre>
-     * @param  {String}   eventType 事件类型
-     * @param  {Function} fn        回调函数
-     */
-    on: function(eventType, fn) {
-      //一次监听多个事件
-      var arr = eventType.split(' '),
-        _self = this,
-        callbacks = null;
-      if (arr.length > 1) {
-        BUI.each(arr, function(name) {
-          _self.on(name, fn);
-        });
-      } else {
-        callbacks = _self._getCallbacks(eventType);
-        if (callbacks) {
-          callbacks.add(fn);
-        } else {
-          _self.addEvents(eventType);
-          _self.on(eventType, fn);
-        }
-      }
+  addAttrs: function(attrConfigs, initialValues, overrides) {
+    var _self = this;
+    if (!attrConfigs) {
       return _self;
-    },
-    /**
-     * 移除绑定的事件
-     * <pre><code>
-     *  //移除所有事件
-     *  list.off();
-     *
-     *  //移除特定事件
-     *  function callback(ev){}
-     *  list.on('click',callback);
-     *
-     *  list.off('click',callback);//需要保存回调函数的引用
-     *
-     * </code></pre>
-     * @param  {String}   eventType 事件类型
-     * @param  {Function} fn        回调函数
-     */
-    off: function(eventType, fn) {
-      if (!eventType && !fn) {
-        this.clearListeners();
-        return this;
-      }
-      var _self = this,
-        callbacks = _self._getCallbacks(eventType);
-      if (callbacks) {
-        if (fn) {
-          callbacks.remove(fn);
-        } else {
-          callbacks.empty();
-        }
-      }
-      return _self;
-    },
-    /**
-     * 配置事件是否允许冒泡
-     * @protected
-     * @param  {String} eventType 支持冒泡的事件
-     * @param  {Object} cfg 配置项
-     * @param {Boolean} cfg.bubbles 是否支持冒泡
-     */
-    publish: function(eventType, cfg) {
-      var _self = this,
-        bubblesEvents = _self._bubblesEvents;
-      if (cfg.bubbles) {
-        if (BUI.Array.indexOf(eventType, bubblesEvents) === -1) {
-          bubblesEvents.push(eventType);
-        }
-      } else {
-        var index = BUI.Array.indexOf(eventType, bubblesEvents);
-        if (index !== -1) {
-          bubblesEvents.splice(index, 1);
-        }
-      }
     }
-  });
-  module.exports = Observable;
-});
-define("bui/common/base", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview  Base UI控件的最基础的类
-   * @author yiminghe@gmail.com
-   * copied by dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require('jquery');
-  var INVALID = {},
-    Observable = require("bui/common/observable");
-
-  function ensureNonEmpty(obj, name, create) {
-    var ret = obj[name] || {};
-    if (create) {
-      obj[name] = ret;
+    if (typeof(initialValues) === 'boolean') {
+      overrides = initialValues;
+      initialValues = null;
     }
-    return ret;
-  }
-
-  function normalFn(host, method) {
-    if (BUI.isString(method)) {
-      return host[method];
-    }
-    return method;
-  }
-
-  function __fireAttrChange(self, when, name, prevVal, newVal) {
-    var attrName = name;
-    return self.fire(when + BUI.ucfirst(name) + 'Change', {
-      attrName: attrName,
-      prevVal: prevVal,
-      newVal: newVal
+    BUI.each(attrConfigs, function(attrConfig, name) {
+      _self.addAttr(name, attrConfig, overrides);
     });
-  }
-
-  function setInternal(self, name, value, opts, attrs) {
-    opts = opts || {};
-    var ret,
-      subVal,
-      prevVal;
-    prevVal = self.get(name);
-    //如果未改变值不进行修改
-    if (!$.isPlainObject(value) && !BUI.isArray(value) && prevVal === value) {
-      return undefined;
+    if (initialValues) {
+      _self.set(initialValues);
     }
-    // check before event
-    if (!opts['silent']) {
-      if (false === __fireAttrChange(self, 'before', name, prevVal, value)) {
-        return false;
-      }
-    }
-    // set it
-    ret = self._set(name, value, opts);
-    if (ret === false) {
-      return ret;
-    }
-    // fire after event
-    if (!opts['silent']) {
-      value = self.__attrVals[name];
-      __fireAttrChange(self, 'after', name, prevVal, value);
-    }
-    return self;
-  }
-
-  function initClassAttrs(c) {
-      if (c._attrs || c == Base) {
-        return;
-      }
-      var superCon = c.superclass.constructor;
-      if (superCon && !superCon._attrs) {
-        initClassAttrs(superCon);
-      }
-      c._attrs = {};
-      BUI.mixAttrs(c._attrs, superCon._attrs);
-      BUI.mixAttrs(c._attrs, c.ATTRS);
-    }
-    /**
-     * 基础类，此类提供以下功能
-     *  - 提供设置获取属性
-     *  - 提供事件支持
-     *  - 属性变化时会触发对应的事件
-     *  - 将配置项自动转换成属性
-     *
-     * ** 创建类，继承BUI.Base类 **
-     * <pre><code>
-     *   var Control = function(cfg){
-     *     Control.superclass.constructor.call(this,cfg); //调用BUI.Base的构造方法，将配置项变成属性
-     *   };
-     *
-     *   BUI.extend(Control,BUI.Base);
-     * </code></pre>
-     *
-     * ** 声明默认属性 **
-     * <pre><code>
-     *   Control.ATTRS = {
-     *     id : {
-     *       value : 'id' //value 是此属性的默认值
-     *     },
-     *     renderTo : {
-     *
-     *     },
-     *     el : {
-     *       valueFn : function(){                 //第一次调用的时候将renderTo的DOM转换成el属性
-     *         return $(this.get('renderTo'));
-     *       }
-     *     },
-     *     text : {
-     *       getter : function(){ //getter 用于获取值，而不是设置的值
-     *         return this.get('el').val();
-     *       },
-     *       setter : function(v){ //不仅仅是设置值，可以进行相应的操作
-     *         this.get('el').val(v);
-     *       }
-     *     }
-     *   };
-     * </code></pre>
-     *
-     * ** 声明类的方法 **
-     * <pre><code>
-     *   BUI.augment(Control,{
-     *     getText : function(){
-     *       return this.get('text');   //可以用get方法获取属性值
-     *     },
-     *     setText : function(txt){
-     *       this.set('text',txt);      //使用set 设置属性值
-     *     }
-     *   });
-     * </code></pre>
-     *
-     * ** 创建对象 **
-     * <pre><code>
-     *   var c = new Control({
-     *     id : 'oldId',
-     *     text : '测试文本',
-     *     renderTo : '#t1'
-     *   });
-     *
-     *   var el = c.get(el); //$(#t1);
-     *   el.val(); //text的值 ： '测试文本'
-     *   c.set('text','修改的值');
-     *   el.val();  //'修改的值'
-     *
-     *   c.set('id','newId') //会触发2个事件： beforeIdChange,afterIdChange 2个事件 ev.newVal 和ev.prevVal标示新旧值
-     * </code></pre>
-     * @class BUI.Base
-     * @abstract
-     * @extends BUI.Observable
-     * @param {Object} config 配置项
-     */
-  var Base = function(config) {
+    return _self;
+  },
+  /**
+   * 是否包含此属性
+   * @protected
+   * @param  {String}  name 值
+   * @return {Boolean} 是否包含
+   */
+  hasAttr: function(name) {
+    return name && this.__attrs.hasOwnProperty(name);
+  },
+  /**
+   * 获取默认的属性值
+   * @protected
+   * @return {Object} 属性值的键值对
+   */
+  getAttrs: function() {
+    return this.__attrs; //ensureNonEmpty(this, '__attrs', true);
+  },
+  /**
+   * 获取属性名/属性值键值对
+   * @protected
+   * @return {Object} 属性对象
+   */
+  getAttrVals: function() {
+    return this.__attrVals; //ensureNonEmpty(this, '__attrVals', true);
+  },
+  /**
+   * 获取属性值，所有的配置项和属性都可以通过get方法获取
+   * <pre><code>
+   *  var control = new Control({
+   *   text : 'control text'
+   *  });
+   *  control.get('text'); //control text
+   *
+   *  control.set('customValue','value'); //临时变量
+   *  control.get('customValue'); //value
+   * </code></pre>
+   * ** 属性值/配置项 **
+   * <pre><code>
+   *   Control.ATTRS = { //声明属性值
+   *     text : {
+   *       valueFn : function(){},
+   *       value : 'value',
+   *       getter : function(v){}
+   *     }
+   *   };
+   *   var c = new Control({
+   *     text : 'text value'
+   *   });
+   *   //get 函数取的顺序为：是否有修改值（配置项、set)、默认值（第一次调用执行valueFn)，如果有getter，则将值传入getter返回
+   *
+   *   c.get('text') //text value
+   *   c.set('text','new text');//修改值
+   *   c.get('text');//new text
+   * </code></pre>
+   * @param  {String} name 属性名
+   * @return {Object} 属性值
+   */
+  get: function(name) {
     var _self = this,
-      c = _self.constructor,
-      constructors = [];
-    this.__attrs = {};
+      //declared = _self.hasAttr(name),
+      attrVals = _self.__attrVals,
+      attrConfig,
+      getter,
+      ret;
+
+    attrConfig = ensureNonEmpty(_self.__attrs, name);
+    getter = attrConfig['getter'];
+
+    // get user-set value or default value
+    //user-set value takes privilege
+    ret = name in attrVals ?
+      attrVals[name] :
+      _self._getDefAttrVal(name);
+
+    // invoke getter for this attribute
+    if (getter && (getter = normalFn(_self, getter))) {
+      ret = getter.call(_self, ret, name);
+    }
+
+    return ret;
+  },
+  /**
+   * @清理所有属性值
+   * @protected
+   */
+  clearAttrVals: function() {
     this.__attrVals = {};
-    Observable.apply(this, arguments);
-    // define
-    while (c) {
-      constructors.push(c);
-      if (c.extensions) { //延迟执行mixin
-        BUI.mixin(c, c.extensions);
-        delete c.extensions;
-      }
-      //_self.addAttrs(c['ATTRS']);
-      c = c.superclass ? c.superclass.constructor : null;
+  },
+  /**
+   * 移除属性定义
+   * @protected
+   */
+  removeAttr: function(name) {
+    var _self = this;
+
+    if (_self.hasAttr(name)) {
+      delete _self.__attrs[name];
+      delete _self.__attrVals[name];
     }
-    //以当前对象的属性最终添加到属性中，覆盖之前的属性
-    /*for (var i = constructors.length - 1; i >= 0; i--) {
-          _self.addAttrs(constructors[i]['ATTRS'],true);
-        };*/
-    var con = _self.constructor;
-    initClassAttrs(con);
-    _self._initStaticAttrs(con._attrs);
-    _self._initAttrs(config);
-  };
-  Base.INVALID = INVALID;
-  BUI.extend(Base, Observable);
-  BUI.augment(Base, {
-    _initStaticAttrs: function(attrs) {
-      var _self = this,
-        __attrs;
-      __attrs = _self.__attrs = {};
-      for (var p in attrs) {
-        if (attrs.hasOwnProperty(p)) {
-          var attr = attrs[p];
-          /*if(BUI.isObject(attr.value) || BUI.isArray(attr.value) || attr.valueFn){*/
-          if (attr.shared === false || attr.valueFn) {
-            __attrs[p] = {};
-            BUI.mixAttr(__attrs[p], attrs[p]);
-          } else {
-            __attrs[p] = attrs[p];
-          }
+
+    return _self;
+  },
+  /**
+   * 设置属性值，会触发before+Name+Change,和 after+Name+Change事件
+   * <pre><code>
+   *  control.on('beforeTextChange',function(ev){
+   *    var newVal = ev.newVal,
+   *      attrName = ev.attrName,
+   *      preVal = ev.prevVal;
+   *
+   *    //TO DO
+   *  });
+   *  control.set('text','new text');  //此时触发 beforeTextChange,afterTextChange
+   *  control.set('text','modify text',{silent : true}); //此时不触发事件
+   * </code></pre>
+   * @param {String|Object} name  属性名
+   * @param {Object} value 值
+   * @param {Object} opts 配置项
+   * @param {Boolean} opts.silent  配置属性时，是否不触发事件
+   */
+  set: function(name, value, opts) {
+    var _self = this;
+    if ($.isPlainObject(name)) {
+      opts = value;
+      var all = Object(name),
+        attrs = [];
+
+      for (name in all) {
+        if (all.hasOwnProperty(name)) {
+          setInternal(_self, name, all[name], opts);
         }
-      };
-    },
-    /**
-     * 添加属性定义
-     * @protected
-     * @param {String} name       属性名
-     * @param {Object} attrConfig 属性定义
-     * @param {Boolean} overrides 是否覆盖字段
-     */
-    addAttr: function(name, attrConfig, overrides) {
-      var _self = this,
-        attrs = _self.__attrs,
-        attr = attrs[name];
-      if (!attr) {
-        attr = attrs[name] = {};
-      }
-      for (var p in attrConfig) {
-        if (attrConfig.hasOwnProperty(p)) {
-          if (p == 'value') {
-            if (BUI.isObject(attrConfig[p])) {
-              attr[p] = attr[p] || {};
-              BUI.mix( /*true,*/ attr[p], attrConfig[p]);
-            } else if (BUI.isArray(attrConfig[p])) {
-              attr[p] = attr[p] || [];
-              BUI.mix( /*true,*/ attr[p], attrConfig[p]);
-            } else {
-              attr[p] = attrConfig[p];
-            }
-          } else {
-            attr[p] = attrConfig[p];
-          }
-        }
-      };
-      return _self;
-    },
-    /**
-     * 添加属性定义
-     * @protected
-     * @param {Object} attrConfigs  An object with attribute name/configuration pairs.
-     * @param {Object} initialValues user defined initial values
-     * @param {Boolean} overrides 是否覆盖字段
-     */
-    addAttrs: function(attrConfigs, initialValues, overrides) {
-      var _self = this;
-      if (!attrConfigs) {
-        return _self;
-      }
-      if (typeof(initialValues) === 'boolean') {
-        overrides = initialValues;
-        initialValues = null;
-      }
-      BUI.each(attrConfigs, function(attrConfig, name) {
-        _self.addAttr(name, attrConfig, overrides);
-      });
-      if (initialValues) {
-        _self.set(initialValues);
       }
       return _self;
-    },
-    /**
-     * 是否包含此属性
-     * @protected
-     * @param  {String}  name 值
-     * @return {Boolean} 是否包含
-     */
-    hasAttr: function(name) {
-      return name && this.__attrs.hasOwnProperty(name);
-    },
-    /**
-     * 获取默认的属性值
-     * @protected
-     * @return {Object} 属性值的键值对
-     */
-    getAttrs: function() {
-      return this.__attrs; //ensureNonEmpty(this, '__attrs', true);
-    },
-    /**
-     * 获取属性名/属性值键值对
-     * @protected
-     * @return {Object} 属性对象
-     */
-    getAttrVals: function() {
-      return this.__attrVals; //ensureNonEmpty(this, '__attrVals', true);
-    },
-    /**
-     * 获取属性值，所有的配置项和属性都可以通过get方法获取
-     * <pre><code>
-     *  var control = new Control({
-     *   text : 'control text'
-     *  });
-     *  control.get('text'); //control text
-     *
-     *  control.set('customValue','value'); //临时变量
-     *  control.get('customValue'); //value
-     * </code></pre>
-     * ** 属性值/配置项 **
-     * <pre><code>
-     *   Control.ATTRS = { //声明属性值
-     *     text : {
-     *       valueFn : function(){},
-     *       value : 'value',
-     *       getter : function(v){}
-     *     }
-     *   };
-     *   var c = new Control({
-     *     text : 'text value'
-     *   });
-     *   //get 函数取的顺序为：是否有修改值（配置项、set)、默认值（第一次调用执行valueFn)，如果有getter，则将值传入getter返回
-     *
-     *   c.get('text') //text value
-     *   c.set('text','new text');//修改值
-     *   c.get('text');//new text
-     * </code></pre>
-     * @param  {String} name 属性名
-     * @return {Object} 属性值
-     */
-    get: function(name) {
-      var _self = this,
-        //declared = _self.hasAttr(name),
-        attrVals = _self.__attrVals,
-        attrConfig,
-        getter,
-        ret;
-      attrConfig = ensureNonEmpty(_self.__attrs, name);
-      getter = attrConfig['getter'];
-      // get user-set value or default value
-      //user-set value takes privilege
-      ret = name in attrVals ? attrVals[name] : _self._getDefAttrVal(name);
-      // invoke getter for this attribute
-      if (getter && (getter = normalFn(_self, getter))) {
-        ret = getter.call(_self, ret, name);
-      }
-      return ret;
-    },
-    /**
-     * @清理所有属性值
-     * @protected
-     */
-    clearAttrVals: function() {
-      this.__attrVals = {};
-    },
-    /**
-     * 移除属性定义
-     * @protected
-     */
-    removeAttr: function(name) {
-      var _self = this;
-      if (_self.hasAttr(name)) {
-        delete _self.__attrs[name];
-        delete _self.__attrVals[name];
-      }
-      return _self;
-    },
-    /**
-     * 设置属性值，会触发before+Name+Change,和 after+Name+Change事件
-     * <pre><code>
-     *  control.on('beforeTextChange',function(ev){
-     *    var newVal = ev.newVal,
-     *      attrName = ev.attrName,
-     *      preVal = ev.prevVal;
-     *
-     *    //TO DO
-     *  });
-     *  control.set('text','new text');  //此时触发 beforeTextChange,afterTextChange
-     *  control.set('text','modify text',{silent : true}); //此时不触发事件
-     * </code></pre>
-     * @param {String|Object} name  属性名
-     * @param {Object} value 值
-     * @param {Object} opts 配置项
-     * @param {Boolean} opts.silent  配置属性时，是否不触发事件
-     */
-    set: function(name, value, opts) {
-      var _self = this;
-      if ($.isPlainObject(name)) {
-        opts = value;
-        var all = Object(name),
-          attrs = [];
-        for (name in all) {
-          if (all.hasOwnProperty(name)) {
-            setInternal(_self, name, all[name], opts);
-          }
-        }
-        return _self;
-      }
-      return setInternal(_self, name, value, opts);
-    },
-    /**
-     * 设置属性，不触发事件
-     * <pre><code>
-     *  control.setInternal('text','text');//此时不触发事件
-     * </code></pre>
-     * @param  {String} name  属性名
-     * @param  {Object} value 属性值
-     * @return {Boolean|undefined}   如果值无效则返回false,否则返回undefined
-     */
-    setInternal: function(name, value, opts) {
-      return this._set(name, value, opts);
-    },
-    //获取属性默认值
-    _getDefAttrVal: function(name) {
-      var _self = this,
-        attrs = _self.__attrs,
-        attrConfig = ensureNonEmpty(attrs, name),
-        valFn = attrConfig.valueFn,
-        val;
-      if (valFn && (valFn = normalFn(_self, valFn))) {
-        val = valFn.call(_self);
-        if (val !== undefined) {
-          attrConfig.value = val;
-        }
-        delete attrConfig.valueFn;
-        attrs[name] = attrConfig;
-      }
-      return attrConfig.value;
-    },
-    //仅仅设置属性值
-    _set: function(name, value, opts) {
-      var _self = this,
-        setValue,
-        // if host does not have meta info corresponding to (name,value)
-        // then register on demand in order to collect all data meta info
-        // 一定要注册属性元数据，否则其他模块通过 _attrs 不能枚举到所有有效属性
-        // 因为属性在声明注册前可以直接设置值
-        attrConfig = ensureNonEmpty(_self.__attrs, name, true),
-        setter = attrConfig['setter'];
-      // if setter has effect
-      if (setter && (setter = normalFn(_self, setter))) {
-        setValue = setter.call(_self, value, name);
-      }
-      if (setValue === INVALID) {
-        return false;
-      }
-      if (setValue !== undefined) {
-        value = setValue;
-      }
-      // finally set
-      _self.__attrVals[name] = value;
-      return _self;
-    },
-    //初始化属性
-    _initAttrs: function(config) {
-      var _self = this;
-      if (config) {
-        for (var attr in config) {
-          if (config.hasOwnProperty(attr)) {
-            // 用户设置会调用 setter/validator 的，但不会触发属性变化事件
-            _self._set(attr, config[attr]);
-          }
-        }
-      }
     }
-  });
-  module.exports = Base;
-});
-define("bui/common/component/component", ["jquery"], function(require, exports, module) {
+    return setInternal(_self, name, value, opts);
+  },
   /**
-   * @fileOverview Component命名空间的入口文件
-   * @ignore
+   * 设置属性，不触发事件
+   * <pre><code>
+   *  control.setInternal('text','text');//此时不触发事件
+   * </code></pre>
+   * @param  {String} name  属性名
+   * @param  {Object} value 属性值
+   * @return {Boolean|undefined}   如果值无效则返回false,否则返回undefined
    */
-  /**
-   * @class BUI.Component
-   * <p>
-   * <img src="../assets/img/class-common.jpg"/>
-   * </p>
-   * 控件基类的命名空间
-   */
-  var Component = {};
-  BUI.mix(Component, {
-    Manager: require("bui/common/component/manage"),
-    UIBase: require("bui/common/component/uibase/uibase"),
-    View: require("bui/common/component/view"),
-    Controller: require("bui/common/component/controller")
-  });
-
-  function create(component, self) {
-      var childConstructor, xclass;
-      if (component && (xclass = component.xclass)) {
-        if (self && !component.prefixCls) {
-          component.prefixCls = self.get('prefixCls');
-        }
-        childConstructor = Component.Manager.getConstructorByXClass(xclass);
-        if (!childConstructor) {
-          BUI.error('can not find class by xclass desc : ' + xclass);
-        }
-        component = new childConstructor(component);
-      }
-      return component;
-    }
-    /**
-     * 根据Xclass创建对象
-     * @method
-     * @static
-     * @param  {Object} component 控件的配置项或者控件
-     * @param  {Object} self      父类实例
-     * @return {Object} 实例对象
-     */
-  Component.create = create;
-  module.exports = Component;
-});
-define("bui/common/component/manage", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview  Base UI控件的管理类
-   * @author yiminghe@gmail.com
-   * copied by dxq613@gmail.com
-   * @ignore
-   */
-  //控件类的管理器
-  var $ = require('jquery');
-  var uis = {
-    // 不带前缀 prefixCls
-    /*
-           "menu" :{
-           priority:0,
-           constructor:Menu
-           }
-           */
-  };
-
-  function getConstructorByXClass(cls) {
-    var cs = cls.split(/\s+/),
-      p = -1,
-      t,
-      ui = null;
-    for (var i = 0; i < cs.length; i++) {
-      var uic = uis[cs[i]];
-      if (uic && (t = uic.priority) > p) {
-        p = t;
-        ui = uic.constructor;
-      }
-    }
-    return ui;
-  }
-
-  function getXClassByConstructor(constructor) {
-    for (var u in uis) {
-      var ui = uis[u];
-      if (ui.constructor == constructor) {
-        return u;
-      }
-    }
-    return 0;
-  }
-
-  function setConstructorByXClass(cls, uic) {
-    if (BUI.isFunction(uic)) {
-      uis[cls] = {
-        constructor: uic,
-        priority: 0
-      };
-    } else {
-      uic.priority = uic.priority || 0;
-      uis[cls] = uic;
-    }
-  }
-
-  function getCssClassWithPrefix(cls) {
-    var cs = $.trim(cls).split(/\s+/);
-    for (var i = 0; i < cs.length; i++) {
-      if (cs[i]) {
-        cs[i] = this.get('prefixCls') + cs[i];
-      }
-    }
-    return cs.join(' ');
-  }
-  var componentInstances = {};
-  /**
-   * Manage component metadata.
-   * @class BUI.Component.Manager
-   * @singleton
-   */
-  var Manager = {
-    __instances: componentInstances,
-    /**
-     * 每实例化一个控件，就注册到管理器上
-     * @param {String} id  控件 id
-     * @param {BUI.Component.Controller} component 控件对象
-     */
-    addComponent: function(id, component) {
-      componentInstances[id] = component;
-    },
-    /**
-     * 移除注册的控件
-     * @param  {String} id 控件 id
-     */
-    removeComponent: function(id) {
-      delete componentInstances[id];
-    },
-    /**
-     * 遍历所有的控件
-     * @param  {Function} fn 遍历函数
-     */
-    eachComponent: function(fn) {
-      BUI.each(componentInstances, fn);
-    },
-    /**
-     * 根据Id获取控件
-     * @param  {String} id 编号
-     * @return {BUI.Component.UIBase}   继承 UIBase的类对象
-     */
-    getComponent: function(id) {
-      return componentInstances[id];
-    },
-    getCssClassWithPrefix: getCssClassWithPrefix,
-    /**
-     * 通过构造函数获取xclass.
-     * @param {Function} constructor 控件的构造函数.
-     * @type {Function}
-     * @return {String}
-     * @method
-     */
-    getXClassByConstructor: getXClassByConstructor,
-    /**
-     * 通过xclass获取控件的构造函数
-     * @param {String} classNames Class names separated by space.
-     * @type {Function}
-     * @return {Function}
-     * @method
-     */
-    getConstructorByXClass: getConstructorByXClass,
-    /**
-     * 将 xclass 同构造函数相关联.
-     * @type {Function}
-     * @param {String} className 控件的xclass名称.
-     * @param {Function} componentConstructor 构造函数
-     * @method
-     */
-    setConstructorByXClass: setConstructorByXClass
-  };
-  module.exports = Manager;
-});
-define("bui/common/component/uibase/uibase", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview uibase的入口文件
-   * @ignore
-   */
-  var UIBase = require("bui/common/component/uibase/base");
-  BUI.mix(UIBase, {
-    Align: require("bui/common/component/uibase/align"),
-    AutoShow: require("bui/common/component/uibase/autoshow"),
-    AutoHide: require("bui/common/component/uibase/autohide"),
-    Close: require("bui/common/component/uibase/close"),
-    Collapsable: require("bui/common/component/uibase/collapsable"),
-    Drag: require("bui/common/component/uibase/drag"),
-    KeyNav: require("bui/common/component/uibase/keynav"),
-    List: require("bui/common/component/uibase/list"),
-    ListItem: require("bui/common/component/uibase/listitem"),
-    Mask: require("bui/common/component/uibase/mask"),
-    Position: require("bui/common/component/uibase/position"),
-    Selection: require("bui/common/component/uibase/selection"),
-    StdMod: require("bui/common/component/uibase/stdmod"),
-    Decorate: require("bui/common/component/uibase/decorate"),
-    Tpl: require("bui/common/component/uibase/tpl"),
-    ChildCfg: require("bui/common/component/uibase/childcfg"),
-    Bindable: require("bui/common/component/uibase/bindable"),
-    Depends: require("bui/common/component/uibase/depends")
-  });
-  BUI.mix(UIBase, {
-    CloseView: UIBase.Close.View,
-    CollapsableView: UIBase.Collapsable.View,
-    ChildList: UIBase.List.ChildList,
-    /*DomList : UIBase.List.DomList,
-    DomListView : UIBase.List.DomList.View,*/
-    ListItemView: UIBase.ListItem.View,
-    MaskView: UIBase.Mask.View,
-    PositionView: UIBase.Position.View,
-    StdModView: UIBase.StdMod.View,
-    TplView: UIBase.Tpl.View
-  });
-  module.exports = UIBase;
-});
-define("bui/common/component/uibase/base", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview  UI控件的流程控制
-   * @author yiminghe@gmail.com
-   * copied by dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require('jquery');
-  var Manager = require("bui/common/component/manage"),
-    UI_SET = '_uiSet',
-    ATTRS = 'ATTRS',
-    ucfirst = BUI.ucfirst,
-    noop = $.noop,
-    Base = require("bui/common/base");
-  /**
-   * 模拟多继承
-   * init attr using constructors ATTRS meta info
-   * @ignore
-   */
-  function initHierarchy(host, config) {
-    callMethodByHierarchy(host, 'initializer', 'constructor');
-  }
-
-  function callMethodByHierarchy(host, mainMethod, extMethod) {
-      var c = host.constructor,
-        extChains = [],
-        ext,
-        main,
-        exts,
-        t;
-      // define
-      while (c) {
-        // 收集扩展类
-        t = [];
-        if (exts = c.mixins) {
-          for (var i = 0; i < exts.length; i++) {
-            ext = exts[i];
-            if (ext) {
-              if (extMethod != 'constructor') {
-                //只调用真正自己构造器原型的定义，继承原型链上的不要管
-                if (ext.prototype.hasOwnProperty(extMethod)) {
-                  ext = ext.prototype[extMethod];
-                } else {
-                  ext = null;
-                }
-              }
-              ext && t.push(ext);
-            }
-          }
-        }
-        // 收集主类
-        // 只调用真正自己构造器原型的定义，继承原型链上的不要管 !important
-        // 所以不用自己在 renderUI 中调用 superclass.renderUI 了，UIBase 构造器自动搜寻
-        // 以及 initializer 等同理
-        if (c.prototype.hasOwnProperty(mainMethod) && (main = c.prototype[mainMethod])) {
-          t.push(main);
-        }
-        // 原地 reverse
-        if (t.length) {
-          extChains.push.apply(extChains, t.reverse());
-        }
-        c = c.superclass && c.superclass.constructor;
-      }
-      // 初始化函数
-      // 顺序：父类的所有扩展类函数 -> 父类对应函数 -> 子类的所有扩展函数 -> 子类对应函数
-      for (i = extChains.length - 1; i >= 0; i--) {
-        extChains[i] && extChains[i].call(host);
-      }
-    }
-    /**
-     * 销毁组件顺序： 子类 destructor -> 子类扩展 destructor -> 父类 destructor -> 父类扩展 destructor
-     * @ignore
-     */
-  function destroyHierarchy(host) {
-      var c = host.constructor,
-        extensions,
-        d,
-        i;
-      while (c) {
-        // 只触发该类真正的析构器，和父亲没关系，所以不要在子类析构器中调用 superclass
-        if (c.prototype.hasOwnProperty('destructor')) {
-          c.prototype.destructor.apply(host);
-        }
-        if ((extensions = c.mixins)) {
-          for (i = extensions.length - 1; i >= 0; i--) {
-            d = extensions[i] && extensions[i].prototype.__destructor;
-            d && d.apply(host);
-          }
-        }
-        c = c.superclass && c.superclass.constructor;
-      }
-    }
-    /**
-     * 构建 插件
-     * @ignore
-     */
-  function constructPlugins(plugins) {
-      if (!plugins) {
-        return;
-      }
-      BUI.each(plugins, function(plugin, i) {
-        if (BUI.isFunction(plugin)) {
-          plugins[i] = new plugin();
-        }
-      });
-    }
-    /**
-     * 调用插件的方法
-     * @ignore
-     */
-  function actionPlugins(self, plugins, action) {
-      if (!plugins) {
-        return;
-      }
-      BUI.each(plugins, function(plugin, i) {
-        if (plugin[action]) {
-          plugin[action](self);
-        }
-      });
-    }
-    /**
-     * 根据属性变化设置 UI
-     * @ignore
-     */
-  function bindUI(self) {
-      /*var attrs = self.getAttrs(),
-              attr,
-              m;
-
-          for (attr in attrs) {
-              if (attrs.hasOwnProperty(attr)) {
-                  m = UI_SET + ucfirst(attr);
-                  if (self[m]) {
-                      // 自动绑定事件到对应函数
-                      (function (attr, m) {
-                          self.on('after' + ucfirst(attr) + 'Change', function (ev) {
-                              // fix! 防止冒泡过来的
-                              if (ev.target === self) {
-                                  self[m](ev.newVal, ev);
-                              }
-                          });
-                      })(attr, m);
-                  }
-              }
-          }
-          */
-    }
-    /**
-     * 根据当前（初始化）状态来设置 UI
-     * @ignore
-     */
-  function syncUI(self) {
-      var v,
-        f,
-        attrs = self.getAttrs();
-      for (var a in attrs) {
-        if (attrs.hasOwnProperty(a)) {
-          var m = UI_SET + ucfirst(a);
-          //存在方法，并且用户设置了初始值或者存在默认值，就同步状态
-          if ((f = self[m])
-            // 用户如果设置了显式不同步，就不同步，比如一些值从 html 中读取，不需要同步再次设置
-            && attrs[a].sync !== false && (v = self.get(a)) !== undefined) {
-            f.call(self, v);
-          }
-        }
-      }
-    }
-    /**
-     * 控件库的基类，包括控件的生命周期,下面是基本的扩展类
-     * <p>
-     * <img src="https://dxq613.github.io/assets/img/class-mixins.jpg"/>
-     * </p>
-     * @class BUI.Component.UIBase
-     * @extends BUI.Base
-     * @param  {Object} config 配置项
-     */
-  var UIBase = function(config) {
+  setInternal: function(name, value, opts) {
+    return this._set(name, value, opts);
+  },
+  //获取属性默认值
+  _getDefAttrVal: function(name) {
     var _self = this,
-      id;
-    // 读取用户设置的属性值并设置到自身
-    Base.apply(_self, arguments);
-    //保存用户传入的配置项
-    _self.setInternal('userConfig', config);
-    // 按照类层次执行初始函数，主类执行 initializer 函数，扩展类执行构造器函数
-    initHierarchy(_self, config);
-    var listener,
-      n,
-      plugins = _self.get('plugins')
-      /*,
-            listeners = _self.get('listeners')*/
-    ;
-    constructPlugins(plugins);
-    var xclass = _self.get('xclass');
-    if (xclass) {
-      _self.__xclass = xclass; //debug 方便
-    }
-    actionPlugins(_self, plugins, 'initializer');
-    // 是否自动渲染
-    config && config.autoRender && _self.render();
-  };
-  UIBase.ATTRS = {
-    /**
-     * 用户传入的配置项
-     * @type {Object}
-     * @readOnly
-     * @protected
-     */
-    userConfig: {},
-    /**
-     * 是否自动渲染,如果不自动渲染，需要用户调用 render()方法
-     * <pre><code>
-     *  //默认状态下创建对象，并没有进行render
-     *  var control = new Control();
-     *  control.render(); //需要调用render方法
-     *
-     *  //设置autoRender后，不需要调用render方法
-     *  var control = new Control({
-     *   autoRender : true
-     *  });
-     * </code></pre>
-     * @cfg {Boolean} autoRender
-     */
-    /**
-     * 是否自动渲染,如果不自动渲染，需要用户调用 render()方法
-     * @type {Boolean}
-     * @ignore
-     */
-    autoRender: {
-      value: false
-    },
-    /**
-     * @type {Object}
-     * 事件处理函数:
-     *      {
-     *        'click':function(e){}
-     *      }
-     *  @ignore
-     */
-    listeners: {
-      value: {}
-    },
-    /**
-     * 插件集合
-     * <pre><code>
-     *  var grid = new Grid({
-     *    columns : [{},{}],
-     *    plugins : [Grid.Plugins.RadioSelection]
-     *  });
-     * </code></pre>
-     * @cfg {Array} plugins
-     */
-    /**
-     * 插件集合
-     * @type {Array}
-     * @readOnly
-     */
-    plugins: {
-      //value : []
-    },
-    /**
-     * 是否已经渲染完成
-     * @type {Boolean}
-     * @default  false
-     * @readOnly
-     */
-    rendered: {
-      value: false
-    },
-    /**
-     * 获取控件的 xclass
-     * @readOnly
-     * @type {String}
-     * @protected
-     */
-    xclass: {
-      valueFn: function() {
-        return Manager.getXClassByConstructor(this.constructor);
-      }
-    }
-  };
-  BUI.extend(UIBase, Base);
-  BUI.augment(UIBase, {
-    /**
-     * 创建DOM结构
-     * @protected
-     */
-    create: function() {
-      var self = this;
-      // 是否生成过节点
-      if (!self.get('created')) {
-        /**
-         * @event beforeCreateDom
-         * fired before root node is created
-         * @param e
-         */
-        self.fire('beforeCreateDom');
-        callMethodByHierarchy(self, 'createDom', '__createDom');
-        self._set('created', true);
-        /**
-         * @event afterCreateDom
-         * fired when root node is created
-         * @param e
-         */
-        self.fire('afterCreateDom');
-        actionPlugins(self, self.get('plugins'), 'createDom');
-      }
-      return self;
-    },
-    /**
-     * 渲染
-     */
-    render: function() {
-      var _self = this;
-      // 是否已经渲染过
-      if (!_self.get('rendered')) {
-        var plugins = _self.get('plugins');
-        _self.create(undefined);
-        _self.set('created', true);
-        /**
-         * @event beforeRenderUI
-         * fired when root node is ready
-         * @param e
-         */
-        _self.fire('beforeRenderUI');
-        callMethodByHierarchy(_self, 'renderUI', '__renderUI');
-        /**
-         * @event afterRenderUI
-         * fired after root node is rendered into dom
-         * @param e
-         */
-        _self.fire('afterRenderUI');
-        actionPlugins(_self, plugins, 'renderUI');
-        /**
-         * @event beforeBindUI
-         * fired before UIBase 's internal event is bind.
-         * @param e
-         */
-        _self.fire('beforeBindUI');
-        bindUI(_self);
-        callMethodByHierarchy(_self, 'bindUI', '__bindUI');
-        _self.set('binded', true);
-        /**
-         * @event afterBindUI
-         * fired when UIBase 's internal event is bind.
-         * @param e
-         */
-        _self.fire('afterBindUI');
-        actionPlugins(_self, plugins, 'bindUI');
-        /**
-         * @event beforeSyncUI
-         * fired before UIBase 's internal state is synchronized.
-         * @param e
-         */
-        _self.fire('beforeSyncUI');
-        syncUI(_self);
-        callMethodByHierarchy(_self, 'syncUI', '__syncUI');
-        /**
-         * @event afterSyncUI
-         * fired after UIBase 's internal state is synchronized.
-         * @param e
-         */
-        _self.fire('afterSyncUI');
-        actionPlugins(_self, plugins, 'syncUI');
-        _self._set('rendered', true);
-      }
-      return _self;
-    },
-    /**
-     * 子类可继承此方法，当DOM创建时调用
-     * @protected
-     * @method
-     */
-    createDom: noop,
-    /**
-     * 子类可继承此方法，渲染UI时调用
-     * @protected
-     *  @method
-     */
-    renderUI: noop,
-    /**
-     * 子类可继承此方法,绑定事件时调用
-     * @protected
-     * @method
-     */
-    bindUI: noop,
-    /**
-     * 同步属性值到UI上
-     * @protected
-     * @method
-     */
-    syncUI: noop,
-    /**
-     * 析构函数
-     */
-    destroy: function() {
-      var _self = this;
-      if (_self.destroyed) { //防止返回销毁
-        return _self;
-      }
-      /**
-       * @event beforeDestroy
-       * fired before UIBase 's destroy.
-       * @param e
-       */
-      _self.fire('beforeDestroy');
-      actionPlugins(_self, _self.get('plugins'), 'destructor');
-      destroyHierarchy(_self);
-      /**
-       * @event afterDestroy
-       * fired before UIBase 's destroy.
-       * @param e
-       */
-      _self.fire('afterDestroy');
-      _self.off();
-      _self.clearAttrVals();
-      _self.destroyed = true;
-      return _self;
-    }
-  });
-  //延时处理构造函数
-  function initConstuctor(c) {
-    var constructors = [];
-    while (c.base) {
-      constructors.push(c);
-      c = c.base;
-    }
-    for (var i = constructors.length - 1; i >= 0; i--) {
-      var C = constructors[i];
-      //BUI.extend(C,C.base,C.px,C.sx);
-      BUI.mix(C.prototype, C.px);
-      BUI.mix(C, C.sx);
-      C.base = null;
-      C.px = null;
-      C.sx = null;
-    }
-  }
-  BUI.mix(UIBase, {
-    /**
-     * 定义一个类
-     * @static
-     * @param  {Function} base   基类构造函数
-     * @param  {Array} extensions 扩展
-     * @param  {Object} px  原型链上的扩展
-     * @param  {Object} sx
-     * @return {Function} 继承与基类的构造函数
-     */
-    define: function(base, extensions, px, sx) {
-      if ($.isPlainObject(extensions)) {
-        sx = px;
-        px = extensions;
-        extensions = [];
-      }
+      attrs = _self.__attrs,
+      attrConfig = ensureNonEmpty(attrs, name),
+      valFn = attrConfig.valueFn,
+      val;
 
-      function C() {
-        var c = this.constructor;
-        if (c.base) {
-          initConstuctor(c);
-        }
-        UIBase.apply(this, arguments);
+    if (valFn && (valFn = normalFn(_self, valFn))) {
+      val = valFn.call(_self);
+      if (val !== undefined) {
+        attrConfig.value = val;
       }
-      BUI.extend(C, base); //无法延迟
-      C.base = base;
-      C.px = px; //延迟复制原型链上的函数
-      C.sx = sx; //延迟复制静态属性
-      //BUI.mixin(C,extensions);
-      if (extensions.length) { //延迟执行mixin
-        C.extensions = extensions;
-      }
-      return C;
-    },
-    /**
-     * 扩展一个类，基类就是类本身
-     * @static
-     * @param  {Array} extensions 扩展
-     * @param  {Object} px  原型链上的扩展
-     * @param  {Object} sx
-     * @return {Function} 继承与基类的构造函数
-     */
-    extend: function extend(extensions, px, sx) {
-      var args = $.makeArray(arguments),
-        ret,
-        last = args[args.length - 1];
-      args.unshift(this);
-      if (last.xclass) {
-        args.pop();
-        args.push(last.xclass);
-      }
-      ret = UIBase.define.apply(UIBase, args);
-      if (last.xclass) {
-        var priority = last.priority || (this.priority ? (this.priority + 1) : 1);
-        Manager.setConstructorByXClass(last.xclass, {
-          constructor: ret,
-          priority: priority
-        });
-        //方便调试
-        ret.__xclass = last.xclass;
-        ret.priority = priority;
-        ret.toString = function() {
-          return last.xclass;
-        }
-      }
-      ret.extend = extend;
-      return ret;
+      delete attrConfig.valueFn;
+      attrs[name] = attrConfig;
     }
-  });
-  module.exports = UIBase;
-});
-define("bui/common/component/uibase/align", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview 跟指定的元素项对齐的方式
-   * @author yiminghe@gmail.com
-   * copied by dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require('jquery'),
-    UA = require("bui/common/ua"),
-    CLS_ALIGN_PREFIX = 'x-align-',
-    win = window;
-  // var ieMode = document.documentMode || UA.ie;
-  /*
-   inspired by closure library by Google
-   see http://yiminghe.iteye.com/blog/1124720
-   */
-  /**
-   * 得到会导致元素显示不全的祖先元素
-   * @ignore
-   */
-  function getOffsetParent(element) {
-      // ie 这个也不是完全可行
-      /**
-       <div style="width: 50px;height: 100px;overflow: hidden">
-       <div style="width: 50px;height: 100px;position: relative;" id="d6">
-       元素 6 高 100px 宽 50px<br/>
-       </div>
-       </div>
-       @ignore
-       **/
-      // element.offsetParent does the right thing in ie7 and below. Return parent with layout!
-      //  In other browsers it only includes elements with position absolute, relative or
-      // fixed, not elements with overflow set to auto or scroll.
-      //    if (UA.ie && ieMode < 8) {
-      //      return element.offsetParent;
-      //    }
-      // 统一的 offsetParent 方法
-      var doc = element.ownerDocument,
-        body = doc.body,
-        parent,
-        positionStyle = $(element).css('position'),
-        skipStatic = positionStyle == 'fixed' || positionStyle == 'absolute';
-      if (!skipStatic) {
-        return element.nodeName.toLowerCase() == 'html' ? null : element.parentNode;
-      }
-      for (parent = element.parentNode; parent && parent != body; parent = parent.parentNode) {
-        positionStyle = $(parent).css('position');
-        if (positionStyle != 'static') {
-          return parent;
-        }
-      }
-      return null;
-    }
-    /**
-     * 获得元素的显示部分的区域
-     * @private
-     * @ignore
-     */
-  function getVisibleRectForElement(element) {
-    var visibleRect = {
-        left: 0,
-        right: Infinity,
-        top: 0,
-        bottom: Infinity
-      },
-      el,
-      scrollX,
-      scrollY,
-      winSize,
-      doc = element.ownerDocument,
-      body = doc.body,
-      documentElement = doc.documentElement;
-    // Determine the size of the visible rect by climbing the dom accounting for
-    // all scrollable containers.
-    for (el = element; el = getOffsetParent(el);) {
-      // clientWidth is zero for inline block elements in ie.
-      if ((!UA.ie || el.clientWidth != 0) &&
-        // body may have overflow set on it, yet we still get the entire
-        // viewport. In some browsers, el.offsetParent may be
-        // document.documentElement, so check for that too.
-        (el != body && el != documentElement && $(el).css('overflow') != 'visible')) {
-        var pos = $(el).offset();
-        // add border
-        pos.left += el.clientLeft;
-        pos.top += el.clientTop;
-        visibleRect.top = Math.max(visibleRect.top, pos.top);
-        visibleRect.right = Math.min(visibleRect.right,
-          // consider area without scrollBar
-          pos.left + el.clientWidth);
-        visibleRect.bottom = Math.min(visibleRect.bottom, pos.top + el.clientHeight);
-        visibleRect.left = Math.max(visibleRect.left, pos.left);
-      }
-    }
-    // Clip by window's viewport.
-    scrollX = $(win).scrollLeft();
-    scrollY = $(win).scrollTop();
-    visibleRect.left = Math.max(visibleRect.left, scrollX);
-    visibleRect.top = Math.max(visibleRect.top, scrollY);
-    winSize = {
-      width: BUI.viewportWidth(),
-      height: BUI.viewportHeight()
-    };
-    visibleRect.right = Math.min(visibleRect.right, scrollX + winSize.width);
-    visibleRect.bottom = Math.min(visibleRect.bottom, scrollY + winSize.height);
-    return visibleRect.top >= 0 && visibleRect.left >= 0 && visibleRect.bottom > visibleRect.top && visibleRect.right > visibleRect.left ? visibleRect : null;
-  }
 
-  function getElFuturePos(elRegion, refNodeRegion, points, offset) {
-    var xy,
-      diff,
-      p1,
-      p2;
-    xy = {
-      left: elRegion.left,
-      top: elRegion.top
-    };
-    p1 = getAlignOffset(refNodeRegion, points[0]);
-    p2 = getAlignOffset(elRegion, points[1]);
-    diff = [p2.left - p1.left, p2.top - p1.top];
-    return {
-      left: xy.left - diff[0] + (+offset[0]),
-      top: xy.top - diff[1] + (+offset[1])
-    };
-  }
+    return attrConfig.value;
+  },
+  //仅仅设置属性值
+  _set: function(name, value, opts) {
+    var _self = this,
+      setValue,
+      // if host does not have meta info corresponding to (name,value)
+      // then register on demand in order to collect all data meta info
+      // 一定要注册属性元数据，否则其他模块通过 _attrs 不能枚举到所有有效属性
+      // 因为属性在声明注册前可以直接设置值
+      attrConfig = ensureNonEmpty(_self.__attrs, name, true),
+      setter = attrConfig['setter'];
 
-  function isFailX(elFuturePos, elRegion, visibleRect) {
-    return elFuturePos.left < visibleRect.left || elFuturePos.left + elRegion.width > visibleRect.right;
-  }
+    // if setter has effect
+    if (setter && (setter = normalFn(_self, setter))) {
+      setValue = setter.call(_self, value, name);
+    }
 
-  function isFailY(elFuturePos, elRegion, visibleRect) {
-    return elFuturePos.top < visibleRect.top || elFuturePos.top + elRegion.height > visibleRect.bottom;
-  }
-
-  function adjustForViewport(elFuturePos, elRegion, visibleRect, overflow) {
-    var pos = BUI.cloneObject(elFuturePos),
-      size = {
-        width: elRegion.width,
-        height: elRegion.height
-      };
-    if (overflow.adjustX && pos.left < visibleRect.left) {
-      pos.left = visibleRect.left;
-    }
-    // Left edge inside and right edge outside viewport, try to resize it.
-    if (overflow['resizeWidth'] && pos.left >= visibleRect.left && pos.left + size.width > visibleRect.right) {
-      size.width -= (pos.left + size.width) - visibleRect.right;
-    }
-    // Right edge outside viewport, try to move it.
-    if (overflow.adjustX && pos.left + size.width > visibleRect.right) {
-      // 保证左边界和可视区域左边界对齐
-      pos.left = Math.max(visibleRect.right - size.width, visibleRect.left);
-    }
-    // Top edge outside viewport, try to move it.
-    if (overflow.adjustY && pos.top < visibleRect.top) {
-      pos.top = visibleRect.top;
-    }
-    // Top edge inside and bottom edge outside viewport, try to resize it.
-    if (overflow['resizeHeight'] && pos.top >= visibleRect.top && pos.top + size.height > visibleRect.bottom) {
-      size.height -= (pos.top + size.height) - visibleRect.bottom;
-    }
-    // Bottom edge outside viewport, try to move it.
-    if (overflow.adjustY && pos.top + size.height > visibleRect.bottom) {
-      // 保证上边界和可视区域上边界对齐
-      pos.top = Math.max(visibleRect.bottom - size.height, visibleRect.top);
-    }
-    return BUI.mix(pos, size);
-  }
-
-  function flip(points, reg, map) {
-    var ret = [];
-    $.each(points, function(index, p) {
-      ret.push(p.replace(reg, function(m) {
-        return map[m];
-      }));
-    });
-    return ret;
-  }
-
-  function flipOffset(offset, index) {
-      offset[index] = -offset[index];
-      return offset;
-    }
-    /**
-     * @class BUI.Component.UIBase.Align
-     * Align extension class.
-     * Align component with specified element.
-     * <img src="http://images.cnitblog.com/blog/111279/201304/09180221-201343d4265c46e7987e6b1c46d5461a.jpg"/>
-     */
-  function Align() {}
-  Align.__getOffsetParent = getOffsetParent;
-  Align.__getVisibleRectForElement = getVisibleRectForElement;
-  Align.ATTRS = {
-    /**
-     * 对齐配置，详细说明请参看： <a href="http://www.cnblogs.com/zaohe/archive/2013/04/09/3010651.html">JS控件 对齐</a>
-     * @cfg {Object} align
-     * <pre><code>
-     *  var overlay = new Overlay( {
-     *     align :{
-     *     node: null,     // 参考元素, falsy 或 window 为可视区域, 'trigger' 为触发元素, 其他为指定元素
-     *     points: ['cc','cc'], // ['tr', 'tl'] 表示 overlay 的 tl 与参考节点的 tr 对齐
-     *     offset: [0, 0]    // 有效值为 [n, m]
-     *     }
-     *   });
-     * </code></pre>
-     */
-    /**
-     * 设置对齐属性
-     * @type {Object}
-     * @field
-     * <code>
-     *   var align =  {
-     *    node: null,     // 参考元素, falsy 或 window 为可视区域, 'trigger' 为触发元素, 其他为指定元素
-     *    points: ['cc','cc'], // ['tr', 'tl'] 表示 overlay 的 tl 与参考节点的 tr 对齐
-     *    offset: [0, 0]    // 有效值为 [n, m]
-     *   };
-     *   overlay.set('align',align);
-     * </code>
-     */
-    align: {
-      shared: false,
-      value: {}
-    }
-  };
-
-  function getRegion(node) {
-      var offset, w, h;
-      if (node.length && !$.isWindow(node[0])) {
-        offset = node.offset();
-        w = node.outerWidth();
-        h = node.outerHeight();
-      } else {
-        offset = {
-          left: BUI.scrollLeft(),
-          top: BUI.scrollTop()
-        };
-        w = BUI.viewportWidth();
-        h = BUI.viewportHeight();
-      }
-      offset.width = w;
-      offset.height = h;
-      return offset;
-    }
-    /**
-     * 获取 node 上的 align 对齐点 相对于页面的坐标
-     * @param region
-     * @param align
-     */
-  function getAlignOffset(region, align) {
-      var V = align.charAt(0),
-        H = align.charAt(1),
-        w = region.width,
-        h = region.height,
-        x, y;
-      x = region.left;
-      y = region.top;
-      if (V === 'c') {
-        y += h / 2;
-      } else if (V === 'b') {
-        y += h;
-      }
-      if (H === 'c') {
-        x += w / 2;
-      } else if (H === 'r') {
-        x += w;
-      }
-      return {
-        left: x,
-        top: y
-      };
-    }
-    //清除对齐的css样式
-  function clearAlignCls(el) {
-    var cls = el.attr('class'),
-      regex = new RegExp('\s?' + CLS_ALIGN_PREFIX + '[a-z]{2}-[a-z]{2}', 'ig'),
-      arr = regex.exec(cls);
-    if (arr) {
-      el.removeClass(arr.join(' '));
-    }
-  }
-  Align.prototype = {
-    _uiSetAlign: function(v, ev) {
-      var alignCls = '',
-        el,
-        selfAlign; //points 的第二个参数，是自己对齐于其他节点的的方式
-      if (v && v.points) {
-        this.align(v.node, v.points, v.offset, v.overflow);
-        this.set('cachePosition', null);
-        el = this.get('el');
-        clearAlignCls(el);
-        selfAlign = v.points.join('-');
-        alignCls = CLS_ALIGN_PREFIX + selfAlign;
-        el.addClass(alignCls);
-        /**/
-      }
-    },
-    __bindUI: function() {
-      var _self = this;
-      var fn = BUI.wrapBehavior(_self, 'handleWindowResize');
-      _self.on('show', function() {
-        $(window).on('resize', fn);
-      });
-      _self.on('hide', function() {
-        $(window).off('resize', fn);
-      });
-    },
-    //处理window resize事件
-    handleWindowResize: function() {
-      var _self = this,
-        align = _self.get('align');
-      _self.set('align', align);
-    },
-    /*
-     对齐 Overlay 到 node 的 points 点, 偏移 offset 处
-     @method
-     @ignore
-     @param {Element} node 参照元素, 可取配置选项中的设置, 也可是一元素
-     @param {String[]} points 对齐方式
-     @param {Number[]} [offset] 偏移
-     */
-    align: function(refNode, points, offset, overflow) {
-      refNode = $(refNode || win);
-      offset = offset && [].concat(offset) || [0, 0];
-      overflow = overflow || {};
-      var self = this,
-        el = self.get('el'),
-        fail = 0,
-        // 当前节点可以被放置的显示区域
-        visibleRect = getVisibleRectForElement(el[0]),
-        // 当前节点所占的区域, left/top/width/height
-        elRegion = getRegion(el),
-        // 参照节点所占的区域, left/top/width/height
-        refNodeRegion = getRegion(refNode),
-        // 当前节点将要被放置的位置
-        elFuturePos = getElFuturePos(elRegion, refNodeRegion, points, offset),
-        // 当前节点将要所处的区域
-        newElRegion = BUI.merge(elRegion, elFuturePos);
-      // 如果可视区域不能完全放置当前节点时允许调整
-      if (visibleRect && (overflow.adjustX || overflow.adjustY)) {
-        // 如果横向不能放下
-        if (isFailX(elFuturePos, elRegion, visibleRect)) {
-          fail = 1;
-          // 对齐位置反下
-          points = flip(points, /[lr]/ig, {
-            l: 'r',
-            r: 'l'
-          });
-          // 偏移量也反下
-          offset = flipOffset(offset, 0);
-        }
-        // 如果纵向不能放下
-        if (isFailY(elFuturePos, elRegion, visibleRect)) {
-          fail = 1;
-          // 对齐位置反下
-          points = flip(points, /[tb]/ig, {
-            t: 'b',
-            b: 't'
-          });
-          // 偏移量也反下
-          offset = flipOffset(offset, 1);
-        }
-        // 如果失败，重新计算当前节点将要被放置的位置
-        if (fail) {
-          elFuturePos = getElFuturePos(elRegion, refNodeRegion, points, offset);
-          BUI.mix(newElRegion, elFuturePos);
-        }
-        var newOverflowCfg = {};
-        // 检查反下后的位置是否可以放下了
-        // 如果仍然放不下只有指定了可以调整当前方向才调整
-        newOverflowCfg.adjustX = overflow.adjustX && isFailX(elFuturePos, elRegion, visibleRect);
-        newOverflowCfg.adjustY = overflow.adjustY && isFailY(elFuturePos, elRegion, visibleRect);
-        // 确实要调整，甚至可能会调整高度宽度
-        if (newOverflowCfg.adjustX || newOverflowCfg.adjustY) {
-          newElRegion = adjustForViewport(elFuturePos, elRegion, visibleRect, newOverflowCfg);
-        }
-      }
-      // 新区域位置发生了变化
-      if (newElRegion.left != elRegion.left) {
-        self.setInternal('x', null);
-        self.get('view').setInternal('x', null);
-        self.set('x', newElRegion.left);
-      }
-      if (newElRegion.top != elRegion.top) {
-        // https://github.com/kissyteam/kissy/issues/190
-        // 相对于屏幕位置没变，而 left/top 变了
-        // 例如 <div 'relative'><el absolute></div>
-        // el.align(div)
-        self.setInternal('y', null);
-        self.get('view').setInternal('y', null);
-        self.set('y', newElRegion.top);
-      }
-      // 新区域高宽发生了变化
-      if (newElRegion.width != elRegion.width) {
-        el.width(el.width() + newElRegion.width - elRegion.width);
-      }
-      if (newElRegion.height != elRegion.height) {
-        el.height(el.height() + newElRegion.height - elRegion.height);
-      }
-      return self;
-    },
-    /**
-     * 对齐到元素的中间，查看属性 {@link BUI.Component.UIBase.Align#property-align} .
-     * <pre><code>
-     *  control.center('#t1'); //控件处于容器#t1的中间位置
-     * </code></pre>
-     * @param {undefined|String|HTMLElement|jQuery} node
-     *
-     */
-    center: function(node) {
-      var self = this;
-      self.set('align', {
-        node: node,
-        points: ['cc', 'cc'],
-        offset: [0, 0]
-      });
-      return self;
-    }
-  };
-  module.exports = Align;
-});
-define("bui/common/component/uibase/autoshow", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview click，focus,hover等引起控件显示，并且定位
-   * @ignore
-   */
-  var $ = require('jquery');
-  /**
-   * 处理自动显示控件的扩展，一般用于显示menu,picker,tip等
-   * @class BUI.Component.UIBase.AutoShow
-   */
-  function autoShow() {}
-  autoShow.ATTRS = {
-    /**
-     * 触发显示控件的DOM选择器
-     * <pre><code>
-     *  var overlay = new Overlay({ //点击#t1时显示，点击#t1,overlay之外的元素隐藏
-     *    trigger : '#t1',
-     *    autoHide : true,
-     *    content : '悬浮内容'
-     *  });
-     *  overlay.render();
-     * </code></pre>
-     * @cfg {HTMLElement|String|jQuery} trigger
-     */
-    /**
-     * 触发显示控件的DOM选择器
-     * @type {HTMLElement|String|jQuery}
-     */
-    trigger: {},
-    delegateTigger: {
-      getter: function() {
-        this.get('delegateTrigger'); //兼容之前的版本
-      },
-      setter: function(v) {
-        this.set('delegateTrigger', v);
-      }
-    },
-    /**
-     * 是否使用代理的方式触发显示控件,如果tigger不是字符串，此属性无效
-     * <pre><code>
-     *  var overlay = new Overlay({ //点击.t1(无论创建控件时.t1是否存在)时显示，点击.t1,overlay之外的元素隐藏
-     *    trigger : '.t1',
-     *    autoHide : true,
-     *    delegateTrigger : true, //使用委托的方式触发显示控件
-     *    content : '悬浮内容'
-     *  });
-     *  overlay.render();
-     * </code></pre>
-     * @cfg {Boolean} [delegateTrigger = false]
-     */
-    /**
-     * 是否使用代理的方式触发显示控件,如果tigger不是字符串，此属性无效
-     * @type {Boolean}
-     * @ignore
-     */
-    delegateTrigger: {
-      value: false
-    },
-    /**
-     * 选择器是否始终跟随触发器对齐
-     * @cfg {Boolean} autoAlign
-     * @ignore
-     */
-    /**
-     * 选择器是否始终跟随触发器对齐
-     * @type {Boolean}
-     * @protected
-     */
-    autoAlign: {
-      value: true
-    },
-    /**
-     * 显示时是否默认获取焦点
-     * @type {Boolean}
-     */
-    autoFocused: {
-      value: true
-    },
-    /**
-     * 如果设置了这个样式，那么触发显示（overlay）时trigger会添加此样式
-     * @type {Object}
-     */
-    triggerActiveCls: {},
-    /**
-     * 控件显示时由此trigger触发，当配置项 trigger 选择器代表多个DOM 对象时，
-     * 控件可由多个DOM对象触发显示。
-     * <pre><code>
-     *  overlay.on('show',function(){
-     *    var curTrigger = overlay.get('curTrigger');
-     *    //TO DO
-     *  });
-     * </code></pre>
-     * @type {jQuery}
-     * @readOnly
-     */
-    curTrigger: {},
-    /**
-     * 触发显示时的回调函数
-     * @cfg {Function} triggerCallback
-     * @ignore
-     */
-    /**
-     * 触发显示时的回调函数
-     * @type {Function}
-     * @ignore
-     */
-    triggerCallback: {},
-    /**
-     * 显示菜单的事件
-     *  <pre><code>
-     *    var overlay = new Overlay({ //移动到#t1时显示，移动出#t1,overlay之外控件隐藏
-     *      trigger : '#t1',
-     *      autoHide : true,
-     *      triggerEvent :'mouseover',
-     *      autoHideType : 'leave',
-     *      content : '悬浮内容'
-     *    });
-     *    overlay.render();
-     *
-     *  </code></pre>
-     * @cfg {String} [triggerEvent='click']
-     * @default 'click'
-     */
-    /**
-     * 显示菜单的事件
-     * @type {String}
-     * @default 'click'
-     * @ignore
-     */
-    triggerEvent: {
-      value: 'click'
-    },
-    /**
-     * 因为触发元素发生改变而导致控件隐藏
-     * @cfg {String} triggerHideEvent
-     * @ignore
-     */
-    /**
-     * 因为触发元素发生改变而导致控件隐藏
-     * @type {String}
-     * @ignore
-     */
-    triggerHideEvent: {},
-    events: {
-      value: {
-        /**
-         * 当触发器（触发选择器出现）发生改变时，经常用于一个选择器对应多个触发器的情况
-         * <pre><code>
-         *  overlay.on('triggerchange',function(ev){
-         *    var curTrigger = ev.curTrigger;
-         *    overlay.set('content',curTrigger.html());
-         *  });
-         * </code></pre>
-         * @event
-         * @param {Object} e 事件对象
-         * @param {jQuery} e.prevTrigger 之前触发器，可能为null
-         * @param {jQuery} e.curTrigger 当前的触发器
-         */
-        'triggerchange': false
-      }
-    }
-  };
-  autoShow.prototype = {
-    __createDom: function() {
-      this._setTrigger();
-    },
-    __bindUI: function() {
-      var _self = this,
-        triggerActiveCls = _self.get('triggerActiveCls');
-      if (triggerActiveCls) {
-        _self.on('hide', function() {
-          var curTrigger = _self.get('curTrigger');
-          if (curTrigger) {
-            curTrigger.removeClass(triggerActiveCls);
-          }
-        });
-      }
-    },
-    _setTrigger: function() {
-      var _self = this,
-        triggerEvent = _self.get('triggerEvent'),
-        triggerHideEvent = _self.get('triggerHideEvent'),
-        triggerCallback = _self.get('triggerCallback'),
-        triggerActiveCls = _self.get('triggerActiveCls') || '',
-        trigger = _self.get('trigger'),
-        isDelegate = _self.get('delegateTrigger'),
-        triggerEl = $(trigger);
-      //触发显示
-      function tiggerShow(ev) {
-          if (_self.get('disabled')) { //如果禁用则中断
-            return;
-          }
-          var prevTrigger = _self.get('curTrigger'),
-            curTrigger = isDelegate ? $(ev.currentTarget) : $(this),
-            align = _self.get('align');
-          if (!prevTrigger || prevTrigger[0] != curTrigger[0]) {
-            if (prevTrigger) {
-              prevTrigger.removeClass(triggerActiveCls);
-            }
-            _self.set('curTrigger', curTrigger);
-            _self.fire('triggerchange', {
-              prevTrigger: prevTrigger,
-              curTrigger: curTrigger
-            });
-          }
-          curTrigger.addClass(triggerActiveCls);
-          if (_self.get('autoAlign')) {
-            align.node = curTrigger;
-          }
-          _self.set('align', align);
-          _self.show();
-          triggerCallback && triggerCallback(ev);
-        }
-        //触发隐藏
-      function tiggerHide(ev) {
-        var toElement = ev.toElement || ev.relatedTarget;
-        if (!toElement || !_self.containsElement(toElement)) { //mouseleave时，如果移动到当前控件上，取消消失
-          _self.hide();
-        }
-      }
-      if (triggerEvent) {
-        if (isDelegate && BUI.isString(trigger)) {
-          $(document).delegate(trigger, triggerEvent, tiggerShow);
-        } else {
-          triggerEl.on(triggerEvent, tiggerShow);
-        }
-      }
-      if (triggerHideEvent) {
-        if (isDelegate && BUI.isString(trigger)) {
-          $(document).delegate(trigger, triggerHideEvent, tiggerHide);
-        } else {
-          triggerEl.on(triggerHideEvent, tiggerHide);
-        }
-      }
-    },
-    __renderUI: function() {
-      var _self = this,
-        align = _self.get('align');
-      //如果控件显示时不是由trigger触发，则同父元素对齐
-      if (align && !align.node) {
-        align.node = _self.get('render') || _self.get('trigger');
-      }
-    }
-  };
-  module.exports = autoShow;
-});
-define("bui/common/component/uibase/autohide", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview 点击或移出控件外部，控件隐藏
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require('jquery'),
-    wrapBehavior = BUI.wrapBehavior,
-    getWrapBehavior = BUI.getWrapBehavior;
-
-  function isExcept(self, elem) {
-      var hideExceptNode = self.get('hideExceptNode');
-      if (hideExceptNode && hideExceptNode.length) {
-        return $.contains(hideExceptNode[0], elem);
-      }
+    if (setValue === INVALID) {
       return false;
     }
-    /**
-     * 点击隐藏控件的扩展
-     * @class BUI.Component.UIBase.AutoHide
-     */
-  function autoHide() {}
-  autoHide.ATTRS = {
-    /**
-     * 控件自动隐藏的事件，这里支持2种：
-     *  - 'click'
-     *  - 'leave'
-     *  <pre><code>
-     *    var overlay = new Overlay({ //点击#t1时显示，点击#t1之外的元素隐藏
-     *      trigger : '#t1',
-     *      autoHide : true,
-     *      content : '悬浮内容'
-     *    });
-     *    overlay.render();
-     *
-     *    var overlay = new Overlay({ //移动到#t1时显示，移动出#t1,overlay之外控件隐藏
-     *      trigger : '#t1',
-     *      autoHide : true,
-     *      triggerEvent :'mouseover',
-     *      autoHideType : 'leave',
-     *      content : '悬浮内容'
-     *    });
-     *    overlay.render();
-     *
-     *  </code></pre>
-     * @cfg {String} [autoHideType = 'click']
-     */
-    /**
-     * 控件自动隐藏的事件，这里支持2种：
-     * 'click',和'leave',默认为'click'
-     * @type {String}
-     */
-    autoHideType: {
-      value: 'click'
-    },
-    /**
-     * 是否自动隐藏
-     * <pre><code>
-     *
-     *  var overlay = new Overlay({ //点击#t1时显示，点击#t1,overlay之外的元素隐藏
-     *    trigger : '#t1',
-     *    autoHide : true,
-     *    content : '悬浮内容'
-     *  });
-     *  overlay.render();
-     * </code></pre>
-     * @cfg {Object} autoHide
-     */
-    /**
-     * 是否自动隐藏
-     * @type {Object}
-     * @ignore
-     */
-    autoHide: {
-      value: false
-    },
-    /**
-     * 点击或者移动到此节点时不触发自动隐藏
-     * <pre><code>
-     *
-     *  var overlay = new Overlay({ //点击#t1时显示，点击#t1,#t2,overlay之外的元素隐藏
-     *    trigger : '#t1',
-     *    autoHide : true,
-     *    hideExceptNode : '#t2',
-     *    content : '悬浮内容'
-     *  });
-     *  overlay.render();
-     * </code></pre>
-     * @cfg {Object} hideExceptNode
-     */
-    hideExceptNode: {},
-    events: {
-      value: {
-        /**
-         * @event autohide
-         * 点击控件外部时触发，只有在控件设置自动隐藏(autoHide = true)有效
-         * 可以阻止控件隐藏，通过在事件监听函数中 return false
-         * <pre><code>
-         *  overlay.on('autohide',function(){
-         *    var curTrigger = overlay.curTrigger; //当前触发的项
-         *    if(condtion){
-         *      return false; //阻止隐藏
-         *    }
-         *  });
-         * </code></pre>
-         */
-        autohide: false
+
+    if (setValue !== undefined) {
+      value = setValue;
+    }
+
+    // finally set
+    _self.__attrVals[name] = value;
+    return _self;
+  },
+  //初始化属性
+  _initAttrs: function(config) {
+    var _self = this;
+    if (config) {
+      for (var attr in config) {
+        if (config.hasOwnProperty(attr)) {
+          // 用户设置会调用 setter/validator 的，但不会触发属性变化事件
+          _self._set(attr, config[attr]);
+        }
+
       }
     }
-  };
-  autoHide.prototype = {
-    __bindUI: function() {
-      var _self = this;
-      _self.on('afterVisibleChange', function(ev) {
-        var visible = ev.newVal;
-        if (_self.get('autoHide')) {
-          if (visible) {
-            _self._bindHideEvent();
-          } else {
-            _self._clearHideEvent();
+  }
+});
+module.exports = Base;
+
+});
+define("bui/common/component/component", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview Component命名空间的入口文件
+ * @ignore
+ */
+
+/**
+ * @class BUI.Component
+ * <p>
+ * <img src="../assets/img/class-common.jpg"/>
+ * </p>
+ * 控件基类的命名空间
+ */
+var Component = {};
+
+BUI.mix(Component, {
+  Manager: require("bui/common/component/manage"),
+  UIBase: require("bui/common/component/uibase/uibase"),
+  View: require("bui/common/component/view"),
+  Controller: require("bui/common/component/controller")
+});
+
+function create(component, self) {
+  var childConstructor, xclass;
+  if (component && (xclass = component.xclass)) {
+    if (self && !component.prefixCls) {
+      component.prefixCls = self.get('prefixCls');
+    }
+    childConstructor = Component.Manager.getConstructorByXClass(xclass);
+    if (!childConstructor) {
+      BUI.error('can not find class by xclass desc : ' + xclass);
+    }
+    component = new childConstructor(component);
+  }
+  return component;
+}
+
+/**
+ * 根据Xclass创建对象
+ * @method
+ * @static
+ * @param  {Object} component 控件的配置项或者控件
+ * @param  {Object} self      父类实例
+ * @return {Object} 实例对象
+ */
+Component.create = create;
+
+module.exports = Component;
+
+});
+define("bui/common/component/manage", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview  Base UI控件的管理类
+ * @author yiminghe@gmail.com
+ * copied by dxq613@gmail.com
+ * @ignore
+ */
+
+
+
+//控件类的管理器
+
+
+var $ = require('jquery');
+
+var uis = {
+  // 不带前缀 prefixCls
+  /*
+         "menu" :{
+         priority:0,
+         constructor:Menu
+         }
+         */
+};
+
+function getConstructorByXClass(cls) {
+  var cs = cls.split(/\s+/),
+    p = -1,
+    t,
+    ui = null;
+  for (var i = 0; i < cs.length; i++) {
+    var uic = uis[cs[i]];
+    if (uic && (t = uic.priority) > p) {
+      p = t;
+      ui = uic.constructor;
+    }
+  }
+  return ui;
+}
+
+function getXClassByConstructor(constructor) {
+  for (var u in uis) {
+    var ui = uis[u];
+    if (ui.constructor == constructor) {
+      return u;
+    }
+  }
+  return 0;
+}
+
+function setConstructorByXClass(cls, uic) {
+  if (BUI.isFunction(uic)) {
+    uis[cls] = {
+      constructor: uic,
+      priority: 0
+    };
+  } else {
+    uic.priority = uic.priority || 0;
+    uis[cls] = uic;
+  }
+}
+
+
+function getCssClassWithPrefix(cls) {
+  var cs = $.trim(cls).split(/\s+/);
+  for (var i = 0; i < cs.length; i++) {
+    if (cs[i]) {
+      cs[i] = this.get('prefixCls') + cs[i];
+    }
+  }
+  return cs.join(' ');
+}
+
+
+
+var componentInstances = {};
+
+/**
+ * Manage component metadata.
+ * @class BUI.Component.Manager
+ * @singleton
+ */
+var Manager = {
+
+  __instances: componentInstances,
+  /**
+   * 每实例化一个控件，就注册到管理器上
+   * @param {String} id  控件 id
+   * @param {BUI.Component.Controller} component 控件对象
+   */
+  addComponent: function(id, component) {
+    componentInstances[id] = component;
+  },
+  /**
+   * 移除注册的控件
+   * @param  {String} id 控件 id
+   */
+  removeComponent: function(id) {
+    delete componentInstances[id];
+  },
+  /**
+   * 遍历所有的控件
+   * @param  {Function} fn 遍历函数
+   */
+  eachComponent: function(fn) {
+    BUI.each(componentInstances, fn);
+  },
+  /**
+   * 根据Id获取控件
+   * @param  {String} id 编号
+   * @return {BUI.Component.UIBase}   继承 UIBase的类对象
+   */
+  getComponent: function(id) {
+    return componentInstances[id];
+  },
+
+  getCssClassWithPrefix: getCssClassWithPrefix,
+  /**
+   * 通过构造函数获取xclass.
+   * @param {Function} constructor 控件的构造函数.
+   * @type {Function}
+   * @return {String}
+   * @method
+   */
+  getXClassByConstructor: getXClassByConstructor,
+  /**
+   * 通过xclass获取控件的构造函数
+   * @param {String} classNames Class names separated by space.
+   * @type {Function}
+   * @return {Function}
+   * @method
+   */
+  getConstructorByXClass: getConstructorByXClass,
+  /**
+   * 将 xclass 同构造函数相关联.
+   * @type {Function}
+   * @param {String} className 控件的xclass名称.
+   * @param {Function} componentConstructor 构造函数
+   * @method
+   */
+  setConstructorByXClass: setConstructorByXClass
+};
+
+module.exports = Manager;
+
+});
+define("bui/common/component/uibase/uibase", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview uibase的入口文件
+ * @ignore
+ */
+var UIBase = require("bui/common/component/uibase/base");
+
+BUI.mix(UIBase, {
+  Align: require("bui/common/component/uibase/align"),
+  AutoShow: require("bui/common/component/uibase/autoshow"),
+  AutoHide: require("bui/common/component/uibase/autohide"),
+  Close: require("bui/common/component/uibase/close"),
+  Collapsable: require("bui/common/component/uibase/collapsable"),
+  Drag: require("bui/common/component/uibase/drag"),
+  KeyNav: require("bui/common/component/uibase/keynav"),
+  List: require("bui/common/component/uibase/list"),
+  ListItem: require("bui/common/component/uibase/listitem"),
+  Mask: require("bui/common/component/uibase/mask"),
+  Position: require("bui/common/component/uibase/position"),
+  Selection: require("bui/common/component/uibase/selection"),
+  StdMod: require("bui/common/component/uibase/stdmod"),
+  Decorate: require("bui/common/component/uibase/decorate"),
+  Tpl: require("bui/common/component/uibase/tpl"),
+  ChildCfg: require("bui/common/component/uibase/childcfg"),
+  Bindable: require("bui/common/component/uibase/bindable"),
+  Depends: require("bui/common/component/uibase/depends")
+});
+
+BUI.mix(UIBase, {
+  CloseView: UIBase.Close.View,
+  CollapsableView: UIBase.Collapsable.View,
+  ChildList: UIBase.List.ChildList,
+  /*DomList : UIBase.List.DomList,
+  DomListView : UIBase.List.DomList.View,*/
+  ListItemView: UIBase.ListItem.View,
+  MaskView: UIBase.Mask.View,
+  PositionView: UIBase.Position.View,
+  StdModView: UIBase.StdMod.View,
+  TplView: UIBase.Tpl.View
+});
+
+module.exports = UIBase;
+
+});
+define("bui/common/component/uibase/base", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview  UI控件的流程控制
+ * @author yiminghe@gmail.com
+ * copied by dxq613@gmail.com
+ * @ignore
+ */
+
+var $ = require('jquery');
+
+var Manager = require("bui/common/component/manage"),
+
+  UI_SET = '_uiSet',
+  ATTRS = 'ATTRS',
+  ucfirst = BUI.ucfirst,
+  noop = $.noop,
+  Base = require("bui/common/base");
+/**
+ * 模拟多继承
+ * init attr using constructors ATTRS meta info
+ * @ignore
+ */
+function initHierarchy(host, config) {
+  callMethodByHierarchy(host, 'initializer', 'constructor');
+}
+
+function callMethodByHierarchy(host, mainMethod, extMethod) {
+  var c = host.constructor,
+    extChains = [],
+    ext,
+    main,
+    exts,
+    t;
+
+  // define
+  while (c) {
+
+    // 收集扩展类
+    t = [];
+    if (exts = c.mixins) {
+      for (var i = 0; i < exts.length; i++) {
+        ext = exts[i];
+        if (ext) {
+          if (extMethod != 'constructor') {
+            //只调用真正自己构造器原型的定义，继承原型链上的不要管
+            if (ext.prototype.hasOwnProperty(extMethod)) {
+              ext = ext.prototype[extMethod];
+            } else {
+              ext = null;
+            }
           }
+          ext && t.push(ext);
+        }
+      }
+    }
+
+    // 收集主类
+    // 只调用真正自己构造器原型的定义，继承原型链上的不要管 !important
+    // 所以不用自己在 renderUI 中调用 superclass.renderUI 了，UIBase 构造器自动搜寻
+    // 以及 initializer 等同理
+    if (c.prototype.hasOwnProperty(mainMethod) && (main = c.prototype[mainMethod])) {
+      t.push(main);
+    }
+
+    // 原地 reverse
+    if (t.length) {
+      extChains.push.apply(extChains, t.reverse());
+    }
+
+    c = c.superclass && c.superclass.constructor;
+  }
+
+  // 初始化函数
+  // 顺序：父类的所有扩展类函数 -> 父类对应函数 -> 子类的所有扩展函数 -> 子类对应函数
+  for (i = extChains.length - 1; i >= 0; i--) {
+    extChains[i] && extChains[i].call(host);
+  }
+}
+
+/**
+ * 销毁组件顺序： 子类 destructor -> 子类扩展 destructor -> 父类 destructor -> 父类扩展 destructor
+ * @ignore
+ */
+function destroyHierarchy(host) {
+  var c = host.constructor,
+    extensions,
+    d,
+    i;
+
+  while (c) {
+    // 只触发该类真正的析构器，和父亲没关系，所以不要在子类析构器中调用 superclass
+    if (c.prototype.hasOwnProperty('destructor')) {
+      c.prototype.destructor.apply(host);
+    }
+
+    if ((extensions = c.mixins)) {
+      for (i = extensions.length - 1; i >= 0; i--) {
+        d = extensions[i] && extensions[i].prototype.__destructor;
+        d && d.apply(host);
+      }
+    }
+
+    c = c.superclass && c.superclass.constructor;
+  }
+}
+
+/**
+ * 构建 插件
+ * @ignore
+ */
+function constructPlugins(plugins) {
+  if (!plugins) {
+    return;
+  }
+  BUI.each(plugins, function(plugin, i) {
+    if (BUI.isFunction(plugin)) {
+      plugins[i] = new plugin();
+    }
+  });
+}
+
+/**
+ * 调用插件的方法
+ * @ignore
+ */
+function actionPlugins(self, plugins, action) {
+  if (!plugins) {
+    return;
+  }
+  BUI.each(plugins, function(plugin, i) {
+    if (plugin[action]) {
+      plugin[action](self);
+    }
+  });
+}
+
+/**
+ * 根据属性变化设置 UI
+ * @ignore
+ */
+function bindUI(self) {
+  /*var attrs = self.getAttrs(),
+          attr,
+          m;
+
+      for (attr in attrs) {
+          if (attrs.hasOwnProperty(attr)) {
+              m = UI_SET + ucfirst(attr);
+              if (self[m]) {
+                  // 自动绑定事件到对应函数
+                  (function (attr, m) {
+                      self.on('after' + ucfirst(attr) + 'Change', function (ev) {
+                          // fix! 防止冒泡过来的
+                          if (ev.target === self) {
+                              self[m](ev.newVal, ev);
+                          }
+                      });
+                  })(attr, m);
+              }
+          }
+      }
+      */
+}
+
+/**
+ * 根据当前（初始化）状态来设置 UI
+ * @ignore
+ */
+function syncUI(self) {
+  var v,
+    f,
+    attrs = self.getAttrs();
+  for (var a in attrs) {
+    if (attrs.hasOwnProperty(a)) {
+      var m = UI_SET + ucfirst(a);
+      //存在方法，并且用户设置了初始值或者存在默认值，就同步状态
+      if ((f = self[m])
+        // 用户如果设置了显式不同步，就不同步，比如一些值从 html 中读取，不需要同步再次设置
+        && attrs[a].sync !== false && (v = self.get(a)) !== undefined) {
+        f.call(self, v);
+      }
+    }
+  }
+}
+
+/**
+ * 控件库的基类，包括控件的生命周期,下面是基本的扩展类
+ * <p>
+ * <img src="https://dxq613.github.io/assets/img/class-mixins.jpg"/>
+ * </p>
+ * @class BUI.Component.UIBase
+ * @extends BUI.Base
+ * @param  {Object} config 配置项
+ */
+var UIBase = function(config) {
+
+  var _self = this,
+    id;
+
+  // 读取用户设置的属性值并设置到自身
+  Base.apply(_self, arguments);
+
+  //保存用户传入的配置项
+  _self.setInternal('userConfig', config);
+  // 按照类层次执行初始函数，主类执行 initializer 函数，扩展类执行构造器函数
+  initHierarchy(_self, config);
+
+  var listener,
+    n,
+    plugins = _self.get('plugins')
+    /*,
+          listeners = _self.get('listeners')*/
+  ;
+
+  constructPlugins(plugins);
+
+  var xclass = _self.get('xclass');
+  if (xclass) {
+    _self.__xclass = xclass; //debug 方便
+  }
+  actionPlugins(_self, plugins, 'initializer');
+
+  // 是否自动渲染
+  config && config.autoRender && _self.render();
+
+};
+
+UIBase.ATTRS = {
+
+
+  /**
+   * 用户传入的配置项
+   * @type {Object}
+   * @readOnly
+   * @protected
+   */
+  userConfig: {
+
+  },
+  /**
+   * 是否自动渲染,如果不自动渲染，需要用户调用 render()方法
+   * <pre><code>
+   *  //默认状态下创建对象，并没有进行render
+   *  var control = new Control();
+   *  control.render(); //需要调用render方法
+   *
+   *  //设置autoRender后，不需要调用render方法
+   *  var control = new Control({
+   *   autoRender : true
+   *  });
+   * </code></pre>
+   * @cfg {Boolean} autoRender
+   */
+  /**
+   * 是否自动渲染,如果不自动渲染，需要用户调用 render()方法
+   * @type {Boolean}
+   * @ignore
+   */
+  autoRender: {
+    value: false
+  },
+  /**
+   * @type {Object}
+   * 事件处理函数:
+   *      {
+   *        'click':function(e){}
+   *      }
+   *  @ignore
+   */
+  listeners: {
+    value: {}
+  },
+  /**
+   * 插件集合
+   * <pre><code>
+   *  var grid = new Grid({
+   *    columns : [{},{}],
+   *    plugins : [Grid.Plugins.RadioSelection]
+   *  });
+   * </code></pre>
+   * @cfg {Array} plugins
+   */
+  /**
+   * 插件集合
+   * @type {Array}
+   * @readOnly
+   */
+  plugins: {
+    //value : []
+  },
+  /**
+   * 是否已经渲染完成
+   * @type {Boolean}
+   * @default  false
+   * @readOnly
+   */
+  rendered: {
+    value: false
+  },
+  /**
+   * 获取控件的 xclass
+   * @readOnly
+   * @type {String}
+   * @protected
+   */
+  xclass: {
+    valueFn: function() {
+      return Manager.getXClassByConstructor(this.constructor);
+    }
+  }
+};
+
+BUI.extend(UIBase, Base);
+
+BUI.augment(UIBase, {
+  /**
+   * 创建DOM结构
+   * @protected
+   */
+  create: function() {
+    var self = this;
+    // 是否生成过节点
+    if (!self.get('created')) {
+      /**
+       * @event beforeCreateDom
+       * fired before root node is created
+       * @param e
+       */
+      self.fire('beforeCreateDom');
+      callMethodByHierarchy(self, 'createDom', '__createDom');
+      self._set('created', true);
+      /**
+       * @event afterCreateDom
+       * fired when root node is created
+       * @param e
+       */
+      self.fire('afterCreateDom');
+      actionPlugins(self, self.get('plugins'), 'createDom');
+    }
+    return self;
+  },
+  /**
+   * 渲染
+   */
+  render: function() {
+    var _self = this;
+    // 是否已经渲染过
+    if (!_self.get('rendered')) {
+      var plugins = _self.get('plugins');
+      _self.create(undefined);
+      _self.set('created', true);
+      /**
+       * @event beforeRenderUI
+       * fired when root node is ready
+       * @param e
+       */
+      _self.fire('beforeRenderUI');
+      callMethodByHierarchy(_self, 'renderUI', '__renderUI');
+
+      /**
+       * @event afterRenderUI
+       * fired after root node is rendered into dom
+       * @param e
+       */
+
+      _self.fire('afterRenderUI');
+      actionPlugins(_self, plugins, 'renderUI');
+
+      /**
+       * @event beforeBindUI
+       * fired before UIBase 's internal event is bind.
+       * @param e
+       */
+
+      _self.fire('beforeBindUI');
+      bindUI(_self);
+      callMethodByHierarchy(_self, 'bindUI', '__bindUI');
+      _self.set('binded', true);
+      /**
+       * @event afterBindUI
+       * fired when UIBase 's internal event is bind.
+       * @param e
+       */
+
+      _self.fire('afterBindUI');
+      actionPlugins(_self, plugins, 'bindUI');
+
+      /**
+       * @event beforeSyncUI
+       * fired before UIBase 's internal state is synchronized.
+       * @param e
+       */
+
+      _self.fire('beforeSyncUI');
+
+      syncUI(_self);
+      callMethodByHierarchy(_self, 'syncUI', '__syncUI');
+
+      /**
+       * @event afterSyncUI
+       * fired after UIBase 's internal state is synchronized.
+       * @param e
+       */
+
+      _self.fire('afterSyncUI');
+      actionPlugins(_self, plugins, 'syncUI');
+      _self._set('rendered', true);
+    }
+    return _self;
+  },
+  /**
+   * 子类可继承此方法，当DOM创建时调用
+   * @protected
+   * @method
+   */
+  createDom: noop,
+  /**
+   * 子类可继承此方法，渲染UI时调用
+   * @protected
+   *  @method
+   */
+  renderUI: noop,
+  /**
+   * 子类可继承此方法,绑定事件时调用
+   * @protected
+   * @method
+   */
+  bindUI: noop,
+  /**
+   * 同步属性值到UI上
+   * @protected
+   * @method
+   */
+  syncUI: noop,
+
+  /**
+   * 析构函数
+   */
+  destroy: function() {
+    var _self = this;
+    if (_self.destroyed) { //防止返回销毁
+      return _self;
+    }
+    /**
+     * @event beforeDestroy
+     * fired before UIBase 's destroy.
+     * @param e
+     */
+    _self.fire('beforeDestroy');
+
+    actionPlugins(_self, _self.get('plugins'), 'destructor');
+    destroyHierarchy(_self);
+    /**
+     * @event afterDestroy
+     * fired before UIBase 's destroy.
+     * @param e
+     */
+    _self.fire('afterDestroy');
+    _self.off();
+    _self.clearAttrVals();
+    _self.destroyed = true;
+    return _self;
+  }
+});
+
+//延时处理构造函数
+function initConstuctor(c) {
+  var constructors = [];
+  while (c.base) {
+    constructors.push(c);
+    c = c.base;
+  }
+  for (var i = constructors.length - 1; i >= 0; i--) {
+    var C = constructors[i];
+    //BUI.extend(C,C.base,C.px,C.sx);
+    BUI.mix(C.prototype, C.px);
+    BUI.mix(C, C.sx);
+    C.base = null;
+    C.px = null;
+    C.sx = null;
+  }
+}
+
+BUI.mix(UIBase, {
+  /**
+   * 定义一个类
+   * @static
+   * @param  {Function} base   基类构造函数
+   * @param  {Array} extensions 扩展
+   * @param  {Object} px  原型链上的扩展
+   * @param  {Object} sx
+   * @return {Function} 继承与基类的构造函数
+   */
+  define: function(base, extensions, px, sx) {
+    if ($.isPlainObject(extensions)) {
+      sx = px;
+      px = extensions;
+      extensions = [];
+    }
+
+    function C() {
+      var c = this.constructor;
+      if (c.base) {
+        initConstuctor(c);
+      }
+      UIBase.apply(this, arguments);
+    }
+
+    BUI.extend(C, base); //无法延迟
+    C.base = base;
+    C.px = px; //延迟复制原型链上的函数
+    C.sx = sx; //延迟复制静态属性
+
+    //BUI.mixin(C,extensions);
+    if (extensions.length) { //延迟执行mixin
+      C.extensions = extensions;
+    }
+
+    return C;
+  },
+  /**
+   * 扩展一个类，基类就是类本身
+   * @static
+   * @param  {Array} extensions 扩展
+   * @param  {Object} px  原型链上的扩展
+   * @param  {Object} sx
+   * @return {Function} 继承与基类的构造函数
+   */
+  extend: function extend(extensions, px, sx) {
+    var args = $.makeArray(arguments),
+      ret,
+      last = args[args.length - 1];
+    args.unshift(this);
+    if (last.xclass) {
+      args.pop();
+      args.push(last.xclass);
+    }
+    ret = UIBase.define.apply(UIBase, args);
+    if (last.xclass) {
+      var priority = last.priority || (this.priority ? (this.priority + 1) : 1);
+
+      Manager.setConstructorByXClass(last.xclass, {
+        constructor: ret,
+        priority: priority
+      });
+      //方便调试
+      ret.__xclass = last.xclass;
+      ret.priority = priority;
+      ret.toString = function() {
+        return last.xclass;
+      }
+    }
+    ret.extend = extend;
+    return ret;
+  }
+});
+
+module.exports = UIBase;
+
+});
+define("bui/common/component/uibase/align", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview 跟指定的元素项对齐的方式
+ * @author yiminghe@gmail.com
+ * copied by dxq613@gmail.com
+ * @ignore
+ */
+
+
+var $ = require('jquery'),
+  UA = require("bui/common/ua"),
+  CLS_ALIGN_PREFIX ='x-align-',
+  win = window;
+
+// var ieMode = document.documentMode || UA.ie;
+
+/*
+ inspired by closure library by Google
+ see http://yiminghe.iteye.com/blog/1124720
+ */
+
+/**
+ * 得到会导致元素显示不全的祖先元素
+ * @ignore
+ */
+function getOffsetParent(element) {
+  // ie 这个也不是完全可行
+  /**
+   <div style="width: 50px;height: 100px;overflow: hidden">
+   <div style="width: 50px;height: 100px;position: relative;" id="d6">
+   元素 6 高 100px 宽 50px<br/>
+   </div>
+   </div>
+   @ignore
+   **/
+  // element.offsetParent does the right thing in ie7 and below. Return parent with layout!
+  //  In other browsers it only includes elements with position absolute, relative or
+  // fixed, not elements with overflow set to auto or scroll.
+  //    if (UA.ie && ieMode < 8) {
+  //      return element.offsetParent;
+  //    }
+      // 统一的 offsetParent 方法
+  var doc = element.ownerDocument,
+    body = doc.body,
+    parent,
+    positionStyle = $(element).css('position'),
+    skipStatic = positionStyle == 'fixed' || positionStyle == 'absolute';
+
+  if (!skipStatic) {
+    return element.nodeName.toLowerCase() == 'html' ? null : element.parentNode;
+  }
+
+  for (parent = element.parentNode; parent && parent != body; parent = parent.parentNode) {
+    positionStyle = $(parent).css('position');
+    if (positionStyle != 'static') {
+      return parent;
+    }
+  }
+  return null;
+}
+
+/**
+ * 获得元素的显示部分的区域
+ * @private
+ * @ignore
+ */
+function getVisibleRectForElement(element) {
+  var visibleRect = {
+      left:0,
+      right:Infinity,
+      top:0,
+      bottom:Infinity
+    },
+    el,
+    scrollX,
+    scrollY,
+    winSize,
+    doc = element.ownerDocument,
+    body = doc.body,
+    documentElement = doc.documentElement;
+
+  // Determine the size of the visible rect by climbing the dom accounting for
+  // all scrollable containers.
+  for (el = element; el = getOffsetParent(el);) {
+    // clientWidth is zero for inline block elements in ie.
+    if ((!UA.ie || el.clientWidth != 0) &&
+      // body may have overflow set on it, yet we still get the entire
+      // viewport. In some browsers, el.offsetParent may be
+      // document.documentElement, so check for that too.
+      (el != body && el != documentElement && $(el).css('overflow') != 'visible')) {
+      var pos = $(el).offset();
+      // add border
+      pos.left += el.clientLeft;
+      pos.top += el.clientTop;
+
+      visibleRect.top = Math.max(visibleRect.top, pos.top);
+      visibleRect.right = Math.min(visibleRect.right,
+        // consider area without scrollBar
+        pos.left + el.clientWidth);
+      visibleRect.bottom = Math.min(visibleRect.bottom,
+        pos.top + el.clientHeight);
+      visibleRect.left = Math.max(visibleRect.left, pos.left);
+    }
+  }
+
+  // Clip by window's viewport.
+  scrollX = $(win).scrollLeft();
+  scrollY = $(win).scrollTop();
+  visibleRect.left = Math.max(visibleRect.left, scrollX);
+  visibleRect.top = Math.max(visibleRect.top, scrollY);
+  winSize = {
+    width:BUI.viewportWidth(),
+    height:BUI.viewportHeight()
+  };
+  visibleRect.right = Math.min(visibleRect.right, scrollX + winSize.width);
+  visibleRect.bottom = Math.min(visibleRect.bottom, scrollY + winSize.height);
+  return visibleRect.top >= 0 && visibleRect.left >= 0 &&
+    visibleRect.bottom > visibleRect.top &&
+    visibleRect.right > visibleRect.left ?
+    visibleRect : null;
+}
+
+function getElFuturePos(elRegion, refNodeRegion, points, offset) {
+  var xy,
+    diff,
+    p1,
+    p2;
+
+  xy = {
+    left:elRegion.left,
+    top:elRegion.top
+  };
+
+  p1 = getAlignOffset(refNodeRegion, points[0]);
+  p2 = getAlignOffset(elRegion, points[1]);
+
+  diff = [p2.left - p1.left, p2.top - p1.top];
+
+  return {
+    left:xy.left - diff[0] + (+offset[0]),
+    top:xy.top - diff[1] + (+offset[1])
+  };
+}
+
+function isFailX(elFuturePos, elRegion, visibleRect) {
+  return elFuturePos.left < visibleRect.left ||
+    elFuturePos.left + elRegion.width > visibleRect.right;
+}
+
+function isFailY(elFuturePos, elRegion, visibleRect) {
+  return elFuturePos.top < visibleRect.top ||
+    elFuturePos.top + elRegion.height > visibleRect.bottom;
+}
+
+function adjustForViewport(elFuturePos, elRegion, visibleRect, overflow) {
+  var pos = BUI.cloneObject(elFuturePos),
+    size = {
+      width:elRegion.width,
+      height:elRegion.height
+    };
+
+  if (overflow.adjustX && pos.left < visibleRect.left) {
+    pos.left = visibleRect.left;
+  }
+
+  // Left edge inside and right edge outside viewport, try to resize it.
+  if (overflow['resizeWidth'] &&
+    pos.left >= visibleRect.left &&
+    pos.left + size.width > visibleRect.right) {
+    size.width -= (pos.left + size.width) - visibleRect.right;
+  }
+
+  // Right edge outside viewport, try to move it.
+  if (overflow.adjustX && pos.left + size.width > visibleRect.right) {
+    // 保证左边界和可视区域左边界对齐
+    pos.left = Math.max(visibleRect.right - size.width, visibleRect.left);
+  }
+
+  // Top edge outside viewport, try to move it.
+  if (overflow.adjustY && pos.top < visibleRect.top) {
+    pos.top = visibleRect.top;
+  }
+
+  // Top edge inside and bottom edge outside viewport, try to resize it.
+  if (overflow['resizeHeight'] &&
+    pos.top >= visibleRect.top &&
+    pos.top + size.height > visibleRect.bottom) {
+    size.height -= (pos.top + size.height) - visibleRect.bottom;
+  }
+
+  // Bottom edge outside viewport, try to move it.
+  if (overflow.adjustY && pos.top + size.height > visibleRect.bottom) {
+    // 保证上边界和可视区域上边界对齐
+    pos.top = Math.max(visibleRect.bottom - size.height, visibleRect.top);
+  }
+
+  return BUI.mix(pos, size);
+}
+
+
+function flip(points, reg, map) {
+  var ret = [];
+  $.each(points, function (index,p) {
+    ret.push(p.replace(reg, function (m) {
+      return map[m];
+    }));
+  });
+  return ret;
+}
+
+function flipOffset(offset, index) {
+  offset[index] = -offset[index];
+  return offset;
+}
+
+
+/**
+ * @class BUI.Component.UIBase.Align
+ * Align extension class.
+ * Align component with specified element.
+ * <img src="http://images.cnitblog.com/blog/111279/201304/09180221-201343d4265c46e7987e6b1c46d5461a.jpg"/>
+ */
+function Align() {
+}
+
+
+Align.__getOffsetParent = getOffsetParent;
+
+Align.__getVisibleRectForElement = getVisibleRectForElement;
+
+Align.ATTRS =
+{
+  /**
+   * 对齐配置，详细说明请参看： <a href="http://www.cnblogs.com/zaohe/archive/2013/04/09/3010651.html">JS控件 对齐</a>
+   * @cfg {Object} align
+   * <pre><code>
+   *  var overlay = new Overlay( {  
+   *     align :{
+   *     node: null,     // 参考元素, falsy 或 window 为可视区域, 'trigger' 为触发元素, 其他为指定元素
+   *     points: ['cc','cc'], // ['tr', 'tl'] 表示 overlay 的 tl 与参考节点的 tr 对齐
+   *     offset: [0, 0]    // 有效值为 [n, m]
+   *     }
+   *   }); 
+   * </code></pre>
+   */
+
+  /**
+   * 设置对齐属性
+   * @type {Object}
+   * @field
+   * <code>
+   *   var align =  {
+   *    node: null,     // 参考元素, falsy 或 window 为可视区域, 'trigger' 为触发元素, 其他为指定元素
+   *    points: ['cc','cc'], // ['tr', 'tl'] 表示 overlay 的 tl 与参考节点的 tr 对齐
+   *    offset: [0, 0]    // 有效值为 [n, m]
+   *   };
+   *   overlay.set('align',align);
+   * </code>
+   */
+  align:{
+    shared : false,
+    value:{}
+  }
+};
+
+function getRegion(node) {
+  var offset, w, h;
+  if (node.length && !$.isWindow(node[0])) {
+    offset = node.offset();
+    w = node.outerWidth();
+    h = node.outerHeight();
+  } else {
+    offset = { left:BUI.scrollLeft(), top:BUI.scrollTop() };
+    w = BUI.viewportWidth();
+    h = BUI.viewportHeight();
+  }
+  offset.width = w;
+  offset.height = h;
+  return offset;
+}
+
+/**
+ * 获取 node 上的 align 对齐点 相对于页面的坐标
+ * @param region
+ * @param align
+ */
+function getAlignOffset(region, align) {
+  var V = align.charAt(0),
+    H = align.charAt(1),
+    w = region.width,
+    h = region.height,
+    x, y;
+
+  x = region.left;
+  y = region.top;
+
+  if (V === 'c') {
+    y += h / 2;
+  } else if (V === 'b') {
+    y += h;
+  }
+
+  if (H === 'c') {
+    x += w / 2;
+  } else if (H === 'r') {
+    x += w;
+  }
+
+  return { left:x, top:y };
+}
+
+//清除对齐的css样式
+function clearAlignCls(el){
+  var cls = el.attr('class'),
+    regex = new RegExp('\s?'+CLS_ALIGN_PREFIX+'[a-z]{2}-[a-z]{2}','ig'),
+    arr = regex.exec(cls);
+  if(arr){
+    el.removeClass(arr.join(' '));
+  }
+}
+
+Align.prototype =
+{
+  _uiSetAlign:function (v,ev) {
+    var alignCls = '',
+      el,   
+      selfAlign; //points 的第二个参数，是自己对齐于其他节点的的方式
+    if (v && v.points) {
+      this.align(v.node, v.points, v.offset, v.overflow);
+      this.set('cachePosition',null);
+      el = this.get('el');
+      clearAlignCls(el);
+      selfAlign = v.points.join('-');
+      alignCls = CLS_ALIGN_PREFIX + selfAlign;
+      el.addClass(alignCls);
+      /**/
+    }
+  },
+  __bindUI : function(){
+    var _self = this;
+
+    var fn = BUI.wrapBehavior(_self,'handleWindowResize');
+    
+    _self.on('show',function(){
+      $(window).on('resize',fn);
+    });
+
+    _self.on('hide',function(){
+      $(window).off('resize',fn);
+    });
+  },
+  //处理window resize事件
+  handleWindowResize : function(){
+    var _self = this,
+      align = _self.get('align');
+
+    _self.set('align',align);
+  },
+  /*
+   对齐 Overlay 到 node 的 points 点, 偏移 offset 处
+   @method
+   @ignore
+   @param {Element} node 参照元素, 可取配置选项中的设置, 也可是一元素
+   @param {String[]} points 对齐方式
+   @param {Number[]} [offset] 偏移
+   */
+  align:function (refNode, points, offset, overflow) {
+    refNode = $(refNode || win);
+    offset = offset && [].concat(offset) || [0, 0];
+    overflow = overflow || {};
+
+    var self = this,
+      el = self.get('el'),
+      fail = 0,
+    // 当前节点可以被放置的显示区域
+      visibleRect = getVisibleRectForElement(el[0]),
+    // 当前节点所占的区域, left/top/width/height
+      elRegion = getRegion(el),
+    // 参照节点所占的区域, left/top/width/height
+      refNodeRegion = getRegion(refNode),
+    // 当前节点将要被放置的位置
+      elFuturePos = getElFuturePos(elRegion, refNodeRegion, points, offset),
+    // 当前节点将要所处的区域
+      newElRegion = BUI.merge(elRegion, elFuturePos);
+
+    // 如果可视区域不能完全放置当前节点时允许调整
+    if (visibleRect && (overflow.adjustX || overflow.adjustY)) {
+
+      // 如果横向不能放下
+      if (isFailX(elFuturePos, elRegion, visibleRect)) {
+        fail = 1;
+        // 对齐位置反下
+        points = flip(points, /[lr]/ig, {
+          l:'r',
+          r:'l'
+        });
+        // 偏移量也反下
+        offset = flipOffset(offset, 0);
+      }
+
+      // 如果纵向不能放下
+      if (isFailY(elFuturePos, elRegion, visibleRect)) {
+        fail = 1;
+        // 对齐位置反下
+        points = flip(points, /[tb]/ig, {
+          t:'b',
+          b:'t'
+        });
+        // 偏移量也反下
+        offset = flipOffset(offset, 1);
+      }
+
+      // 如果失败，重新计算当前节点将要被放置的位置
+      if (fail) {
+        elFuturePos = getElFuturePos(elRegion, refNodeRegion, points, offset);
+        BUI.mix(newElRegion, elFuturePos);
+      }
+
+      var newOverflowCfg = {};
+
+      // 检查反下后的位置是否可以放下了
+      // 如果仍然放不下只有指定了可以调整当前方向才调整
+      newOverflowCfg.adjustX = overflow.adjustX &&
+        isFailX(elFuturePos, elRegion, visibleRect);
+
+      newOverflowCfg.adjustY = overflow.adjustY &&
+        isFailY(elFuturePos, elRegion, visibleRect);
+
+      // 确实要调整，甚至可能会调整高度宽度
+      if (newOverflowCfg.adjustX || newOverflowCfg.adjustY) {
+        newElRegion = adjustForViewport(elFuturePos, elRegion,
+          visibleRect, newOverflowCfg);
+      }
+    }
+
+    // 新区域位置发生了变化
+    if (newElRegion.left != elRegion.left) {
+      self.setInternal('x', null);
+      self.get('view').setInternal('x', null);
+      self.set('x', newElRegion.left);
+    }
+
+    if (newElRegion.top != elRegion.top) {
+      // https://github.com/kissyteam/kissy/issues/190
+      // 相对于屏幕位置没变，而 left/top 变了
+      // 例如 <div 'relative'><el absolute></div>
+      // el.align(div)
+      self.setInternal('y', null);
+      self.get('view').setInternal('y', null);
+      self.set('y', newElRegion.top);
+    }
+
+    // 新区域高宽发生了变化
+    if (newElRegion.width != elRegion.width) {
+      el.width(el.width() + newElRegion.width - elRegion.width);
+    }
+    if (newElRegion.height != elRegion.height) {
+      el.height(el.height() + newElRegion.height - elRegion.height);
+    }
+
+    return self;
+  },
+
+  /**
+   * 对齐到元素的中间，查看属性 {@link BUI.Component.UIBase.Align#property-align} .
+   * <pre><code>
+   *  control.center('#t1'); //控件处于容器#t1的中间位置
+   * </code></pre>
+   * @param {undefined|String|HTMLElement|jQuery} node
+   * 
+   */
+  center:function (node) {
+    var self = this;
+    self.set('align', {
+      node:node,
+      points:['cc', 'cc'],
+      offset:[0, 0]
+    });
+    return self;
+  }
+};
+
+module.exports = Align;
+
+});
+define("bui/common/component/uibase/autoshow", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview click，focus,hover等引起控件显示，并且定位
+ * @ignore
+ */
+
+var $ = require('jquery');
+
+/**
+ * 处理自动显示控件的扩展，一般用于显示menu,picker,tip等
+ * @class BUI.Component.UIBase.AutoShow
+ */
+function autoShow() {
+
+}
+
+autoShow.ATTRS = {
+
+  /**
+   * 触发显示控件的DOM选择器
+   * <pre><code>
+   *  var overlay = new Overlay({ //点击#t1时显示，点击#t1,overlay之外的元素隐藏
+   *    trigger : '#t1',
+   *    autoHide : true,
+   *    content : '悬浮内容'
+   *  });
+   *  overlay.render();
+   * </code></pre>
+   * @cfg {HTMLElement|String|jQuery} trigger
+   */
+  /**
+   * 触发显示控件的DOM选择器
+   * @type {HTMLElement|String|jQuery}
+   */
+  trigger: {
+
+  },
+  delegateTigger: {
+    getter: function() {
+      this.get('delegateTrigger'); //兼容之前的版本
+    },
+    setter: function(v) {
+      this.set('delegateTrigger', v);
+    }
+
+  },
+  /**
+   * 是否使用代理的方式触发显示控件,如果tigger不是字符串，此属性无效
+   * <pre><code>
+   *  var overlay = new Overlay({ //点击.t1(无论创建控件时.t1是否存在)时显示，点击.t1,overlay之外的元素隐藏
+   *    trigger : '.t1',
+   *    autoHide : true,
+   *    delegateTrigger : true, //使用委托的方式触发显示控件
+   *    content : '悬浮内容'
+   *  });
+   *  overlay.render();
+   * </code></pre>
+   * @cfg {Boolean} [delegateTrigger = false]
+   */
+  /**
+   * 是否使用代理的方式触发显示控件,如果tigger不是字符串，此属性无效
+   * @type {Boolean}
+   * @ignore
+   */
+  delegateTrigger: {
+    value: false
+  },
+  /**
+   * 选择器是否始终跟随触发器对齐
+   * @cfg {Boolean} autoAlign
+   * @ignore
+   */
+  /**
+   * 选择器是否始终跟随触发器对齐
+   * @type {Boolean}
+   * @protected
+   */
+  autoAlign: {
+    value: true
+  },
+  /**
+   * 显示时是否默认获取焦点
+   * @type {Boolean}
+   */
+  autoFocused: {
+    value: true
+  },
+  /**
+   * 如果设置了这个样式，那么触发显示（overlay）时trigger会添加此样式
+   * @type {Object}
+   */
+  triggerActiveCls: {
+
+  },
+  /**
+   * 控件显示时由此trigger触发，当配置项 trigger 选择器代表多个DOM 对象时，
+   * 控件可由多个DOM对象触发显示。
+   * <pre><code>
+   *  overlay.on('show',function(){
+   *    var curTrigger = overlay.get('curTrigger');
+   *    //TO DO
+   *  });
+   * </code></pre>
+   * @type {jQuery}
+   * @readOnly
+   */
+  curTrigger: {
+
+  },
+  /**
+   * 触发显示时的回调函数
+   * @cfg {Function} triggerCallback
+   * @ignore
+   */
+  /**
+   * 触发显示时的回调函数
+   * @type {Function}
+   * @ignore
+   */
+  triggerCallback: {
+
+  },
+  /**
+   * 显示菜单的事件
+   *  <pre><code>
+   *    var overlay = new Overlay({ //移动到#t1时显示，移动出#t1,overlay之外控件隐藏
+   *      trigger : '#t1',
+   *      autoHide : true,
+   *      triggerEvent :'mouseover',
+   *      autoHideType : 'leave',
+   *      content : '悬浮内容'
+   *    });
+   *    overlay.render();
+   *
+   *  </code></pre>
+   * @cfg {String} [triggerEvent='click']
+   * @default 'click'
+   */
+  /**
+   * 显示菜单的事件
+   * @type {String}
+   * @default 'click'
+   * @ignore
+   */
+  triggerEvent: {
+    value: 'click'
+  },
+  /**
+   * 因为触发元素发生改变而导致控件隐藏
+   * @cfg {String} triggerHideEvent
+   * @ignore
+   */
+  /**
+   * 因为触发元素发生改变而导致控件隐藏
+   * @type {String}
+   * @ignore
+   */
+  triggerHideEvent: {
+
+  },
+  events: {
+    value: {
+      /**
+       * 当触发器（触发选择器出现）发生改变时，经常用于一个选择器对应多个触发器的情况
+       * <pre><code>
+       *  overlay.on('triggerchange',function(ev){
+       *    var curTrigger = ev.curTrigger;
+       *    overlay.set('content',curTrigger.html());
+       *  });
+       * </code></pre>
+       * @event
+       * @param {Object} e 事件对象
+       * @param {jQuery} e.prevTrigger 之前触发器，可能为null
+       * @param {jQuery} e.curTrigger 当前的触发器
+       */
+      'triggerchange': false
+    }
+  }
+};
+
+autoShow.prototype = {
+
+  __createDom: function() {
+    this._setTrigger();
+  },
+  __bindUI: function() {
+    var _self = this,
+      triggerActiveCls = _self.get('triggerActiveCls');
+    if (triggerActiveCls) {
+      _self.on('hide', function() {
+        var curTrigger = _self.get('curTrigger');
+        if (curTrigger) {
+          curTrigger.removeClass(triggerActiveCls);
         }
       });
-    },
-    /**
-     * 处理鼠标移出事件，不影响{BUI.Component.Controller#handleMouseLeave}事件
-     * @param  {jQuery.Event} ev 事件对象
-     */
-    handleMoveOuter: function(ev) {
-      var _self = this,
-        target = ev.toElement || ev.relatedTarget;
-      if (!_self.containsElement(target) && !isExcept(_self, target)) {
-        if (_self.fire('autohide') !== false) {
-          _self.hide();
-        }
-      }
-    },
-    /**
-     * 点击页面时的处理函数
-     * @param {jQuery.Event} ev 事件对象
-     * @protected
-     */
-    handleDocumentClick: function(ev) {
-      var _self = this,
-        target = ev.target;
-      if (!_self.containsElement(target) && !isExcept(_self, target)) {
-        if (_self.fire('autohide') !== false) {
-          _self.hide();
-        }
-      }
-    },
-    _bindHideEvent: function() {
-      var _self = this,
-        trigger = _self.get('curTrigger'),
-        autoHideType = _self.get('autoHideType');
-      if (autoHideType === 'click') {
-        $(document).on('mousedown', wrapBehavior(_self, 'handleDocumentClick'));
-      } else {
-        _self.get('el').on('mouseleave', wrapBehavior(_self, 'handleMoveOuter'));
-        if (trigger) {
-          $(trigger).on('mouseleave', wrapBehavior(_self, 'handleMoveOuter'))
-        }
-      }
-    },
-    //清除绑定的隐藏事件
-    _clearHideEvent: function() {
-      var _self = this,
-        trigger = _self.get('curTrigger'),
-        autoHideType = _self.get('autoHideType');
-      if (autoHideType === 'click') {
-        $(document).off('mousedown', getWrapBehavior(_self, 'handleDocumentClick'));
-      } else {
-        _self.get('el').off('mouseleave', getWrapBehavior(_self, 'handleMoveOuter'));
-        if (trigger) {
-          $(trigger).off('mouseleave', getWrapBehavior(_self, 'handleMoveOuter'))
-        }
-      }
     }
-  };
-  module.exports = autoHide;
-});
-define("bui/common/component/uibase/close", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview close 关闭或隐藏控件
-   * @author yiminghe@gmail.com
-   * copied and modified by dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require('jquery');
-  var CLS_PREFIX = BUI.prefix + 'ext-';
 
-  function getCloseRenderBtn(self) {
-      return $(self.get('closeTpl'));
-    }
-    /**
-     * 关闭按钮的视图类
-     * @class BUI.Component.UIBase.CloseView
-     * @private
-     */
-  function CloseView() {}
-  CloseView.ATTRS = {
-    closeTpl: {
-      value: '<a ' + 'tabindex="0" ' + "href='javascript:void(\"关闭\")' " + 'role="button" ' + 'class="' + CLS_PREFIX + 'close' + '">' + '<span class="' + CLS_PREFIX + 'close-x' + '">关闭<' + '/span>' + '<' + '/a>'
-    },
-    closeable: {
-      value: true
-    },
-    closeBtn: {}
-  };
-  CloseView.prototype = {
-    _uiSetCloseable: function(v) {
-      var self = this,
-        btn = self.get('closeBtn');
-      if (v) {
-        if (!btn) {
-          self.setInternal('closeBtn', btn = getCloseRenderBtn(self));
+  },
+  _setTrigger: function() {
+    var _self = this,
+      triggerEvent = _self.get('triggerEvent'),
+      triggerHideEvent = _self.get('triggerHideEvent'),
+      triggerCallback = _self.get('triggerCallback'),
+      triggerActiveCls = _self.get('triggerActiveCls') || '',
+      trigger = _self.get('trigger'),
+      isDelegate = _self.get('delegateTrigger'),
+      triggerEl = $(trigger);
+
+    //触发显示
+    function tiggerShow(ev) {
+      if (_self.get('disabled')) { //如果禁用则中断
+        return;
+      }
+      var prevTrigger = _self.get('curTrigger'),
+        curTrigger = isDelegate ? $(ev.currentTarget) : $(this),
+        align = _self.get('align');
+      if (!prevTrigger || prevTrigger[0] != curTrigger[0]) {
+        if (prevTrigger) {
+          prevTrigger.removeClass(triggerActiveCls);
         }
-        btn.appendTo(self.get('el'), undefined);
+        _self.set('curTrigger', curTrigger);
+        _self.fire('triggerchange', {
+          prevTrigger: prevTrigger,
+          curTrigger: curTrigger
+        });
+      }
+      curTrigger.addClass(triggerActiveCls);
+      if (_self.get('autoAlign')) {
+        align.node = curTrigger;
+
+      }
+      _self.set('align', align);
+      _self.show();
+
+
+      triggerCallback && triggerCallback(ev);
+    }
+
+    //触发隐藏
+    function tiggerHide(ev) {
+      var toElement = ev.toElement || ev.relatedTarget;
+      if (!toElement || !_self.containsElement(toElement)) { //mouseleave时，如果移动到当前控件上，取消消失
+        _self.hide();
+      }
+    }
+
+    if (triggerEvent) {
+      if (isDelegate && BUI.isString(trigger)) {
+        $(document).delegate(trigger, triggerEvent, tiggerShow);
       } else {
-        if (btn) {
-          btn.remove();
-        }
+        triggerEl.on(triggerEvent, tiggerShow);
+      }
+
+    }
+
+    if (triggerHideEvent) {
+      if (isDelegate && BUI.isString(trigger)) {
+        $(document).delegate(trigger, triggerHideEvent, tiggerHide);
+      } else {
+        triggerEl.on(triggerHideEvent, tiggerHide);
       }
     }
-  };
-  /**
-   * @class BUI.Component.UIBase.Close
-   * Close extension class.
-   * Represent a close button.
-   */
-  function Close() {}
-  var HIDE = 'hide';
-  Close.ATTRS = {
-    /**
-     * 关闭按钮的默认模版
-     * <pre><code>
-     *   var overlay = new Overlay({
-     *     closeTpl : '<a href="#" title="close">x</a>',
-     *     closeable : true,
-     *     trigger : '#t1'
-     *   });
-     *   overlay.render();
-     * </code></pre>
-     * @cfg {String} closeTpl
-     */
-    /**
-     * 关闭按钮的默认模版
-     * @type {String}
-     * @protected
-     */
-    closeTpl: {
-      view: true
-    },
-    /**
-     * 是否出现关闭按钮
-     * @cfg {Boolean} [closeable = false]
-     */
-    /**
-     * 是否出现关闭按钮
-     * @type {Boolean}
-     */
-    closeable: {
-      view: 1
-    },
-    /**
-     * 关闭按钮.
-     * @protected
-     * @type {jQuery}
-     */
-    closeBtn: {
-      view: 1
-    },
-    /**
-     * 关闭时隐藏还是移除DOM结构<br/>
-     *
-     *  - "hide" : default 隐藏.
-     *  - "destroy"：当点击关闭按钮时移除（destroy)控件
-     *  - 'remove' : 当存在父控件时使用remove，同时从父元素中删除
-     * @cfg {String} [closeAction = 'hide']
-     */
-    /**
-     * 关闭时隐藏还是移除DOM结构
-     * default "hide".可以设置 "destroy" ，当点击关闭按钮时移除（destroy)控件
-     * @type {String}
-     * @protected
-     */
-    closeAction: {
-      value: HIDE
+  },
+  __renderUI: function() {
+    var _self = this,
+      align = _self.get('align');
+    //如果控件显示时不是由trigger触发，则同父元素对齐
+    if (align && !align.node) {
+      align.node = _self.get('render') || _self.get('trigger');
     }
-    /**
-     * @event closing
-     * 正在关闭，可以通过return false 阻止关闭事件
-     * @param {Object} e 关闭事件
-     * @param {String} e.action 关闭执行的行为，hide,destroy,remove
-     */
-    /**
-     * @event beforeclosed
-     * 关闭前，发生在closing后，closed前，用于处理关闭前的一些工作
-     * @param {Object} e 关闭事件
-     * @param {String} e.action 关闭执行的行为，hide,destroy,remove
-     */
-    /**
-     * @event closed
-     * 已经关闭
-     * @param {Object} e 关闭事件
-     * @param {String} e.action 关闭执行的行为，hide,destroy,remove
-     */
-    /**
-     * @event closeclick
-     * 触发点击关闭按钮的事件,return false 阻止关闭
-     * @param {Object} e 关闭事件
-     * @param {String} e.domTarget 点击的关闭按钮节点
-     */
-  };
-  var actions = {
-    hide: HIDE,
-    destroy: 'destroy',
-    remove: 'remove'
-  };
-  Close.prototype = {
-    _uiSetCloseable: function(v) {
-      var self = this;
-      if (v && !self.__bindCloseEvent) {
-        self.__bindCloseEvent = 1;
-        self.get('closeBtn').on('click', function(ev) {
-          if (self.fire('closeclick', {
-              domTarget: ev.target
-            }) !== false) {
-            self.close();
-          }
-          ev.preventDefault();
-        });
-      }
-    },
-    __destructor: function() {
-      var btn = this.get('closeBtn');
-      btn && btn.detach();
-    },
-    /**
-     * 关闭弹出框，如果closeAction = 'hide'那么就是隐藏，如果 closeAction = 'destroy'那么就是释放,'remove'从父控件中删除，并释放
-     */
-    close: function() {
-      var self = this,
-        action = actions[self.get('closeAction') || HIDE];
-      if (self.fire('closing', {
-          action: action
-        }) !== false) {
-        self.fire('beforeclosed', {
-          action: action
-        });
-        if (action == 'remove') { //移除时同时destroy
-          self[action](true);
-        } else {
-          self[action]();
-        }
-        self.fire('closed', {
-          action: action
-        });
-      }
-    }
-  };
-  Close.View = CloseView;
-  module.exports = Close;
-});
-define("bui/common/component/uibase/collapsable", [], function(require, exports, module) {
-  /**
-   * @fileOverview 可以展开折叠的控件
-   * @ignore
-   */
-  /**
-   * 控件展开折叠的视图类
-   * @class BUI.Component.UIBase.CollapsableView
-   * @private
-   */
-  var collapsableView = function() {};
-  collapsableView.ATTRS = {
-    collapsed: {}
   }
-  collapsableView.prototype = {
-      //设置收缩样式
-      _uiSetCollapsed: function(v) {
-        var _self = this,
-          cls = _self.getStatusCls('collapsed'),
-          el = _self.get('el');
-        if (v) {
-          el.addClass(cls);
-        } else {
-          el.removeClass(cls);
-        }
-      }
-    }
-    /**
-     * 控件展开折叠的扩展
-     * @class BUI.Component.UIBase.Collapsable
-     */
-  var collapsable = function() {};
-  collapsable.ATTRS = {
-    /**
-     * 是否可折叠
-     * @type {Boolean}
-     */
-    collapsable: {
-      value: false
-    },
-    /**
-     * 是否已经折叠 collapsed
-     * @cfg {Boolean} collapsed
-     */
-    /**
-     * 是否已经折叠
-     * @type {Boolean}
-     */
-    collapsed: {
-      view: true,
-      value: false
-    },
-    events: {
-      value: {
-        /**
-         * 控件展开
-         * @event
-         * @param {Object} e 事件对象
-         * @param {BUI.Component.Controller} target 控件
-         */
-        'expanded': true,
-        /**
-         * 控件折叠
-         * @event
-         * @param {Object} e 事件对象
-         * @param {BUI.Component.Controller} target 控件
-         */
-        'collapsed': true
-      }
-    }
-  };
-  collapsable.prototype = {
-    _uiSetCollapsed: function(v) {
-      var _self = this;
-      if (v) {
-        _self.fire('collapsed');
-      } else {
-        _self.fire('expanded');
-      }
-    }
-  };
-  collapsable.View = collapsableView;
-  module.exports = collapsable;
+};
+
+module.exports = autoShow;
+
 });
-define("bui/common/component/uibase/drag", ["jquery"], function(require, exports, module) {
+define("bui/common/component/uibase/autohide", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview 点击或移出控件外部，控件隐藏
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  wrapBehavior = BUI.wrapBehavior,
+  getWrapBehavior = BUI.getWrapBehavior;
+
+function isExcept(self, elem) {
+  var hideExceptNode = self.get('hideExceptNode');
+  if (hideExceptNode && hideExceptNode.length) {
+    return $.contains(hideExceptNode[0], elem);
+  }
+  return false;
+}
+/**
+ * 点击隐藏控件的扩展
+ * @class BUI.Component.UIBase.AutoHide
+ */
+function autoHide() {
+
+}
+
+autoHide.ATTRS = {
+
   /**
-   * @fileOverview 拖拽
-   * @author by dxq613@gmail.com
+   * 控件自动隐藏的事件，这里支持2种：
+   *  - 'click'
+   *  - 'leave'
+   *  <pre><code>
+   *    var overlay = new Overlay({ //点击#t1时显示，点击#t1之外的元素隐藏
+   *      trigger : '#t1',
+   *      autoHide : true,
+   *      content : '悬浮内容'
+   *    });
+   *    overlay.render();
+   *
+   *    var overlay = new Overlay({ //移动到#t1时显示，移动出#t1,overlay之外控件隐藏
+   *      trigger : '#t1',
+   *      autoHide : true,
+   *      triggerEvent :'mouseover',
+   *      autoHideType : 'leave',
+   *      content : '悬浮内容'
+   *    });
+   *    overlay.render();
+   *
+   *  </code></pre>
+   * @cfg {String} [autoHideType = 'click']
+   */
+  /**
+   * 控件自动隐藏的事件，这里支持2种：
+   * 'click',和'leave',默认为'click'
+   * @type {String}
+   */
+  autoHideType: {
+    value: 'click'
+  },
+  /**
+   * 是否自动隐藏
+   * <pre><code>
+   *
+   *  var overlay = new Overlay({ //点击#t1时显示，点击#t1,overlay之外的元素隐藏
+   *    trigger : '#t1',
+   *    autoHide : true,
+   *    content : '悬浮内容'
+   *  });
+   *  overlay.render();
+   * </code></pre>
+   * @cfg {Object} autoHide
+   */
+  /**
+   * 是否自动隐藏
+   * @type {Object}
    * @ignore
    */
-  var $ = require('jquery'),
-    dragBackId = BUI.guid('drag');
+  autoHide: {
+    value: false
+  },
   /**
-   * 拖拽控件的扩展
+   * 点击或者移动到此节点时不触发自动隐藏
+   * <pre><code>
+   *
+   *  var overlay = new Overlay({ //点击#t1时显示，点击#t1,#t2,overlay之外的元素隐藏
+   *    trigger : '#t1',
+   *    autoHide : true,
+   *    hideExceptNode : '#t2',
+   *    content : '悬浮内容'
+   *  });
+   *  overlay.render();
+   * </code></pre>
+   * @cfg {Object} hideExceptNode
+   */
+  hideExceptNode: {
+
+  },
+  events: {
+    value: {
+      /**
+       * @event autohide
+       * 点击控件外部时触发，只有在控件设置自动隐藏(autoHide = true)有效
+       * 可以阻止控件隐藏，通过在事件监听函数中 return false
+       * <pre><code>
+       *  overlay.on('autohide',function(){
+       *    var curTrigger = overlay.curTrigger; //当前触发的项
+       *    if(condtion){
+       *      return false; //阻止隐藏
+       *    }
+       *  });
+       * </code></pre>
+       */
+      autohide: false
+    }
+  }
+};
+
+autoHide.prototype = {
+
+  __bindUI: function() {
+    var _self = this;
+
+    _self.on('afterVisibleChange', function(ev) {
+      var visible = ev.newVal;
+      if (_self.get('autoHide')) {
+        if (visible) {
+          _self._bindHideEvent();
+        } else {
+          _self._clearHideEvent();
+        }
+      }
+    });
+  },
+  /**
+   * 处理鼠标移出事件，不影响{BUI.Component.Controller#handleMouseLeave}事件
+   * @param  {jQuery.Event} ev 事件对象
+   */
+  handleMoveOuter: function(ev) {
+    var _self = this,
+      target = ev.toElement || ev.relatedTarget;
+    if (!_self.containsElement(target) && !isExcept(_self, target)) {
+      if (_self.fire('autohide') !== false) {
+        _self.hide();
+      }
+    }
+  },
+  /**
+   * 点击页面时的处理函数
+   * @param {jQuery.Event} ev 事件对象
+   * @protected
+   */
+  handleDocumentClick: function(ev) {
+    var _self = this,
+      target = ev.target;
+    if (!_self.containsElement(target) && !isExcept(_self, target)) {
+      if (_self.fire('autohide') !== false) {
+        _self.hide();
+      }
+    }
+  },
+  _bindHideEvent: function() {
+    var _self = this,
+      trigger = _self.get('curTrigger'),
+      autoHideType = _self.get('autoHideType');
+    if (autoHideType === 'click') {
+      $(document).on('mousedown', wrapBehavior(_self, 'handleDocumentClick'));
+    } else {
+      _self.get('el').on('mouseleave', wrapBehavior(_self, 'handleMoveOuter'));
+      if (trigger) {
+        $(trigger).on('mouseleave', wrapBehavior(_self, 'handleMoveOuter'))
+      }
+    }
+
+  },
+  //清除绑定的隐藏事件
+  _clearHideEvent: function() {
+    var _self = this,
+      trigger = _self.get('curTrigger'),
+      autoHideType = _self.get('autoHideType');
+    if (autoHideType === 'click') {
+      $(document).off('mousedown', getWrapBehavior(_self, 'handleDocumentClick'));
+    } else {
+      _self.get('el').off('mouseleave', getWrapBehavior(_self, 'handleMoveOuter'));
+      if (trigger) {
+        $(trigger).off('mouseleave', getWrapBehavior(_self, 'handleMoveOuter'))
+      }
+    }
+  }
+};
+
+module.exports = autoHide;
+
+});
+define("bui/common/component/uibase/close", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview close 关闭或隐藏控件
+ * @author yiminghe@gmail.com
+ * copied and modified by dxq613@gmail.com
+ * @ignore
+ */
+
+
+var $ = require('jquery');
+
+
+var CLS_PREFIX = BUI.prefix + 'ext-';
+
+function getCloseRenderBtn(self) {
+  return $(self.get('closeTpl'));
+}
+
+/**
+ * 关闭按钮的视图类
+ * @class BUI.Component.UIBase.CloseView
+ * @private
+ */
+function CloseView() {}
+
+CloseView.ATTRS = {
+  closeTpl: {
+    value: '<a ' +
+      'tabindex="0" ' +
+      "href='javascript:void(\"关闭\")' " +
+      'role="button" ' +
+      'class="' + CLS_PREFIX + 'close' + '">' +
+      '<span class="' +
+      CLS_PREFIX + 'close-x' +
+      '">关闭<' + '/span>' +
+      '<' + '/a>'
+  },
+  closeable: {
+    value: true
+  },
+  closeBtn: {}
+};
+
+CloseView.prototype = {
+  _uiSetCloseable: function(v) {
+    var self = this,
+      btn = self.get('closeBtn');
+    if (v) {
+      if (!btn) {
+        self.setInternal('closeBtn', btn = getCloseRenderBtn(self));
+      }
+      btn.appendTo(self.get('el'), undefined);
+    } else {
+      if (btn) {
+        btn.remove();
+      }
+    }
+  }
+};
+
+/**
+ * @class BUI.Component.UIBase.Close
+ * Close extension class.
+ * Represent a close button.
+ */
+function Close() {}
+
+var HIDE = 'hide';
+Close.ATTRS = {
+  /**
+   * 关闭按钮的默认模版
+   * <pre><code>
+   *   var overlay = new Overlay({
+   *     closeTpl : '<a href="#" title="close">x</a>',
+   *     closeable : true,
+   *     trigger : '#t1'
+   *   });
+   *   overlay.render();
+   * </code></pre>
+   * @cfg {String} closeTpl
+   */
+  /**
+   * 关闭按钮的默认模版
+   * @type {String}
+   * @protected
+   */
+  closeTpl: {
+    view: true
+  },
+  /**
+   * 是否出现关闭按钮
+   * @cfg {Boolean} [closeable = false]
+   */
+  /**
+   * 是否出现关闭按钮
+   * @type {Boolean}
+   */
+  closeable: {
+    view: 1
+  },
+
+  /**
+   * 关闭按钮.
+   * @protected
+   * @type {jQuery}
+   */
+  closeBtn: {
+    view: 1
+  },
+  /**
+   * 关闭时隐藏还是移除DOM结构<br/>
+   *
+   *  - "hide" : default 隐藏.
+   *  - "destroy"：当点击关闭按钮时移除（destroy)控件
+   *  - 'remove' : 当存在父控件时使用remove，同时从父元素中删除
+   * @cfg {String} [closeAction = 'hide']
+   */
+  /**
+   * 关闭时隐藏还是移除DOM结构
+   * default "hide".可以设置 "destroy" ，当点击关闭按钮时移除（destroy)控件
+   * @type {String}
+   * @protected
+   */
+  closeAction: {
+    value: HIDE
+  }
+
+  /**
+   * @event closing
+   * 正在关闭，可以通过return false 阻止关闭事件
+   * @param {Object} e 关闭事件
+   * @param {String} e.action 关闭执行的行为，hide,destroy,remove
+   */
+
+  /**
+   * @event beforeclosed
+   * 关闭前，发生在closing后，closed前，用于处理关闭前的一些工作
+   * @param {Object} e 关闭事件
+   * @param {String} e.action 关闭执行的行为，hide,destroy,remove
+   */
+
+  /**
+   * @event closed
+   * 已经关闭
+   * @param {Object} e 关闭事件
+   * @param {String} e.action 关闭执行的行为，hide,destroy,remove
+   */
+
+  /**
+   * @event closeclick
+   * 触发点击关闭按钮的事件,return false 阻止关闭
+   * @param {Object} e 关闭事件
+   * @param {String} e.domTarget 点击的关闭按钮节点
+   */
+};
+
+var actions = {
+  hide: HIDE,
+  destroy: 'destroy',
+  remove: 'remove'
+};
+
+Close.prototype = {
+  _uiSetCloseable: function(v) {
+    var self = this;
+    if (v && !self.__bindCloseEvent) {
+      self.__bindCloseEvent = 1;
+      self.get('closeBtn').on('click', function(ev) {
+        if (self.fire('closeclick', {
+          domTarget: ev.target
+        }) !== false) {
+          self.close();
+        }
+        ev.preventDefault();
+      });
+    }
+  },
+  __destructor: function() {
+    var btn = this.get('closeBtn');
+    btn && btn.detach();
+  },
+  /**
+   * 关闭弹出框，如果closeAction = 'hide'那么就是隐藏，如果 closeAction = 'destroy'那么就是释放,'remove'从父控件中删除，并释放
+   */
+  close: function() {
+    var self = this,
+      action = actions[self.get('closeAction') || HIDE];
+    if (self.fire('closing', {
+      action: action
+    }) !== false) {
+      self.fire('beforeclosed', {
+        action: action
+      });
+      if (action == 'remove') { //移除时同时destroy
+        self[action](true);
+      } else {
+        self[action]();
+      }
+      self.fire('closed', {
+        action: action
+      });
+    }
+  }
+};
+
+Close.View = CloseView;
+
+module.exports = Close;
+
+});
+define("bui/common/component/uibase/collapsable", [], function(require, exports, module){
+/**
+ * @fileOverview 可以展开折叠的控件
+ * @ignore
+ */
+
+
+/**
+ * 控件展开折叠的视图类
+ * @class BUI.Component.UIBase.CollapsableView
+ * @private
+ */
+var collapsableView = function() {
+
+};
+
+collapsableView.ATTRS = {
+  collapsed: {}
+}
+
+collapsableView.prototype = {
+  //设置收缩样式
+  _uiSetCollapsed: function(v) {
+    var _self = this,
+      cls = _self.getStatusCls('collapsed'),
+      el = _self.get('el');
+    if (v) {
+      el.addClass(cls);
+    } else {
+      el.removeClass(cls);
+    }
+  }
+}
+/**
+ * 控件展开折叠的扩展
+ * @class BUI.Component.UIBase.Collapsable
+ */
+var collapsable = function() {
+
+};
+
+collapsable.ATTRS = {
+  /**
+   * 是否可折叠
+   * @type {Boolean}
+   */
+  collapsable: {
+    value: false
+  },
+  /**
+   * 是否已经折叠 collapsed
+   * @cfg {Boolean} collapsed
+   */
+  /**
+   * 是否已经折叠
+   * @type {Boolean}
+   */
+  collapsed: {
+    view: true,
+    value: false
+  },
+  events: {
+    value: {
+      /**
+       * 控件展开
+       * @event
+       * @param {Object} e 事件对象
+       * @param {BUI.Component.Controller} target 控件
+       */
+      'expanded': true,
+      /**
+       * 控件折叠
+       * @event
+       * @param {Object} e 事件对象
+       * @param {BUI.Component.Controller} target 控件
+       */
+      'collapsed': true
+    }
+  }
+};
+
+collapsable.prototype = {
+  _uiSetCollapsed: function(v) {
+    var _self = this;
+    if (v) {
+      _self.fire('collapsed');
+    } else {
+      _self.fire('expanded');
+    }
+  }
+};
+
+collapsable.View = collapsableView;
+
+module.exports = collapsable;
+
+});
+define("bui/common/component/uibase/drag", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview 拖拽
+ * @author by dxq613@gmail.com
+ * @ignore
+ */
+
+
+
+var $ = require('jquery'),
+  dragBackId = BUI.guid('drag');
+
+/**
+ * 拖拽控件的扩展
+ * <pre><code>
+ *  var Control = Overlay.extend([UIBase.Drag],{
+ *
+ *  });
+ *
+ *  var c = new Contol({ //拖动控件时，在#t2内
+ *      content : '<div id="header"></div><div></div>',
+ *      dragNode : '#header',
+ *      constraint : '#t2'
+ *  });
+ * </code></pre>
+ * @class BUI.Component.UIBase.Drag
+ */
+var drag = function() {
+
+};
+
+drag.ATTRS = {
+
+  /**
+   * 点击拖动的节点
    * <pre><code>
    *  var Control = Overlay.extend([UIBase.Drag],{
    *
@@ -5472,209 +5935,206 @@ define("bui/common/component/uibase/drag", ["jquery"], function(require, exports
    *      constraint : '#t2'
    *  });
    * </code></pre>
-   * @class BUI.Component.UIBase.Drag
+   * @cfg {jQuery} dragNode
    */
-  var drag = function() {};
-  drag.ATTRS = {
-    /**
-     * 点击拖动的节点
-     * <pre><code>
-     *  var Control = Overlay.extend([UIBase.Drag],{
-     *
-     *  });
-     *
-     *  var c = new Contol({ //拖动控件时，在#t2内
-     *      content : '<div id="header"></div><div></div>',
-     *      dragNode : '#header',
-     *      constraint : '#t2'
-     *  });
-     * </code></pre>
-     * @cfg {jQuery} dragNode
-     */
-    /**
-     * 点击拖动的节点
-     * @type {jQuery}
-     * @ignore
-     */
-    dragNode: {},
-    /**
-     * 是否正在拖动
-     * @type {Boolean}
-     * @protected
-     */
-    draging: {
-      setter: function(v) {
-        if (v === true) {
-          return {};
-        }
-      },
-      value: null
-    },
-    /**
-     * 拖动的限制范围
-     * <pre><code>
-     *  var Control = Overlay.extend([UIBase.Drag],{
-     *
-     *  });
-     *
-     *  var c = new Contol({ //拖动控件时，在#t2内
-     *      content : '<div id="header"></div><div></div>',
-     *      dragNode : '#header',
-     *      constraint : '#t2'
-     *  });
-     * </code></pre>
-     * @cfg {jQuery} constraint
-     */
-    /**
-     * 拖动的限制范围
-     * @type {jQuery}
-     * @ignore
-     */
-    constraint: {},
-    /**
-     * @private
-     * @type {jQuery}
-     */
-    dragBackEl: {
-      /** @private **/
-      getter: function() {
-        return $('#' + dragBackId);
-      }
-    }
-  };
-  var dragTpl = '<div id="' + dragBackId + '" style="background-color: red; position: fixed; left: 0px; width: 100%; height: 100%; top: 0px; cursor: move; z-index: 999999; display: none; "></div>';
-
-  function initBack() {
-    var el = $(dragTpl).css('opacity', 0).prependTo('body');
-    return el;
-  }
-  drag.prototype = {
-    __bindUI: function() {
-      var _self = this,
-        constraint = _self.get('constraint'),
-        dragNode = _self.get('dragNode');
-      if (!dragNode) {
-        return;
-      }
-      dragNode.on('mousedown', function(e) {
-        if (e.which == 1) {
-          e.preventDefault();
-          _self.set('draging', {
-            elX: _self.get('x'),
-            elY: _self.get('y'),
-            startX: e.pageX,
-            startY: e.pageY
-          });
-          registEvent();
-        }
-      });
-      /**
-       * @private
-       */
-      function mouseMove(e) {
-          var draging = _self.get('draging');
-          if (draging) {
-            e.preventDefault();
-            _self._dragMoveTo(e.pageX, e.pageY, draging, constraint);
-          }
-        }
-        /**
-         * @private
-         */
-      function mouseUp(e) {
-          if (e.which == 1) {
-            _self.set('draging', false);
-            var dragBackEl = _self.get('dragBackEl');
-            if (dragBackEl) {
-              dragBackEl.hide();
-            }
-            unregistEvent();
-          }
-        }
-        /**
-         * @private
-         */
-      function registEvent() {
-          $(document).on('mousemove', mouseMove);
-          $(document).on('mouseup', mouseUp);
-        }
-        /**
-         * @private
-         */
-      function unregistEvent() {
-        $(document).off('mousemove', mouseMove);
-        $(document).off('mouseup', mouseUp);
-      }
-    },
-    _dragMoveTo: function(x, y, draging, constraint) {
-      var _self = this,
-        dragBackEl = _self.get('dragBackEl'),
-        draging = draging || _self.get('draging'),
-        offsetX = draging.startX - x,
-        offsetY = draging.startY - y;
-      if (!dragBackEl.length) {
-        dragBackEl = initBack();
-      }
-      dragBackEl.css({
-        cursor: 'move',
-        display: 'block'
-      });
-      _self.set('xy', [_self._getConstrainX(draging.elX - offsetX, constraint),
-        _self._getConstrainY(draging.elY - offsetY, constraint)
-      ]);
-    },
-    _getConstrainX: function(x, constraint) {
-      var _self = this,
-        width = _self.get('el').outerWidth(),
-        endX = x + width,
-        curX = _self.get('x');
-      //如果存在约束
-      if (constraint) {
-        var constraintOffset = constraint.offset();
-        if (constraintOffset.left >= x) {
-          return constraintOffset.left;
-        }
-        if (constraintOffset.left + constraint.width() < endX) {
-          return constraintOffset.left + constraint.width() - width;
-        }
-        return x;
-      }
-      //当左右顶点都在视图内，移动到此点
-      if (BUI.isInHorizontalView(x) && BUI.isInHorizontalView(endX)) {
-        return x;
-      }
-      return curX;
-    },
-    _getConstrainY: function(y, constraint) {
-      var _self = this,
-        height = _self.get('el').outerHeight(),
-        endY = y + height,
-        curY = _self.get('y');
-      //如果存在约束
-      if (constraint) {
-        var constraintOffset = constraint.offset();
-        if (constraintOffset.top > y) {
-          return constraintOffset.top;
-        }
-        if (constraintOffset.top + constraint.height() < endY) {
-          return constraintOffset.top + constraint.height() - height;
-        }
-        return y;
-      }
-      //当左右顶点都在视图内，移动到此点
-      if (BUI.isInVerticalView(y) && BUI.isInVerticalView(endY)) {
-        return y;
-      }
-      return curY;
-    }
-  };
-  module.exports = drag;
-});
-define("bui/common/component/uibase/keynav", ["jquery"], function(require, exports, module) {
   /**
-   * @fileOverview 使用键盘导航
+   * 点击拖动的节点
+   * @type {jQuery}
    * @ignore
    */
+  dragNode: {
+
+  },
+  /**
+   * 是否正在拖动
+   * @type {Boolean}
+   * @protected
+   */
+  draging: {
+    setter: function(v) {
+      if (v === true) {
+        return {};
+      }
+    },
+    value: null
+  },
+  /**
+   * 拖动的限制范围
+   * <pre><code>
+   *  var Control = Overlay.extend([UIBase.Drag],{
+   *
+   *  });
+   *
+   *  var c = new Contol({ //拖动控件时，在#t2内
+   *      content : '<div id="header"></div><div></div>',
+   *      dragNode : '#header',
+   *      constraint : '#t2'
+   *  });
+   * </code></pre>
+   * @cfg {jQuery} constraint
+   */
+  /**
+   * 拖动的限制范围
+   * @type {jQuery}
+   * @ignore
+   */
+  constraint: {
+
+  },
+  /**
+   * @private
+   * @type {jQuery}
+   */
+  dragBackEl: {
+    /** @private **/
+    getter: function() {
+      return $('#' + dragBackId);
+    }
+  }
+};
+var dragTpl = '<div id="' + dragBackId + '" style="background-color: red; position: fixed; left: 0px; width: 100%; height: 100%; top: 0px; cursor: move; z-index: 999999; display: none; "></div>';
+
+function initBack() {
+  var el = $(dragTpl).css('opacity', 0).prependTo('body');
+  return el;
+}
+drag.prototype = {
+
+  __bindUI: function() {
+    var _self = this,
+      constraint = _self.get('constraint'),
+      dragNode = _self.get('dragNode');
+    if (!dragNode) {
+      return;
+    }
+    dragNode.on('mousedown', function(e) {
+
+      if (e.which == 1) {
+        e.preventDefault();
+        _self.set('draging', {
+          elX: _self.get('x'),
+          elY: _self.get('y'),
+          startX: e.pageX,
+          startY: e.pageY
+        });
+        registEvent();
+      }
+    });
+    /**
+     * @private
+     */
+    function mouseMove(e) {
+      var draging = _self.get('draging');
+      if (draging) {
+        e.preventDefault();
+        _self._dragMoveTo(e.pageX, e.pageY, draging, constraint);
+      }
+    }
+    /**
+     * @private
+     */
+    function mouseUp(e) {
+      if (e.which == 1) {
+        _self.set('draging', false);
+        var dragBackEl = _self.get('dragBackEl');
+        if (dragBackEl) {
+          dragBackEl.hide();
+        }
+        unregistEvent();
+      }
+    }
+    /**
+     * @private
+     */
+    function registEvent() {
+      $(document).on('mousemove', mouseMove);
+      $(document).on('mouseup', mouseUp);
+    }
+    /**
+     * @private
+     */
+    function unregistEvent() {
+      $(document).off('mousemove', mouseMove);
+      $(document).off('mouseup', mouseUp);
+    }
+
+  },
+  _dragMoveTo: function(x, y, draging, constraint) {
+    var _self = this,
+      dragBackEl = _self.get('dragBackEl'),
+      draging = draging || _self.get('draging'),
+      offsetX = draging.startX - x,
+      offsetY = draging.startY - y;
+    if (!dragBackEl.length) {
+      dragBackEl = initBack();
+    }
+    dragBackEl.css({
+      cursor: 'move',
+      display: 'block'
+    });
+    _self.set('xy', [_self._getConstrainX(draging.elX - offsetX, constraint),
+      _self._getConstrainY(draging.elY - offsetY, constraint)
+    ]);
+
+  },
+  _getConstrainX: function(x, constraint) {
+    var _self = this,
+      width = _self.get('el').outerWidth(),
+      endX = x + width,
+      curX = _self.get('x');
+    //如果存在约束
+    if (constraint) {
+      var constraintOffset = constraint.offset();
+      if (constraintOffset.left >= x) {
+        return constraintOffset.left;
+      }
+      if (constraintOffset.left + constraint.width() < endX) {
+        return constraintOffset.left + constraint.width() - width;
+      }
+      return x;
+    }
+    //当左右顶点都在视图内，移动到此点
+    if (BUI.isInHorizontalView(x) && BUI.isInHorizontalView(endX)) {
+      return x;
+    }
+
+    return curX;
+  },
+  _getConstrainY: function(y, constraint) {
+    var _self = this,
+      height = _self.get('el').outerHeight(),
+      endY = y + height,
+      curY = _self.get('y');
+    //如果存在约束
+    if (constraint) {
+      var constraintOffset = constraint.offset();
+      if (constraintOffset.top > y) {
+        return constraintOffset.top;
+      }
+      if (constraintOffset.top + constraint.height() < endY) {
+        return constraintOffset.top + constraint.height() - height;
+      }
+      return y;
+    }
+    //当左右顶点都在视图内，移动到此点
+    if (BUI.isInVerticalView(y) && BUI.isInVerticalView(endY)) {
+      return y;
+    }
+
+    return curY;
+  }
+};
+
+module.exports = drag;
+
+});
+define("bui/common/component/uibase/keynav", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview 使用键盘导航
+ * @ignore
+ */
+
+
   var $ = require('jquery'),
     KeyCode = require("bui/common/keycode"),
     wrapBehavior = BUI.wrapBehavior,
@@ -5683,8 +6143,12 @@ define("bui/common/component/uibase/keynav", ["jquery"], function(require, expor
    * 键盘导航
    * @class BUI.Component.UIBase.KeyNav
    */
-  var keyNav = function() {};
+  var keyNav = function() {
+
+  };
+
   keyNav.ATTRS = {
+
     /**
      * 是否允许键盘导航
      * @cfg {Boolean} [allowKeyNav = true]
@@ -5706,9 +6170,14 @@ define("bui/common/component/uibase/keynav", ["jquery"], function(require, expor
     ignoreInputFields: {
       value: true
     }
+
   };
+
   keyNav.prototype = {
-    __bindUI: function() {},
+
+    __bindUI: function() {
+
+    },
     _uiSetAllowKeyNav: function(v) {
       var _self = this,
         eventName = _self.get('navEvent'),
@@ -5730,21 +6199,22 @@ define("bui/common/component/uibase/keynav", ["jquery"], function(require, expor
       if (ignoreInputFields && $(ev.target).is('input,select,textarea')) {
         return;
       }
+
       switch (code) {
         case KeyCode.UP:
-          ev.preventDefault();
+          //ev.preventDefault();
           _self.handleNavUp(ev);
           break;
         case KeyCode.DOWN:
-          ev.preventDefault();
+          //ev.preventDefault();
           _self.handleNavDown(ev);
           break;
         case KeyCode.RIGHT:
-          ev.preventDefault();
+         // ev.preventDefault();
           _self.handleNavRight(ev);
           break;
         case KeyCode.LEFT:
-          ev.preventDefault();
+          //ev.preventDefault();
           _self.handleNavLeft(ev);
           break;
         case KeyCode.ENTER:
@@ -5812,2347 +6282,2635 @@ define("bui/common/component/uibase/keynav", ["jquery"], function(require, expor
      * 处理Tab键
      * @param  {jQuery.Event} ev 事件对象
      */
-    handleNavTab: function(ev) {}
+    handleNavTab: function(ev) {
+
+    }
+
   };
-  module.exports = keyNav;
+
+module.exports = keyNav;
+
 });
-define("bui/common/component/uibase/list", ["jquery"], function(require, exports, module) {
+define("bui/common/component/uibase/list", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview 所有子元素都是同一类的集合
+ * @ignore
+ */
+
+
+var $ = require('jquery'),
+  Selection = require("bui/common/component/uibase/selection");
+
+/**
+ * 列表一类的控件的扩展，list,menu,grid都是可以从此类扩展
+ * @class BUI.Component.UIBase.List
+ */
+var list = function() {
+
+};
+
+list.ATTRS = {
+
   /**
-   * @fileOverview 所有子元素都是同一类的集合
+   * 选择的数据集合
+   * <pre><code>
+   * var list = new List.SimpleList({
+   *   itemTpl : '&lt;li id="{value}"&gt;{text}&lt;/li&gt;',
+   *   idField : 'value',
+   *   render : '#t1',
+   *   items : [{value : '1',text : '1'},{value : '2',text : '2'}]
+   * });
+   * list.render();
+   * </code></pre>
+   * @cfg {Array} items
+   */
+  /**
+   * 选择的数据集合
+   * <pre><code>
+   *  list.set('items',items); //列表会直接替换内容
+   *  //等同于
+   *  list.clearItems();
+   *  list.addItems(items);
+   * </code></pre>
+   * @type {Array}
+   */
+  items: {
+    shared: false,
+    view: true
+  },
+  /**
+   * 选项的默认key值
+   * @cfg {String} [idField = 'id']
+   */
+  idField: {
+    value: 'id'
+  },
+  /**
+   * 列表项的默认模板,仅在初始化时传入。
+   * @type {String}
    * @ignore
    */
-  var $ = require('jquery'),
-    Selection = require("bui/common/component/uibase/selection");
+  itemTpl: {
+    view: true
+  },
   /**
-   * 列表一类的控件的扩展，list,menu,grid都是可以从此类扩展
-   * @class BUI.Component.UIBase.List
+   * 列表项的渲染函数，应对列表项之间有很多差异时
+   * <pre><code>
+   * var list = new List.SimpleList({
+   *   itemTplRender : function(item){
+   *     if(item.type == '1'){
+   *       return '&lt;li&gt;&lt;img src="xxx.jpg"/&gt;'+item.text+'&lt;/li&gt;'
+   *     }else{
+   *       return '&lt;li&gt;item.text&lt;/li&gt;'
+   *     }
+   *   },
+   *   idField : 'value',
+   *   render : '#t1',
+   *   items : [{value : '1',text : '1',type : '0'},{value : '2',text : '2',type : '1'}]
+   * });
+   * list.render();
+   * </code></pre>
+   * @type {Function}
    */
-  var list = function() {};
-  list.ATTRS = {
-    /**
-     * 选择的数据集合
-     * <pre><code>
-     * var list = new List.SimpleList({
-     *   itemTpl : '&lt;li id="{value}"&gt;{text}&lt;/li&gt;',
-     *   idField : 'value',
-     *   render : '#t1',
-     *   items : [{value : '1',text : '1'},{value : '2',text : '2'}]
-     * });
-     * list.render();
-     * </code></pre>
-     * @cfg {Array} items
-     */
-    /**
-     * 选择的数据集合
-     * <pre><code>
-     *  list.set('items',items); //列表会直接替换内容
-     *  //等同于
-     *  list.clearItems();
-     *  list.addItems(items);
-     * </code></pre>
-     * @type {Array}
-     */
-    items: {
-      shared: false,
-      view: true
-    },
-    /**
-     * 选项的默认key值
-     * @cfg {String} [idField = 'id']
-     */
-    idField: {
-      value: 'id'
-    },
-    /**
-     * 列表项的默认模板,仅在初始化时传入。
-     * @type {String}
-     * @ignore
-     */
-    itemTpl: {
-      view: true
-    },
-    /**
-     * 列表项的渲染函数，应对列表项之间有很多差异时
-     * <pre><code>
-     * var list = new List.SimpleList({
-     *   itemTplRender : function(item){
-     *     if(item.type == '1'){
-     *       return '&lt;li&gt;&lt;img src="xxx.jpg"/&gt;'+item.text+'&lt;/li&gt;'
-     *     }else{
-     *       return '&lt;li&gt;item.text&lt;/li&gt;'
-     *     }
-     *   },
-     *   idField : 'value',
-     *   render : '#t1',
-     *   items : [{value : '1',text : '1',type : '0'},{value : '2',text : '2',type : '1'}]
-     * });
-     * list.render();
-     * </code></pre>
-     * @type {Function}
-     */
-    itemTplRender: {
-      view: true
-    },
-    /**
-     * 子控件各个状态默认采用的样式
-     * <pre><code>
-     * var list = new List.SimpleList({
-     *   render : '#t1',
-     *   itemStatusCls : {
-     *     selected : 'active', //默认样式为list-item-selected,现在变成'active'
-     *     hover : 'hover' //默认样式为list-item-hover,现在变成'hover'
-     *   },
-     *   items : [{id : '1',text : '1',type : '0'},{id : '2',text : '2',type : '1'}]
-     * });
-     * list.render();
-     * </code></pre>
-     * see {@link BUI.Component.Controller#property-statusCls}
-     * @type {Object}
-     */
-    itemStatusCls: {
-      view: true,
-      value: {}
-    },
-    events: {
-      value: {
-        /**
-         * 选项点击事件
-         * @event
-         * @param {Object} e 事件对象
-         * @param {BUI.Component.UIBase.ListItem} e.item 点击的选项
-         * @param {HTMLElement} e.element 选项代表的DOM对象
-         * @param {HTMLElement} e.domTarget 点击的DOM对象
-         * @param {HTMLElement} e.domEvent 点击的原生事件对象
-         */
-        'itemclick': true
-      }
-    }
-  };
-  list.prototype = {
-    /**
-     * 获取选项的数量
-     * <pre><code>
-     *   var count = list.getItemCount();
-     * </code></pre>
-     * @return {Number} 选项数量
-     */
-    getItemCount: function() {
-      return this.getItems().length;
-    },
-    /**
-     * 获取字段的值
-     * @param {*} item 字段名
-     * @param {String} field 字段名
-     * @return {*} 字段的值
-     * @protected
-     */
-    getValueByField: function(item, field) {},
-    /**
-     * 获取所有选项值，如果选项是子控件，则是所有子控件
-     * <pre><code>
-     *   var items = list.getItems();
-     *   //等同
-     *   list.get(items);
-     * </code></pre>
-     * @return {Array} 选项值集合
-     */
-    getItems: function() {},
-    /**
-     * 获取第一项
-     * <pre><code>
-     *   var item = list.getFirstItem();
-     *   //等同
-     *   list.getItemAt(0);
-     * </code></pre>
-     * @return {Object|BUI.Component.Controller} 选项值（子控件）
-     */
-    getFirstItem: function() {
-      return this.getItemAt(0);
-    },
-    /**
-     * 获取最后一项
-     * <pre><code>
-     *   var item = list.getLastItem();
-     *   //等同
-     *   list.getItemAt(list.getItemCount()-1);
-     * </code></pre>
-     * @return {Object|BUI.Component.Controller} 选项值（子控件）
-     */
-    getLastItem: function() {
-      return this.getItemAt(this.getItemCount() - 1);
-    },
-    /**
-     * 通过索引获取选项值（子控件）
-     * <pre><code>
-     *   var item = list.getItemAt(0); //获取第1个
-     *   var item = list.getItemAt(2); //获取第3个
-     * </code></pre>
-     * @param  {Number} index 索引值
-     * @return {Object|BUI.Component.Controller}  选项（子控件）
-     */
-    getItemAt: function(index) {
-      return this.getItems()[index] || null;
-    },
-    /**
-     * 通过Id获取选项，如果是改变了idField则通过改变的idField来查找选项
-     * <pre><code>
-     *   //如果idField = 'id'
-     *   var item = list.getItem('2');
-     *   //等同于
-     *   list.findItemByField('id','2');
-     *
-     *   //如果idField = 'value'
-     *   var item = list.getItem('2');
-     *   //等同于
-     *   list.findItemByField('value','2');
-     * </code></pre>
-     * @param {String} id 编号
-     * @return {Object|BUI.Component.Controller} 选项（子控件）
-     */
-    getItem: function(id) {
-      var field = this.get('idField');
-      return this.findItemByField(field, id);
-    },
-    /**
-     * 返回指定项的索引
-     * <pre><code>
-     * var index = list.indexOf(item); //返回索引，不存在则返回-1
-     * </code></pre>
-     * @param  {Object|BUI.Component.Controller} item 选项
-     * @return {Number}   项的索引值
-     */
-    indexOfItem: function(item) {
-      return BUI.Array.indexOf(item, this.getItems());
-    },
-    /**
-     * 添加多条选项
-     * <pre><code>
-     * var items = [{id : '1',text : '1'},{id : '2',text : '2'}];
-     * list.addItems(items);
-     * </code></pre>
-     * @param {Array} items 记录集合（子控件配置项）
-     */
-    addItems: function(items) {
-      var _self = this;
-      BUI.each(items, function(item) {
-        _self.addItem(item);
-      });
-    },
-    /**
-     * 插入多条记录
-     * <pre><code>
-     * var items = [{id : '1',text : '1'},{id : '2',text : '2'}];
-     * list.addItemsAt(items,0); // 在最前面插入
-     * list.addItemsAt(items,2); //第三个位置插入
-     * </code></pre>
-     * @param  {Array} items 多条记录
-     * @param  {Number} start 起始位置
-     */
-    addItemsAt: function(items, start) {
-      var _self = this;
-      BUI.each(items, function(item, index) {
-        _self.addItemAt(item, start + index);
-      });
-    },
-    /**
-     * 更新列表项，修改选项值后，DOM跟随变化
-     * <pre><code>
-     *   var item = list.getItem('2');
-     *   list.text = '新内容'; //此时对应的DOM不会变化
-     *   list.updateItem(item); //DOM进行相应的变化
-     * </code></pre>
-     * @param  {Object} item 选项值
-     */
-    updateItem: function(item) {},
-    /**
-     * 添加选项,添加在控件最后
-     *
-     * <pre><code>
-     * list.addItem({id : '3',text : '3',type : '0'});
-     * </code></pre>
-     *
-     * @param {Object|BUI.Component.Controller} item 选项，子控件配置项、子控件
-     * @return {Object|BUI.Component.Controller} 子控件或者选项记录
-     */
-    addItem: function(item) {
-      return this.addItemAt(item, this.getItemCount());
-    },
-    /**
-     * 在指定位置添加选项
-     * <pre><code>
-     * list.addItemAt({id : '3',text : '3',type : '0'},0); //第一个位置
-     * </code></pre>
-     * @param {Object|BUI.Component.Controller} item 选项，子控件配置项、子控件
-     * @param {Number} index 索引
-     * @return {Object|BUI.Component.Controller} 子控件或者选项记录
-     */
-    addItemAt: function(item, index) {},
-    /**
-     * 根据字段查找指定的项
-     * @param {String} field 字段名
-     * @param {Object} value 字段值
-     * @return {Object} 查询出来的项（传入的记录或者子控件）
-     * @protected
-     */
-    findItemByField: function(field, value) {},
-    /**
-     *
-     * 获取此项显示的文本
-     * @param {Object} item 获取记录显示的文本
-     * @protected
-     */
-    getItemText: function(item) {},
-    /**
-     * 清除所有选项,不等同于删除全部，此时不会触发删除事件
-     * <pre><code>
-     * list.clearItems();
-     * //等同于
-     * list.set('items',items);
-     * </code></pre>
-     */
-    clearItems: function() {
-      var _self = this,
-        items = _self.getItems();
-      items.splice(0);
-      _self.clearControl();
-    },
-    /**
-     * 删除选项
-     * <pre><code>
-     * var item = list.getItem('1');
-     * list.removeItem(item);
-     * </code></pre>
-     * @param {Object|BUI.Component.Controller} item 选项（子控件）
-     */
-    removeItem: function(item) {},
-    /**
-     * 移除选项集合
-     * <pre><code>
-     * var items = list.getSelection();
-     * list.removeItems(items);
-     * </code></pre>
-     * @param  {Array} items 选项集合
-     */
-    removeItems: function(items) {
-      var _self = this;
-      BUI.each(items, function(item) {
-        _self.removeItem(item);
-      });
-    },
-    /**
-     * 通过索引删除选项
-     * <pre><code>
-     * list.removeItemAt(0); //删除第一个
-     * </code></pre>
-     * @param  {Number} index 索引
-     */
-    removeItemAt: function(index) {
-      this.removeItem(this.getItemAt(index));
-    },
-    /**
-     * @protected
-     * @template
-     * 清除所有的子控件或者列表项的DOM
-     */
-    clearControl: function() {}
-  }
+  itemTplRender: {
+    view: true
+  },
+  /**
+   * 子控件各个状态默认采用的样式
+   * <pre><code>
+   * var list = new List.SimpleList({
+   *   render : '#t1',
+   *   itemStatusCls : {
+   *     selected : 'active', //默认样式为list-item-selected,现在变成'active'
+   *     hover : 'hover' //默认样式为list-item-hover,现在变成'hover'
+   *   },
+   *   items : [{id : '1',text : '1',type : '0'},{id : '2',text : '2',type : '1'}]
+   * });
+   * list.render();
+   * </code></pre>
+   * see {@link BUI.Component.Controller#property-statusCls}
+   * @type {Object}
+   */
+  itemStatusCls: {
+    view: true,
+    value: {}
+  },
+  events: {
 
-  function clearSelected(item) {
-    if (item.selected) {
-      item.selected = false;
-    }
-    if (item.set) {
-      item.set('selected', false);
+    value: {
+      /**
+       * 选项点击事件
+       * @event
+       * @param {Object} e 事件对象
+       * @param {BUI.Component.UIBase.ListItem} e.item 点击的选项
+       * @param {HTMLElement} e.element 选项代表的DOM对象
+       * @param {HTMLElement} e.domTarget 点击的DOM对象
+       * @param {HTMLElement} e.domEvent 点击的原生事件对象
+       */
+      'itemclick': true
     }
   }
+};
 
-  function beforeAddItem(self, item) {
-    var c = item.isController ? item.getAttrVals() : item,
-      defaultTpl = self.get('itemTpl'),
-      defaultStatusCls = self.get('itemStatusCls'),
-      defaultTplRender = self.get('itemTplRender');
-    //配置默认模板
-    if (defaultTpl && !c.tpl) {
-      setItemAttr(item, 'tpl', defaultTpl);
-      //  c.tpl = defaultTpl;
-    }
-    //配置默认渲染函数
-    if (defaultTplRender && !c.tplRender) {
-      setItemAttr(item, 'tplRender', defaultTplRender);
-      //c.tplRender = defaultTplRender;
-    }
-    //配置默认状态样式
-    if (defaultStatusCls) {
-      var statusCls = c.statusCls || item.isController ? item.get('statusCls') : {};
-      BUI.each(defaultStatusCls, function(v, k) {
-        if (v && !statusCls[k]) {
-          statusCls[k] = v;
-        }
-      });
-      setItemAttr(item, 'statusCls', statusCls)
-        //item.statusCls = statusCls;
-    }
-    // clearSelected(item);
+list.prototype = {
+
+  /**
+   * 获取选项的数量
+   * <pre><code>
+   *   var count = list.getItemCount();
+   * </code></pre>
+   * @return {Number} 选项数量
+   */
+  getItemCount: function() {
+    return this.getItems().length;
+  },
+  /**
+   * 获取字段的值
+   * @param {*} item 字段名
+   * @param {String} field 字段名
+   * @return {*} 字段的值
+   * @protected
+   */
+  getValueByField: function(item, field) {
+
+  },
+  /**
+   * 获取所有选项值，如果选项是子控件，则是所有子控件
+   * <pre><code>
+   *   var items = list.getItems();
+   *   //等同
+   *   list.get(items);
+   * </code></pre>
+   * @return {Array} 选项值集合
+   */
+  getItems: function() {
+
+  },
+  /**
+   * 获取第一项
+   * <pre><code>
+   *   var item = list.getFirstItem();
+   *   //等同
+   *   list.getItemAt(0);
+   * </code></pre>
+   * @return {Object|BUI.Component.Controller} 选项值（子控件）
+   */
+  getFirstItem: function() {
+    return this.getItemAt(0);
+  },
+  /**
+   * 获取最后一项
+   * <pre><code>
+   *   var item = list.getLastItem();
+   *   //等同
+   *   list.getItemAt(list.getItemCount()-1);
+   * </code></pre>
+   * @return {Object|BUI.Component.Controller} 选项值（子控件）
+   */
+  getLastItem: function() {
+    return this.getItemAt(this.getItemCount() - 1);
+  },
+  /**
+   * 通过索引获取选项值（子控件）
+   * <pre><code>
+   *   var item = list.getItemAt(0); //获取第1个
+   *   var item = list.getItemAt(2); //获取第3个
+   * </code></pre>
+   * @param  {Number} index 索引值
+   * @return {Object|BUI.Component.Controller}  选项（子控件）
+   */
+  getItemAt: function(index) {
+    return this.getItems()[index] || null;
+  },
+  /**
+   * 通过Id获取选项，如果是改变了idField则通过改变的idField来查找选项
+   * <pre><code>
+   *   //如果idField = 'id'
+   *   var item = list.getItem('2');
+   *   //等同于
+   *   list.findItemByField('id','2');
+   *
+   *   //如果idField = 'value'
+   *   var item = list.getItem('2');
+   *   //等同于
+   *   list.findItemByField('value','2');
+   * </code></pre>
+   * @param {String} id 编号
+   * @return {Object|BUI.Component.Controller} 选项（子控件）
+   */
+  getItem: function(id) {
+    var field = this.get('idField');
+    return this.findItemByField(field, id);
+  },
+  /**
+   * 返回指定项的索引
+   * <pre><code>
+   * var index = list.indexOf(item); //返回索引，不存在则返回-1
+   * </code></pre>
+   * @param  {Object|BUI.Component.Controller} item 选项
+   * @return {Number}   项的索引值
+   */
+  indexOfItem: function(item) {
+    return BUI.Array.indexOf(item, this.getItems());
+  },
+  /**
+   * 添加多条选项
+   * <pre><code>
+   * var items = [{id : '1',text : '1'},{id : '2',text : '2'}];
+   * list.addItems(items);
+   * </code></pre>
+   * @param {Array} items 记录集合（子控件配置项）
+   */
+  addItems: function(items) {
+    var _self = this;
+    BUI.each(items, function(item) {
+      _self.addItem(item);
+    });
+  },
+  /**
+   * 插入多条记录
+   * <pre><code>
+   * var items = [{id : '1',text : '1'},{id : '2',text : '2'}];
+   * list.addItemsAt(items,0); // 在最前面插入
+   * list.addItemsAt(items,2); //第三个位置插入
+   * </code></pre>
+   * @param  {Array} items 多条记录
+   * @param  {Number} start 起始位置
+   */
+  addItemsAt: function(items, start) {
+    var _self = this;
+    BUI.each(items, function(item, index) {
+      _self.addItemAt(item, start + index);
+    });
+  },
+  /**
+   * 更新列表项，修改选项值后，DOM跟随变化
+   * <pre><code>
+   *   var item = list.getItem('2');
+   *   list.text = '新内容'; //此时对应的DOM不会变化
+   *   list.updateItem(item); //DOM进行相应的变化
+   * </code></pre>
+   * @param  {Object} item 选项值
+   */
+  updateItem: function(item) {
+
+  },
+  /**
+   * 添加选项,添加在控件最后
+   *
+   * <pre><code>
+   * list.addItem({id : '3',text : '3',type : '0'});
+   * </code></pre>
+   *
+   * @param {Object|BUI.Component.Controller} item 选项，子控件配置项、子控件
+   * @return {Object|BUI.Component.Controller} 子控件或者选项记录
+   */
+  addItem: function(item) {
+    return this.addItemAt(item, this.getItemCount());
+  },
+  /**
+   * 在指定位置添加选项
+   * <pre><code>
+   * list.addItemAt({id : '3',text : '3',type : '0'},0); //第一个位置
+   * </code></pre>
+   * @param {Object|BUI.Component.Controller} item 选项，子控件配置项、子控件
+   * @param {Number} index 索引
+   * @return {Object|BUI.Component.Controller} 子控件或者选项记录
+   */
+  addItemAt: function(item, index) {
+
+  },
+  /**
+   * 根据字段查找指定的项
+   * @param {String} field 字段名
+   * @param {Object} value 字段值
+   * @return {Object} 查询出来的项（传入的记录或者子控件）
+   * @protected
+   */
+  findItemByField: function(field, value) {
+
+  },
+  /**
+   *
+   * 获取此项显示的文本
+   * @param {Object} item 获取记录显示的文本
+   * @protected
+   */
+  getItemText: function(item) {
+
+  },
+  /**
+   * 清除所有选项,不等同于删除全部，此时不会触发删除事件
+   * <pre><code>
+   * list.clearItems();
+   * //等同于
+   * list.set('items',items);
+   * </code></pre>
+   */
+  clearItems: function() {
+    var _self = this,
+      items = _self.getItems();
+    items.splice(0);
+    _self.clearControl();
+  },
+  /**
+   * 删除选项
+   * <pre><code>
+   * var item = list.getItem('1');
+   * list.removeItem(item);
+   * </code></pre>
+   * @param {Object|BUI.Component.Controller} item 选项（子控件）
+   */
+  removeItem: function(item) {
+
+  },
+  /**
+   * 移除选项集合
+   * <pre><code>
+   * var items = list.getSelection();
+   * list.removeItems(items);
+   * </code></pre>
+   * @param  {Array} items 选项集合
+   */
+  removeItems: function(items) {
+    var _self = this;
+
+    BUI.each(items, function(item) {
+      _self.removeItem(item);
+    });
+  },
+  /**
+   * 通过索引删除选项
+   * <pre><code>
+   * list.removeItemAt(0); //删除第一个
+   * </code></pre>
+   * @param  {Number} index 索引
+   */
+  removeItemAt: function(index) {
+    this.removeItem(this.getItemAt(index));
+  },
+  /**
+   * @protected
+   * @template
+   * 清除所有的子控件或者列表项的DOM
+   */
+  clearControl: function() {
+
   }
+}
 
-  function setItemAttr(item, name, val) {
-      if (item.isController) {
-        item.set(name, val);
-      } else {
-        item[name] = val;
+
+
+
+
+function clearSelected(item) {
+  if (item.selected) {
+    item.selected = false;
+  }
+  if (item.set) {
+    item.set('selected', false);
+  }
+}
+
+function beforeAddItem(self, item) {
+
+  var c = item.isController ? item.getAttrVals() : item,
+    defaultTpl = self.get('itemTpl'),
+    defaultStatusCls = self.get('itemStatusCls'),
+    defaultTplRender = self.get('itemTplRender');
+
+  //配置默认模板
+  if (defaultTpl && !c.tpl) {
+    setItemAttr(item, 'tpl', defaultTpl);
+    //  c.tpl = defaultTpl;
+  }
+  //配置默认渲染函数
+  if (defaultTplRender && !c.tplRender) {
+    setItemAttr(item, 'tplRender', defaultTplRender);
+    //c.tplRender = defaultTplRender;
+  }
+  //配置默认状态样式
+  if (defaultStatusCls) {
+    var statusCls = c.statusCls || item.isController ? item.get('statusCls') : {};
+    BUI.each(defaultStatusCls, function(v, k) {
+      if (v && !statusCls[k]) {
+        statusCls[k] = v;
       }
+    });
+    setItemAttr(item, 'statusCls', statusCls)
+    //item.statusCls = statusCls;
+  }
+  // clearSelected(item);
+}
+
+function setItemAttr(item, name, val) {
+  if (item.isController) {
+    item.set(name, val);
+  } else {
+    item[name] = val;
+  }
+}
+
+/**
+ * @class BUI.Component.UIBase.ChildList
+ * 选中其中的DOM结构
+ * @extends BUI.Component.UIBase.List
+ * @mixins BUI.Component.UIBase.Selection
+ */
+var childList = function() {
+  this.__init();
+};
+
+childList.ATTRS = BUI.merge(true, list.ATTRS, Selection.ATTRS, {
+  items: {
+    sync: false
+  },
+  /**
+   * 配置的items 项是在初始化时作为children
+   * @protected
+   * @type {Boolean}
+   */
+  autoInitItems: {
+    value: true
+  },
+  /**
+   * 使用srcNode时，是否将内部的DOM转换成子控件
+   * @type {Boolean}
+   */
+  isDecorateChild: {
+    value: true
+  },
+  /**
+   * 默认的加载控件内容的配置,默认值：
+   * <pre>
+   *  {
+   *   property : 'children',
+   *   dataType : 'json'
+   * }
+   * </pre>
+   * @type {Object}
+   */
+  defaultLoaderCfg: {
+    value: {
+      property: 'children',
+      dataType: 'json'
     }
-    /**
-     * @class BUI.Component.UIBase.ChildList
-     * 选中其中的DOM结构
-     * @extends BUI.Component.UIBase.List
-     * @mixins BUI.Component.UIBase.Selection
-     */
-  var childList = function() {
-    this.__init();
-  };
-  childList.ATTRS = BUI.merge(true, list.ATTRS, Selection.ATTRS, {
-    items: {
-      sync: false
-    },
-    /**
-     * 配置的items 项是在初始化时作为children
-     * @protected
-     * @type {Boolean}
-     */
-    autoInitItems: {
-      value: true
-    },
-    /**
-     * 使用srcNode时，是否将内部的DOM转换成子控件
-     * @type {Boolean}
-     */
-    isDecorateChild: {
-      value: true
-    },
-    /**
-     * 默认的加载控件内容的配置,默认值：
-     * <pre>
-     *  {
-     *   property : 'children',
-     *   dataType : 'json'
-     * }
-     * </pre>
-     * @type {Object}
-     */
-    defaultLoaderCfg: {
-      value: {
-        property: 'children',
-        dataType: 'json'
-      }
-    }
-  });
-  BUI.augment(childList, list, Selection, {
-    //初始化，将items转换成children
-    __init: function() {
-      var _self = this,
-        items = _self.get('items');
-      if (items && _self.get('autoInitItems')) {
-        _self.addItems(items);
-      }
-      _self.on('beforeRenderUI', function() {
-        _self._beforeRenderUI();
-      });
-    },
-    _uiSetItems: function(items) {
-      var _self = this;
-      //清理子控件
-      _self.clearControl();
+  }
+});
+
+BUI.augment(childList, list, Selection, {
+  //初始化，将items转换成children
+  __init: function() {
+    var _self = this,
+      items = _self.get('items');
+    if (items && _self.get('autoInitItems')) {
       _self.addItems(items);
-    },
-    //渲染子控件
-    _beforeRenderUI: function() {
-      var _self = this,
-        children = _self.get('children'),
-        items = _self.get('items');
-      BUI.each(children, function(item) {
-        beforeAddItem(_self, item);
-      });
-    },
-    //绑定事件
-    __bindUI: function() {
-      var _self = this,
-        selectedEvent = _self.get('selectedEvent');
-      _self.on(selectedEvent, function(e) {
-        var item = e.target;
-        if (item.get('selectable')) {
-          if (!item.get('selected')) {
-            _self.setSelected(item);
-          } else if (_self.get('multipleSelect')) {
-            _self.clearSelected(item);
-          }
-        }
-      });
-      _self.on('click', function(e) {
-        if (e.target !== _self) {
-          _self.fire('itemclick', {
-            item: e.target,
-            domTarget: e.domTarget,
-            domEvent: e
-          });
-        }
-      });
-      _self.on('beforeAddChild', function(ev) {
-        beforeAddItem(_self, ev.child);
-      });
-      _self.on('beforeRemoveChild', function(ev) {
-        var item = ev.child,
-          selected = item.get('selected');
-        //清理选中状态
-        if (selected) {
-          if (_self.get('multipleSelect')) {
-            _self.clearSelected(item);
-          } else {
-            _self.setSelected(null);
-          }
-        }
-        item.set('selected', false);
-      });
-    },
-    /**
-     * @protected
-     * @override
-     * 清除者列表项的DOM
-     */
-    clearControl: function() {
-      this.removeChildren(true);
-    },
-    /**
-     * 获取所有子控件
-     * @return {Array} 子控件集合
-     * @override
-     */
-    getItems: function() {
-      return this.get('children');
-    },
-    /**
-     * 更新列表项
-     * @param  {Object} item 选项值
-     */
-    updateItem: function(item) {
-      var _self = this,
-        idField = _self.get('idField'),
-        element = _self.findItemByField(idField, item[idField]);
-      if (element) {
-        element.setTplContent();
-      }
-      return element;
-    },
-    /**
-     * 删除项,子控件作为选项
-     * @param  {Object} element 子控件
-     */
-    removeItem: function(item) {
-      var _self = this,
-        idField = _self.get('idField');
-      if (!(item instanceof BUI.Component.Controller)) {
-        item = _self.findItemByField(idField, item[idField]);
-      }
-      this.removeChild(item, true);
-    },
-    /**
-     * 在指定位置添加选项,此处选项指子控件
-     * @param {Object|BUI.Component.Controller} item 子控件配置项、子控件
-     * @param {Number} index 索引
-     * @return {Object|BUI.Component.Controller} 子控件
-     */
-    addItemAt: function(item, index) {
-      return this.addChild(item, index);
-    },
-    findItemByField: function(field, value, root) {
-      root = root || this;
-      var _self = this,
-        children = root.get('children'),
-        result = null;
-      $(children).each(function(index, item) {
-        if (item.get(field) == value) {
-          result = item;
-        } else if (item.get('children').length) {
-          result = _self.findItemByField(field, value, item);
-        }
-        if (result) {
-          return false;
-        }
-      });
-      return result;
-    },
-    getItemText: function(item) {
-      return item.get('el').text();
-    },
-    getValueByField: function(item, field) {
-      return item && item.get(field);
-    },
-    /**
-     * @protected
-     * @ignore
-     */
-    setItemSelectedStatus: function(item, selected) {
-      var _self = this,
-        method = selected ? 'addClass' : 'removeClass',
-        element = null;
-      if (item) {
-        item.set('selected', selected);
-        element = item.get('el');
-      }
-      _self.afterSelected(item, selected, element);
-    },
-    /**
-     * 选项是否被选中
-     * @override
-     * @param  {*}  item 选项
-     * @return {Boolean}  是否选中
-     */
-    isItemSelected: function(item) {
-      return item ? item.get('selected') : false;
-    },
-    /**
-     * 设置所有选项选中
-     * @override
-     */
-    setAllSelection: function() {
-      var _self = this,
-        items = _self.getItems();
-      _self.setSelection(items);
-    },
-    /**
-     * 获取选中的项的值
-     * @return {Array}
-     * @override
-     * @ignore
-     */
-    getSelection: function() {
-      var _self = this,
-        items = _self.getItems(),
-        rst = [];
-      BUI.each(items, function(item) {
-        if (_self.isItemSelected(item)) {
-          rst.push(item);
-        }
-      });
-      return rst;
     }
-  });
-  list.ChildList = childList;
-  module.exports = list;
+    _self.on('beforeRenderUI', function() {
+      _self._beforeRenderUI();
+    });
+  },
+  _uiSetItems: function(items) {
+    var _self = this;
+    //清理子控件
+    _self.clearControl();
+    _self.addItems(items);
+  },
+  //渲染子控件
+  _beforeRenderUI: function() {
+    var _self = this,
+      children = _self.get('children'),
+      items = _self.get('items');
+    BUI.each(children, function(item) {
+      beforeAddItem(_self, item);
+    });
+  },
+  //绑定事件
+  __bindUI: function() {
+    var _self = this,
+      selectedEvent = _self.get('selectedEvent');
+
+    _self.on(selectedEvent, function(e) {
+      var item = e.target;
+      if (item.get('selectable')) {
+        if (!item.get('selected')) {
+          _self.setSelected(item);
+        } else if (_self.get('multipleSelect')) {
+          _self.clearSelected(item);
+        }
+      }
+    });
+
+    _self.on('click', function(e) {
+      if (e.target !== _self) {
+        _self.fire('itemclick', {
+          item: e.target,
+          domTarget: e.domTarget,
+          domEvent: e
+        });
+      }
+    });
+    _self.on('beforeAddChild', function(ev) {
+      beforeAddItem(_self, ev.child);
+    });
+    _self.on('beforeRemoveChild', function(ev) {
+      var item = ev.child,
+        selected = item.get('selected');
+      //清理选中状态
+      if (selected) {
+        if (_self.get('multipleSelect')) {
+          _self.clearSelected(item);
+        } else {
+          _self.setSelected(null);
+        }
+      }
+      item.set('selected', false);
+    });
+  },
   /**
-   * @ignore
-   * 2013-1-22
-   *   更改显示数据的方式，使用 _uiSetItems
+   * @protected
+   * @override
+   * 清除者列表项的DOM
    */
+  clearControl: function() {
+    this.removeChildren(true);
+  },
+  /**
+   * 获取所有子控件
+   * @return {Array} 子控件集合
+   * @override
+   */
+  getItems: function() {
+    return this.get('children');
+  },
+  /**
+   * 更新列表项
+   * @param  {Object} item 选项值
+   */
+  updateItem: function(item) {
+    var _self = this,
+      idField = _self.get('idField'),
+      element = _self.findItemByField(idField, item[idField]);
+    if (element) {
+      element.setTplContent();
+    }
+    return element;
+  },
+  /**
+   * 删除项,子控件作为选项
+   * @param  {Object} element 子控件
+   */
+  removeItem: function(item) {
+    var _self = this,
+      idField = _self.get('idField');
+    if (!(item instanceof BUI.Component.Controller)) {
+      item = _self.findItemByField(idField, item[idField]);
+    }
+    this.removeChild(item, true);
+  },
+  /**
+   * 在指定位置添加选项,此处选项指子控件
+   * @param {Object|BUI.Component.Controller} item 子控件配置项、子控件
+   * @param {Number} index 索引
+   * @return {Object|BUI.Component.Controller} 子控件
+   */
+  addItemAt: function(item, index) {
+    return this.addChild(item, index);
+  },
+  findItemByField: function(field, value, root) {
+
+    root = root || this;
+    var _self = this,
+      children = root.get('children'),
+      result = null;
+    $(children).each(function(index, item) {
+      if (item.get(field) == value) {
+        result = item;
+      } else if (item.get('children').length) {
+        result = _self.findItemByField(field, value, item);
+      }
+      if (result) {
+        return false;
+      }
+    });
+    return result;
+  },
+  getItemText: function(item) {
+    return item.get('el').text();
+  },
+  getValueByField: function(item, field) {
+    return item && item.get(field);
+  },
+  /**
+   * @protected
+   * @ignore
+   */
+  setItemSelectedStatus: function(item, selected) {
+    var _self = this,
+      method = selected ? 'addClass' : 'removeClass',
+      element = null;
+
+    if (item) {
+      item.set('selected', selected);
+      element = item.get('el');
+    }
+    _self.afterSelected(item, selected, element);
+  },
+  /**
+   * 选项是否被选中
+   * @override
+   * @param  {*}  item 选项
+   * @return {Boolean}  是否选中
+   */
+  isItemSelected: function(item) {
+    return item ? item.get('selected') : false;
+  },
+  /**
+   * 设置所有选项选中
+   * @override
+   */
+  setAllSelection: function() {
+    var _self = this,
+      items = _self.getItems();
+    _self.setSelection(items);
+  },
+  /**
+   * 获取选中的项的值
+   * @return {Array}
+   * @override
+   * @ignore
+   */
+  getSelection: function() {
+    var _self = this,
+      items = _self.getItems(),
+      rst = [];
+    BUI.each(items, function(item) {
+      if (_self.isItemSelected(item)) {
+        rst.push(item);
+      }
+
+    });
+    return rst;
+  }
 });
-define("bui/common/component/uibase/selection", ["jquery"], function(require, exports, module) {
+
+list.ChildList = childList;
+
+module.exports = list;
+
+/**
+ * @ignore
+ * 2013-1-22
+ *   更改显示数据的方式，使用 _uiSetItems
+ */
+
+});
+define("bui/common/component/uibase/selection", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview 单选或者多选
+ * @author  dxq613@gmail.com
+ * @ignore
+ */
+var $ = require('jquery');
+var SINGLE_SELECTED = 'single';
+
+/**
+ * @class BUI.Component.UIBase.Selection
+ * 选中控件中的项（子元素或者DOM），此类选择的内容有2种
+ * <ol>
+ *     <li>子控件</li>
+ *     <li>DOM元素</li>
+ * </ol>
+ * ** 当选择是子控件时，element 和 item 都是指 子控件；**
+ * ** 当选择的是DOM元素时，element 指DOM元素，item 指DOM元素对应的记录 **
+ * @abstract
+ */
+var selection = function() {
+
+};
+
+selection.ATTRS =
+
+{
   /**
-   * @fileOverview 单选或者多选
-   * @author  dxq613@gmail.com
+   * 选中的事件
+   * <pre><code>
+   * var list = new List.SimpleList({
+   *   itemTpl : '&lt;li id="{value}"&gt;{text}&lt;/li&gt;',
+   *   idField : 'value',
+   *   selectedEvent : 'mouseenter',
+   *   render : '#t1',
+   *   items : [{value : '1',text : '1'},{value : '2',text : '2'}]
+   * });
+   * </code></pre>
+   * @cfg {String} [selectedEvent = 'click']
+   */
+  selectedEvent: {
+    value: 'click'
+  },
+  events: {
+    value: {
+      /**
+       * 选中的菜单改变时发生，
+       * 多选时，选中，取消选中都触发此事件，单选时，只有选中时触发此事件
+       * @name  BUI.Component.UIBase.Selection#selectedchange
+       * @event
+       * @param {Object} e 事件对象
+       * @param {Object} e.item 当前选中的项
+       * @param {HTMLElement} e.domTarget 当前选中的项的DOM结构
+       * @param {Boolean} e.selected 是否选中
+       */
+      'selectedchange': false,
+
+      /**
+       * 选择改变前触发，可以通过return false，阻止selectedchange事件
+       * @event
+       * @param {Object} e 事件对象
+       * @param {Object} e.item 当前选中的项
+       * @param {Boolean} e.selected 是否选中
+       */
+      'beforeselectedchange': false,
+
+      /**
+       * 菜单选中
+       * @event
+       * @param {Object} e 事件对象
+       * @param {Object} e.item 当前选中的项
+       * @param {HTMLElement} e.domTarget 当前选中的项的DOM结构
+       */
+      'itemselected': false,
+      /**
+       * 菜单取消选中
+       * @event
+       * @param {Object} e 事件对象
+       * @param {Object} e.item 当前选中的项
+       * @param {HTMLElement} e.domTarget 当前选中的项的DOM结构
+       */
+      'itemunselected': false
+    }
+  },
+  /**
+   * 数据的id字段名称，通过此字段查找对应的数据
+   * <pre><code>
+   * var list = new List.SimpleList({
+   *   itemTpl : '&lt;li id="{value}"&gt;{text}&lt;/li&gt;',
+   *   idField : 'value',
+   *   render : '#t1',
+   *   items : [{value : '1',text : '1'},{value : '2',text : '2'}]
+   * });
+   * </code></pre>
+   * @cfg {String} [idField = 'id']
+   */
+  /**
+   * 数据的id字段名称，通过此字段查找对应的数据
+   * @type {String}
    * @ignore
    */
-  var $ = require('jquery');
-  var SINGLE_SELECTED = 'single';
+  idField: {
+    value: 'id'
+  },
   /**
-   * @class BUI.Component.UIBase.Selection
-   * 选中控件中的项（子元素或者DOM），此类选择的内容有2种
-   * <ol>
-   *     <li>子控件</li>
-   *     <li>DOM元素</li>
-   * </ol>
-   * ** 当选择是子控件时，element 和 item 都是指 子控件；**
-   * ** 当选择的是DOM元素时，element 指DOM元素，item 指DOM元素对应的记录 **
-   * @abstract
+   * 是否多选
+   * <pre><code>
+   * var list = new List.SimpleList({
+   *   itemTpl : '&lt;li id="{value}"&gt;{text}&lt;/li&gt;',
+   *   idField : 'value',
+   *   render : '#t1',
+   *   multipleSelect : true,
+   *   items : [{value : '1',text : '1'},{value : '2',text : '2'}]
+   * });
+   * </code></pre>
+   * @cfg {Boolean} [multipleSelect=false]
    */
-  var selection = function() {};
-  selection.ATTRS = {
-    /**
-     * 选中的事件
-     * <pre><code>
-     * var list = new List.SimpleList({
-     *   itemTpl : '&lt;li id="{value}"&gt;{text}&lt;/li&gt;',
-     *   idField : 'value',
-     *   selectedEvent : 'mouseenter',
-     *   render : '#t1',
-     *   items : [{value : '1',text : '1'},{value : '2',text : '2'}]
-     * });
-     * </code></pre>
-     * @cfg {String} [selectedEvent = 'click']
-     */
-    selectedEvent: {
-      value: 'click'
-    },
-    events: {
-      value: {
-        /**
-         * 选中的菜单改变时发生，
-         * 多选时，选中，取消选中都触发此事件，单选时，只有选中时触发此事件
-         * @name  BUI.Component.UIBase.Selection#selectedchange
-         * @event
-         * @param {Object} e 事件对象
-         * @param {Object} e.item 当前选中的项
-         * @param {HTMLElement} e.domTarget 当前选中的项的DOM结构
-         * @param {Boolean} e.selected 是否选中
-         */
-        'selectedchange': false,
-        /**
-         * 选择改变前触发，可以通过return false，阻止selectedchange事件
-         * @event
-         * @param {Object} e 事件对象
-         * @param {Object} e.item 当前选中的项
-         * @param {Boolean} e.selected 是否选中
-         */
-        'beforeselectedchange': false,
-        /**
-         * 菜单选中
-         * @event
-         * @param {Object} e 事件对象
-         * @param {Object} e.item 当前选中的项
-         * @param {HTMLElement} e.domTarget 当前选中的项的DOM结构
-         */
-        'itemselected': false,
-        /**
-         * 菜单取消选中
-         * @event
-         * @param {Object} e 事件对象
-         * @param {Object} e.item 当前选中的项
-         * @param {HTMLElement} e.domTarget 当前选中的项的DOM结构
-         */
-        'itemunselected': false
-      }
-    },
-    /**
-     * 数据的id字段名称，通过此字段查找对应的数据
-     * <pre><code>
-     * var list = new List.SimpleList({
-     *   itemTpl : '&lt;li id="{value}"&gt;{text}&lt;/li&gt;',
-     *   idField : 'value',
-     *   render : '#t1',
-     *   items : [{value : '1',text : '1'},{value : '2',text : '2'}]
-     * });
-     * </code></pre>
-     * @cfg {String} [idField = 'id']
-     */
-    /**
-     * 数据的id字段名称，通过此字段查找对应的数据
-     * @type {String}
-     * @ignore
-     */
-    idField: {
-      value: 'id'
-    },
-    /**
-     * 是否多选
-     * <pre><code>
-     * var list = new List.SimpleList({
-     *   itemTpl : '&lt;li id="{value}"&gt;{text}&lt;/li&gt;',
-     *   idField : 'value',
-     *   render : '#t1',
-     *   multipleSelect : true,
-     *   items : [{value : '1',text : '1'},{value : '2',text : '2'}]
-     * });
-     * </code></pre>
-     * @cfg {Boolean} [multipleSelect=false]
-     */
-    /**
-     * 是否多选
-     * @type {Boolean}
-     * @default false
-     */
-    multipleSelect: {
-      value: false
-    }
-  };
-  selection.prototype = {
-    /**
-     * 清理选中的项
-     * <pre><code>
-     *  list.clearSelection();
-     * </code></pre>
-     *
-     */
-    clearSelection: function() {
-      var _self = this,
-        selection = _self.getSelection();
-      BUI.each(selection, function(item) {
-        _self.clearSelected(item);
-      });
-    },
-    /**
-     * 获取选中的项的值
-     * @template
-     * @return {Array}
-     */
-    getSelection: function() {},
-    /**
-     * 获取选中的第一项
-     * <pre><code>
-     * var item = list.getSelected(); //多选模式下第一条
-     * </code></pre>
-     * @return {Object} 选中的第一项或者为undefined
-     */
-    getSelected: function() {
-      return this.getSelection()[0];
-    },
-    /**
-     * 根据 idField 获取到的值
-     * @protected
-     * @return {Object} 选中的值
-     */
-    getSelectedValue: function() {
-      var _self = this,
-        field = _self.get('idField'),
-        item = _self.getSelected();
+  /**
+   * 是否多选
+   * @type {Boolean}
+   * @default false
+   */
+  multipleSelect: {
+    value: false
+  }
+
+};
+
+selection.prototype =
+
+{
+  /**
+   * 清理选中的项
+   * <pre><code>
+   *  list.clearSelection();
+   * </code></pre>
+   *
+   */
+  clearSelection: function() {
+    var _self = this,
+      selection = _self.getSelection();
+    BUI.each(selection, function(item) {
+      _self.clearSelected(item);
+    });
+  },
+  /**
+   * 获取选中的项的值
+   * @template
+   * @return {Array}
+   */
+  getSelection: function() {
+
+  },
+  /**
+   * 获取选中的第一项
+   * <pre><code>
+   * var item = list.getSelected(); //多选模式下第一条
+   * </code></pre>
+   * @return {Object} 选中的第一项或者为undefined
+   */
+  getSelected: function() {
+    return this.getSelection()[0];
+  },
+  /**
+   * 根据 idField 获取到的值
+   * @protected
+   * @return {Object} 选中的值
+   */
+  getSelectedValue: function() {
+    var _self = this,
+      field = _self.get('idField'),
+      item = _self.getSelected();
+
+    return _self.getValueByField(item, field);
+  },
+  /**
+   * 获取选中的值集合
+   * @protected
+   * @return {Array} 选中值得集合
+   */
+  getSelectionValues: function() {
+    var _self = this,
+      field = _self.get('idField'),
+      items = _self.getSelection();
+    return $.map(items, function(item) {
       return _self.getValueByField(item, field);
-    },
-    /**
-     * 获取选中的值集合
-     * @protected
-     * @return {Array} 选中值得集合
-     */
-    getSelectionValues: function() {
-      var _self = this,
-        field = _self.get('idField'),
-        items = _self.getSelection();
-      return $.map(items, function(item) {
-        return _self.getValueByField(item, field);
-      });
-    },
-    /**
-     * 获取选中的文本
-     * @protected
-     * @return {Array} 选中的文本集合
-     */
-    getSelectionText: function() {
-      var _self = this,
-        items = _self.getSelection();
-      return $.map(items, function(item) {
-        return _self.getItemText(item);
-      });
-    },
-    /**
-     * 移除选中
-     * <pre><code>
-     *    var item = list.getItem('id'); //通过id 获取选项
-     *    list.setSelected(item); //选中
-     *
-     *    list.clearSelected();//单选模式下清除所选，多选模式下清除选中的第一项
-     *    list.clearSelected(item); //清除选项的选中状态
-     * </code></pre>
-     * @param {Object} [item] 清除选项的选中状态，如果未指定则清除选中的第一个选项的选中状态
-     */
-    clearSelected: function(item) {
-      var _self = this;
-      item = item || _self.getSelected();
-      if (item) {
-        _self.setItemSelected(item, false);
-      }
-    },
-    /**
-     * 获取选项显示的文本
-     * @protected
-     */
-    getSelectedText: function() {
-      var _self = this,
-        item = _self.getSelected();
+    });
+  },
+  /**
+   * 获取选中的文本
+   * @protected
+   * @return {Array} 选中的文本集合
+   */
+  getSelectionText: function() {
+    var _self = this,
+      items = _self.getSelection();
+    return $.map(items, function(item) {
       return _self.getItemText(item);
-    },
-    /**
-     * 设置选中的项
-     * <pre><code>
-     *  var items = list.getItemsByStatus('active'); //获取某种状态的选项
-     *  list.setSelection(items);
-     * </code></pre>
-     * @param {Array} items 项的集合
-     */
-    setSelection: function(items) {
-      var _self = this;
-      items = BUI.isArray(items) ? items : [items];
-      BUI.each(items, function(item) {
-        _self.setSelected(item);
-      });
-    },
-    /**
-     * 设置选中的项
-     * <pre><code>
-     *   var item = list.getItem('id');
-     *   list.setSelected(item);
-     * </code></pre>
-     * @param {Object} item 记录或者子控件
-     */
-    setSelected: function(item) {
-      var _self = this,
-        multipleSelect = _self.get('multipleSelect');
-      if (!_self.isItemSelectable(item)) {
+    });
+  },
+  /**
+   * 移除选中
+   * <pre><code>
+   *    var item = list.getItem('id'); //通过id 获取选项
+   *    list.setSelected(item); //选中
+   *
+   *    list.clearSelected();//单选模式下清除所选，多选模式下清除选中的第一项
+   *    list.clearSelected(item); //清除选项的选中状态
+   * </code></pre>
+   * @param {Object} [item] 清除选项的选中状态，如果未指定则清除选中的第一个选项的选中状态
+   */
+  clearSelected: function(item) {
+    var _self = this;
+    item = item || _self.getSelected();
+    if (item) {
+      _self.setItemSelected(item, false);
+    }
+  },
+  /**
+   * 获取选项显示的文本
+   * @protected
+   */
+  getSelectedText: function() {
+    var _self = this,
+      item = _self.getSelected();
+    return _self.getItemText(item);
+  },
+  /**
+   * 设置选中的项
+   * <pre><code>
+   *  var items = list.getItemsByStatus('active'); //获取某种状态的选项
+   *  list.setSelection(items);
+   * </code></pre>
+   * @param {Array} items 项的集合
+   */
+  setSelection: function(items) {
+    var _self = this;
+
+    items = BUI.isArray(items) ? items : [items];
+
+    BUI.each(items, function(item) {
+      _self.setSelected(item);
+    });
+  },
+  /**
+   * 设置选中的项
+   * <pre><code>
+   *   var item = list.getItem('id');
+   *   list.setSelected(item);
+   * </code></pre>
+   * @param {Object} item 记录或者子控件
+   */
+  setSelected: function(item) {
+    var _self = this,
+      multipleSelect = _self.get('multipleSelect');
+
+    if (!_self.isItemSelectable(item)) {
+      return;
+    }
+    if (!multipleSelect) {
+      var selectedItem = _self.getSelected();
+      if (item != selectedItem) {
+        //如果是单选，清除已经选中的项
+        _self.clearSelected(selectedItem);
+      }
+
+    }
+    _self.setItemSelected(item, true);
+
+  },
+  /**
+   * 选项是否被选中
+   * @template
+   * @param  {*}  item 选项
+   * @return {Boolean}  是否选中
+   */
+  isItemSelected: function(item) {
+
+  },
+  /**
+   * 选项是否可以选中
+   * @protected
+   * @param {*} item 选项
+   * @return {Boolean} 选项是否可以选中
+   */
+  isItemSelectable: function(item) {
+    return true;
+  },
+  /**
+   * 设置选项的选中状态
+   * @param {*} item 选项
+   * @param {Boolean} selected 选中或者取消选中
+   * @protected
+   */
+  setItemSelected: function(item, selected) {
+    var _self = this,
+      isSelected;
+
+    //当前状态等于要设置的状态时，不触发改变事件
+    if (item) {
+      isSelected = _self.isItemSelected(item);
+      if (isSelected == selected) {
         return;
       }
-      if (!multipleSelect) {
-        var selectedItem = _self.getSelected();
-        if (item != selectedItem) {
-          //如果是单选，清除已经选中的项
-          _self.clearSelected(selectedItem);
-        }
-      }
-      _self.setItemSelected(item, true);
-    },
-    /**
-     * 选项是否被选中
-     * @template
-     * @param  {*}  item 选项
-     * @return {Boolean}  是否选中
-     */
-    isItemSelected: function(item) {},
-    /**
-     * 选项是否可以选中
-     * @protected
-     * @param {*} item 选项
-     * @return {Boolean} 选项是否可以选中
-     */
-    isItemSelectable: function(item) {
-      return true;
-    },
-    /**
-     * 设置选项的选中状态
-     * @param {*} item 选项
-     * @param {Boolean} selected 选中或者取消选中
-     * @protected
-     */
-    setItemSelected: function(item, selected) {
-      var _self = this,
-        isSelected;
-      //当前状态等于要设置的状态时，不触发改变事件
-      if (item) {
-        isSelected = _self.isItemSelected(item);
-        if (isSelected == selected) {
-          return;
-        }
-      }
-      if (_self.fire('beforeselectedchange', {
-          item: item,
-          selected: selected
-        }) !== false) {
-        _self.setItemSelectedStatus(item, selected);
-      }
-    },
-    /**
-     * 设置选项的选中状态
-     * @template
-     * @param {*} item 选项
-     * @param {Boolean} selected 选中或者取消选中
-     * @protected
-     */
-    setItemSelectedStatus: function(item, selected) {},
-    /**
-     * 设置所有选项选中
-     * <pre><code>
-     *  list.setAllSelection(); //选中全部，多选状态下有效
-     * </code></pre>
-     * @template
-     */
-    setAllSelection: function() {},
-    /**
-     * 设置项选中，通过字段和值
-     * @param {String} field 字段名,默认为配置项'idField',所以此字段可以不填写，仅填写值
-     * @param {Object} value 值
-     * @example
-     * <pre><code>
-     * var list = new List.SimpleList({
-     *   itemTpl : '&lt;li id="{id}"&gt;{text}&lt;/li&gt;',
-     *   idField : 'id', //id 字段作为key
-     *   render : '#t1',
-     *   items : [{id : '1',text : '1'},{id : '2',text : '2'}]
-     * });
-     *
-     *   list.setSelectedByField('123'); //默认按照id字段查找
-     *   //或者
-     *   list.setSelectedByField('id','123');
-     *
-     *   list.setSelectedByField('value','123');
-     * </code></pre>
-     */
-    setSelectedByField: function(field, value) {
-      if (!value) {
-        value = field;
-        field = this.get('idField');
-      }
-      var _self = this,
-        item = _self.findItemByField(field, value);
-      _self.setSelected(item);
-    },
-    /**
-     * 设置多个选中，根据字段和值
-     * <pre><code>
-     * var list = new List.SimpleList({
-     *   itemTpl : '&lt;li id="{value}"&gt;{text}&lt;/li&gt;',
-     *   idField : 'value', //value 字段作为key
-     *   render : '#t1',
-     *   multipleSelect : true,
-     *   items : [{value : '1',text : '1'},{value : '2',text : '2'}]
-     * });
-     *   var values = ['1','2','3'];
-     *   list.setSelectionByField(values);//
-     *
-     *   //等于
-     *   list.setSelectionByField('value',values);
-     * </code></pre>
-     * @param {String} field 默认为idField
-     * @param {Array} values 值得集合
-     */
-    setSelectionByField: function(field, values) {
-      if (!values) {
-        values = field;
-        field = this.get('idField');
-      }
-      var _self = this;
-      BUI.each(values, function(value) {
-        _self.setSelectedByField(field, value);
+    }
+    if (_self.fire('beforeselectedchange', {
+      item: item,
+      selected: selected
+    }) !== false) {
+      _self.setItemSelectedStatus(item, selected);
+    }
+  },
+  /**
+   * 设置选项的选中状态
+   * @template
+   * @param {*} item 选项
+   * @param {Boolean} selected 选中或者取消选中
+   * @protected
+   */
+  setItemSelectedStatus: function(item, selected) {
+
+  },
+  /**
+   * 设置所有选项选中
+   * <pre><code>
+   *  list.setAllSelection(); //选中全部，多选状态下有效
+   * </code></pre>
+   * @template
+   */
+  setAllSelection: function() {
+
+  },
+  /**
+   * 设置项选中，通过字段和值
+   * @param {String} field 字段名,默认为配置项'idField',所以此字段可以不填写，仅填写值
+   * @param {Object} value 值
+   * @example
+   * <pre><code>
+   * var list = new List.SimpleList({
+   *   itemTpl : '&lt;li id="{id}"&gt;{text}&lt;/li&gt;',
+   *   idField : 'id', //id 字段作为key
+   *   render : '#t1',
+   *   items : [{id : '1',text : '1'},{id : '2',text : '2'}]
+   * });
+   *
+   *   list.setSelectedByField('123'); //默认按照id字段查找
+   *   //或者
+   *   list.setSelectedByField('id','123');
+   *
+   *   list.setSelectedByField('value','123');
+   * </code></pre>
+   */
+  setSelectedByField: function(field, value) {
+    if (!value) {
+      value = field;
+      field = this.get('idField');
+    }
+    var _self = this,
+      item = _self.findItemByField(field, value);
+    _self.setSelected(item);
+  },
+  /**
+   * 设置多个选中，根据字段和值
+   * <pre><code>
+   * var list = new List.SimpleList({
+   *   itemTpl : '&lt;li id="{value}"&gt;{text}&lt;/li&gt;',
+   *   idField : 'value', //value 字段作为key
+   *   render : '#t1',
+   *   multipleSelect : true,
+   *   items : [{value : '1',text : '1'},{value : '2',text : '2'}]
+   * });
+   *   var values = ['1','2','3'];
+   *   list.setSelectionByField(values);//
+   *
+   *   //等于
+   *   list.setSelectionByField('value',values);
+   * </code></pre>
+   * @param {String} field 默认为idField
+   * @param {Array} values 值得集合
+   */
+  setSelectionByField: function(field, values) {
+    if (!values) {
+      values = field;
+      field = this.get('idField');
+    }
+    var _self = this;
+    BUI.each(values, function(value) {
+      _self.setSelectedByField(field, value);
+    });
+  },
+  /**
+   * 选中完成后，触发事件
+   * @protected
+   * @param  {*} item 选项
+   * @param  {Boolean} selected 是否选中
+   * @param  {jQuery} element
+   */
+  afterSelected: function(item, selected, element) {
+    var _self = this;
+
+    if (selected) {
+      _self.fire('itemselected', {
+        item: item,
+        domTarget: element
       });
-    },
-    /**
-     * 选中完成后，触发事件
-     * @protected
-     * @param  {*} item 选项
-     * @param  {Boolean} selected 是否选中
-     * @param  {jQuery} element
-     */
-    afterSelected: function(item, selected, element) {
-      var _self = this;
-      if (selected) {
-        _self.fire('itemselected', {
-          item: item,
-          domTarget: element
-        });
+      _self.fire('selectedchange', {
+        item: item,
+        domTarget: element,
+        selected: selected
+      });
+    } else {
+      _self.fire('itemunselected', {
+        item: item,
+        domTarget: element
+      });
+      if (_self.get('multipleSelect')) { //只有当多选时，取消选中才触发selectedchange
         _self.fire('selectedchange', {
           item: item,
           domTarget: element,
           selected: selected
         });
-      } else {
-        _self.fire('itemunselected', {
-          item: item,
-          domTarget: element
-        });
-        if (_self.get('multipleSelect')) { //只有当多选时，取消选中才触发selectedchange
-          _self.fire('selectedchange', {
-            item: item,
-            domTarget: element,
-            selected: selected
-          });
-        }
       }
     }
   }
-  module.exports = selection;
+
+}
+
+module.exports = selection;
+
 });
-define("bui/common/component/uibase/listitem", [], function(require, exports, module) {
+define("bui/common/component/uibase/listitem", [], function(require, exports, module){
+/**
+ * @fileOverview 可选中的控件,父控件支持selection扩展
+ * @ignore
+ */
+
+
+/**
+ * 列表项控件的视图层
+ * @class BUI.Component.UIBase.ListItemView
+ * @private
+ */
+function listItemView() {
+  // body...
+}
+
+listItemView.ATTRS = {
   /**
-   * @fileOverview 可选中的控件,父控件支持selection扩展
-   * @ignore
+   * 是否选中
+   * @type {Boolean}
    */
-  /**
-   * 列表项控件的视图层
-   * @class BUI.Component.UIBase.ListItemView
-   * @private
-   */
-  function listItemView() {
-    // body...
+  selected: {
+
   }
-  listItemView.ATTRS = {
-    /**
-     * 是否选中
-     * @type {Boolean}
-     */
-    selected: {}
-  };
-  listItemView.prototype = {
-    _uiSetSelected: function(v) {
-      var _self = this,
-        cls = _self.getStatusCls('selected'),
-        el = _self.get('el');
-      if (v) {
-        el.addClass(cls);
-      } else {
-        el.removeClass(cls);
-      }
+};
+
+listItemView.prototype = {
+  _uiSetSelected: function(v) {
+    var _self = this,
+      cls = _self.getStatusCls('selected'),
+      el = _self.get('el');
+    if (v) {
+      el.addClass(cls);
+    } else {
+      el.removeClass(cls);
     }
-  };
+  }
+};
+/**
+ * 列表项的扩展
+ * @class BUI.Component.UIBase.ListItem
+ */
+function listItem() {
+
+}
+
+listItem.ATTRS = {
+
   /**
-   * 列表项的扩展
-   * @class BUI.Component.UIBase.ListItem
+   * 是否可以被选中
+   * @cfg {Boolean} [selectable=true]
    */
-  function listItem() {}
-  listItem.ATTRS = {
-    /**
-     * 是否可以被选中
-     * @cfg {Boolean} [selectable=true]
-     */
-    /**
-     * 是否可以被选中
-     * @type {Boolean}
-     */
-    selectable: {
-      value: true
-    },
-    /**
-     * 是否选中,只能通过设置父类的选中方法来实现选中
-     * @type {Boolean}
-     * @readOnly
-     */
-    selected: {
-      view: true,
-      sync: false,
-      value: false
-    }
-  };
-  listItem.prototype = {};
-  listItem.View = listItemView;
-  module.exports = listItem;
-});
-define("bui/common/component/uibase/mask", ["jquery"], function(require, exports, module) {
   /**
-   * @fileOverview mask 遮罩层
-   * @author yiminghe@gmail.com
-   * copied and modified by dxq613@gmail.com
+   * 是否可以被选中
+   * @type {Boolean}
+   */
+  selectable: {
+    value: true
+  },
+
+  /**
+   * 是否选中,只能通过设置父类的选中方法来实现选中
+   * @type {Boolean}
+   * @readOnly
+   */
+  selected: {
+    view: true,
+    sync: false,
+    value: false
+  }
+};
+
+listItem.prototype = {
+
+};
+
+listItem.View = listItemView;
+
+module.exports = listItem;
+
+});
+define("bui/common/component/uibase/mask", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview mask 遮罩层
+ * @author yiminghe@gmail.com
+ * copied and modified by dxq613@gmail.com
+ * @ignore
+ */
+
+
+var $ = require('jquery'),
+  UA = require("bui/common/ua"),
+
+  /**
+   * 每组相同 prefixCls 的 position 共享一个遮罩
    * @ignore
    */
-  var $ = require('jquery'),
-    UA = require("bui/common/ua"),
+  maskMap = {
     /**
-     * 每组相同 prefixCls 的 position 共享一个遮罩
      * @ignore
+     * {
+     *  node:
+     *  num:
+     * }
      */
-    maskMap = {
-      /**
-       * @ignore
-       * {
-       *  node:
-       *  num:
-       * }
-       */
-    },
-    ie6 = UA.ie == 6;
 
-  function getMaskCls(self) {
-    return self.get('prefixCls') + 'ext-mask';
+  },
+  ie6 = UA.ie == 6;
+
+function getMaskCls(self) {
+  return self.get('prefixCls') + 'ext-mask';
+}
+
+function docWidth() {
+  return ie6 ? BUI.docWidth() + 'px' : '100%';
+}
+
+function docHeight() {
+  return ie6 ? BUI.docHeight() + 'px' : '100%';
+}
+
+function initMask(maskCls) {
+  var mask = $('<div ' +
+      ' style="width:' + docWidth() + ';' +
+      'left:0;' +
+      'top:0;' +
+      'height:' + docHeight() + ';' +
+      'position:' + (ie6 ? 'absolute' : 'fixed') + ';"' +
+      ' class="' +
+      maskCls +
+      '">' +
+      (ie6 ? '<' + 'iframe ' +
+        'style="position:absolute;' +
+        'left:' + '0' + ';' +
+        'top:' + '0' + ';' +
+        'background:white;' +
+        'width: expression(this.parentNode.offsetWidth);' +
+        'height: expression(this.parentNode.offsetHeight);' +
+        'filter:alpha(opacity=0);' +
+        'z-index:-1;"></iframe>' : '') +
+      '</div>')
+    .prependTo('body');
+  /**
+   * 点 mask 焦点不转移
+   * @ignore
+   */
+  // mask.unselectable();
+  mask.on('mousedown', function(e) {
+    e.preventDefault();
+  });
+  return mask;
+}
+
+/**
+ * 遮罩层的视图类
+ * @class BUI.Component.UIBase.MaskView
+ * @private
+ */
+function MaskView() {}
+
+MaskView.ATTRS = {
+  maskShared: {
+    value: true
   }
+};
 
-  function docWidth() {
-    return ie6 ? BUI.docWidth() + 'px' : '100%';
-  }
+MaskView.prototype = {
 
-  function docHeight() {
-    return ie6 ? BUI.docHeight() + 'px' : '100%';
-  }
-
-  function initMask(maskCls) {
-      var mask = $('<div ' + ' style="width:' + docWidth() + ';' + 'left:0;' + 'top:0;' + 'height:' + docHeight() + ';' + 'position:' + (ie6 ? 'absolute' : 'fixed') + ';"' + ' class="' + maskCls + '">' + (ie6 ? '<' + 'iframe ' + 'style="position:absolute;' + 'left:' + '0' + ';' + 'top:' + '0' + ';' + 'background:white;' + 'width: expression(this.parentNode.offsetWidth);' + 'height: expression(this.parentNode.offsetHeight);' + 'filter:alpha(opacity=0);' + 'z-index:-1;"></iframe>' : '') + '</div>').prependTo('body');
-      /**
-       * 点 mask 焦点不转移
-       * @ignore
-       */
-      // mask.unselectable();
-      mask.on('mousedown', function(e) {
-        e.preventDefault();
-      });
-      return mask;
-    }
-    /**
-     * 遮罩层的视图类
-     * @class BUI.Component.UIBase.MaskView
-     * @private
-     */
-  function MaskView() {}
-  MaskView.ATTRS = {
-    maskShared: {
-      value: true
-    }
-  };
-  MaskView.prototype = {
-    _maskExtShow: function() {
-      var self = this,
-        zIndex,
-        maskCls = getMaskCls(self),
-        maskDesc = maskMap[maskCls],
-        maskShared = self.get('maskShared'),
-        mask = self.get('maskNode');
-      if (!mask) {
-        if (maskShared) {
-          if (maskDesc) {
-            mask = maskDesc.node;
-          } else {
-            mask = initMask(maskCls);
-            maskDesc = maskMap[maskCls] = {
-              num: 0,
-              node: mask
-            };
-          }
+  _maskExtShow: function() {
+    var self = this,
+      zIndex,
+      maskCls = getMaskCls(self),
+      maskDesc = maskMap[maskCls],
+      maskShared = self.get('maskShared'),
+      mask = self.get('maskNode');
+    if (!mask) {
+      if (maskShared) {
+        if (maskDesc) {
+          mask = maskDesc.node;
         } else {
           mask = initMask(maskCls);
+          maskDesc = maskMap[maskCls] = {
+            num: 0,
+            node: mask
+          };
         }
-        self.setInternal('maskNode', mask);
+      } else {
+        mask = initMask(maskCls);
       }
-      if (zIndex = self.get('zIndex')) {
-        mask.css('z-index', zIndex - 1);
-      }
-      if (maskShared) {
-        maskDesc.num++;
-      }
-      if (!maskShared || maskDesc.num == 1) {
-        mask.show();
-      }
-      $('body').addClass('x-masked-relative');
-    },
-    _maskExtHide: function() {
-      var self = this,
-        maskCls = getMaskCls(self),
-        maskDesc = maskMap[maskCls],
-        maskShared = self.get('maskShared'),
-        mask = self.get('maskNode');
-      if (maskShared && maskDesc) {
-        maskDesc.num = Math.max(maskDesc.num - 1, 0);
-        if (maskDesc.num == 0) {
-          mask.hide();
-        }
-      } else if (mask) {
+      self.setInternal('maskNode', mask);
+    }
+    if (zIndex = self.get('zIndex')) {
+      mask.css('z-index', zIndex - 1);
+    }
+    if (maskShared) {
+      maskDesc.num++;
+    }
+    if (!maskShared || maskDesc.num == 1) {
+      mask.show();
+    }
+    $('body').addClass('x-masked-relative');
+  },
+
+  _maskExtHide: function() {
+    var self = this,
+      maskCls = getMaskCls(self),
+      maskDesc = maskMap[maskCls],
+      maskShared = self.get('maskShared'),
+      mask = self.get('maskNode');
+    if (maskShared && maskDesc) {
+      maskDesc.num = Math.max(maskDesc.num - 1, 0);
+      if (maskDesc.num == 0) {
         mask.hide();
       }
-      $('body').removeClass('x-masked-relative');
-    },
-    __destructor: function() {
-      var self = this,
-        maskShared = self.get('maskShared'),
-        mask = self.get('maskNode');
-      if (self.get('maskNode')) {
-        if (maskShared) {
-          if (self.get('visible')) {
-            self._maskExtHide();
-          }
-        } else {
-          mask.remove();
-        }
-      }
+    } else if (mask) {
+      mask.hide();
     }
-  };
-  /**
-   * @class BUI.Component.UIBase.Mask
-   * Mask extension class.
-   * Make component to be able to show with mask.
-   */
-  function Mask() {}
-  Mask.ATTRS = {
-    /**
-     * 控件显示时，是否显示屏蔽层
-     * <pre><code>
-     *   var overlay = new Overlay({ //显示overlay时，屏蔽body
-     *     mask : true,
-     *     maskNode : 'body',
-     *     trigger : '#t1'
-     *   });
-     *   overlay.render();
-     * </code></pre>
-     * @cfg {Boolean} [mask = false]
-     */
-    /**
-     * 控件显示时，是否显示屏蔽层
-     * @type {Boolean}
-     * @protected
-     */
-    mask: {
-      value: false
-    },
-    /**
-     * 屏蔽的内容
-     * <pre><code>
-     *   var overlay = new Overlay({ //显示overlay时，屏蔽body
-     *     mask : true,
-     *     maskNode : 'body',
-     *     trigger : '#t1'
-     *   });
-     *   overlay.render();
-     * </code></pre>
-     * @cfg {jQuery} maskNode
-     */
-    /**
-     * 屏蔽的内容
-     * @type {jQuery}
-     * @protected
-     */
-    maskNode: {
-      view: 1
-    },
-    /**
-     * Whether to share mask with other overlays.
-     * @default true.
-     * @type {Boolean}
-     * @protected
-     */
-    maskShared: {
-      view: 1
-    }
-  };
-  Mask.prototype = {
-    __bindUI: function() {
-      var self = this,
-        view = self.get('view'),
-        _maskExtShow = view._maskExtShow,
-        _maskExtHide = view._maskExtHide;
-      if (self.get('mask')) {
-        self.on('show', function() {
-          view._maskExtShow();
-        });
-        self.on('hide', function() {
-          view._maskExtHide();
-        });
-      }
-    }
-  };
-  Mask = Mask;
-  Mask.View = MaskView;
-  module.exports = Mask;
-});
-define("bui/common/component/uibase/position", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview 位置，控件绝对定位
-   * @author yiminghe@gmail.com
-   * copied by dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require('jquery');
-  /**
-   * 对齐的视图类
-   * @class BUI.Component.UIBase.PositionView
-   * @private
-   */
-  function PositionView() {}
-  PositionView.ATTRS = {
-    x: {
-      /**
-       * 水平方向绝对位置
-       * @private
-       * @ignore
-       */
-      valueFn: function() {
-        var self = this;
-        // 读到这里时，el 一定是已经加到 dom 树中了，否则报未知错误
-        // el 不在 dom 树中 offset 报错的
-        // 最早读就是在 syncUI 中，一点重复设置(读取自身 X 再调用 _uiSetX)无所谓了
-        return self.get('el') && self.get('el').offset().left;
-      }
-    },
-    y: {
-      /**
-       * 垂直方向绝对位置
-       * @private
-       * @ignore
-       */
-      valueFn: function() {
-        var self = this;
-        return self.get('el') && self.get('el').offset().top;
-      }
-    },
-    zIndex: {},
-    /**
-     * @private
-     * see {@link BUI.Component.UIBase.Box#visibleMode}.
-     * @default "visibility"
-     * @ignore
-     */
-    visibleMode: {
-      value: 'visibility'
-    }
-  };
-  PositionView.prototype = {
-    __createDom: function() {
-      this.get('el').addClass(BUI.prefix + 'ext-position');
-    },
-    _uiSetZIndex: function(x) {
-      this.get('el').css('z-index', x);
-    },
-    _uiSetX: function(x) {
-      if (x != null) {
-        this.get('el').offset({
-          left: x
-        });
-      }
-    },
-    _uiSetY: function(y) {
-      if (y != null) {
-        this.get('el').offset({
-          top: y
-        });
-      }
-    },
-    _uiSetLeft: function(left) {
-      if (left != null) {
-        this.get('el').css({
-          left: left
-        });
-      }
-    },
-    _uiSetTop: function(top) {
-      if (top != null) {
-        this.get('el').css({
-          top: top
-        });
-      }
-    }
-  };
-  /**
-   * @class BUI.Component.UIBase.Position
-   * Position extension class.
-   * Make component positionable
-   */
-  function Position() {}
-  Position.ATTRS = {
-    /**
-     * 水平坐标
-     * @cfg {Number} x
-     */
-    /**
-     * 水平坐标
-     * <pre><code>
-     *     overlay.set('x',100);
-     * </code></pre>
-     * @type {Number}
-     */
-    x: {
-      view: 1
-    },
-    /**
-     * 垂直坐标
-     * @cfg {Number} y
-     */
-    /**
-     * 垂直坐标
-     * <pre><code>
-     *     overlay.set('y',100);
-     * </code></pre>
-     * @type {Number}
-     */
-    y: {
-      view: 1
-    },
-    /**
-     * 相对于父元素的水平位置
-     * @type {Number}
-     * @protected
-     */
-    left: {
-      view: 1
-    },
-    /**
-     * 相对于父元素的垂直位置
-     * @type {Number}
-     * @protected
-     */
-    top: {
-      view: 1
-    },
-    /**
-     * 水平和垂直坐标
-     * <pre><code>
-     * var overlay = new Overlay({
-     *   xy : [100,100],
-     *   trigger : '#t1',
-     *   srcNode : '#c1'
-     * });
-     * </code></pre>
-     * @cfg {Number[]} xy
-     */
-    /**
-     * 水平和垂直坐标
-     * <pre><code>
-     *     overlay.set('xy',[100,100]);
-     * </code></pre>
-     * @type {Number[]}
-     */
-    xy: {
-      // 相对 page 定位, 有效值为 [n, m], 为 null 时, 选 align 设置
-      setter: function(v) {
-        var self = this,
-          xy = $.makeArray(v);
-        /*
-                 属性内分发特别注意：
-                 xy -> x,y
-                 */
-        if (xy.length) {
-          xy[0] && self.set('x', xy[0]);
-          xy[1] && self.set('y', xy[1]);
-        }
-        return v;
-      },
-      /**
-       * xy 纯中转作用
-       * @ignore
-       */
-      getter: function() {
-        return [this.get('x'), this.get('y')];
-      }
-    },
-    /**
-     * z-index value.
-     * <pre><code>
-     *   var overlay = new Overlay({
-     *       zIndex : '1000'
-     *   });
-     * </code></pre>
-     * @cfg {Number} zIndex
-     */
-    /**
-     * z-index value.
-     * <pre><code>
-     *   overlay.set('zIndex','1200');
-     * </code></pre>
-     * @type {Number}
-     */
-    zIndex: {
-      view: 1
-    },
-    /**
-     * Positionable element is by default visible false.
-     * For compatibility in overlay and PopupMenu.
-     * @default false
-     * @ignore
-     */
-    visible: {
-      view: true,
-      value: true
-    }
-  };
-  Position.prototype = {
-    /**
-     * Move to absolute position.
-     * @param {Number|Number[]} x
-     * @param {Number} [y]
-     * @example
-     * <pre><code>
-     * move(x, y);
-     * move(x);
-     * move([x,y])
-     * </code></pre>
-     */
-    move: function(x, y) {
-      var self = this;
-      if (BUI.isArray(x)) {
-        y = x[1];
-        x = x[0];
-      }
-      self.set('xy', [x, y]);
-      return self;
-    },
-    //设置 x 坐标时，重置 left
-    _uiSetX: function(v) {
-      if (v != null) {
-        var _self = this,
-          el = _self.get('el');
-        _self.setInternal('left', el.position().left);
-        if (v != -999) {
-          this.set('cachePosition', null);
-        }
-      }
-    },
-    //设置 y 坐标时，重置 top
-    _uiSetY: function(v) {
-      if (v != null) {
-        var _self = this,
-          el = _self.get('el');
-        _self.setInternal('top', el.position().top);
-        if (v != -999) {
-          this.set('cachePosition', null);
-        }
-      }
-    },
-    //设置 left时，重置 x
-    _uiSetLeft: function(v) {
-      var _self = this,
-        el = _self.get('el');
-      if (v != null) {
-        _self.setInternal('x', el.offset().left);
-      }
-      /*else{ //如果lef 为null,同时设置过left和top，那么取对应的值
-                _self.setInternal('left',el.position().left);
-            }*/
-    },
-    //设置top 时，重置y
-    _uiSetTop: function(v) {
-      var _self = this,
-        el = _self.get('el');
-      if (v != null) {
-        _self.setInternal('y', el.offset().top);
-      }
-      /*else{ //如果lef 为null,同时设置过left和top，那么取对应的值
-                _self.setInternal('top',el.position().top);
-            }*/
-    }
-  };
-  Position.View = PositionView;
-  module.exports = Position;
-});
-define("bui/common/component/uibase/stdmod", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview
-   * 控件包含头部（head)、内容(content)和尾部（foot)
-   * @ignore
-   */
-  var $ = require('jquery'),
-    CLS_PREFIX = BUI.prefix + 'stdmod-';
-  /**
-   * 标准模块组织的视图类
-   * @class BUI.Component.UIBase.StdModView
-   * @private
-   */
-  function StdModView() {}
-  StdModView.ATTRS = {
-    header: {},
-    body: {},
-    footer: {},
-    bodyStyle: {},
-    footerStyle: {},
-    headerStyle: {},
-    headerContent: {},
-    bodyContent: {},
-    footerContent: {}
-  };
-  StdModView.PARSER = {
-    header: function(el) {
-      return el.one("." + CLS_PREFIX + "header");
-    },
-    body: function(el) {
-      return el.one("." + CLS_PREFIX + "body");
-    },
-    footer: function(el) {
-      return el.one("." + CLS_PREFIX + "footer");
-    }
-  }; /**/
-  function createUI(self, part) {
-    var el = self.get('contentEl'),
-      partEl = self.get(part);
-    if (!partEl) {
-      partEl = $('<div class="' + CLS_PREFIX + part + '"' + ' ' + ' >' + '</div>');
-      partEl.appendTo(el);
-      self.setInternal(part, partEl);
-    }
-  }
+    $('body').removeClass('x-masked-relative');
+  },
 
-  function _setStdModRenderContent(self, part, v) {
-    part = self.get(part);
-    if (BUI.isString(v)) {
-      part.html(v);
-    } else {
-      part.html('').append(v);
-    }
-  }
-  StdModView.prototype = {
-    __renderUI: function() { //createDom
-      createUI(this, 'header');
-      createUI(this, 'body');
-      createUI(this, 'footer');
-    },
-    _uiSetBodyStyle: function(v) {
-      this.get('body').css(v);
-    },
-    _uiSetHeaderStyle: function(v) {
-      this.get('header').css(v);
-    },
-    _uiSetFooterStyle: function(v) {
-      this.get('footer').css(v);
-    },
-    _uiSetBodyContent: function(v) {
-      _setStdModRenderContent(this, 'body', v);
-    },
-    _uiSetHeaderContent: function(v) {
-      _setStdModRenderContent(this, 'header', v);
-    },
-    _uiSetFooterContent: function(v) {
-      _setStdModRenderContent(this, 'footer', v);
-    }
-  };
-  /**
-   * @class BUI.Component.UIBase.StdMod
-   * StdMod extension class.
-   * Generate head, body, foot for component.
-   */
-  function StdMod() {}
-  StdMod.ATTRS = {
-    /**
-     * 控件的头部DOM. Readonly
-     * @readOnly
-     * @type {jQuery}
-     */
-    header: {
-      view: 1
-    },
-    /**
-     * 控件的内容DOM. Readonly
-     * @readOnly
-     * @type {jQuery}
-     */
-    body: {
-      view: 1
-    },
-    /**
-     * 控件的底部DOM. Readonly
-     * @readOnly
-     * @type {jQuery}
-     */
-    footer: {
-      view: 1
-    },
-    /**
-     * 应用到控件内容的css属性，键值对形式
-     * @cfg {Object} bodyStyle
-     */
-    /**
-     * 应用到控件内容的css属性，键值对形式
-     * @type {Object}
-     * @protected
-     */
-    bodyStyle: {
-      view: 1
-    },
-    /**
-     * 应用到控件底部的css属性，键值对形式
-     * @cfg {Object} footerStyle
-     */
-    /**
-     * 应用到控件底部的css属性，键值对形式
-     * @type {Object}
-     * @protected
-     */
-    footerStyle: {
-      view: 1
-    },
-    /**
-     * 应用到控件头部的css属性，键值对形式
-     * @cfg {Object} headerStyle
-     */
-    /**
-     * 应用到控件头部的css属性，键值对形式
-     * @type {Object}
-     * @protected
-     */
-    headerStyle: {
-      view: 1
-    },
-    /**
-     * 控件头部的html
-     * <pre><code>
-     * var dialog = new Dialog({
-     *     headerContent: '&lt;div class="header"&gt;&lt;/div&gt;',
-     *     bodyContent : '#c1',
-     *     footerContent : '&lt;div class="footer"&gt;&lt;/div&gt;'
-     * });
-     * dialog.show();
-     * </code></pre>
-     * @cfg {jQuery|String} headerContent
-     */
-    /**
-     * 控件头部的html
-     * @type {jQuery|String}
-     */
-    headerContent: {
-      view: 1
-    },
-    /**
-     * 控件内容的html
-     * <pre><code>
-     * var dialog = new Dialog({
-     *     headerContent: '&lt;div class="header"&gt;&lt;/div&gt;',
-     *     bodyContent : '#c1',
-     *     footerContent : '&lt;div class="footer"&gt;&lt;/div&gt;'
-     * });
-     * dialog.show();
-     * </code></pre>
-     * @cfg {jQuery|String} bodyContent
-     */
-    /**
-     * 控件内容的html
-     * @type {jQuery|String}
-     */
-    bodyContent: {
-      view: 1
-    },
-    /**
-     * 控件底部的html
-     * <pre><code>
-     * var dialog = new Dialog({
-     *     headerContent: '&lt;div class="header"&gt;&lt;/div&gt;',
-     *     bodyContent : '#c1',
-     *     footerContent : '&lt;div class="footer"&gt;&lt;/div&gt;'
-     * });
-     * dialog.show();
-     * </code></pre>
-     * @cfg {jQuery|String} footerContent
-     */
-    /**
-     * 控件底部的html
-     * @type {jQuery|String}
-     */
-    footerContent: {
-      view: 1
-    }
-  };
-  StdMod.View = StdModView;
-  module.exports = StdMod;
-});
-define("bui/common/component/uibase/decorate", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview 使用wrapper
-   * @ignore
-   */
-  var $ = require('jquery'),
-    ArrayUtil = require("bui/common/array"),
-    JSON = require("bui/common/json"),
-    prefixCls = BUI.prefix,
-    FIELD_PREFIX = 'data-',
-    FIELD_CFG = FIELD_PREFIX + 'cfg',
-    PARSER = 'PARSER',
-    Manager = require("bui/common/component/manage"),
-    RE_DASH_WORD = /-([a-z])/g,
-    regx = /^[\{\[]/;
-
-  function isConfigField(name, cfgFields) {
-      if (cfgFields[name]) {
-        return true;
-      }
-      var reg = new RegExp("^" + FIELD_PREFIX);
-      if (name !== FIELD_CFG && reg.test(name)) {
-        return true;
-      }
-      return false;
-    }
-    // 收集单继承链，子类在前，父类在后
-  function collectConstructorChains(self) {
-    var constructorChains = [],
-      c = self.constructor;
-    while (c) {
-      constructorChains.push(c);
-      c = c.superclass && c.superclass.constructor;
-    }
-    return constructorChains;
-  }
-
-  function camelCase(str) {
-      return str.toLowerCase().replace(RE_DASH_WORD, function(all, letter) {
-        return (letter + '').toUpperCase()
-      })
-    }
-    //如果属性为对象或者数组，则进行转换
-  function parseFieldValue(value) {
-    value = $.trim(value);
-    if (value.toLowerCase() === 'false') {
-      value = false
-    } else if (value.toLowerCase() === 'true') {
-      value = true
-    } else if (regx.test(value)) {
-      value = JSON.looseParse(value);
-    } else if (/\d/.test(value) && /[^a-z]/i.test(value)) {
-      var number = parseFloat(value)
-      if (number + '' === value) {
-        value = number
-      }
-    }
-    return value;
-  }
-
-  function setConfigFields(self, cfg) {
-    var userConfig = self.userConfig || {};
-    for (var p in cfg) {
-      // 用户设置过那么这里不从 dom 节点取
-      // 用户设置 > html parser > default value
-      if (!(p in userConfig)) {
-        self.setInternal(p, cfg[p]);
-      }
-    }
-  }
-
-  function applyParser(srcNode, parser) {
+  __destructor: function() {
     var self = this,
-      p, v,
-      userConfig = self.userConfig || {};
-    // 从 parser 中，默默设置属性，不触发事件
-    for (p in parser) {
-      // 用户设置过那么这里不从 dom 节点取
-      // 用户设置 > html parser > default value
-      if (!(p in userConfig)) {
-        v = parser[p];
-        // 函数
-        if (BUI.isFunction(v)) {
-          self.setInternal(p, v.call(self, srcNode));
+      maskShared = self.get('maskShared'),
+      mask = self.get('maskNode');
+    if (self.get('maskNode')) {
+      if (maskShared) {
+        if (self.get('visible')) {
+          self._maskExtHide();
         }
-        // 单选选择器
-        else if (typeof v == 'string') {
-          self.setInternal(p, srcNode.find(v));
-        }
-        // 多选选择器
-        else if (BUI.isArray(v) && v[0]) {
-          self.setInternal(p, srcNode.find(v[0]))
-        }
-      }
-    }
-  }
-
-  function initParser(self, srcNode) {
-    var c = self.constructor,
-      len,
-      p,
-      constructorChains;
-    constructorChains = collectConstructorChains(self);
-    // 从父类到子类开始从 html 读取属性
-    for (len = constructorChains.length - 1; len >= 0; len--) {
-      c = constructorChains[len];
-      if (p = c[PARSER]) {
-        applyParser.call(self, srcNode, p);
-      }
-    }
-  }
-
-  function initDecorate(self) {
-      var _self = self,
-        srcNode = _self.get('srcNode'),
-        userConfig,
-        decorateCfg;
-      if (srcNode) {
-        srcNode = $(srcNode);
-        _self.setInternal('el', srcNode);
-        _self.setInternal('srcNode', srcNode);
-        userConfig = _self.get('userConfig');
-        decorateCfg = _self.getDecorateConfig(srcNode);
-        setConfigFields(self, decorateCfg);
-        //如果从DOM中读取子控件
-        if (_self.get('isDecorateChild') && _self.decorateInternal) {
-          _self.decorateInternal(srcNode);
-        }
-        initParser(self, srcNode);
-      }
-    }
-    /**
-     * @class BUI.Component.UIBase.Decorate
-     * 将DOM对象封装成控件
-     */
-  function decorate() {
-    initDecorate(this);
-  }
-  decorate.ATTRS = {
-    /**
-     * 配置控件的根节点的DOM
-     * <pre><code>
-     * new Form.Form({
-     *   srcNode : '#J_Form'
-     * }).render();
-     * </code></pre>
-     * @cfg {jQuery} srcNode
-     */
-    /**
-     * 配置控件的根节点的DOM
-     * @type {jQuery}
-     */
-    srcNode: {
-      view: true
-    },
-    /**
-     * 是否根据DOM生成子控件
-     * @type {Boolean}
-     * @protected
-     */
-    isDecorateChild: {
-      value: false
-    },
-    /**
-     * 此配置项配置使用那些srcNode上的节点作为配置项
-     *  - 当时用 decorate 时，取 srcNode上的节点的属性作为控件的配置信息
-     *  - 默认id,name,value,title 都会作为属性传入
-     *  - 使用 'data-cfg' 作为整体的配置属性
-     *  <pre><code>
-     *     <input id="c1" type="text" name="txtName" id="id",data-cfg="{allowBlank:false}" />
-     *     //会生成以下配置项：
-     *     {
-     *         name : 'txtName',
-     *         id : 'id',
-     *         allowBlank:false
-     *     }
-     *     new Form.Field({
-     *        src:'#c1'
-     *     }).render();
-     *  </code></pre>
-     * @type {Object}
-     * @protected
-     */
-    decorateCfgFields: {
-      value: {
-        'id': true,
-        'name': true,
-        'value': true,
-        'title': true
-      }
-    }
-  };
-  decorate.prototype = {
-    /**
-     * 获取控件的配置信息
-     * @protected
-     */
-    getDecorateConfig: function(el) {
-      if (!el.length) {
-        return null;
-      }
-      var _self = this,
-        dom = el[0],
-        attributes = dom.attributes,
-        decorateCfgFields = _self.get('decorateCfgFields'),
-        config = {},
-        statusCfg = _self._getStautsCfg(el);
-      BUI.each(attributes, function(attr) {
-        var name = attr.nodeName;
-        try {
-          if (name === FIELD_CFG) {
-            var cfg = parseFieldValue(attr.nodeValue);
-            BUI.mix(config, cfg);
-          } else if (isConfigField(name, decorateCfgFields)) {
-            var value = attr.nodeValue;
-            if (name.indexOf(FIELD_PREFIX) !== -1) {
-              name = name.replace(FIELD_PREFIX, '');
-              name = camelCase(name);
-              value = parseFieldValue(value);
-            }
-            if (config[name] && BUI.isObject(value)) {
-              BUI.mix(config[name], value);
-            } else {
-              config[name] = value;
-            }
-          }
-        } catch (e) {
-          BUI.log('parse field error,the attribute is:' + name);
-        }
-      });
-      return BUI.mix(config, statusCfg);
-    },
-    //根据css class获取状态属性
-    //如： selected,disabled等属性
-    _getStautsCfg: function(el) {
-      var _self = this,
-        rst = {},
-        statusCls = _self.get('statusCls');
-      BUI.each(statusCls, function(v, k) {
-        if (el.hasClass(v)) {
-          rst[k] = true;
-        }
-      });
-      return rst;
-    },
-    /**
-     * 获取封装成子控件的节点集合
-     * @protected
-     * @return {Array} 节点集合
-     */
-    getDecorateElments: function() {
-      var _self = this,
-        el = _self.get('el'),
-        contentContainer = _self.get('childContainer');
-      if (contentContainer) {
-        return el.find(contentContainer).children();
       } else {
-        return el.children();
+        mask.remove();
       }
-    },
-    /**
-     * 封装所有的子控件
-     * @protected
-     * @param {jQuery} el Root element of current component.
-     */
-    decorateInternal: function(el) {
-      var self = this;
-      self.decorateChildren(el);
-    },
-    /**
-     * 获取子控件的xclass类型
-     * @protected
-     * @param {jQuery} childNode 子控件的根节点
-     */
-    findXClassByNode: function(childNode, ignoreError) {
-      var _self = this,
-        cls = childNode.attr("class") || '',
-        childClass = _self.get('defaultChildClass'); //如果没有样式或者查找不到对应的类，使用默认的子控件类型
-      // 过滤掉特定前缀
-      cls = cls.replace(new RegExp("\\b" + prefixCls, "ig"), "");
-      var UI = Manager.getConstructorByXClass(cls) || Manager.getConstructorByXClass(childClass);
-      if (!UI && !ignoreError) {
-        BUI.log(childNode);
-        BUI.error("can not find ui " + cls + " from this markup");
-      }
-      return Manager.getXClassByConstructor(UI);
-    },
-    // 生成一个组件
-    decorateChildrenInternal: function(xclass, c) {
-      var _self = this,
-        children = _self.get('children');
-      children.push({
-        xclass: xclass,
-        srcNode: c
+    }
+  }
+
+};
+
+/**
+ * @class BUI.Component.UIBase.Mask
+ * Mask extension class.
+ * Make component to be able to show with mask.
+ */
+function Mask() {}
+
+Mask.ATTRS = {
+  /**
+   * 控件显示时，是否显示屏蔽层
+   * <pre><code>
+   *   var overlay = new Overlay({ //显示overlay时，屏蔽body
+   *     mask : true,
+   *     maskNode : 'body',
+   *     trigger : '#t1'
+   *   });
+   *   overlay.render();
+   * </code></pre>
+   * @cfg {Boolean} [mask = false]
+   */
+  /**
+   * 控件显示时，是否显示屏蔽层
+   * @type {Boolean}
+   * @protected
+   */
+  mask: {
+    value: false
+  },
+  /**
+   * 屏蔽的内容
+   * <pre><code>
+   *   var overlay = new Overlay({ //显示overlay时，屏蔽body
+   *     mask : true,
+   *     maskNode : 'body',
+   *     trigger : '#t1'
+   *   });
+   *   overlay.render();
+   * </code></pre>
+   * @cfg {jQuery} maskNode
+   */
+  /**
+   * 屏蔽的内容
+   * @type {jQuery}
+   * @protected
+   */
+  maskNode: {
+    view: 1
+  },
+  /**
+   * Whether to share mask with other overlays.
+   * @default true.
+   * @type {Boolean}
+   * @protected
+   */
+  maskShared: {
+    view: 1
+  }
+};
+
+Mask.prototype = {
+
+  __bindUI: function() {
+    var self = this,
+      view = self.get('view'),
+      _maskExtShow = view._maskExtShow,
+      _maskExtHide = view._maskExtHide;
+    if (self.get('mask')) {
+      self.on('show', function() {
+        view._maskExtShow();
       });
-    },
+      self.on('hide', function() {
+        view._maskExtHide();
+      });
+    }
+  }
+};
+
+Mask = Mask;
+Mask.View = MaskView;
+
+module.exports = Mask;
+
+});
+define("bui/common/component/uibase/position", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview 位置，控件绝对定位
+ * @author yiminghe@gmail.com
+ * copied by dxq613@gmail.com
+ * @ignore
+ */
+
+var $ = require('jquery');
+
+/**
+ * 对齐的视图类
+ * @class BUI.Component.UIBase.PositionView
+ * @private
+ */
+function PositionView() {
+
+}
+
+PositionView.ATTRS = {
+  x: {
     /**
-     * 封装子控件
+     * 水平方向绝对位置
      * @private
-     * @param {jQuery} el component's root element.
-     */
-    decorateChildren: function(el) {
-      var _self = this,
-        children = _self.getDecorateElments();
-      BUI.each(children, function(c) {
-        var xclass = _self.findXClassByNode($(c));
-        _self.decorateChildrenInternal(xclass, $(c));
-      });
-    }
-  };
-  module.exports = decorate;
-});
-define("bui/common/component/uibase/tpl", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview 控件模板
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require('jquery');
-  /**
-   * @private
-   * 控件模板扩展类的渲染类(view)
-   * @class BUI.Component.UIBase.TplView
-   */
-  function tplView() {}
-  tplView.ATTRS = {
-    /**
-     * 模板
-     * @protected
-     * @type {String}
-     */
-    tpl: {},
-    tplEl: {}
-  };
-  tplView.prototype = {
-      __renderUI: function() {
-        var _self = this,
-          contentContainer = _self.get('childContainer'),
-          contentEl;
-        if (contentContainer) {
-          contentEl = _self.get('el').find(contentContainer);
-          if (contentEl.length) {
-            _self.set('contentEl', contentEl);
-          }
-        }
-      },
-      /**
-       * 获取生成控件的模板
-       * @protected
-       * @param  {Object} attrs 属性值
-       * @return {String} 模板
-       */
-      getTpl: function(attrs) {
-        var _self = this,
-          tpl = _self.get('tpl'),
-          tplRender = _self.get('tplRender');
-        attrs = attrs || _self.getAttrVals();
-        if (tplRender) {
-          return tplRender(attrs);
-        }
-        if (tpl) {
-          return BUI.substitute(tpl, attrs);
-        }
-        return '';
-      },
-      /**
-       * 如果控件设置了模板，则根据模板和属性值生成DOM
-       * 如果设置了content属性，此模板不应用
-       * @protected
-       * @param  {Object} attrs 属性值，默认为初始化时传入的值
-       */
-      setTplContent: function(attrs) {
-        var _self = this,
-          el = _self.get('el'),
-          content = _self.get('content'),
-          tplEl = _self.get('tplEl'),
-          tpl = _self.getTpl(attrs);
-        //tplEl.remove();
-        if (!content && tpl) { //替换掉原先的内容
-          el.empty();
-          el.html(tpl);
-          /*if(tplEl){
-              var node = $(tpl).insertBefore(tplEl);
-              tplEl.remove();
-              tplEl = node;
-            }else{
-              tplEl = $(tpl).appendTo(el);
-            }
-            _self.set('tplEl',tplEl)
-            */
-        }
-      }
-    }
-    /**
-     * 控件的模板扩展
-     * @class BUI.Component.UIBase.Tpl
-     */
-  function tpl() {}
-  tpl.ATTRS = {
-    /**
-     * 控件的模版，用于初始化
-     * <pre><code>
-     * var list = new List.List({
-     *   tpl : '&lt;div class="toolbar"&gt;&lt;/div&gt;&lt;ul&gt;&lt;/ul&gt;',
-     *   childContainer : 'ul'
-     * });
-     * //用于统一子控件模板
-     * var list = new List.List({
-     *   defaultChildCfg : {
-     *     tpl : '&lt;span&gt;{text}&lt;/span&gt;'
-     *   }
-     * });
-     * list.render();
-     * </code></pre>
-     * @cfg {String} tpl
-     */
-    /**
-     * 控件的模板
-     * <pre><code>
-     *   list.set('tpl','&lt;div class="toolbar"&gt;&lt;/div&gt;&lt;ul&gt;&lt;/ul&gt;&lt;div class="bottom"&gt;&lt;/div&gt;')
-     * </code></pre>
-     * @type {String}
-     */
-    tpl: {
-      view: true,
-      sync: false
-    },
-    /**
-     * <p>控件的渲染函数，应对一些简单模板解决不了的问题，例如有if,else逻辑，有循环逻辑,
-     * 函数原型是function(data){},其中data是控件的属性值</p>
-     * <p>控件模板的加强模式，此属性会覆盖@see {BUI.Component.UIBase.Tpl#property-tpl}属性</p>
-     * //用于统一子控件模板
-     * var list = new List.List({
-     *   defaultChildCfg : {
-     *     tplRender : funciton(item){
-     *       if(item.type == '1'){
-     *         return 'type1 html';
-     *       }else{
-     *         return 'type2 html';
-     *       }
-     *     }
-     *   }
-     * });
-     * list.render();
-     * @cfg {Function} tplRender
-     */
-    tplRender: {
-      view: true,
-      value: null
-    },
-    /**
-     * 这是一个选择器，使用了模板后，子控件可能会添加到模板对应的位置,
-     *  - 默认为null,此时子控件会将控件最外层 el 作为容器
-     * <pre><code>
-     * var list = new List.List({
-     *   tpl : '&lt;div class="toolbar"&gt;&lt;/div&gt;&lt;ul&gt;&lt;/ul&gt;',
-     *   childContainer : 'ul'
-     * });
-     * </code></pre>
-     * @cfg {String} childContainer
-     */
-    childContainer: {
-      view: true
-    }
-  };
-  tpl.prototype = {
-    __renderUI: function() {
-      //使用srcNode时，不使用模板
-      if (!this.get('srcNode')) {
-        this.setTplContent();
-      }
-    },
-    /**
-     * 控件信息发生改变时，控件内容跟模板相关时需要调用这个函数，
-     * 重新通过模板和控件信息构造内容
-     */
-    updateContent: function() {
-      this.setTplContent();
-    },
-    /**
-     * 根据控件的属性和模板生成控件内容
-     * @protected
-     */
-    setTplContent: function() {
-      var _self = this,
-        attrs = _self.getAttrVals();
-      _self.get('view').setTplContent(attrs);
-    },
-    //模板发生改变
-    _uiSetTpl: function() {
-      this.setTplContent();
-    }
-  };
-  tpl.View = tplView;
-  module.exports = tpl;
-});
-define("bui/common/component/uibase/childcfg", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview 子控件的默认配置项
-   * @ignore
-   */
-  var $ = require('jquery');
-  /**
-   * @class BUI.Component.UIBase.ChildCfg
-   * 子控件默认配置项的扩展类
-   */
-  var childCfg = function(config) {
-    this._init();
-  };
-  childCfg.ATTRS = {
-    /**
-     * 默认的子控件配置项,在初始化控件时配置
-     *
-     *  - 如果控件已经渲染过，此配置项无效，
-     *  - 控件生成后，修改此配置项无效。
-     * <pre><code>
-     *   var control = new Control({
-     *     defaultChildCfg : {
-     *       tpl : '&lt;li&gt;{text}&lt;/li&gt;',
-     *       xclass : 'a-b'
-     *     }
-     *   });
-     * </code></pre>
-     * @cfg {Object} defaultChildCfg
-     */
-    /**
      * @ignore
      */
-    defaultChildCfg: {}
-  };
-  childCfg.prototype = {
-    _init: function() {
-      var _self = this,
-        defaultChildCfg = _self.get('defaultChildCfg');
-      if (defaultChildCfg) {
-        _self.on('beforeAddChild', function(ev) {
-          var child = ev.child;
-          if ($.isPlainObject(child)) {
-            BUI.each(defaultChildCfg, function(v, k) {
-              if (child[k] == null) { //如果未在配置项中设置，则使用默认值
-                child[k] = v;
-              }
-            });
-          }
-        });
-      }
+    valueFn: function() {
+      var self = this;
+      // 读到这里时，el 一定是已经加到 dom 树中了，否则报未知错误
+      // el 不在 dom 树中 offset 报错的
+      // 最早读就是在 syncUI 中，一点重复设置(读取自身 X 再调用 _uiSetX)无所谓了
+      return self.get('el') && self.get('el').offset().left;
     }
-  };
-  module.exports = childCfg;
-});
-define("bui/common/component/uibase/bindable", [], function(require, exports, module) {
+  },
+  y: {
+    /**
+     * 垂直方向绝对位置
+     * @private
+     * @ignore
+     */
+    valueFn: function() {
+      var self = this;
+      return self.get('el') && self.get('el').offset().top;
+    }
+  },
+  zIndex: {},
   /**
-   * @fileOverview bindable extension class.
-   * @author dxq613@gmail.com
+   * @private
+   * see {@link BUI.Component.UIBase.Box#visibleMode}.
+   * @default "visibility"
    * @ignore
    */
+  visibleMode: {
+    value: 'visibility'
+  }
+};
+
+
+PositionView.prototype = {
+
+  __createDom: function() {
+    this.get('el').addClass(BUI.prefix + 'ext-position');
+  },
+
+  _uiSetZIndex: function(x) {
+    this.get('el').css('z-index', x);
+  },
+  _uiSetX: function(x) {
+    if (x != null) {
+      this.get('el').offset({
+        left: x
+      });
+    }
+  },
+  _uiSetY: function(y) {
+    if (y != null) {
+      this.get('el').offset({
+        top: y
+      });
+    }
+  },
+  _uiSetLeft: function(left) {
+    if (left != null) {
+      this.get('el').css({
+        left: left
+      });
+    }
+  },
+  _uiSetTop: function(top) {
+    if (top != null) {
+      this.get('el').css({
+        top: top
+      });
+    }
+  }
+};
+
+/**
+ * @class BUI.Component.UIBase.Position
+ * Position extension class.
+ * Make component positionable
+ */
+function Position() {}
+
+Position.ATTRS = {
   /**
-   * bindable extension class.
+   * 水平坐标
+   * @cfg {Number} x
+   */
+  /**
+   * 水平坐标
+   * <pre><code>
+   *     overlay.set('x',100);
+   * </code></pre>
+   * @type {Number}
+   */
+  x: {
+    view: 1
+  },
+  /**
+   * 垂直坐标
+   * @cfg {Number} y
+   */
+  /**
+   * 垂直坐标
+   * <pre><code>
+   *     overlay.set('y',100);
+   * </code></pre>
+   * @type {Number}
+   */
+  y: {
+    view: 1
+  },
+  /**
+   * 相对于父元素的水平位置
+   * @type {Number}
+   * @protected
+   */
+  left: {
+    view: 1
+  },
+  /**
+   * 相对于父元素的垂直位置
+   * @type {Number}
+   * @protected
+   */
+  top: {
+    view: 1
+  },
+  /**
+   * 水平和垂直坐标
+   * <pre><code>
+   * var overlay = new Overlay({
+   *   xy : [100,100],
+   *   trigger : '#t1',
+   *   srcNode : '#c1'
+   * });
+   * </code></pre>
+   * @cfg {Number[]} xy
+   */
+  /**
+   * 水平和垂直坐标
+   * <pre><code>
+   *     overlay.set('xy',[100,100]);
+   * </code></pre>
+   * @type {Number[]}
+   */
+  xy: {
+    // 相对 page 定位, 有效值为 [n, m], 为 null 时, 选 align 设置
+    setter: function(v) {
+      var self = this,
+        xy = $.makeArray(v);
+      /*
+               属性内分发特别注意：
+               xy -> x,y
+               */
+      if (xy.length) {
+        xy[0] && self.set('x', xy[0]);
+        xy[1] && self.set('y', xy[1]);
+      }
+      return v;
+    },
+    /**
+     * xy 纯中转作用
+     * @ignore
+     */
+    getter: function() {
+      return [this.get('x'), this.get('y')];
+    }
+  },
+  /**
+   * z-index value.
+   * <pre><code>
+   *   var overlay = new Overlay({
+   *       zIndex : '1000'
+   *   });
+   * </code></pre>
+   * @cfg {Number} zIndex
+   */
+  /**
+   * z-index value.
+   * <pre><code>
+   *   overlay.set('zIndex','1200');
+   * </code></pre>
+   * @type {Number}
+   */
+  zIndex: {
+    view: 1
+  },
+  /**
+   * Positionable element is by default visible false.
+   * For compatibility in overlay and PopupMenu.
+   * @default false
+   * @ignore
+   */
+  visible: {
+    view: true,
+    value: true
+  }
+};
+
+
+Position.prototype = {
+  /**
+   * Move to absolute position.
+   * @param {Number|Number[]} x
+   * @param {Number} [y]
+   * @example
+   * <pre><code>
+   * move(x, y);
+   * move(x);
+   * move([x,y])
+   * </code></pre>
+   */
+  move: function(x, y) {
+    var self = this;
+    if (BUI.isArray(x)) {
+      y = x[1];
+      x = x[0];
+    }
+    self.set('xy', [x, y]);
+    return self;
+  },
+  //设置 x 坐标时，重置 left
+  _uiSetX: function(v) {
+    if (v != null) {
+      var _self = this,
+        el = _self.get('el');
+      _self.setInternal('left', el.position().left);
+      if (v != -999) {
+        this.set('cachePosition', null);
+      }
+
+    }
+
+  },
+  //设置 y 坐标时，重置 top
+  _uiSetY: function(v) {
+    if (v != null) {
+      var _self = this,
+        el = _self.get('el');
+      _self.setInternal('top', el.position().top);
+      if (v != -999) {
+        this.set('cachePosition', null);
+      }
+    }
+  },
+  //设置 left时，重置 x
+  _uiSetLeft: function(v) {
+    var _self = this,
+      el = _self.get('el');
+    if (v != null) {
+      _self.setInternal('x', el.offset().left);
+    }
+    /*else{ //如果lef 为null,同时设置过left和top，那么取对应的值
+              _self.setInternal('left',el.position().left);
+          }*/
+  },
+  //设置top 时，重置y
+  _uiSetTop: function(v) {
+    var _self = this,
+      el = _self.get('el');
+    if (v != null) {
+      _self.setInternal('y', el.offset().top);
+    }
+    /*else{ //如果lef 为null,同时设置过left和top，那么取对应的值
+              _self.setInternal('top',el.position().top);
+          }*/
+  }
+};
+
+Position.View = PositionView;
+
+module.exports = Position;
+
+});
+define("bui/common/component/uibase/stdmod", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview
+ * 控件包含头部（head)、内容(content)和尾部（foot)
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  CLS_PREFIX = BUI.prefix + 'stdmod-';
+
+
+/**
+ * 标准模块组织的视图类
+ * @class BUI.Component.UIBase.StdModView
+ * @private
+ */
+function StdModView() {}
+
+StdModView.ATTRS = {
+  header: {},
+  body: {},
+  footer: {},
+  bodyStyle: {},
+  footerStyle: {},
+  headerStyle: {},
+  headerContent: {},
+  bodyContent: {},
+  footerContent: {}
+};
+
+StdModView.PARSER = {
+  header: function(el) {
+    return el.one("." + CLS_PREFIX + "header");
+  },
+  body: function(el) {
+    return el.one("." + CLS_PREFIX + "body");
+  },
+  footer: function(el) {
+    return el.one("." + CLS_PREFIX + "footer");
+  }
+}; /**/
+
+function createUI(self, part) {
+  var el = self.get('contentEl'),
+    partEl = self.get(part);
+  if (!partEl) {
+    partEl = $('<div class="' +
+      CLS_PREFIX + part + '"' +
+      ' ' +
+      ' >' +
+      '</div>');
+    partEl.appendTo(el);
+    self.setInternal(part, partEl);
+  }
+}
+
+
+function _setStdModRenderContent(self, part, v) {
+  part = self.get(part);
+  if (BUI.isString(v)) {
+    part.html(v);
+  } else {
+    part.html('')
+      .append(v);
+  }
+}
+
+StdModView.prototype = {
+
+  __renderUI: function() { //createDom
+    createUI(this, 'header');
+    createUI(this, 'body');
+    createUI(this, 'footer');
+  },
+
+  _uiSetBodyStyle: function(v) {
+    this.get('body').css(v);
+  },
+
+  _uiSetHeaderStyle: function(v) {
+    this.get('header').css(v);
+  },
+  _uiSetFooterStyle: function(v) {
+    this.get('footer').css(v);
+  },
+
+  _uiSetBodyContent: function(v) {
+    _setStdModRenderContent(this, 'body', v);
+  },
+
+  _uiSetHeaderContent: function(v) {
+    _setStdModRenderContent(this, 'header', v);
+  },
+
+  _uiSetFooterContent: function(v) {
+    _setStdModRenderContent(this, 'footer', v);
+  }
+};
+
+/**
+ * @class BUI.Component.UIBase.StdMod
+ * StdMod extension class.
+ * Generate head, body, foot for component.
+ */
+function StdMod() {}
+
+StdMod.ATTRS = {
+  /**
+   * 控件的头部DOM. Readonly
+   * @readOnly
+   * @type {jQuery}
+   */
+  header: {
+    view: 1
+  },
+  /**
+   * 控件的内容DOM. Readonly
+   * @readOnly
+   * @type {jQuery}
+   */
+  body: {
+    view: 1
+  },
+  /**
+   * 控件的底部DOM. Readonly
+   * @readOnly
+   * @type {jQuery}
+   */
+  footer: {
+    view: 1
+  },
+  /**
+   * 应用到控件内容的css属性，键值对形式
+   * @cfg {Object} bodyStyle
+   */
+  /**
+   * 应用到控件内容的css属性，键值对形式
+   * @type {Object}
+   * @protected
+   */
+  bodyStyle: {
+    view: 1
+  },
+  /**
+   * 应用到控件底部的css属性，键值对形式
+   * @cfg {Object} footerStyle
+   */
+  /**
+   * 应用到控件底部的css属性，键值对形式
+   * @type {Object}
+   * @protected
+   */
+  footerStyle: {
+    view: 1
+  },
+  /**
+   * 应用到控件头部的css属性，键值对形式
+   * @cfg {Object} headerStyle
+   */
+  /**
+   * 应用到控件头部的css属性，键值对形式
+   * @type {Object}
+   * @protected
+   */
+  headerStyle: {
+    view: 1
+  },
+  /**
+   * 控件头部的html
+   * <pre><code>
+   * var dialog = new Dialog({
+   *     headerContent: '&lt;div class="header"&gt;&lt;/div&gt;',
+   *     bodyContent : '#c1',
+   *     footerContent : '&lt;div class="footer"&gt;&lt;/div&gt;'
+   * });
+   * dialog.show();
+   * </code></pre>
+   * @cfg {jQuery|String} headerContent
+   */
+  /**
+   * 控件头部的html
+   * @type {jQuery|String}
+   */
+  headerContent: {
+    view: 1
+  },
+  /**
+   * 控件内容的html
+   * <pre><code>
+   * var dialog = new Dialog({
+   *     headerContent: '&lt;div class="header"&gt;&lt;/div&gt;',
+   *     bodyContent : '#c1',
+   *     footerContent : '&lt;div class="footer"&gt;&lt;/div&gt;'
+   * });
+   * dialog.show();
+   * </code></pre>
+   * @cfg {jQuery|String} bodyContent
+   */
+  /**
+   * 控件内容的html
+   * @type {jQuery|String}
+   */
+  bodyContent: {
+    view: 1
+  },
+  /**
+   * 控件底部的html
+   * <pre><code>
+   * var dialog = new Dialog({
+   *     headerContent: '&lt;div class="header"&gt;&lt;/div&gt;',
+   *     bodyContent : '#c1',
+   *     footerContent : '&lt;div class="footer"&gt;&lt;/div&gt;'
+   * });
+   * dialog.show();
+   * </code></pre>
+   * @cfg {jQuery|String} footerContent
+   */
+  /**
+   * 控件底部的html
+   * @type {jQuery|String}
+   */
+  footerContent: {
+    view: 1
+  }
+};
+
+StdMod.View = StdModView;
+
+module.exports = StdMod;
+
+});
+define("bui/common/component/uibase/decorate", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview 使用wrapper
+ * @ignore
+ */
+
+
+var $ = require('jquery'),
+  ArrayUtil = require("bui/common/array"),
+  JSON = require("bui/common/json"),
+  prefixCls = BUI.prefix,
+  FIELD_PREFIX = 'data-',
+  FIELD_CFG = FIELD_PREFIX + 'cfg',
+  PARSER = 'PARSER',
+  Manager = require("bui/common/component/manage"),
+  RE_DASH_WORD = /-([a-z])/g,
+  regx = /^[\{\[]/;
+
+function isConfigField(name, cfgFields) {
+  if (cfgFields[name]) {
+    return true;
+  }
+  var reg = new RegExp("^" + FIELD_PREFIX);
+  if (name !== FIELD_CFG && reg.test(name)) {
+    return true;
+  }
+  return false;
+}
+
+// 收集单继承链，子类在前，父类在后
+function collectConstructorChains(self) {
+  var constructorChains = [],
+    c = self.constructor;
+  while (c) {
+    constructorChains.push(c);
+    c = c.superclass && c.superclass.constructor;
+  }
+  return constructorChains;
+}
+
+function camelCase(str) {
+  return str.toLowerCase().replace(RE_DASH_WORD, function(all, letter) {
+    return (letter + '').toUpperCase()
+  })
+}
+
+//如果属性为对象或者数组，则进行转换
+function parseFieldValue(value) {
+
+  value = $.trim(value);
+  if (value.toLowerCase() === 'false') {
+    value = false
+  } else if (value.toLowerCase() === 'true') {
+    value = true
+  } else if (regx.test(value)) {
+    value = JSON.looseParse(value);
+  } else if (/\d/.test(value) && /[^a-z]/i.test(value)) {
+    var number = parseFloat(value)
+    if (number + '' === value) {
+      value = number
+    }
+  }
+
+  return value;
+}
+
+function setConfigFields(self, cfg) {
+
+  var userConfig = self.userConfig || {};
+  for (var p in cfg) {
+    // 用户设置过那么这里不从 dom 节点取
+    // 用户设置 > html parser > default value
+    if (!(p in userConfig)) {
+      self.setInternal(p, cfg[p]);
+    }
+  }
+}
+
+function applyParser(srcNode, parser) {
+  var self = this,
+    p, v,
+    userConfig = self.userConfig || {};
+
+  // 从 parser 中，默默设置属性，不触发事件
+  for (p in parser) {
+    // 用户设置过那么这里不从 dom 节点取
+    // 用户设置 > html parser > default value
+    if (!(p in userConfig)) {
+      v = parser[p];
+      // 函数
+      if (BUI.isFunction(v)) {
+        self.setInternal(p, v.call(self, srcNode));
+      }
+      // 单选选择器
+      else if (typeof v == 'string') {
+        self.setInternal(p, srcNode.find(v));
+      }
+      // 多选选择器
+      else if (BUI.isArray(v) && v[0]) {
+        self.setInternal(p, srcNode.find(v[0]))
+      }
+    }
+  }
+}
+
+function initParser(self, srcNode) {
+
+  var c = self.constructor,
+    len,
+    p,
+    constructorChains;
+
+  constructorChains = collectConstructorChains(self);
+
+  // 从父类到子类开始从 html 读取属性
+  for (len = constructorChains.length - 1; len >= 0; len--) {
+    c = constructorChains[len];
+    if (p = c[PARSER]) {
+      applyParser.call(self, srcNode, p);
+    }
+  }
+}
+
+function initDecorate(self) {
+  var _self = self,
+    srcNode = _self.get('srcNode'),
+    userConfig,
+    decorateCfg;
+  if (srcNode) {
+    srcNode = $(srcNode);
+    _self.setInternal('el', srcNode);
+    _self.setInternal('srcNode', srcNode);
+
+    userConfig = _self.get('userConfig');
+    decorateCfg = _self.getDecorateConfig(srcNode);
+    setConfigFields(self, decorateCfg);
+
+    //如果从DOM中读取子控件
+    if (_self.get('isDecorateChild') && _self.decorateInternal) {
+      _self.decorateInternal(srcNode);
+    }
+    initParser(self, srcNode);
+  }
+}
+
+/**
+ * @class BUI.Component.UIBase.Decorate
+ * 将DOM对象封装成控件
+ */
+function decorate() {
+  initDecorate(this);
+}
+
+decorate.ATTRS = {
+
+  /**
+   * 配置控件的根节点的DOM
+   * <pre><code>
+   * new Form.Form({
+   *   srcNode : '#J_Form'
+   * }).render();
+   * </code></pre>
+   * @cfg {jQuery} srcNode
+   */
+  /**
+   * 配置控件的根节点的DOM
+   * @type {jQuery}
+   */
+  srcNode: {
+    view: true
+  },
+  /**
+   * 是否根据DOM生成子控件
+   * @type {Boolean}
+   * @protected
+   */
+  isDecorateChild: {
+    value: false
+  },
+  /**
+   * 此配置项配置使用那些srcNode上的节点作为配置项
+   *  - 当时用 decorate 时，取 srcNode上的节点的属性作为控件的配置信息
+   *  - 默认id,name,value,title 都会作为属性传入
+   *  - 使用 'data-cfg' 作为整体的配置属性
+   *  <pre><code>
+   *     <input id="c1" type="text" name="txtName" id="id",data-cfg="{allowBlank:false}" />
+   *     //会生成以下配置项：
+   *     {
+   *         name : 'txtName',
+   *         id : 'id',
+   *         allowBlank:false
+   *     }
+   *     new Form.Field({
+   *        src:'#c1'
+   *     }).render();
+   *  </code></pre>
+   * @type {Object}
+   * @protected
+   */
+  decorateCfgFields: {
+    value: {
+      'id': true,
+      'name': true,
+      'value': true,
+      'title': true
+    }
+  }
+};
+
+decorate.prototype = {
+
+  /**
+   * 获取控件的配置信息
+   * @protected
+   */
+  getDecorateConfig: function(el) {
+    if (!el.length) {
+      return null;
+    }
+    var _self = this,
+      dom = el[0],
+      attributes = dom.attributes,
+      decorateCfgFields = _self.get('decorateCfgFields'),
+      config = {},
+      statusCfg = _self._getStautsCfg(el);
+
+    BUI.each(attributes, function(attr) {
+      var name = attr.nodeName;
+      try {
+        if (name === FIELD_CFG) {
+          var cfg = parseFieldValue(attr.nodeValue);
+          BUI.mix(config, cfg);
+        } else if (isConfigField(name, decorateCfgFields)) {
+          var value = attr.nodeValue;
+          if (name.indexOf(FIELD_PREFIX) !== -1) {
+            name = name.replace(FIELD_PREFIX, '');
+            name = camelCase(name);
+            value = parseFieldValue(value);
+          }
+
+          if (config[name] && BUI.isObject(value)) {
+            BUI.mix(config[name], value);
+          } else {
+            config[name] = value;
+          }
+        }
+      } catch (e) {
+        BUI.log('parse field error,the attribute is:' + name);
+      }
+    });
+    return BUI.mix(config, statusCfg);
+  },
+  //根据css class获取状态属性
+  //如： selected,disabled等属性
+  _getStautsCfg: function(el) {
+    var _self = this,
+      rst = {},
+      statusCls = _self.get('statusCls');
+    BUI.each(statusCls, function(v, k) {
+      if (el.hasClass(v)) {
+        rst[k] = true;
+      }
+    });
+    return rst;
+  },
+  /**
+   * 获取封装成子控件的节点集合
+   * @protected
+   * @return {Array} 节点集合
+   */
+  getDecorateElments: function() {
+    var _self = this,
+      el = _self.get('el'),
+      contentContainer = _self.get('childContainer');
+    if (contentContainer) {
+      return el.find(contentContainer).children();
+    } else {
+      return el.children();
+    }
+  },
+
+  /**
+   * 封装所有的子控件
+   * @protected
+   * @param {jQuery} el Root element of current component.
+   */
+  decorateInternal: function(el) {
+    var self = this;
+    self.decorateChildren(el);
+  },
+  /**
+   * 获取子控件的xclass类型
+   * @protected
+   * @param {jQuery} childNode 子控件的根节点
+   */
+  findXClassByNode: function(childNode, ignoreError) {
+    var _self = this,
+      cls = childNode.attr("class") || '',
+      childClass = _self.get('defaultChildClass'); //如果没有样式或者查找不到对应的类，使用默认的子控件类型
+
+    // 过滤掉特定前缀
+    cls = cls.replace(new RegExp("\\b" + prefixCls, "ig"), "");
+
+    var UI = Manager.getConstructorByXClass(cls) || Manager.getConstructorByXClass(childClass);
+
+    if (!UI && !ignoreError) {
+      BUI.log(childNode);
+      BUI.error("can not find ui " + cls + " from this markup");
+    }
+    return Manager.getXClassByConstructor(UI);
+  },
+  // 生成一个组件
+  decorateChildrenInternal: function(xclass, c) {
+    var _self = this,
+      children = _self.get('children');
+    children.push({
+      xclass: xclass,
+      srcNode: c
+    });
+  },
+  /**
+   * 封装子控件
+   * @private
+   * @param {jQuery} el component's root element.
+   */
+  decorateChildren: function(el) {
+    var _self = this,
+      children = _self.getDecorateElments();
+    BUI.each(children, function(c) {
+      var xclass = _self.findXClassByNode($(c));
+      _self.decorateChildrenInternal(xclass, $(c));
+    });
+  }
+};
+
+module.exports = decorate;
+
+});
+define("bui/common/component/uibase/tpl", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview 控件模板
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+var $ = require('jquery');
+
+/**
+ * @private
+ * 控件模板扩展类的渲染类(view)
+ * @class BUI.Component.UIBase.TplView
+ */
+function tplView() {
+
+}
+
+tplView.ATTRS = {
+  /**
+   * 模板
+   * @protected
+   * @type {String}
+   */
+  tpl: {
+
+  },
+  tplEl: {
+
+  }
+};
+
+tplView.prototype = {
+  __renderUI: function() {
+    var _self = this,
+      contentContainer = _self.get('childContainer'),
+      contentEl;
+
+    if (contentContainer) {
+      contentEl = _self.get('el').find(contentContainer);
+      if (contentEl.length) {
+        _self.set('contentEl', contentEl);
+      }
+    }
+  },
+  /**
+   * 获取生成控件的模板
+   * @protected
+   * @param  {Object} attrs 属性值
+   * @return {String} 模板
+   */
+  getTpl: function(attrs) {
+    var _self = this,
+      tpl = _self.get('tpl'),
+      tplRender = _self.get('tplRender');
+    attrs = attrs || _self.getAttrVals();
+
+    if (tplRender) {
+      return tplRender(attrs);
+    }
+    if (tpl) {
+      return BUI.substitute(tpl, attrs);
+    }
+    return '';
+  },
+  /**
+   * 如果控件设置了模板，则根据模板和属性值生成DOM
+   * 如果设置了content属性，此模板不应用
+   * @protected
+   * @param  {Object} attrs 属性值，默认为初始化时传入的值
+   */
+  setTplContent: function(attrs) {
+    var _self = this,
+      el = _self.get('el'),
+      content = _self.get('content'),
+      tplEl = _self.get('tplEl'),
+      tpl = _self.getTpl(attrs);
+
+    //tplEl.remove();
+    if (!content && tpl) { //替换掉原先的内容
+      el.empty();
+      el.html(tpl);
+      /*if(tplEl){
+          var node = $(tpl).insertBefore(tplEl);
+          tplEl.remove();
+          tplEl = node;
+        }else{
+          tplEl = $(tpl).appendTo(el);
+        }
+        _self.set('tplEl',tplEl)
+        */
+    }
+  }
+}
+
+/**
+ * 控件的模板扩展
+ * @class BUI.Component.UIBase.Tpl
+ */
+function tpl() {
+
+}
+
+tpl.ATTRS = {
+  /**
+   * 控件的模版，用于初始化
+   * <pre><code>
+   * var list = new List.List({
+   *   tpl : '&lt;div class="toolbar"&gt;&lt;/div&gt;&lt;ul&gt;&lt;/ul&gt;',
+   *   childContainer : 'ul'
+   * });
+   * //用于统一子控件模板
+   * var list = new List.List({
+   *   defaultChildCfg : {
+   *     tpl : '&lt;span&gt;{text}&lt;/span&gt;'
+   *   }
+   * });
+   * list.render();
+   * </code></pre>
+   * @cfg {String} tpl
+   */
+  /**
+   * 控件的模板
+   * <pre><code>
+   *   list.set('tpl','&lt;div class="toolbar"&gt;&lt;/div&gt;&lt;ul&gt;&lt;/ul&gt;&lt;div class="bottom"&gt;&lt;/div&gt;')
+   * </code></pre>
+   * @type {String}
+   */
+  tpl: {
+    view: true,
+    sync: false
+  },
+  /**
+   * <p>控件的渲染函数，应对一些简单模板解决不了的问题，例如有if,else逻辑，有循环逻辑,
+   * 函数原型是function(data){},其中data是控件的属性值</p>
+   * <p>控件模板的加强模式，此属性会覆盖@see {BUI.Component.UIBase.Tpl#property-tpl}属性</p>
+   * //用于统一子控件模板
+   * var list = new List.List({
+   *   defaultChildCfg : {
+   *     tplRender : funciton(item){
+   *       if(item.type == '1'){
+   *         return 'type1 html';
+   *       }else{
+   *         return 'type2 html';
+   *       }
+   *     }
+   *   }
+   * });
+   * list.render();
+   * @cfg {Function} tplRender
+   */
+  tplRender: {
+    view: true,
+    value: null
+  },
+  /**
+   * 这是一个选择器，使用了模板后，子控件可能会添加到模板对应的位置,
+   *  - 默认为null,此时子控件会将控件最外层 el 作为容器
+   * <pre><code>
+   * var list = new List.List({
+   *   tpl : '&lt;div class="toolbar"&gt;&lt;/div&gt;&lt;ul&gt;&lt;/ul&gt;',
+   *   childContainer : 'ul'
+   * });
+   * </code></pre>
+   * @cfg {String} childContainer
+   */
+  childContainer: {
+    view: true
+  }
+};
+
+tpl.prototype = {
+
+  __renderUI: function() {
+    //使用srcNode时，不使用模板
+    if (!this.get('srcNode')) {
+      this.setTplContent();
+    }
+  },
+  /**
+   * 控件信息发生改变时，控件内容跟模板相关时需要调用这个函数，
+   * 重新通过模板和控件信息构造内容
+   */
+  updateContent: function() {
+    this.setTplContent();
+  },
+  /**
+   * 根据控件的属性和模板生成控件内容
+   * @protected
+   */
+  setTplContent: function() {
+    var _self = this,
+      attrs = _self.getAttrVals();
+    _self.get('view').setTplContent(attrs);
+  },
+  //模板发生改变
+  _uiSetTpl: function() {
+    this.setTplContent();
+  }
+};
+
+tpl.View = tplView;
+
+module.exports = tpl;
+
+});
+define("bui/common/component/uibase/childcfg", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview 子控件的默认配置项
+ * @ignore
+ */
+
+var $ = require('jquery');
+
+/**
+ * @class BUI.Component.UIBase.ChildCfg
+ * 子控件默认配置项的扩展类
+ */
+var childCfg = function(config) {
+  this._init();
+};
+
+childCfg.ATTRS = {
+  /**
+   * 默认的子控件配置项,在初始化控件时配置
+   *
+   *  - 如果控件已经渲染过，此配置项无效，
+   *  - 控件生成后，修改此配置项无效。
+   * <pre><code>
+   *   var control = new Control({
+   *     defaultChildCfg : {
+   *       tpl : '&lt;li&gt;{text}&lt;/li&gt;',
+   *       xclass : 'a-b'
+   *     }
+   *   });
+   * </code></pre>
+   * @cfg {Object} defaultChildCfg
+   */
+  /**
+   * @ignore
+   */
+  defaultChildCfg: {
+
+  }
+};
+
+childCfg.prototype = {
+
+  _init: function() {
+    var _self = this,
+      defaultChildCfg = _self.get('defaultChildCfg');
+    if (defaultChildCfg) {
+      _self.on('beforeAddChild', function(ev) {
+        var child = ev.child;
+        if ($.isPlainObject(child)) {
+          BUI.each(defaultChildCfg, function(v, k) {
+            if (child[k] == null) { //如果未在配置项中设置，则使用默认值
+              child[k] = v;
+            }
+          });
+        }
+      });
+    }
+  }
+
+};
+
+module.exports = childCfg;
+
+});
+define("bui/common/component/uibase/bindable", [], function(require, exports, module){
+/**
+ * @fileOverview bindable extension class.
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+/**
+ * bindable extension class.
+ * <pre><code>
+ *   BUI.use(['bui/list','bui/data','bui/mask'],function(List,Data,Mask){
+ *     var store = new Data.Store({
+ *       url : 'data/xx.json'
+ *     });
+ *   	var list = new List.SimpleList({
+ *  	    render : '#l1',
+ *  	    store : store,
+ *  	    loadMask : new Mask.LoadMask({el : '#t1'})
+ *     });
+ *
+ *     list.render();
+ *     store.load();
+ *   });
+ * </code></pre>
+ * 使控件绑定store，处理store的事件 {@link BUI.Data.Store}
+ * @class BUI.Component.UIBase.Bindable
+ */
+function bindable() {
+
+}
+
+bindable.ATTRS = {
+  /**
+   * 绑定 {@link BUI.Data.Store}的事件
+   * <pre><code>
+   *  var store = new Data.Store({
+   *   url : 'data/xx.json',
+   *   autoLoad : true
+   *  });
+   *
+   *  var list = new List.SimpleList({
+   *  	 render : '#l1',
+   *  	 store : store
+   *  });
+   *
+   *  list.render();
+   * </code></pre>
+   * @cfg {BUI.Data.Store} store
+   */
+  /**
+   * 绑定 {@link BUI.Data.Store}的事件
+   * <pre><code>
+   *  var store = list.get('store');
+   * </code></pre>
+   * @type {BUI.Data.Store}
+   */
+  store: {
+
+  },
+  /**
+   * 加载数据时，是否显示等待加载的屏蔽层
    * <pre><code>
    *   BUI.use(['bui/list','bui/data','bui/mask'],function(List,Data,Mask){
    *     var store = new Data.Store({
@@ -8168,2826 +8926,2975 @@ define("bui/common/component/uibase/bindable", [], function(require, exports, mo
    *     store.load();
    *   });
    * </code></pre>
-   * 使控件绑定store，处理store的事件 {@link BUI.Data.Store}
-   * @class BUI.Component.UIBase.Bindable
+   * @cfg {Boolean|Object} loadMask
    */
-  function bindable() {}
-  bindable.ATTRS = {
-    /**
-     * 绑定 {@link BUI.Data.Store}的事件
-     * <pre><code>
-     *  var store = new Data.Store({
-     *   url : 'data/xx.json',
-     *   autoLoad : true
-     *  });
-     *
-     *  var list = new List.SimpleList({
-     *  	 render : '#l1',
-     *  	 store : store
-     *  });
-     *
-     *  list.render();
-     * </code></pre>
-     * @cfg {BUI.Data.Store} store
-     */
-    /**
-     * 绑定 {@link BUI.Data.Store}的事件
-     * <pre><code>
-     *  var store = list.get('store');
-     * </code></pre>
-     * @type {BUI.Data.Store}
-     */
-    store: {},
-    /**
-     * 加载数据时，是否显示等待加载的屏蔽层
-     * <pre><code>
-     *   BUI.use(['bui/list','bui/data','bui/mask'],function(List,Data,Mask){
-     *     var store = new Data.Store({
-     *       url : 'data/xx.json'
-     *     });
-     *   	var list = new List.SimpleList({
-     *  	    render : '#l1',
-     *  	    store : store,
-     *  	    loadMask : new Mask.LoadMask({el : '#t1'})
-     *     });
-     *
-     *     list.render();
-     *     store.load();
-     *   });
-     * </code></pre>
-     * @cfg {Boolean|Object} loadMask
-     */
-    /**
-     * 加载数据时，是否显示等待加载的屏蔽层
-     * @type {Boolean|Object}
-     * @ignore
-     */
-    loadMask: {
-      value: false
-    }
-  };
-  BUI.augment(bindable, {
-    __bindUI: function() {
-      var _self = this,
-        store = _self.get('store'),
-        loadMask = _self.get('loadMask');
-      if (!store) {
-        return;
-      }
-      store.on('beforeload', function(e) {
-        _self.onBeforeLoad(e);
-        if (loadMask && loadMask.show) {
-          loadMask.show();
-        }
-      });
-      store.on('load', function(e) {
-        _self.onLoad(e);
-        if (loadMask && loadMask.hide) {
-          loadMask.hide();
-        }
-      });
-      store.on('exception', function(e) {
-        _self.onException(e);
-        if (loadMask && loadMask.hide) {
-          loadMask.hide();
-        }
-      });
-      store.on('add', function(e) {
-        _self.onAdd(e);
-      });
-      store.on('remove', function(e) {
-        _self.onRemove(e);
-      });
-      store.on('update', function(e) {
-        _self.onUpdate(e);
-      });
-      store.on('localsort', function(e) {
-        _self.onLocalSort(e);
-      });
-      store.on('filtered', function(e) {
-        _self.onFiltered(e);
-      });
-    },
-    __syncUI: function() {
-      var _self = this,
-        store = _self.get('store');
-      if (!store) {
-        return;
-      }
-      if (store.hasData()) {
-        _self.onLoad();
-      }
-    },
-    /**
-     * @protected
-     * @template
-     * before store load data
-     * @param {Object} e The event object
-     * @see {@link BUI.Data.Store#event-beforeload}
-     */
-    onBeforeLoad: function(e) {},
-    /**
-     * @protected
-     * @template
-     * after store load data
-     * @param {Object} e The event object
-     * @see {@link BUI.Data.Store#event-load}
-     */
-    onLoad: function(e) {},
-    /**
-     * @protected
-     * @template
-     * occurred exception when store is loading data
-     * @param {Object} e The event object
-     * @see {@link BUI.Data.Store#event-exception}
-     */
-    onException: function(e) {},
-    /**
-     * @protected
-     * @template
-     * after added data to store
-     * @param {Object} e The event object
-     * @see {@link BUI.Data.Store#event-add}
-     */
-    onAdd: function(e) {},
-    /**
-     * @protected
-     * @template
-     * after remvoed data to store
-     * @param {Object} e The event object
-     * @see {@link BUI.Data.Store#event-remove}
-     */
-    onRemove: function(e) {},
-    /**
-     * @protected
-     * @template
-     * after updated data to store
-     * @param {Object} e The event object
-     * @see {@link BUI.Data.Store#event-update}
-     */
-    onUpdate: function(e) {},
-    /**
-     * @protected
-     * @template
-     * after local sorted data to store
-     * @param {Object} e The event object
-     * @see {@link BUI.Data.Store#event-localsort}
-     */
-    onLocalSort: function(e) {},
-    /**
-     * @protected
-     * @template
-     * after filter data to store
-     * @param {Object} e The event object
-     * @see {@link BUI.Data.Store#event-filtered}
-     */
-    onFiltered: function(e) {}
-  });
-  module.exports = bindable;
-});
-define("bui/common/component/uibase/depends", ["jquery"], function(require, exports, module) {
   /**
-   * @fileOverview 依赖扩展，用于观察者模式中的观察者
+   * 加载数据时，是否显示等待加载的屏蔽层
+   * @type {Boolean|Object}
    * @ignore
    */
-  var $ = require('jquery'),
-    regexp = /^#(.*):(.*)$/,
-    Manager = require("bui/common/component/manage");
-  //获取依赖信息
-  function getDepend(name) {
-      var arr = regexp.exec(name),
-        id = arr[1],
-        eventType = arr[2],
-        source = getSource(id);
-      return {
-        source: source,
-        eventType: eventType
-      };
-    }
-    //绑定依赖
-  function bindDepend(self, name, action) {
-      var depend = getDepend(name),
-        source = depend.source,
-        eventType = depend.eventType,
-        callbak;
-      if (source && action && eventType) {
-        if (BUI.isFunction(action)) { //如果action是一个函数
-          callbak = action;
-        } else if (BUI.isArray(action)) { //如果是一个数组，构建一个回调函数
-          callbak = function() {
-            BUI.each(action, function(methodName) {
-              if (self[methodName]) {
-                self[methodName]();
-              }
-            });
-          }
-        }
-      }
-      if (callbak) {
-        depend.callbak = callbak;
-        source.on(eventType, callbak);
-        return depend;
-      }
-      return null;
-    }
-    //去除依赖
-  function offDepend(depend) {
-      var source = depend.source,
-        eventType = depend.eventType,
-        callbak = depend.callbak;
-      source.off(eventType, callbak);
-    }
-    //获取绑定的事件源
-  function getSource(id) {
-      var control = Manager.getComponent(id);
-      if (!control) {
-        control = $('#' + id);
-        if (!control.length) {
-          control = null;
-        }
-      }
-      return control;
-    }
-    /**
-     * @class BUI.Component.UIBase.Depends
-     * 依赖事件源的扩展
-     * <pre><code>
-     *       var control = new Control({
-     *         depends : {
-     *           '#btn:click':['toggle'],//当点击id为'btn'的按钮时，执行 control 的toggle方法
-     *           '#checkbox1:checked':['show'],//当勾选checkbox时，显示控件
-     *           '#menu:click',function(){}
-     *         }
-     *       });
-     * </code></pre>
-     */
-  function Depends() {};
-  Depends.ATTRS = {
-    /**
-     * 控件的依赖事件，是一个数组集合，每一条记录是一个依赖关系<br/>
-     * 一个依赖是注册一个事件，所以需要在一个依赖中提供：
-     * <ol>
-     * <li>绑定源：为了方便配置，我们使用 #id来指定绑定源，可以使控件的ID（只支持继承{BUI.Component.Controller}的控件），也可以是DOM的id</li>
-     * <li>事件名：事件名是一个使用":"为前缀的字符串，例如 "#id:change",即监听change事件</li>
-     * <li>触发的方法：可以是一个数组，如["disable","clear"],数组里面是控件的方法名，也可以是一个回调函数</li>
-     * </ol>
-     * <pre><code>
-     *       var control = new Control({
-     *         depends : {
-     *           '#btn:click':['toggle'],//当点击id为'btn'的按钮时，执行 control 的toggle方法
-     *           '#checkbox1:checked':['show'],//当勾选checkbox时，显示控件
-     *           '#menu:click',function(){}
-     *         }
-     *       });
-     * </code></pre>
-     * ** 注意：** 这些依赖项是在控件渲染（render）后进行的。
-     * @type {Object}
-     */
-    depends: {},
-    /**
-     * @private
-     * 依赖的映射集合
-     * @type {Object}
-     */
-    dependencesMap: {
-      shared: false,
-      value: {}
-    }
-  };
-  Depends.prototype = {
-    __syncUI: function() {
-      this.initDependences();
-    },
-    /**
-     * 初始化依赖项
-     * @protected
-     */
-    initDependences: function() {
-      var _self = this,
-        depends = _self.get('depends');
-      BUI.each(depends, function(action, name) {
-        _self.addDependence(name, action);
-      });
-    },
-    /**
-     * 添加依赖，如果已经有同名的事件，则移除，再添加
-     * <pre><code>
-     *  form.addDependence('#btn:click',['toggle']); //当按钮#btn点击时，表单交替显示隐藏
-     *
-     *  form.addDependence('#btn:click',function(){//当按钮#btn点击时，表单交替显示隐藏
-     *   //TO DO
-     *  });
-     * </code></pre>
-     * @param {String} name 依赖项的名称
-     * @param {Array|Function} action 依赖项的事件
-     */
-    addDependence: function(name, action) {
-      var _self = this,
-        dependencesMap = _self.get('dependencesMap'),
-        depend;
-      _self.removeDependence(name);
-      depend = bindDepend(_self, name, action)
-      if (depend) {
-        dependencesMap[name] = depend;
-      }
-    },
-    /**
-     * 移除依赖
-     * <pre><code>
-     *  form.removeDependence('#btn:click'); //当按钮#btn点击时，表单不在监听
-     * </code></pre>
-     * @param  {String} name 依赖名称
-     */
-    removeDependence: function(name) {
-      var _self = this,
-        dependencesMap = _self.get('dependencesMap'),
-        depend = dependencesMap[name];
-      if (depend) {
-        offDepend(depend);
-        delete dependencesMap[name];
-      }
-    },
-    /**
-     * 清除所有的依赖
-     * <pre><code>
-     *  form.clearDependences();
-     * </code></pre>
-     */
-    clearDependences: function() {
-      var _self = this,
-        map = _self.get('dependencesMap');
-      BUI.each(map, function(depend, name) {
-        offDepend(depend);
-      });
-      _self.set('dependencesMap', {});
-    },
-    __destructor: function() {
-      this.clearDependences();
-    }
-  };
-  module.exports = Depends;
-});
-define("bui/common/component/view", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview  控件的视图层
-   * @author yiminghe@gmail.com
-   * copied by dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require('jquery'),
-    win = window,
-    Manager = require("bui/common/component/manage"),
-    UIBase = require("bui/common/component/uibase/uibase"), //BUI.Component.UIBase,
-    doc = document;
-  /**
-   * 控件的视图层基类
-   * @class BUI.Component.View
-   * @protected
-   * @extends BUI.Component.UIBase
-   * @mixins BUI.Component.UIBase.TplView
-   */
-  var View = UIBase.extend([UIBase.TplView], {
-    /**
-     * Get all css class name to be applied to the root element of this component for given state.
-     * the css class names are prefixed with component name.
-     * @param {String} [state] This component's state info.
-     */
-    getComponentCssClassWithState: function(state) {
-      var self = this,
-        componentCls = self.get('ksComponentCss');
-      state = state || '';
-      return self.getCssClassWithPrefix(componentCls.split(/\s+/).join(state + ' ') + state);
-    },
-    /**
-     * Get full class name (with prefix) for current component
-     * @param classes {String} class names without prefixCls. Separated by space.
-     * @method
-     * @return {String} class name with prefixCls
-     * @private
-     */
-    getCssClassWithPrefix: Manager.getCssClassWithPrefix,
-    /**
-     * Returns the dom element which is responsible for listening keyboard events.
-     * @return {jQuery}
-     */
-    getKeyEventTarget: function() {
-      return this.get('el');
-    },
-    /**
-     * Return the dom element into which child component to be rendered.
-     * @return {jQuery}
-     */
-    getContentElement: function() {
-      return this.get('contentEl') || this.get('el');
-    },
-    /**
-     * 获取状态对应的css样式
-     * @param  {String} name 状态名称 例如：hover,disabled等等
-     * @return {String} 状态样式
-     */
-    getStatusCls: function(name) {
-      var self = this,
-        statusCls = self.get('statusCls'),
-        cls = statusCls[name];
-      if (!cls) {
-        cls = self.getComponentCssClassWithState('-' + name);
-      }
-      return cls;
-    },
-    /**
-     * 渲染控件
-     * @protected
-     */
-    renderUI: function() {
-      var self = this;
-      // 新建的节点才需要摆放定位,不支持srcNode模式
-      if (!self.get('srcNode')) {
-        var render = self.get('render'),
-          el = self.get('el'),
-          renderBefore = self.get('elBefore');
-        if (renderBefore) {
-          el.insertBefore(renderBefore, undefined);
-        } else if (render) {
-          el.appendTo(render, undefined);
-        } else {
-          el.appendTo(doc.body, undefined);
-        }
-      }
-    },
-    /**
-     * 只负责建立节点，如果是 decorate 过来的，甚至内容会丢失
-     * @protected
-     * 通过 render 来重建原有的内容
-     */
-    createDom: function() {
-      var self = this,
-        contentEl = self.get('contentEl'),
-        el = self.get('el');
-      if (!self.get('srcNode')) {
-        el = $('<' + self.get('elTagName') + '>');
-        if (contentEl) {
-          el.append(contentEl);
-        }
-        self.setInternal('el', el);
-      }
-      el.addClass(self.getComponentCssClassWithState());
-      if (!contentEl) {
-        // 没取到,这里设下值, uiSet 时可以 set('content')  取到
-        self.setInternal('contentEl', el);
-      }
-    },
-    /**
-     * 设置高亮显示
-     * @protected
-     */
-    _uiSetHighlighted: function(v) {
-      var self = this,
-        componentCls = self.getStatusCls('hover'),
-        el = self.get('el');
-      el[v ? 'addClass' : 'removeClass'](componentCls);
-    },
-    /**
-     * 设置禁用
-     * @protected
-     */
-    _uiSetDisabled: function(v) {
-      var self = this,
-        componentCls = self.getStatusCls('disabled'),
-        el = self.get('el');
-      el[v ? 'addClass' : 'removeClass'](componentCls).attr('aria-disabled', v);
-      //如果禁用控件时，处于hover状态，则清除
-      if (v && self.get('highlighted')) {
-        self.set('highlighted', false);
-      }
-      if (self.get('focusable')) {
-        //不能被 tab focus 到
-        self.getKeyEventTarget().attr('tabIndex', v ? -1 : 0);
-      }
-    },
-    /**
-     * 设置激活状态
-     * @protected
-     */
-    _uiSetActive: function(v) {
-      var self = this,
-        componentCls = self.getStatusCls('active');
-      self.get('el')[v ? 'addClass' : 'removeClass'](componentCls).attr('aria-pressed', !!v);
-    },
-    /**
-     * 设置获得焦点
-     * @protected
-     */
-    _uiSetFocused: function(v) {
-      var self = this,
-        el = self.get('el'),
-        componentCls = self.getStatusCls('focused');
-      el[v ? 'addClass' : 'removeClass'](componentCls);
-    },
-    /**
-     * 设置控件最外层DOM的属性
-     * @protected
-     */
-    _uiSetElAttrs: function(attrs) {
-      this.get('el').attr(attrs);
-    },
-    /**
-     * 设置应用到控件最外层DOM的css class
-     * @protected
-     */
-    _uiSetElCls: function(cls) {
-      this.get('el').addClass(cls);
-    },
-    /**
-     * 设置应用到控件最外层DOM的css style
-     * @protected
-     */
-    _uiSetElStyle: function(style) {
-      this.get('el').css(style);
-    },
-    //设置role
-    _uiSetRole: function(role) {
-      if (role) {
-        this.get('el').attr('role', role);
-      }
-    },
-    /**
-     * 设置应用到控件宽度
-     * @protected
-     */
-    _uiSetWidth: function(w) {
-      this.get('el').width(w);
-    },
-    /**
-     * 设置应用到控件高度
-     * @protected
-     */
-    _uiSetHeight: function(h) {
-      var self = this;
-      self.get('el').height(h);
-    },
-    /**
-     * 设置应用到控件的内容
-     * @protected
-     */
-    _uiSetContent: function(c) {
-      var self = this,
-        el;
-      // srcNode 时不重新渲染 content
-      // 防止内部有改变，而 content 则是老的 html 内容
-      if (self.get('srcNode') && !self.get('rendered')) {} else {
-        el = self.get('contentEl');
-        if (typeof c == 'string') {
-          el.html(c);
-        } else if (c) {
-          el.empty().append(c);
-        }
-      }
-    },
-    /**
-     * 设置应用到控件是否可见
-     * @protected
-     */
-    _uiSetVisible: function(isVisible) {
-      var self = this,
-        el = self.get('el'),
-        visibleMode = self.get('visibleMode');
-      if (visibleMode === 'visibility') {
-        el.css('visibility', isVisible ? 'visible' : 'hidden');
-      } else {
-        el.css('display', isVisible ? '' : 'none');
-      }
-    },
-    set: function(name, value) {
-      var _self = this,
-        attr = _self.__attrs[name],
-        ev,
-        ucName,
-        m;
-      if (!attr || !_self.get('binded')) { //未初始化view或者没用定义属性
-        View.superclass.set.call(this, name, value);
-        return _self;
-      }
-      var prevVal = View.superclass.get.call(this, name);
-      //如果未改变值不进行修改
-      if (!$.isPlainObject(value) && !BUI.isArray(value) && prevVal === value) {
-        return _self;
-      }
-      View.superclass.set.call(this, name, value);
-      value = _self.__attrVals[name];
-      ev = {
-        attrName: name,
-        prevVal: prevVal,
-        newVal: value
-      };
-      ucName = BUI.ucfirst(name);
-      m = '_uiSet' + ucName;
-      if (_self[m]) {
-        _self[m](value, ev);
-      }
-      return _self;
-    },
-    /**
-     * 析构函数
-     * @protected
-     */
-    destructor: function() {
-      var el = this.get('el');
-      if (el) {
-        el.remove();
-      }
-    }
-  }, {
-    xclass: 'view',
-    priority: 0
-  });
-  View.ATTRS = {
-    /**
-     * 控件根节点
-     * @readOnly
-     * see {@link BUI.Component.Controller#property-el}
-     */
-    el: {
-      /**
-       * @private
-       */
-      setter: function(v) {
-        return $(v);
-      }
-    },
-    /**
-     * 控件根节点样式
-     * see {@link BUI.Component.Controller#property-elCls}
-     */
-    elCls: {},
-    /**
-     * 控件根节点样式属性
-     * see {@link BUI.Component.Controller#property-elStyle}
-     */
-    elStyle: {},
-    /**
-     * ARIA 标准中的role
-     * @type {String}
-     */
-    role: {},
-    /**
-     * 控件宽度
-     * see {@link BUI.Component.Controller#property-width}
-     */
-    width: {},
-    /**
-     * 控件高度
-     * see {@link BUI.Component.Controller#property-height}
-     */
-    height: {},
-    /**
-     * 状态相关的样式,默认情况下会使用 前缀名 + xclass + '-' + 状态名
-     * see {@link BUI.Component.Controller#property-statusCls}
-     * @type {Object}
-     */
-    statusCls: {
-      value: {}
-    },
-    /**
-     * 控件根节点使用的标签
-     * @type {String}
-     */
-    elTagName: {
-      // 生成标签名字
-      value: 'div'
-    },
-    /**
-     * 控件根节点属性
-     * see {@link BUI.Component.Controller#property-elAttrs}
-     * @ignore
-     */
-    elAttrs: {},
-    /**
-     * 控件内容，html,文本等
-     * see {@link BUI.Component.Controller#property-content}
-     */
-    content: {},
-    /**
-     * 控件插入到指定元素前
-     * see {@link BUI.Component.Controller#property-tpl}
-     */
-    elBefore: {
-      // better named to renderBefore, too late !
-    },
-    /**
-     * 控件在指定元素内部渲染
-     * see {@link BUI.Component.Controller#property-render}
-     * @ignore
-     */
-    render: {},
-    /**
-     * 是否可见
-     * see {@link BUI.Component.Controller#property-visible}
-     */
-    visible: {
-      value: true
-    },
-    /**
-     * 可视模式
-     * see {@link BUI.Component.Controller#property-visibleMode}
-     */
-    visibleMode: {
-      value: 'display'
-    },
-    /**
-     * @private
-     * 缓存隐藏时的位置，对应visibleMode = 'visiblity' 的场景
-     * @type {Object}
-     */
-    cachePosition: {},
-    /**
-     * content 设置的内容节点,默认根节点
-     * @type {jQuery}
-     * @default  el
-     */
-    contentEl: {
-      valueFn: function() {
-        return this.get('el');
-      }
-    },
-    /**
-     * 样式前缀
-     * see {@link BUI.Component.Controller#property-prefixCls}
-     */
-    prefixCls: {
-      value: BUI.prefix
-    },
-    /**
-     * 可以获取焦点
-     * @protected
-     * see {@link BUI.Component.Controller#property-focusable}
-     */
-    focusable: {
-      value: true
-    },
-    /**
-     * 获取焦点
-     * see {@link BUI.Component.Controller#property-focused}
-     */
-    focused: {},
-    /**
-     * 激活
-     * see {@link BUI.Component.Controller#property-active}
-     */
-    active: {},
-    /**
-     * 禁用
-     * see {@link BUI.Component.Controller#property-disabled}
-     */
-    disabled: {},
-    /**
-     * 高亮显示
-     * see {@link BUI.Component.Controller#property-highlighted}
-     */
-    highlighted: {}
-  };
-  module.exports = View;
-});
-define("bui/common/component/controller", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview  控件可以实例化的基类
-   * @ignore
-   * @author yiminghe@gmail.com
-   * copied by dxq613@gmail.com
-   */
-  /**
-   * jQuery 事件
-   * @class jQuery.Event
-   * @private
-   */
-  'use strict';
-  var $ = require('jquery'),
-    UIBase = require("bui/common/component/uibase/uibase"),
-    Manager = require("bui/common/component/manage"),
-    View = require("bui/common/component/view"),
-    Loader = require("bui/common/component/loader"),
-    wrapBehavior = BUI.wrapBehavior,
-    getWrapBehavior = BUI.getWrapBehavior;
-  /**
-   * @ignore
-   */
-  function wrapperViewSetter(attrName) {
-      return function(ev) {
-        var self = this;
-        // in case bubbled from sub component
-        if (self === ev.target) {
-          var value = ev.newVal,
-            view = self.get('view');
-          if (view) {
-            view.set(attrName, value);
-          }
-        }
-      };
-    }
-    /**
-     * @ignore
-     */
-  function wrapperViewGetter(attrName) {
-      return function(v) {
-        var self = this,
-          view = self.get('view');
-        return v === undefined ? view.get(attrName) : v;
-      };
-    }
-    /**
-     * @ignore
-     */
-  function initChild(self, c, renderBefore) {
-      // 生成父组件的 dom 结构
-      self.create();
-      var contentEl = self.getContentElement(),
-        defaultCls = self.get('defaultChildClass');
-      //配置默认 xclass
-      if (!c.xclass && !(c instanceof Controller)) {
-        if (!c.xtype) {
-          c.xclass = defaultCls;
-        } else {
-          c.xclass = defaultCls + '-' + c.xtype;
-        }
-      }
-      c = BUI.Component.create(c, self);
-      c.setInternal('parent', self);
-      // set 通知 view 也更新对应属性
-      c.set('render', contentEl);
-      c.set('elBefore', renderBefore);
-      // 如果 parent 也没渲染，子组件 create 出来和 parent 节点关联
-      // 子组件和 parent 组件一起渲染
-      // 之前设好属性，view ，logic 同步还没 bind ,create 不是 render ，还没有 bindUI
-      c.create(undefined);
-      return c;
-    }
-    /**
-     * 不使用 valueFn，
-     * 只有 render 时需要找到默认，其他时候不需要，防止莫名其妙初始化
-     * @ignore
-     */
-  function constructView(self) {
-    // 逐层找默认渲染器
-    var attrs,
-      attrCfg,
-      attrName,
-      cfg = {},
-      v,
-      Render = self.get('xview');
-    //将渲染层初始化所需要的属性，直接构造器设置过去
-    attrs = self.getAttrs();
-    // 整理属性，对纯属于 view 的属性，添加 getter setter 直接到 view
-    for (attrName in attrs) {
-      if (attrs.hasOwnProperty(attrName)) {
-        attrCfg = attrs[attrName];
-        if (attrCfg.view) {
-          // 先取后 getter
-          // 防止死循环
-          if ((v = self.get(attrName)) !== undefined) {
-            cfg[attrName] = v;
-          }
-          // setter 不应该有实际操作，仅用于正规化比较好
-          // attrCfg.setter = wrapperViewSetter(attrName);
-          // 不更改attrCfg的定义，可以多个实例公用一份attrCfg
-          /*self.on('after' + BUI.ucfirst(attrName) + 'Change',
-            wrapperViewSetter(attrName));
-          */
-          // 逻辑层读值直接从 view 层读
-          // 那么如果存在默认值也设置在 view 层
-          // 逻辑层不要设置 getter
-          //attrCfg.getter = wrapperViewGetter(attrName);
-        }
-      }
-    }
-    // does not autoRender for view
-    delete cfg.autoRender;
-    cfg.ksComponentCss = getComponentCss(self);
-    return new Render(cfg);
+  loadMask: {
+    value: false
   }
+};
 
-  function getComponentCss(self) {
-    var constructor = self.constructor,
-      cls,
-      re = [];
-    while (constructor && constructor !== Controller) {
-      cls = Manager.getXClassByConstructor(constructor);
-      if (cls) {
-        re.push(cls);
-      }
-      constructor = constructor.superclass && constructor.superclass.constructor;
-    }
-    return re.join(' ');
-  }
 
-  function isMouseEventWithinElement(e, elem) {
-      var relatedTarget = e.relatedTarget;
-      // 在里面或等于自身都不算 mouseenter/leave
-      return relatedTarget && (relatedTarget === elem[0] || $.contains(elem, relatedTarget));
+BUI.augment(bindable, {
+
+  __bindUI: function() {
+    var _self = this,
+      store = _self.get('store'),
+      loadMask = _self.get('loadMask');
+    if (!store) {
+      return;
     }
-    /**
-     * 可以实例化的控件，作为最顶层的控件类，一切用户控件都继承此控件
-     * xclass: 'controller'.
-     * ** 创建子控件 **
-     * <pre><code>
-     * var Control = Controller.extend([mixin1,mixin2],{ //原型链上的函数
-     *   renderUI : function(){ //创建DOM
-     *
-     *   },
-     *   bindUI : function(){  //绑定事件
-     *
-     *   },
-     *   destructor : funciton(){ //析构函数
-     *
-     *   }
-     * },{
-     *   ATTRS : { //默认的属性
-     *     text : {
-     *
-     *     }
-     *   }
-     * },{
-     *   xclass : 'a' //用于把对象解析成类
-     * });
-     * </code></pre>
-     *
-     * ** 创建对象 **
-     * <pre><code>
-     * var c1 = new Control({
-     *   render : '#t1', //在t1上创建
-     *   text : 'text1',
-     *   children : [{xclass : 'a',text : 'a1'},{xclass : 'b',text : 'b1'}]
-     * });
-     *
-     * c1.render();
-     * </code></pre>
-     * @extends BUI.Component.UIBase
-     * @mixins BUI.Component.UIBase.Tpl
-     * @mixins BUI.Component.UIBase.Decorate
-     * @mixins BUI.Component.UIBase.Depends
-     * @mixins BUI.Component.UIBase.ChildCfg
-     * @class BUI.Component.Controller
-     */
-  var Controller = UIBase.extend([UIBase.Decorate, UIBase.Tpl, UIBase.ChildCfg, UIBase.KeyNav, UIBase.Depends], {
-    /**
-     * 是否是控件，标示对象是否是一个UI 控件
-     * @type {Boolean}
-     */
-    isController: true,
-    /**
-     * 使用前缀获取类的名字
-     * @param classes {String} class names without prefixCls. Separated by space.
-     * @method
-     * @protected
-     * @return {String} class name with prefixCls
-     */
-    getCssClassWithPrefix: Manager.getCssClassWithPrefix,
-    /**
-     * From UIBase, Initialize this component.       *
-     * @protected
-     */
-    initializer: function() {
-      var self = this;
-      if (!self.get('id')) {
-        self.set('id', self.getNextUniqueId());
-      }
-      Manager.addComponent(self.get('id'), self);
-      // initialize view
-      var view = constructView(self);
-      self.setInternal('view', view);
-      self.__view = view;
-    },
-    /**
-     * 返回新的唯一的Id,结果是 'xclass' + number
-     * @protected
-     * @return {String} 唯一id
-     */
-    getNextUniqueId: function() {
-      var self = this,
-        xclass = Manager.getXClassByConstructor(self.constructor);
-      return BUI.guid(xclass);
-    },
-    /**
-     * From UIBase. Constructor(or get) view object to create ui elements.
-     * @protected
-     *
-     */
-    createDom: function() {
-      var self = this,
-        //el,
-        view = self.get('view');
-      view.create(undefined);
-      //el = view.getKeyEventTarget();
-      /*if (!self.get('allowTextSelection')) {
-        //el.unselectable(undefined);
-      }*/
-    },
-    /**
-     * From UIBase. Call view object to render ui elements.
-     * @protected
-     *
-     */
-    renderUI: function() {
-      var self = this,
-        loader = self.get('loader');
-      self.get('view').render();
-      self._initChildren();
-      if (loader) {
-        self.setInternal('loader', loader);
-      }
-      /**/
-    },
-    _initChildren: function(children) {
-      var self = this,
-        i,
-        children,
-        child;
-      // then render my children
-      children = children || self.get('children').concat();
-      self.get('children').length = 0;
-      for (i = 0; i < children.length; i++) {
-        child = self.addChild(children[i]);
-        child.render();
-      }
-    },
-    /**
-     * bind ui for box
-     * @private
-     */
-    bindUI: function() {
-      var self = this,
-        events = self.get('events');
-      this.on('afterVisibleChange', function(e) {
-        this.fire(e.newVal ? 'show' : 'hide');
-      });
-      //处理控件事件，设置事件是否冒泡
-      BUI.each(events, function(v, k) {
-        self.publish(k, {
-          bubbles: v
-        });
-      });
-    },
-    /**
-     * 控件是否包含指定的DOM元素,包括根节点
-     * <pre><code>
-     *   var control = new Control();
-     *   $(document).on('click',function(ev){
-     *   var target = ev.target;
-     *
-     *   if(!control.containsElement(elem)){ //未点击在控件内部
-     *     control.hide();
-     *   }
-     *   });
-     * </code></pre>
-     * @param  {HTMLElement} elem DOM 元素
-     * @return {Boolean}  是否包含
-     */
-    containsElement: function(elem) {
-      var _self = this,
-        el = _self.get('el'),
-        children = _self.get('children'),
-        result = false;
-      if (!_self.get('rendered')) {
-        return false;
-      }
-      if ($.contains(el[0], elem) || el[0] === elem) {
-        result = true;
-      } else {
-        BUI.each(children, function(item) {
-          if (item.containsElement(elem)) {
-            result = true;
-            return false;
-          }
-        });
-      }
-      return result;
-    },
-    /**
-     * 是否是子控件的DOM元素
-     * @protected
-     * @return {Boolean} 是否子控件的DOM元素
-     */
-    isChildrenElement: function(elem) {
-      var _self = this,
-        children = _self.get('children'),
-        rst = false;
-      BUI.each(children, function(child) {
-        if (child.containsElement(elem)) {
-          rst = true;
-          return false;
-        }
-      });
-      return rst;
-    },
-    /**
-     * 显示控件
-     */
-    show: function() {
-      var self = this;
-      self.render();
-      self.set('visible', true);
-      return self;
-    },
-    /**
-     * 隐藏控件
-     */
-    hide: function() {
-      var self = this;
-      self.set('visible', false);
-      return self;
-    },
-    /**
-     * 交替显示或者隐藏
-     * <pre><code>
-     *  control.show(); //显示
-     *  control.toggle(); //隐藏
-     *  control.toggle(); //显示
-     * </code></pre>
-     */
-    toggle: function() {
-      this.set('visible', !this.get('visible'));
-      return this;
-    },
-    _uiSetFocusable: function(focusable) {
-      var self = this,
-        t,
-        el = self.getKeyEventTarget();
-      if (focusable) {
-        el.attr('tabIndex', 0)
-          // remove smart outline in ie
-          // set outline in style for other standard browser
-          .attr('hideFocus', true).on('focus', wrapBehavior(self, 'handleFocus')).on('blur', wrapBehavior(self, 'handleBlur')).on('keydown', wrapBehavior(self, 'handleKeydown')).on('keyup', wrapBehavior(self, 'handleKeyUp'));
-      } else {
-        el.removeAttr('tabIndex');
-        if (t = getWrapBehavior(self, 'handleFocus')) {
-          el.off('focus', t);
-        }
-        if (t = getWrapBehavior(self, 'handleBlur')) {
-          el.off('blur', t);
-        }
-        if (t = getWrapBehavior(self, 'handleKeydown')) {
-          el.off('keydown', t);
-        }
-        if (t = getWrapBehavior(self, 'handleKeyUp')) {
-          el.off('keyup', t);
-        }
-      }
-    },
-    _uiSetHandleMouseEvents: function(handleMouseEvents) {
-      var self = this,
-        el = self.get('el'),
-        t;
-      if (handleMouseEvents) {
-        el.on('mouseenter', wrapBehavior(self, 'handleMouseEnter')).on('mouseleave', wrapBehavior(self, 'handleMouseLeave')).on('contextmenu', wrapBehavior(self, 'handleContextMenu')).on('mousedown', wrapBehavior(self, 'handleMouseDown')).on('mouseup', wrapBehavior(self, 'handleMouseUp')).on('dblclick', wrapBehavior(self, 'handleDblClick'));
-      } else {
-        t = getWrapBehavior(self, 'handleMouseEnter') && el.off('mouseenter', t);
-        t = getWrapBehavior(self, 'handleMouseLeave') && el.off('mouseleave', t);
-        t = getWrapBehavior(self, 'handleContextMenu') && el.off('contextmenu', t);
-        t = getWrapBehavior(self, 'handleMouseDown') && el.off('mousedown', t);
-        t = getWrapBehavior(self, 'handleMouseUp') && el.off('mouseup', t);
-        t = getWrapBehavior(self, 'handleDblClick') && el.off('dblclick', t);
-      }
-    },
-    _uiSetFocused: function(v) {
-      if (v) {
-        this.getKeyEventTarget()[0].focus();
-      }
-    },
-    //当使用visiblity显示隐藏时，隐藏时把DOM移除出视图内，显示时回复原位置
-    _uiSetVisible: function(isVisible) {
-      var self = this,
-        el = self.get('el'),
-        visibleMode = self.get('visibleMode');
-      if (visibleMode === 'visibility') {
-        if (isVisible) {
-          var position = self.get('cachePosition');
-          if (position) {
-            self.set('xy', position);
-          }
-        }
-        if (!isVisible) {
-          var position = [
-            self.get('x'), self.get('y')
-          ];
-          self.set('cachePosition', position);
-          self.set('xy', [-999, -999]);
-        }
-      }
-    },
-    //设置children时
-    _uiSetChildren: function(v) {
-      var self = this,
-        children = BUI.cloneObject(v);
-      //self.removeChildren(true);
-      self._initChildren(children);
-    },
-    /**
-     * 使控件可用
-     */
-    enable: function() {
-      this.set('disabled', false);
-      return this;
-    },
-    /**
-     * 使控件不可用，控件不可用时，点击等事件不会触发
-     * <pre><code>
-     *  control.disable(); //禁用
-     *  control.enable(); //解除禁用
-     * </code></pre>
-     */
-    disable: function() {
-      this.set('disabled', true);
-      return this;
-    },
-    /**
-     * 控件获取焦点
-     */
-    focus: function() {
-      if (this.get('focusable')) {
-        this.set('focused', true);
-      }
-    },
-    /**
-     * 子组件将要渲染到的节点，在 render 类上覆盖对应方法
-     * @protected
-     * @ignore
-     */
-    getContentElement: function() {
-      return this.get('view').getContentElement();
-    },
-    /**
-     * 焦点所在元素即键盘事件处理元素，在 render 类上覆盖对应方法
-     * @protected
-     * @ignore
-     */
-    getKeyEventTarget: function() {
-      return this.get('view').getKeyEventTarget();
-    },
-    /**
-     * 添加控件的子控件，索引值为 0-based
-     * <pre><code>
-     *  control.add(new Control());//添加controller对象
-     *  control.add({xclass : 'a'});//添加xclass 为a 的一个对象
-     *  control.add({xclass : 'b'},2);//插入到第三个位置
-     * </code></pre>
-     * @param {BUI.Component.Controller|Object} c 子控件的实例或者配置项
-     * @param {String} [c.xclass] 如果c为配置项，设置c的xclass
-     * @param {Number} [index]  0-based  如果未指定索引值，则插在控件的最后
-     */
-    addChild: function(c, index) {
-      var self = this,
-        children = self.get('children'),
-        renderBefore;
-      if (index === undefined) {
-        index = children.length;
-      }
-      /**
-       * 添加子控件前触发
-       * @event beforeAddChild
-       * @param {Object} e
-       * @param {Object} e.child 添加子控件时传入的配置项或者子控件
-       * @param {Number} e.index 添加的位置
-       */
-      self.fire('beforeAddChild', {
-        child: c,
-        index: index
-      });
-      renderBefore = children[index] && children[index].get('el') || null;
-      c = initChild(self, c, renderBefore);
-      children.splice(index, 0, c);
-      // 先 create 占位 再 render
-      // 防止 render 逻辑里读 parent.get('children') 不同步
-      // 如果 parent 已经渲染好了子组件也要立即渲染，就 创建 dom ，绑定事件
-      if (self.get('rendered')) {
-        c.render();
-      }
-      /**
-       * 添加子控件后触发
-       * @event afterAddChild
-       * @param {Object} e
-       * @param {Object} e.child 添加子控件
-       * @param {Number} e.index 添加的位置
-       */
-      self.fire('afterAddChild', {
-        child: c,
-        index: index
-      });
-      return c;
-    },
-    /**
-     * 将自己从父控件中移除
-     * <pre><code>
-     *  control.remove(); //将控件从父控件中移除，并未删除
-     *  parent.addChild(control); //还可以添加回父控件
-     *
-     *  control.remove(true); //从控件中移除并调用控件的析构函数
-     * </code></pre>
-     * @param  {Boolean} destroy 是否删除DON节点
-     * @return {BUI.Component.Controller} 删除的子对象.
-     */
-    remove: function(destroy) {
-      var self = this,
-        parent = self.get('parent');
-      if (parent) {
-        parent.removeChild(self, destroy);
-      } else if (destroy) {
-        self.destroy();
-      }
-      return self;
-    },
-    /**
-     * 移除子控件，并返回移除的控件
-     *
-     * ** 如果 destroy=true,调用移除控件的 {@link BUI.Component.UIBase#destroy} 方法,
-     * 同时删除对应的DOM **
-     * <pre><code>
-     *  var child = control.getChild(id);
-     *  control.removeChild(child); //仅仅移除
-     *
-     *  control.removeChild(child,true); //移除，并调用析构函数
-     * </code></pre>
-     * @param {BUI.Component.Controller} c 要移除的子控件.
-     * @param {Boolean} [destroy=false] 如果是true,
-     * 调用控件的方法 {@link BUI.Component.UIBase#destroy} .
-     * @return {BUI.Component.Controller} 移除的子控件.
-     */
-    removeChild: function(c, destroy) {
-      var self = this,
-        children = self.get('children'),
-        index = BUI.Array.indexOf(c, children);
-      if (index === -1) {
-        return;
-      }
-      /**
-       * 删除子控件前触发
-       * @event beforeRemoveChild
-       * @param {Object} e
-       * @param {Object} e.child 子控件
-       * @param {Boolean} e.destroy 是否清除DOM
-       */
-      self.fire('beforeRemoveChild', {
-        child: c,
-        destroy: destroy
-      });
-      if (index !== -1) {
-        children.splice(index, 1);
-      }
-      if (destroy &&
-        // c is still json
-        c.destroy) {
-        c.destroy();
-      }
-      /**
-       * 删除子控件前触发
-       * @event afterRemoveChild
-       * @param {Object} e
-       * @param {Object} e.child 子控件
-       * @param {Boolean} e.destroy 是否清除DOM
-       */
-      self.fire('afterRemoveChild', {
-        child: c,
-        destroy: destroy
-      });
-      return c;
-    },
-    /**
-     * 删除当前控件的子控件
-     * <pre><code>
-     *   control.removeChildren();//删除所有子控件
-     *   control.removeChildren(true);//删除所有子控件，并调用子控件的析构函数
-     * </code></pre>
-     * @see Component.Controller#removeChild
-     * @param {Boolean} [destroy] 如果设置 true,
-     * 调用子控件的 {@link BUI.Component.UIBase#destroy}方法.
-     */
-    removeChildren: function(destroy) {
-      var self = this,
-        i,
-        t = [].concat(self.get('children'));
-      for (i = 0; i < t.length; i++) {
-        self.removeChild(t[i], destroy);
-      }
-    },
-    /**
-     * 根据索引获取子控件
-     * <pre><code>
-     *  control.getChildAt(0);//获取第一个子控件
-     *  control.getChildAt(2); //获取第三个子控件
-     * </code></pre>
-     * @param {Number} index 0-based 索引值.
-     * @return {BUI.Component.Controller} 子控件或者null
-     */
-    getChildAt: function(index) {
-      var children = this.get('children');
-      return children[index] || null;
-    },
-    /**
-     * 根据Id获取子控件
-     * <pre><code>
-     *  control.getChild('id'); //从控件的直接子控件中查找
-     *  control.getChild('id',true);//递归查找所有子控件，包含子控件的子控件
-     * </code></pre>
-     * @param  {String} id 控件编号
-     * @param  {Boolean} deep 是否继续查找在子控件中查找
-     * @return {BUI.Component.Controller} 子控件或者null
-     */
-    getChild: function(id, deep) {
-      return this.getChildBy(function(item) {
-        return item.get('id') === id;
-      }, deep);
-    },
-    /**
-     * 通过匹配函数查找子控件，返回第一个匹配的对象
-     * <pre><code>
-     *  control.getChildBy(function(child){//从控件的直接子控件中查找
-     *  return child.get('id') = '1243';
-     *  });
-     *
-     *  control.getChild(function(child){//递归查找所有子控件，包含子控件的子控件
-     *  return child.get('id') = '1243';
-     *  },true);
-     * </code></pre>
-     * @param  {Function} math 查找的匹配函数
-     * @param  {Boolean} deep 是否继续查找在子控件中查找
-     * @return {BUI.Component.Controller} 子控件或者null
-     */
-    getChildBy: function(math, deep) {
-      return this.getChildrenBy(math, deep)[0] || null;
-    },
-    /**
-     * 获取控件的附加高度 = control.get('el').outerHeight() - control.get('el').height()
-     * @protected
-     * @return {Number} 附加宽度
-     */
-    getAppendHeight: function() {
-      var el = this.get('el');
-      return el.outerHeight() - el.height();
-    },
-    /**
-     * 获取控件的附加宽度 = control.get('el').outerWidth() - control.get('el').width()
-     * @protected
-     * @return {Number} 附加宽度
-     */
-    getAppendWidth: function() {
-      var el = this.get('el');
-      return el.outerWidth() - el.width();
-    },
-    /**
-     * 查找符合条件的子控件
-     * <pre><code>
-     *  control.getChildrenBy(function(child){//从控件的直接子控件中查找
-     *  return child.get('type') = '1';
-     *  });
-     *
-     *  control.getChildrenBy(function(child){//递归查找所有子控件，包含子控件的子控件
-     *  return child.get('type') = '1';
-     *  },true);
-     * </code></pre>
-     * @param  {Function} math 查找的匹配函数
-     * @param  {Boolean} deep 是否继续查找在子控件中查找，如果符合上面的匹配函数，则不再往下查找
-     * @return {BUI.Component.Controller[]} 子控件数组
-     */
-    getChildrenBy: function(math, deep) {
-      var self = this,
-        results = [];
-      if (!math) {
-        return results;
-      }
-      self.eachChild(function(child) {
-        if (math(child)) {
-          results.push(child);
-        } else if (deep) {
-          results = results.concat(child.getChildrenBy(math, deep));
-        }
-      });
-      return results;
-    },
-    /**
-     * 遍历子元素
-     * <pre><code>
-     *  control.eachChild(function(child,index){ //遍历子控件
-     *
-     *  });
-     * </code></pre>
-     * @param  {Function} func 迭代函数，函数原型function(child,index)
-     */
-    eachChild: function(func) {
-      BUI.each(this.get('children'), func);
-    },
-    /**
-     * Handle dblclick events. By default, this performs its associated action by calling
-     * {@link BUI.Component.Controller#performActionInternal}.
-     * @protected
-     * @param {jQuery.Event} ev DOM event to handle.
-     */
-    handleDblClick: function(ev) {
-      this.performActionInternal(ev);
-      if (!this.isChildrenElement(ev.target)) {
-        this.fire('dblclick', {
-          domTarget: ev.target,
-          domEvent: ev
-        });
-      }
-    },
-    /**
-     * Called by it's container component to dispatch mouseenter event.
-     * @private
-     * @param {jQuery.Event} ev DOM event to handle.
-     */
-    handleMouseOver: function(ev) {
-      var self = this,
-        el = self.get('el');
-      if (!isMouseEventWithinElement(ev, el)) {
-        self.handleMouseEnter(ev);
-      }
-    },
-    /**
-     * Called by it's container component to dispatch mouseleave event.
-     * @private
-     * @param {jQuery.Event} ev DOM event to handle.
-     */
-    handleMouseOut: function(ev) {
-      var self = this,
-        el = self.get('el');
-      if (!isMouseEventWithinElement(ev, el)) {
-        self.handleMouseLeave(ev);
-      }
-    },
-    /**
-     * Handle mouseenter events. If the component is not disabled, highlights it.
-     * @protected
-     * @param {jQuery.Event} ev DOM event to handle.
-     */
-    handleMouseEnter: function(ev) {
-      var self = this;
-      this.set('highlighted', !!ev);
-      self.fire('mouseenter', {
-        domTarget: ev.target,
-        domEvent: ev
-      });
-    },
-    /**
-     * Handle mouseleave events. If the component is not disabled, de-highlights it.
-     * @protected
-     * @param {jQuery.Event} ev DOM event to handle.
-     */
-    handleMouseLeave: function(ev) {
-      var self = this;
-      self.set('active', false);
-      self.set('highlighted', !ev);
-      self.fire('mouseleave', {
-        domTarget: ev.target,
-        domEvent: ev
-      });
-    },
-    /**
-     * Handles mousedown events. If the component is not disabled,
-     * If the component is activeable, then activate it.
-     * If the component is focusable, then focus it,
-     * else prevent it from receiving keyboard focus.
-     * @protected
-     * @param {jQuery.Event} ev DOM event to handle.
-     */
-    handleMouseDown: function(ev) {
-      var self = this,
-        n,
-        target = $(ev.target),
-        isMouseActionButton = ev['which'] === 1,
-        el;
-      if (isMouseActionButton) {
-        el = self.getKeyEventTarget();
-        if (self.get('activeable')) {
-          self.set('active', true);
-        }
-        if (self.get('focusable')) {
-          //如果不是input,select,area等可以获取焦点的控件，那么设置此控件的focus
-          /*if(target[0] == el[0] || (!target.is('input,select,area') && !target.attr('tabindex'))){
-            el[0].focus(); 
-            
-          }*/
-          self.setInternal('focused', true);
-        }
-        if (!self.get('allowTextSelection')) {
-          // firefox /chrome 不会引起焦点转移
-          n = ev.target.nodeName;
-          n = n && n.toLowerCase();
-          // do not prevent focus when click on editable element
-          if (n !== 'input' && n !== 'textarea') {
-            ev.preventDefault();
-          }
-        }
-        if (!self.isChildrenElement(ev.target)) {
-          self.fire('mousedown', {
-            domTarget: ev.target,
-            domEvent: ev
-          });
-        }
-      }
-    },
-    /**
-     * Handles mouseup events.
-     * If this component is not disabled, performs its associated action by calling
-     * {@link BUI.Component.Controller#performActionInternal}, then deactivates it.
-     * @protected
-     * @param {jQuery.Event} ev DOM event to handle.
-     */
-    handleMouseUp: function(ev) {
-      var self = this,
-        isChildrenElement = self.isChildrenElement(ev.target);
-      // 左键
-      if (self.get('active') && ev.which === 1) {
-        self.performActionInternal(ev);
-        self.set('active', false);
-        if (!isChildrenElement) {
-          self.fire('click', {
-            domTarget: ev.target,
-            domEvent: ev
-          });
-        }
-      }
-      if (!isChildrenElement) {
-        self.fire('mouseup', {
-          domTarget: ev.target,
-          domEvent: ev
-        });
-      }
-    },
-    /**
-     * Handles context menu.
-     * @protected
-     * @param {jQuery.Event} ev DOM event to handle.
-     */
-    handleContextMenu: function(ev) {},
-    /**
-     * Handles focus events. Style focused class.
-     * @protected
-     * @param {jQuery.Event} ev DOM event to handle.
-     */
-    handleFocus: function(ev) {
-      this.set('focused', !!ev);
-      this.fire('focus', {
-        domEvent: ev,
-        domTarget: ev.target
-      });
-    },
-    /**
-     * Handles blur events. Remove focused class.
-     * @protected
-     * @param {jQuery.Event} ev DOM event to handle.
-     */
-    handleBlur: function(ev) {
-      this.set('focused', !ev);
-      this.fire('blur', {
-        domEvent: ev,
-        domTarget: ev.target
-      });
-    },
-    /**
-     * Handle enter keydown event to {@link BUI.Component.Controller#performActionInternal}.
-     * @protected
-     * @param {jQuery.Event} ev DOM event to handle.
-     */
-    handleKeyEventInternal: function(ev) {
-      var self = this,
-        isChildrenElement = self.isChildrenElement(ev.target);
-      if (ev.which === 13) {
-        if (!isChildrenElement) {
-          self.fire('click', {
-            domTarget: ev.target,
-            domEvent: ev
-          });
-        }
-        return this.performActionInternal(ev);
-      }
-      if (!isChildrenElement) {
-        self.fire('keydown', {
-          domTarget: ev.target,
-          domEvent: ev
-        });
-      }
-    },
-    /**
-     * Handle keydown events.
-     * If the component is not disabled, call {@link BUI.Component.Controller#handleKeyEventInternal}
-     * @protected
-     * @param {jQuery.Event} ev DOM event to handle.
-     */
-    handleKeydown: function(ev) {
-      var self = this;
-      if (self.handleKeyEventInternal(ev)) {
-        ev.halt();
-        return true;
-      }
-    },
-    handleKeyUp: function(ev) {
-      var self = this;
-      if (!self.isChildrenElement(ev.target)) {
-        self.fire('keyup', {
-          domTarget: ev.target,
-          domEvent: ev
-        });
-      }
-    },
-    /**
-     * Performs the appropriate action when this component is activated by the user.
-     * @protected
-     * @param {jQuery.Event} ev DOM event to handle.
-     */
-    performActionInternal: function(ev) {},
-    /**
-     * 析构函数
-     * @protected
-     */
-    destructor: function() {
-      var self = this,
-        id,
-        i,
-        view,
-        children = self.get('children');
-      id = self.get('id');
-      for (i = 0; i < children.length; i++) {
-        children[i].destroy && children[i].destroy();
-      }
-      self.get('view').destroy();
-      Manager.removeComponent(id);
-    },
-    //覆写set方法
-    set: function(name, value, opt) {
-      var _self = this,
-        view = _self.__view,
-        attr = _self.__attrs[name],
-        ucName,
-        ev,
-        m;
-      if (BUI.isObject(name)) {
-        opt = value;
-        BUI.each(name, function(v, k) {
-          _self.set(k, v, opt);
-        });
-      }
-      if (!view || !attr || (opt && opt.silent)) { //未初始化view或者没用定义属性
-        Controller.superclass.set.call(this, name, value, opt);
-        return _self;
-      }
-      var prevVal = Controller.superclass.get.call(this, name);
-      //如果未改变值不进行修改
-      if (!$.isPlainObject(value) && !BUI.isArray(value) && prevVal === value) {
-        return _self;
-      }
-      ucName = BUI.ucfirst(name);
-      m = '_uiSet' + ucName;
-      //触发before事件
-      _self.fire('before' + ucName + 'Change', {
-        attrName: name,
-        prevVal: prevVal,
-        newVal: value
-      });
-      _self.setInternal(name, value);
-      value = _self.__attrVals[name];
-      if (view && attr.view) {
-        view.set(name, value);
-        //return _self;
-      }
-      ev = {
-        attrName: name,
-        prevVal: prevVal,
-        newVal: value
-      };
-      //触发before事件
-      _self.fire('after' + ucName + 'Change', ev);
-      if (_self.get('binded') && _self[m]) {
-        _self[m](value, ev);
-      }
-      return _self;
-    },
-    //覆写get方法，改变时同时改变view的值
-    get: function(name) {
-      var _self = this,
-        view = _self.__view,
-        attr = _self.__attrs[name],
-        value = Controller.superclass.get.call(this, name);
-      if (value !== undefined) {
-        return value;
-      }
-      if (view && attr && attr.view) {
-        return view.get(name);
-      }
-      return value;
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 控件的Html 内容
-       * <pre><code>
-       *  new Control({
-       *   content : '内容',
-       *   render : '#c1'
-       *  });
-       * </code></pre>
-       * @cfg {String|jQuery} content
-       */
-      /**
-       * 控件的Html 内容
-       * @type {String|jQuery}
-       */
-      content: {
-        view: 1
-      },
-      /**
-       * 控件根节点使用的标签
-       * <pre><code>
-       *  new Control({
-       *   elTagName : 'ul',
-       *    content : '<li>内容</li>',  //控件的DOM &lt;ul&gt;&lt;li&gt;内容&lt;/li&gt;&lt;/ul&gt;
-       *   render : '#c1'
-       *  });
-       * </code></pre>
-       * @cfg {String} elTagName
-       */
-      elTagName: {
-        // 生成标签名字
-        view: true,
-        value: 'div'
-      },
-      /**
-       * 子元素的默认 xclass,配置child的时候没必要每次都填写xclass
-       * @type {String}
-       */
-      defaultChildClass: {},
-      /**
-       * 如果控件未设置 xclass，同时父元素设置了 defaultChildClass，那么
-       * xclass = defaultChildClass + '-' + xtype
-       * <pre><code>
-       *  A.ATTRS = {
-       *  defaultChildClass : {
-       *    value : 'b'
-       *  }
-       *  }
-       *  //类B 的xclass = 'b'类 B1的xclass = 'b-1',类 B2的xclass = 'b-2',那么
-       *  var a = new A({
-       *  children : [
-       *    {content : 'b'}, //B类
-       *    {content : 'b1',xtype:'1'}, //B1类
-       *    {content : 'b2',xtype:'2'}, //B2类
-       *  ]
-       *  });
-       * </code></pre>
-       * @type {String}
-       */
-      xtype: {},
-      /**
-       * 标示控件的唯一编号，默认会自动生成
-       * @cfg {String} id
-       */
-      /**
-       * 标示控件的唯一编号，默认会自动生成
-       * @type {String}
-       */
-      id: {
-        view: true
-      },
-      /**
-       * 控件宽度
-       * <pre><code>
-       * new Control({
-       *   width : 200 // 200,'200px','20%'
-       * });
-       * </code></pre>
-       * @cfg {Number|String} width
-       */
-      /**
-       * 控件宽度
-       * <pre><code>
-       *  control.set('width',200);
-       *  control.set('width','200px');
-       *  control.set('width','20%');
-       * </code></pre>
-       * @type {Number|String}
-       */
-      width: {
-        view: 1
-      },
-      /**
-       * 控件宽度
-       * <pre><code>
-       * new Control({
-       *   height : 200 // 200,'200px','20%'
-       * });
-       * </code></pre>
-       * @cfg {Number|String} height
-       */
-      /**
-       * 控件宽度
-       * <pre><code>
-       *  control.set('height',200);
-       *  control.set('height','200px');
-       *  control.set('height','20%');
-       * </code></pre>
-       * @type {Number|String}
-       */
-      height: {
-        view: 1
-      },
-      /**
-       * 控件根节点应用的样式
-       * <pre><code>
-       *  new Control({
-       *   elCls : 'test',
-       *   content : '内容',
-       *   render : '#t1'   //&lt;div id='t1'&gt;&lt;div class="test"&gt;内容&lt;/div&gt;&lt;/div&gt;
-       *  });
-       * </code></pre>
-       * @cfg {String} elCls
-       */
-      /**
-       * 控件根节点应用的样式 css class
-       * @type {String}
-       */
-      elCls: {
-        view: 1
-      },
-      /**
-       * @cfg {Object} elStyle
-       * 控件根节点应用的css属性
-       *  <pre><code>
-       *  var cfg = {elStyle : {width:'100px', height:'200px'}};
-       *  </code></pre>
-       */
-      /**
-       * 控件根节点应用的css属性，以键值对形式
-       * @type {Object}
-       *  <pre><code>
-       *	 control.set('elStyle',	{
-       *		width:'100px',
-       *		height:'200px'
-       *   });
-       *  </code></pre>
-       */
-      elStyle: {
-        view: 1
-      },
-      /**
-       * @cfg {Object} elAttrs
-       * 控件根节点应用的属性，以键值对形式:
-       * <pre><code>
-       *  new Control({
-       *  elAttrs :{title : 'tips'}
-       *  });
-       * </code></pre>
-       */
-      /**
-       * @type {Object}
-       * 控件根节点应用的属性，以键值对形式:
-       * { title : 'tips'}
-       * @ignore
-       */
-      elAttrs: {
-        view: 1
-      },
-      /**
-       * 将控件插入到指定元素前
-       * <pre><code>
-       *  new Control({
-       *    elBefore : '#t1'
-       *  });
-       * </code></pre>
-       * @cfg {jQuery} elBefore
-       */
-      /**
-       * 将控件插入到指定元素前
-       * @type {jQuery}
-       * @ignore
-       */
-      elBefore: {
-        // better named to renderBefore, too late !
-        view: 1
-      },
-      /**
-       * 只读属性，根节点DOM
-       * @type {jQuery}
-       */
-      el: {
-        view: 1
-      },
-      /**
-       * 控件支持的事件
-       * @type {Object}
-       * @protected
-       */
-      events: {
-        value: {
-          /**
-           * 点击事件，此事件会冒泡，所以可以在父元素上监听所有子元素的此事件
-           * @event
-           * @param {Object} e 事件对象
-           * @param {BUI.Component.Controller} e.target 触发事件的对象
-           * @param {jQuery.Event} e.domEvent DOM触发的事件
-           * @param {HTMLElement} e.domTarget 触发事件的DOM节点
-           */
-          'click': true,
-          /**
-           * 双击事件，此事件会冒泡，所以可以在父元素上监听所有子元素的此事件
-           * @event
-           * @param {Object} e 事件对象
-           * @param {BUI.Component.Controller} e.target 触发事件的对象
-           * @param {jQuery.Event} e.domEvent DOM触发的事件
-           * @param {HTMLElement} e.domTarget 触发事件的DOM节点
-           */
-          'dblclick': true,
-          /**
-           * 鼠标移入控件
-           * @event
-           * @param {Object} e 事件对象
-           * @param {BUI.Component.Controller} e.target 触发事件的对象
-           * @param {jQuery.Event} e.domEvent DOM触发的事件
-           * @param {HTMLElement} e.domTarget 触发事件的DOM节点
-           */
-          'mouseenter': true,
-          /**
-           * 鼠标移出控件
-           * @event
-           * @param {Object} e 事件对象
-           * @param {BUI.Component.Controller} e.target 触发事件的对象
-           * @param {jQuery.Event} e.domEvent DOM触发的事件
-           * @param {HTMLElement} e.domTarget 触发事件的DOM节点
-           */
-          'mouseleave': true,
-          /**
-           * 键盘按下按键事件，此事件会冒泡，所以可以在父元素上监听所有子元素的此事件
-           * @event
-           * @param {Object} e 事件对象
-           * @param {BUI.Component.Controller} e.target 触发事件的对象
-           * @param {jQuery.Event} e.domEvent DOM触发的事件
-           * @param {HTMLElement} e.domTarget 触发事件的DOM节点
-           */
-          'keydown': true,
-          /**
-           * 键盘按键抬起控件，此事件会冒泡，所以可以在父元素上监听所有子元素的此事件
-           * @event
-           * @param {Object} e 事件对象
-           * @param {BUI.Component.Controller} e.target 触发事件的对象
-           * @param {jQuery.Event} e.domEvent DOM触发的事件
-           * @param {HTMLElement} e.domTarget 触发事件的DOM节点
-           */
-          'keyup': true,
-          /**
-           * 控件获取焦点事件
-           * @event
-           * @param {Object} e 事件对象
-           * @param {BUI.Component.Controller} e.target 触发事件的对象
-           * @param {jQuery.Event} e.domEvent DOM触发的事件
-           * @param {HTMLElement} e.domTarget 触发事件的DOM节点
-           */
-          'focus': false,
-          /**
-           * 控件丢失焦点事件
-           * @event
-           * @param {Object} e 事件对象
-           * @param {BUI.Component.Controller} e.target 触发事件的对象
-           * @param {jQuery.Event} e.domEvent DOM触发的事件
-           * @param {HTMLElement} e.domTarget 触发事件的DOM节点
-           */
-          'blur': false,
-          /**
-           * 鼠标按下控件，此事件会冒泡，所以可以在父元素上监听所有子元素的此事件
-           * @event
-           * @param {Object} e 事件对象
-           * @param {BUI.Component.Controller} e.target 触发事件的对象
-           * @param {jQuery.Event} e.domEvent DOM触发的事件
-           * @param {HTMLElement} e.domTarget 触发事件的DOM节点
-           */
-          'mousedown': true,
-          /**
-           * 鼠标抬起控件，此事件会冒泡，所以可以在父元素上监听所有子元素的此事件
-           * @event
-           * @param {Object} e 事件对象
-           * @param {BUI.Component.Controller} e.target 触发事件的对象
-           * @param {jQuery.Event} e.domEvent DOM触发的事件
-           * @param {HTMLElement} e.domTarget 触发事件的DOM节点
-           */
-          'mouseup': true,
-          /**
-           * 控件显示
-           * @event
-           */
-          'show': false,
-          /**
-           * 控件隐藏
-           * @event
-           */
-          'hide': false
-        }
-      },
-      /**
-       * 指定控件的容器
-       * <pre><code>
-       *  new Control({
-       *  render : '#t1',
-       *  elCls : 'test',
-       *  content : '<span>123</span>'  //&lt;div id="t1"&gt;&lt;div class="test bui-xclass"&gt;&lt;span&gt;123&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
-       *  });
-       * </code></pre>
-       * @cfg {jQuery} render
-       */
-      /**
-       * 指定控件的容器
-       * @type {jQuery}
-       * @ignore
-       */
-      render: {
-        view: 1
-      },
-      /**
-       * ARIA 标准中的role,不要更改此属性
-       * @type {String}
-       * @protected
-       */
-      role: {
-        view: 1
-      },
-      /**
-       * 状态相关的样式,默认情况下会使用 前缀名 + xclass + '-' + 状态名
-       * <ol>
-       *   <li>hover</li>
-       *   <li>focused</li>
-       *   <li>active</li>
-       *   <li>disabled</li>
-       * </ol>
-       * @type {Object}
-       */
-      statusCls: {
-        view: true,
-        value: {}
-      },
-      /**
-       * 控件的可视方式,值为：
-       *  - 'display'
-       *  - 'visibility'
-       *  <pre><code>
-       *   new Control({
-       *   visibleMode: 'visibility'
-       *   });
-       *  </code></pre>
-       * @cfg {String} [visibleMode = 'display']
-       */
-      /**
-       * 控件的可视方式,使用 css
-       *  - 'display' 或者
-       *  - 'visibility'
-       * <pre><code>
-       *  control.set('visibleMode','display')
-       * </code></pre>
-       * @type {String}
-       */
-      visibleMode: {
-        view: 1,
-        value: 'display'
-      },
-      /**
-       * 控件是否可见
-       * <pre><code>
-       *  new Control({
-       *  visible : false   //隐藏
-       *  });
-       * </code></pre>
-       * @cfg {Boolean} [visible = true]
-       */
-      /**
-       * 控件是否可见
-       * <pre><code>
-       *  control.set('visible',true); //control.show();
-       *  control.set('visible',false); //control.hide();
-       * </code></pre>
-       * @type {Boolean}
-       * @default true
-       */
-      visible: {
-        value: true,
-        view: 1
-      },
-      /**
-       * 是否允许处理鼠标事件
-       * @default true.
-       * @type {Boolean}
-       * @protected
-       */
-      handleMouseEvents: {
-        value: true
-      },
-      /**
-       * 控件是否可以获取焦点
-       * @default true.
-       * @protected
-       * @type {Boolean}
-       */
-      focusable: {
-        value: false,
-        view: 1
-      },
-      /**
-       * 一旦使用loader的默认配置
-       * @protected
-       * @type {Object}
-       */
-      defaultLoaderCfg: {
-        value: {
-          property: 'content',
-          autoLoad: true
-        }
-      },
-      /**
-       * 控件内容的加载器
-       * @type {BUI.Component.Loader}
-       */
-      loader: {
-        getter: function(v) {
-          var _self = this,
-            defaultCfg;
-          if (v && !v.isLoader) {
-            v.target = _self;
-            defaultCfg = _self.get('defaultLoaderCfg')
-            v = new Loader(BUI.merge(defaultCfg, v));
-            _self.setInternal('loader', v);
-          }
-          return v;
-        }
-      },
-      /**
-       * 1. Whether allow select this component's text.<br/>
-       * 2. Whether not to lose last component's focus if click current one (set false).
-       *
-       * Defaults to: false.
-       * @type {Boolean}
-       * @property allowTextSelection
-       * @protected
-       */
-      /**
-       * @ignore
-       */
-      allowTextSelection: {
-        // 和 focusable 分离
-        // grid 需求：容器允许选择里面内容
-        value: true
-      },
-      /**
-       * 控件是否可以激活
-       * @default true.
-       * @type {Boolean}
-       * @protected
-       */
-      activeable: {
-        value: true
-      },
-      /**
-       * 控件是否获取焦点
-       * @type {Boolean}
-       * @readOnly
-       */
-      focused: {
-        view: 1
-      },
-      /**
-       * 控件是否处于激活状态，按钮按下还未抬起
-       * @type {Boolean}
-       * @default false
-       * @protected
-       */
-      active: {
-        view: 1
-      },
-      /**
-       * 控件是否高亮
-       * @cfg {Boolean} highlighted
-       * @ignore
-       */
-      /**
-       * 控件是否高亮
-       * @type {Boolean}
-       * @protected
-       */
-      highlighted: {
-        view: 1
-      },
-      /**
-       * 子控件集合
-       * @cfg {BUI.Component.Controller[]} children
-       */
-      /**
-       * 子控件集合
-       * @type {BUI.Component.Controller[]}
-       */
-      children: {
-        sync: false,
-        shared: false,
-        value: [] /**/
-      },
-      /**
-       * 控件的CSS前缀
-       * @cfg {String} [prefixCls = BUI.prefix]
-       */
-      /**
-       * 控件的CSS前缀
-       * @type {String}
-       * @default BUI.prefix
-       */
-      prefixCls: {
-        value: BUI.prefix, // box srcNode need
-        view: 1
-      },
-      /**
-       * 父控件
-       * @cfg {BUI.Component.Controller} parent
-       * @ignore
-       */
-      /**
-       * 父控件
-       * @type {BUI.Component.Controller}
-       */
-      parent: {
-        setter: function(p) {
-          // 事件冒泡源
-          this.addTarget(p);
-        }
-      },
-      /**
-       * 禁用控件
-       * @cfg {Boolean} [disabled = false]
-       */
-      /**
-       * 禁用控件
-       * <pre><code>
-       *  control.set('disabled',true); //==  control.disable();
-       *  control.set('disabled',false); //==  control.enable();
-       * </code></pre>
-       * @type {Boolean}
-       * @default false
-       */
-      disabled: {
-        view: 1,
-        value: false
-      },
-      /**
-       * 渲染控件的View类.
-       * @protected
-       * @cfg {BUI.Component.View} [xview = BUI.Component.View]
-       */
-      /**
-       * 渲染控件的View类.
-       * @protected
-       * @type {BUI.Component.View}
-       */
-      xview: {
-        value: View
-      }
-    },
-    PARSER: {
-      visible: function(el) {
-        var _self = this,
-          display = el.css('display'),
-          visibility = el.css('visibility'),
-          visibleMode = _self.get('visibleMode');
-        if ((display == 'none' && visibleMode == 'display') || (visibility == 'hidden' && visibleMode == 'visibility')) {
-          return false;
-        }
-        return true;
-      },
-      disabled: function(el) {
-        var _self = this,
-          cls = _self.get('prefixCls') + _self.get('xclass') + '-disabled';
-        return el.hasClass(cls);
-      }
-    }
-  }, {
-    xclass: 'controller',
-    priority: 0
-  });
-  module.exports = Controller;
-});
-define("bui/common/component/loader", ["jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview 加载控件内容
-   * @ignore
-   */
-  'use strict';
-  var $ = require('jquery'),
-    BUI = require("bui/common/util"),
-    Base = require("bui/common/base"),
-    /**
-     * @class BUI.Component.Loader
-     * @extends BUI.Base
-     * ** 控件的默认Loader属性是：**
-     * <pre><code>
-     *
-     *   defaultLoader : {
-     *     value : {
-     *       property : 'content',
-     *       autoLoad : true
-     *     }
-     *   }
-     * </code></pre>
-     * ** 一般的控件默认读取html，作为控件的content值 **
-     * <pre><code>
-     *   var control = new BUI.Component.Controller({
-     *     render : '#c1',
-     *     loader : {
-     *       url : 'data/text.json'
-     *     }
-     *   });
-     *
-     *   control.render();
-     * </code></pre>
-     *
-     * ** 可以修改Loader的默认属性，加载children **
-     * <pre><code>
-     *   var control = new BUI.Component.Controller({
-     *     render : '#c1',
-     *     loader : {
-     *       url : 'data/children.json',
-     *       property : 'children',
-     *       dataType : 'json'
-     *     }
-     *   });
-     *
-     *   control.render();
-     * </code></pre>
-     * 加载控件内容的类，一般不进行实例化
-     */
-    Loader = function(config) {
-      Loader.superclass.constructor.call(this, config);
-      this._init();
-    };
-  Loader.ATTRS = {
-    /**
-     * 加载内容的地址
-     * <pre><code>
-     *   var control = new BUI.Component.Controller({
-     *     render : '#c1',
-     *     loader : {
-     *       url : 'data/text.json'
-     *     }
-     *   });
-     *
-     *   control.render();
-     * </code></pre>
-     * @cfg {String} url
-     */
-    url: {},
-    /**
-     * 对应的控件，加载完成后设置属性到对应的控件
-     * @readOnly
-     * @type {BUI.Component.Controller}
-     */
-    target: {},
-    /**
-     * @private
-     * 是否load 过
-     */
-    hasLoad: {
-      value: false
-    },
-    /**
-     * 是否自动加载数据
-     * <pre><code>
-     *   var control = new BUI.Component.Controller({
-     *     render : '#c1',
-     *     loader : {
-     *       url : 'data/text.json',
-     *       autoLoad : false
-     *     }
-     *   });
-     *
-     *   control.render();
-     * </code></pre>
-     * @cfg {Boolean} [autoLoad = true]
-     */
-    autoLoad: {},
-    /**
-     * 延迟加载
-     *
-     *   - event : 触发加载的事件
-     *   - repeat ：是否重复加载
-     * <pre><code>
-     *   var control = new BUI.Component.Controller({
-     *     render : '#c1',
-     *     loader : {
-     *       url : 'data/text.json',
-     *       lazyLoad : {
-     *         event : 'show',
-     *         repeat : true
-     *       }
-     *     }
-     *   });
-     *
-     *   control.render();
-     * </code></pre>
-     * @cfg {Object} [lazyLoad = null]
-     */
-    lazyLoad: {},
-    /**
-     * 加载返回的数据作为控件的那个属性
-     * <pre><code>
-     *   var control = new BUI.List.SimpleList({
-     *     render : '#c1',
-     *     loader : {
-     *       url : 'data/text.json',
-     *       dataType : 'json',
-     *       property : 'items'
-     *     }
-     *   });
-     *
-     *   control.render();
-     * </code></pre>
-     * @cfg {String} property
-     */
-    property: {},
-    /**
-     * 格式化返回的数据
-     * @cfg {Function} renderer
-     */
-    renderer: {
-      value: function(value) {
-        return value;
-      }
-    },
-    /**
-     * 加载数据时是否显示屏蔽层和加载提示 {@link BUI.Mask.LoadMask}
-     *
-     *  -  loadMask : true时使用loadMask 默认的配置信息
-     *  -  loadMask : {msg : '正在加载，请稍后。。'} LoadMask的配置信息
-     *   <pre><code>
-     *   var control = new BUI.Component.Controller({
-     *     render : '#c1',
-     *     loader : {
-     *       url : 'data/text.json',
-     *       loadMask : true
-     *     }
-     *   });
-     *
-     *   control.render();
-     * </code></pre>
-     * @cfg {Boolean|Object} [loadMask = false]
-     */
-    loadMask: {
-      value: false
-    },
-    /**
-     * ajax 请求返回数据的类型
-     * <pre><code>
-     *   var control = new BUI.Component.Controller({
-     *     render : '#c1',
-     *     loader : {
-     *       url : 'data/text.json',
-     *       dataType : 'json',
-     *       property : 'items'
-     *     }
-     *   });
-     *
-     *   control.render();
-     * </code></pre>
-     * @cfg {String} [dataType = 'text']
-     */
-    dataType: {
-      value: 'text'
-    },
-    /**
-     * Ajax请求的配置项,会覆盖 url,dataType数据
-     * @cfg {Object} ajaxOptions
-     */
-    ajaxOptions: {
-      //shared : false,
-      value: {
-        type: 'get',
-        cache: false
-      }
-    },
-    /**
-     * 初始化的请求参数
-     * <pre><code>
-     *   var control = new BUI.Component.Controller({
-     *     render : '#c1',
-     *     loader : {
-     *       url : 'data/text.json',
-     *       params : {
-     *         a : 'a',
-     *         b : 'b'
-     *       }
-     *     }
-     *   });
-     *
-     *   control.render();
-     * </code></pre>
-     * @cfg {Object} params
-     * @default null
-     */
-    params: {},
-    /**
-     * 附加参数，每次请求都带的参数
-     * @cfg {Object} appendParams
-     */
-    appendParams: {},
-    /**
-     * 最后一次请求的参数
-     * @readOnly
-     * @private
-     * @type {Object}
-     */
-    lastParams: {
-      shared: false,
-      value: {}
-    },
-    /**
-     * 加载数据，并添加属性到控件后的回调函数
-     *   - data : 加载的数据
-     *   - params : 加载的参数
-     * <pre><code>
-     *   var control = new BUI.Component.Controller({
-     *     render : '#c1',
-     *     loader : {
-     *       url : 'data/text.json',
-     *       callback : function(text){
-     *         var target = this.get('target');//control
-     *         //TO DO
-     *       }
-     *     }
-     *   });
-     *
-     *   control.render();
-     * </code></pre>
-     * @cfg {Function} callback
-     */
-    callback: {},
-    /**
-     * 失败的回调函数
-     *   - response : 返回的错误对象
-     *   - params : 加载的参数
-     * @cfg {Function} failure
-     */
-    failure: {}
-  };
-  BUI.extend(Loader, Base);
-  BUI.augment(Loader, {
-    /**
-     * @protected
-     * 是否是Loader
-     * @type {Boolean}
-     */
-    isLoader: true,
-    //初始化
-    _init: function() {
-      var _self = this,
-        autoLoad = _self.get('autoLoad'),
-        params = _self.get('params');
-      _self._initMask();
-      if (autoLoad) {
-        _self.load(params);
-      } else {
-        _self._initParams();
-        _self._initLazyLoad();
-      }
-    },
-    //初始化延迟加载
-    _initLazyLoad: function() {
-      var _self = this,
-        target = _self.get('target'),
-        lazyLoad = _self.get('lazyLoad');
-      if (target && lazyLoad && lazyLoad.event) {
-        target.on(lazyLoad.event, function() {
-          if (!_self.get('hasLoad') || lazyLoad.repeat) {
-            _self.load();
-          }
-        });
-      }
-    },
-    /**
-     * 初始化mask
-     * @private
-     */
-    _initMask: function() {
-      var _self = this,
-        target = _self.get('target'),
-        loadMask = _self.get('loadMask');
-      if (target && loadMask) {
-        require.async('bui/mask', function(Mask) {
-          var cfg = $.isPlainObject(loadMask) ? loadMask : {};
-          loadMask = new Mask.LoadMask(BUI.mix({
-            el: target.get('el')
-          }, cfg));
-          _self.set('loadMask', loadMask);
-        });
-      }
-    },
-    //初始化查询参数
-    _initParams: function() {
-      var _self = this,
-        lastParams = _self.get('lastParams'),
-        params = _self.get('params');
-      //初始化 参数
-      BUI.mix(lastParams, params);
-    },
-    /**
-     * 加载内容
-     * @param {Object} params 加载数据的参数
-     */
-    load: function(params) {
-      var _self = this,
-        url = _self.get('url'),
-        ajaxOptions = _self.get('ajaxOptions'),
-        lastParams = _self.get('lastParams'),
-        appendParams = _self.get('appendParams');
-      //BUI.mix(true,lastParams,appendParams,params);
-      params = params || lastParams;
-      params = BUI.merge(appendParams, params); //BUI.cloneObject(lastParams);
-      _self.set('lastParams', params);
-      //未提供加载地址，阻止加载
-      if (!url) {
-        return;
-      }
-      _self.onBeforeLoad();
-      _self.set('hasLoad', true);
-      $.ajax(BUI.mix({
-        dataType: _self.get('dataType'),
-        data: params,
-        url: url,
-        success: function(data) {
-          _self.onload(data, params);
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-          _self.onException({
-            jqXHR: jqXHR,
-            textStatus: textStatus,
-            errorThrown: errorThrown
-          }, params);
-        }
-      }, ajaxOptions));
-    },
-    /**
-     * @private
-     * 加载前
-     */
-    onBeforeLoad: function() {
-      var _self = this,
-        loadMask = _self.get('loadMask');
+    store.on('beforeload', function(e) {
+      _self.onBeforeLoad(e);
       if (loadMask && loadMask.show) {
         loadMask.show();
       }
-    },
-    /**
-     * @private
-     * 加载完毕
-     */
-    onload: function(data, params) {
-      var _self = this,
-        loadMask = _self.get('loadMask'),
-        property = _self.get('property'),
-        callback = _self.get('callback'),
-        renderer = _self.get('renderer'),
-        target = _self.get('target');
-      if (BUI.isString(data)) {
-        target.set(property, ''); //防止2次返回的数据一样
-      }
-      target.set(property, renderer.call(_self, data));
-      /**/
+    });
+    store.on('load', function(e) {
+      _self.onLoad(e);
       if (loadMask && loadMask.hide) {
         loadMask.hide();
       }
-      if (callback) {
-        callback.call(this, data, params);
+    });
+    store.on('exception', function(e) {
+      _self.onException(e);
+      if (loadMask && loadMask.hide) {
+        loadMask.hide();
+      }
+    });
+    store.on('add', function(e) {
+      _self.onAdd(e);
+    });
+    store.on('remove', function(e) {
+      _self.onRemove(e);
+    });
+    store.on('update', function(e) {
+      _self.onUpdate(e);
+    });
+    store.on('localsort', function(e) {
+      _self.onLocalSort(e);
+    });
+    store.on('filtered', function(e) {
+      _self.onFiltered(e);
+    });
+  },
+  __syncUI: function() {
+    var _self = this,
+      store = _self.get('store');
+    if (!store) {
+      return;
+    }
+    if (store.hasData()) {
+      _self.onLoad();
+    }
+  },
+  /**
+   * @protected
+   * @template
+   * before store load data
+   * @param {Object} e The event object
+   * @see {@link BUI.Data.Store#event-beforeload}
+   */
+  onBeforeLoad: function(e) {
+
+  },
+  /**
+   * @protected
+   * @template
+   * after store load data
+   * @param {Object} e The event object
+   * @see {@link BUI.Data.Store#event-load}
+   */
+  onLoad: function(e) {
+
+  },
+  /**
+   * @protected
+   * @template
+   * occurred exception when store is loading data
+   * @param {Object} e The event object
+   * @see {@link BUI.Data.Store#event-exception}
+   */
+  onException: function(e) {
+
+  },
+  /**
+   * @protected
+   * @template
+   * after added data to store
+   * @param {Object} e The event object
+   * @see {@link BUI.Data.Store#event-add}
+   */
+  onAdd: function(e) {
+
+  },
+  /**
+   * @protected
+   * @template
+   * after remvoed data to store
+   * @param {Object} e The event object
+   * @see {@link BUI.Data.Store#event-remove}
+   */
+  onRemove: function(e) {
+
+  },
+  /**
+   * @protected
+   * @template
+   * after updated data to store
+   * @param {Object} e The event object
+   * @see {@link BUI.Data.Store#event-update}
+   */
+  onUpdate: function(e) {
+
+  },
+  /**
+   * @protected
+   * @template
+   * after local sorted data to store
+   * @param {Object} e The event object
+   * @see {@link BUI.Data.Store#event-localsort}
+   */
+  onLocalSort: function(e) {
+
+  },
+  /**
+   * @protected
+   * @template
+   * after filter data to store
+   * @param {Object} e The event object
+   * @see {@link BUI.Data.Store#event-filtered}
+   */
+  onFiltered: function(e) {}
+});
+
+module.exports = bindable;
+
+});
+define("bui/common/component/uibase/depends", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview 依赖扩展，用于观察者模式中的观察者
+ * @ignore
+ */
+
+
+var $ = require('jquery'),
+  regexp = /^#(.*):(.*)$/,
+  Manager = require("bui/common/component/manage");
+
+//获取依赖信息
+function getDepend(name) {
+
+  var arr = regexp.exec(name),
+    id = arr[1],
+    eventType = arr[2],
+    source = getSource(id);
+  return {
+    source: source,
+    eventType: eventType
+  };
+}
+
+//绑定依赖
+function bindDepend(self, name, action) {
+  var depend = getDepend(name),
+    source = depend.source,
+    eventType = depend.eventType,
+    callbak;
+  if (source && action && eventType) {
+
+    if (BUI.isFunction(action)) { //如果action是一个函数
+      callbak = action;
+    } else if (BUI.isArray(action)) { //如果是一个数组，构建一个回调函数
+      callbak = function() {
+        BUI.each(action, function(methodName) {
+          if (self[methodName]) {
+            self[methodName]();
+          }
+        });
+      }
+    }
+  }
+  if (callbak) {
+    depend.callbak = callbak;
+    source.on(eventType, callbak);
+    return depend;
+  }
+  return null;
+}
+//去除依赖
+function offDepend(depend) {
+  var source = depend.source,
+    eventType = depend.eventType,
+    callbak = depend.callbak;
+  source.off(eventType, callbak);
+}
+
+//获取绑定的事件源
+function getSource(id) {
+  var control = Manager.getComponent(id);
+  if (!control) {
+    control = $('#' + id);
+    if (!control.length) {
+      control = null;
+    }
+  }
+  return control;
+}
+
+/**
+ * @class BUI.Component.UIBase.Depends
+ * 依赖事件源的扩展
+ * <pre><code>
+ *       var control = new Control({
+ *         depends : {
+ *           '#btn:click':['toggle'],//当点击id为'btn'的按钮时，执行 control 的toggle方法
+ *           '#checkbox1:checked':['show'],//当勾选checkbox时，显示控件
+ *           '#menu:click',function(){}
+ *         }
+ *       });
+ * </code></pre>
+ */
+function Depends() {
+
+};
+
+Depends.ATTRS = {
+  /**
+   * 控件的依赖事件，是一个数组集合，每一条记录是一个依赖关系<br/>
+   * 一个依赖是注册一个事件，所以需要在一个依赖中提供：
+   * <ol>
+   * <li>绑定源：为了方便配置，我们使用 #id来指定绑定源，可以使控件的ID（只支持继承{BUI.Component.Controller}的控件），也可以是DOM的id</li>
+   * <li>事件名：事件名是一个使用":"为前缀的字符串，例如 "#id:change",即监听change事件</li>
+   * <li>触发的方法：可以是一个数组，如["disable","clear"],数组里面是控件的方法名，也可以是一个回调函数</li>
+   * </ol>
+   * <pre><code>
+   *       var control = new Control({
+   *         depends : {
+   *           '#btn:click':['toggle'],//当点击id为'btn'的按钮时，执行 control 的toggle方法
+   *           '#checkbox1:checked':['show'],//当勾选checkbox时，显示控件
+   *           '#menu:click',function(){}
+   *         }
+   *       });
+   * </code></pre>
+   * ** 注意：** 这些依赖项是在控件渲染（render）后进行的。
+   * @type {Object}
+   */
+  depends: {
+
+  },
+  /**
+   * @private
+   * 依赖的映射集合
+   * @type {Object}
+   */
+  dependencesMap: {
+    shared: false,
+    value: {}
+  }
+};
+
+Depends.prototype = {
+
+  __syncUI: function() {
+    this.initDependences();
+  },
+  /**
+   * 初始化依赖项
+   * @protected
+   */
+  initDependences: function() {
+    var _self = this,
+      depends = _self.get('depends');
+    BUI.each(depends, function(action, name) {
+      _self.addDependence(name, action);
+    });
+  },
+  /**
+   * 添加依赖，如果已经有同名的事件，则移除，再添加
+   * <pre><code>
+   *  form.addDependence('#btn:click',['toggle']); //当按钮#btn点击时，表单交替显示隐藏
+   *
+   *  form.addDependence('#btn:click',function(){//当按钮#btn点击时，表单交替显示隐藏
+   *   //TO DO
+   *  });
+   * </code></pre>
+   * @param {String} name 依赖项的名称
+   * @param {Array|Function} action 依赖项的事件
+   */
+  addDependence: function(name, action) {
+    var _self = this,
+      dependencesMap = _self.get('dependencesMap'),
+      depend;
+    _self.removeDependence(name);
+    depend = bindDepend(_self, name, action)
+    if (depend) {
+      dependencesMap[name] = depend;
+    }
+  },
+  /**
+   * 移除依赖
+   * <pre><code>
+   *  form.removeDependence('#btn:click'); //当按钮#btn点击时，表单不在监听
+   * </code></pre>
+   * @param  {String} name 依赖名称
+   */
+  removeDependence: function(name) {
+    var _self = this,
+      dependencesMap = _self.get('dependencesMap'),
+      depend = dependencesMap[name];
+    if (depend) {
+      offDepend(depend);
+      delete dependencesMap[name];
+    }
+  },
+  /**
+   * 清除所有的依赖
+   * <pre><code>
+   *  form.clearDependences();
+   * </code></pre>
+   */
+  clearDependences: function() {
+    var _self = this,
+      map = _self.get('dependencesMap');
+    BUI.each(map, function(depend, name) {
+      offDepend(depend);
+    });
+    _self.set('dependencesMap', {});
+  },
+  __destructor: function() {
+    this.clearDependences();
+  }
+
+};
+
+module.exports = Depends;
+
+});
+define("bui/common/component/view", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview  控件的视图层
+ * @author yiminghe@gmail.com
+ * copied by dxq613@gmail.com
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  win = window,
+  Manager = require("bui/common/component/manage"),
+  UIBase = require("bui/common/component/uibase/uibase"), //BUI.Component.UIBase,
+  doc = document;
+
+/**
+ * 控件的视图层基类
+ * @class BUI.Component.View
+ * @protected
+ * @extends BUI.Component.UIBase
+ * @mixins BUI.Component.UIBase.TplView
+ */
+var View = UIBase.extend([UIBase.TplView], {
+
+  /**
+   * Get all css class name to be applied to the root element of this component for given state.
+   * the css class names are prefixed with component name.
+   * @param {String} [state] This component's state info.
+   */
+  getComponentCssClassWithState: function(state) {
+    var self = this,
+      componentCls = self.get('ksComponentCss');
+    state = state || '';
+    return self.getCssClassWithPrefix(componentCls.split(/\s+/).join(state + ' ') + state);
+  },
+
+  /**
+   * Get full class name (with prefix) for current component
+   * @param classes {String} class names without prefixCls. Separated by space.
+   * @method
+   * @return {String} class name with prefixCls
+   * @private
+   */
+  getCssClassWithPrefix: Manager.getCssClassWithPrefix,
+
+  /**
+   * Returns the dom element which is responsible for listening keyboard events.
+   * @return {jQuery}
+   */
+  getKeyEventTarget: function() {
+    return this.get('el');
+  },
+  /**
+   * Return the dom element into which child component to be rendered.
+   * @return {jQuery}
+   */
+  getContentElement: function() {
+    return this.get('contentEl') || this.get('el');
+  },
+  /**
+   * 获取状态对应的css样式
+   * @param  {String} name 状态名称 例如：hover,disabled等等
+   * @return {String} 状态样式
+   */
+  getStatusCls: function(name) {
+    var self = this,
+      statusCls = self.get('statusCls'),
+      cls = statusCls[name];
+    if (!cls) {
+      cls = self.getComponentCssClassWithState('-' + name);
+    }
+    return cls;
+  },
+  /**
+   * 渲染控件
+   * @protected
+   */
+  renderUI: function() {
+    var self = this;
+
+    // 新建的节点才需要摆放定位,不支持srcNode模式
+    if (!self.get('srcNode')) {
+      var render = self.get('render'),
+        el = self.get('el'),
+        renderBefore = self.get('elBefore');
+      if (renderBefore) {
+        el.insertBefore(renderBefore, undefined);
+      } else if (render) {
+        el.appendTo(render, undefined);
+      } else {
+        el.appendTo(doc.body, undefined);
+      }
+    }
+  },
+  /**
+   * 只负责建立节点，如果是 decorate 过来的，甚至内容会丢失
+   * @protected
+   * 通过 render 来重建原有的内容
+   */
+  createDom: function() {
+    var self = this,
+      contentEl = self.get('contentEl'),
+      el = self.get('el');
+    if (!self.get('srcNode')) {
+
+      el = $('<' + self.get('elTagName') + '>');
+
+      if (contentEl) {
+        el.append(contentEl);
+      }
+
+      self.setInternal('el', el);
+    }
+
+    el.addClass(self.getComponentCssClassWithState());
+    if (!contentEl) {
+      // 没取到,这里设下值, uiSet 时可以 set('content')  取到
+      self.setInternal('contentEl', el);
+    }
+  },
+  /**
+   * 设置高亮显示
+   * @protected
+   */
+  _uiSetHighlighted: function(v) {
+    var self = this,
+      componentCls = self.getStatusCls('hover'),
+      el = self.get('el');
+    el[v ? 'addClass' : 'removeClass'](componentCls);
+  },
+
+  /**
+   * 设置禁用
+   * @protected
+   */
+  _uiSetDisabled: function(v) {
+    var self = this,
+      componentCls = self.getStatusCls('disabled'),
+      el = self.get('el');
+    el[v ? 'addClass' : 'removeClass'](componentCls)
+      .attr('aria-disabled', v);
+
+    //如果禁用控件时，处于hover状态，则清除
+    if (v && self.get('highlighted')) {
+      self.set('highlighted', false);
+    }
+
+    if (self.get('focusable')) {
+      //不能被 tab focus 到
+      self.getKeyEventTarget().attr('tabIndex', v ? -1 : 0);
+    }
+  },
+  /**
+   * 设置激活状态
+   * @protected
+   */
+  _uiSetActive: function(v) {
+    var self = this,
+      componentCls = self.getStatusCls('active');
+    self.get('el')[v ? 'addClass' : 'removeClass'](componentCls)
+      .attr('aria-pressed', !!v);
+  },
+  /**
+   * 设置获得焦点
+   * @protected
+   */
+  _uiSetFocused: function(v) {
+    var self = this,
+      el = self.get('el'),
+      componentCls = self.getStatusCls('focused');
+    el[v ? 'addClass' : 'removeClass'](componentCls);
+  },
+  /**
+   * 设置控件最外层DOM的属性
+   * @protected
+   */
+  _uiSetElAttrs: function(attrs) {
+    this.get('el').attr(attrs);
+  },
+  /**
+   * 设置应用到控件最外层DOM的css class
+   * @protected
+   */
+  _uiSetElCls: function(cls) {
+    this.get('el').addClass(cls);
+  },
+  /**
+   * 设置应用到控件最外层DOM的css style
+   * @protected
+   */
+  _uiSetElStyle: function(style) {
+    this.get('el').css(style);
+  },
+  //设置role
+  _uiSetRole: function(role) {
+    if (role) {
+      this.get('el').attr('role', role);
+    }
+  },
+  /**
+   * 设置应用到控件宽度
+   * @protected
+   */
+  _uiSetWidth: function(w) {
+    this.get('el').width(w);
+  },
+  /**
+   * 设置应用到控件高度
+   * @protected
+   */
+  _uiSetHeight: function(h) {
+    var self = this;
+    self.get('el').height(h);
+  },
+  /**
+   * 设置应用到控件的内容
+   * @protected
+   */
+  _uiSetContent: function(c) {
+    var self = this,
+      el;
+    // srcNode 时不重新渲染 content
+    // 防止内部有改变，而 content 则是老的 html 内容
+    if (self.get('srcNode') && !self.get('rendered')) {} else {
+      el = self.get('contentEl');
+      if (typeof c == 'string') {
+        el.html(c);
+      } else if (c) {
+        el.empty().append(c);
+      }
+    }
+  },
+  /**
+   * 设置应用到控件是否可见
+   * @protected
+   */
+  _uiSetVisible: function(isVisible) {
+    var self = this,
+      el = self.get('el'),
+      visibleMode = self.get('visibleMode');
+    if (visibleMode === 'visibility') {
+      el.css('visibility', isVisible ? 'visible' : 'hidden');
+    } else {
+      el.css('display', isVisible ? '' : 'none');
+    }
+  },
+  set: function(name, value) {
+    var _self = this,
+      attr = _self.__attrs[name],
+      ev,
+      ucName,
+      m;
+
+    if (!attr || !_self.get('binded')) { //未初始化view或者没用定义属性
+      View.superclass.set.call(this, name, value);
+      return _self;
+    }
+
+    var prevVal = View.superclass.get.call(this, name);
+
+    //如果未改变值不进行修改
+    if (!$.isPlainObject(value) && !BUI.isArray(value) && prevVal === value) {
+      return _self;
+    }
+    View.superclass.set.call(this, name, value);
+
+    value = _self.__attrVals[name];
+    ev = {
+      attrName: name,
+      prevVal: prevVal,
+      newVal: value
+    };
+    ucName = BUI.ucfirst(name);
+    m = '_uiSet' + ucName;
+    if (_self[m]) {
+      _self[m](value, ev);
+    }
+
+    return _self;
+
+  },
+  /**
+   * 析构函数
+   * @protected
+   */
+  destructor: function() {
+    var el = this.get('el');
+    if (el) {
+      el.remove();
+    }
+  }
+}, {
+  xclass: 'view',
+  priority: 0
+});
+
+
+View.ATTRS = {
+  /**
+   * 控件根节点
+   * @readOnly
+   * see {@link BUI.Component.Controller#property-el}
+   */
+  el: {
+    /**
+     * @private
+     */
+    setter: function(v) {
+      return $(v);
+    }
+  },
+
+  /**
+   * 控件根节点样式
+   * see {@link BUI.Component.Controller#property-elCls}
+   */
+  elCls: {},
+  /**
+   * 控件根节点样式属性
+   * see {@link BUI.Component.Controller#property-elStyle}
+   */
+  elStyle: {},
+  /**
+   * ARIA 标准中的role
+   * @type {String}
+   */
+  role: {
+
+  },
+  /**
+   * 控件宽度
+   * see {@link BUI.Component.Controller#property-width}
+   */
+  width: {},
+  /**
+   * 控件高度
+   * see {@link BUI.Component.Controller#property-height}
+   */
+  height: {},
+  /**
+   * 状态相关的样式,默认情况下会使用 前缀名 + xclass + '-' + 状态名
+   * see {@link BUI.Component.Controller#property-statusCls}
+   * @type {Object}
+   */
+  statusCls: {
+    value: {}
+  },
+  /**
+   * 控件根节点使用的标签
+   * @type {String}
+   */
+  elTagName: {
+    // 生成标签名字
+    value: 'div'
+  },
+  /**
+   * 控件根节点属性
+   * see {@link BUI.Component.Controller#property-elAttrs}
+   * @ignore
+   */
+  elAttrs: {},
+  /**
+   * 控件内容，html,文本等
+   * see {@link BUI.Component.Controller#property-content}
+   */
+  content: {},
+  /**
+   * 控件插入到指定元素前
+   * see {@link BUI.Component.Controller#property-tpl}
+   */
+  elBefore: {
+    // better named to renderBefore, too late !
+  },
+  /**
+   * 控件在指定元素内部渲染
+   * see {@link BUI.Component.Controller#property-render}
+   * @ignore
+   */
+  render: {},
+  /**
+   * 是否可见
+   * see {@link BUI.Component.Controller#property-visible}
+   */
+  visible: {
+    value: true
+  },
+  /**
+   * 可视模式
+   * see {@link BUI.Component.Controller#property-visibleMode}
+   */
+  visibleMode: {
+    value: 'display'
+  },
+  /**
+   * @private
+   * 缓存隐藏时的位置，对应visibleMode = 'visiblity' 的场景
+   * @type {Object}
+   */
+  cachePosition: {
+
+  },
+  /**
+   * content 设置的内容节点,默认根节点
+   * @type {jQuery}
+   * @default  el
+   */
+  contentEl: {
+    valueFn: function() {
+      return this.get('el');
+    }
+  },
+  /**
+   * 样式前缀
+   * see {@link BUI.Component.Controller#property-prefixCls}
+   */
+  prefixCls: {
+    value: BUI.prefix
+  },
+  /**
+   * 可以获取焦点
+   * @protected
+   * see {@link BUI.Component.Controller#property-focusable}
+   */
+  focusable: {
+    value: true
+  },
+  /**
+   * 获取焦点
+   * see {@link BUI.Component.Controller#property-focused}
+   */
+  focused: {},
+  /**
+   * 激活
+   * see {@link BUI.Component.Controller#property-active}
+   */
+  active: {},
+  /**
+   * 禁用
+   * see {@link BUI.Component.Controller#property-disabled}
+   */
+  disabled: {},
+  /**
+   * 高亮显示
+   * see {@link BUI.Component.Controller#property-highlighted}
+   */
+  highlighted: {}
+};
+
+module.exports = View;
+
+});
+define("bui/common/component/controller", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview  控件可以实例化的基类
+ * @ignore
+ * @author yiminghe@gmail.com
+ * copied by dxq613@gmail.com
+ */
+
+/**
+ * jQuery 事件
+ * @class jQuery.Event
+ * @private
+ */
+
+
+'use strict';
+
+var $ = require('jquery'), 
+  UIBase = require("bui/common/component/uibase/uibase"),
+  Manager = require("bui/common/component/manage"),
+  View = require("bui/common/component/view"),
+  Loader = require("bui/common/component/loader"),
+  wrapBehavior = BUI.wrapBehavior,
+  getWrapBehavior = BUI.getWrapBehavior;
+
+/**
+ * @ignore
+ */
+function wrapperViewSetter(attrName) {
+  return function(ev) {
+    var self = this;
+    // in case bubbled from sub component
+    if (self === ev.target) {
+      var value = ev.newVal,
+        view = self.get('view');
+      if (view) {
+        view.set(attrName, value);
+      }
+
+    }
+  };
+}
+
+/**
+ * @ignore
+ */
+function wrapperViewGetter(attrName) {
+  return function(v) {
+    var self = this,
+      view = self.get('view');
+    return v === undefined ? view.get(attrName) : v;
+  };
+}
+
+/**
+ * @ignore
+ */
+function initChild(self, c, renderBefore) {
+  // 生成父组件的 dom 结构
+  self.create();
+  var contentEl = self.getContentElement(),
+    defaultCls = self.get('defaultChildClass');
+  //配置默认 xclass
+  if (!c.xclass && !(c instanceof Controller)) {
+    if (!c.xtype) {
+      c.xclass = defaultCls;
+    } else {
+      c.xclass = defaultCls + '-' + c.xtype;
+    }
+
+  }
+
+  c = BUI.Component.create(c, self);
+  c.setInternal('parent', self);
+  // set 通知 view 也更新对应属性
+  c.set('render', contentEl);
+  c.set('elBefore', renderBefore);
+  // 如果 parent 也没渲染，子组件 create 出来和 parent 节点关联
+  // 子组件和 parent 组件一起渲染
+  // 之前设好属性，view ，logic 同步还没 bind ,create 不是 render ，还没有 bindUI
+  c.create(undefined);
+  return c;
+}
+
+/**
+ * 不使用 valueFn，
+ * 只有 render 时需要找到默认，其他时候不需要，防止莫名其妙初始化
+ * @ignore
+ */
+function constructView(self) {
+  // 逐层找默认渲染器
+  var attrs,
+    attrCfg,
+    attrName,
+    cfg = {},
+    v,
+    Render = self.get('xview');
+
+
+  //将渲染层初始化所需要的属性，直接构造器设置过去
+
+  attrs = self.getAttrs();
+
+  // 整理属性，对纯属于 view 的属性，添加 getter setter 直接到 view
+  for (attrName in attrs) {
+    if (attrs.hasOwnProperty(attrName)) {
+      attrCfg = attrs[attrName];
+      if (attrCfg.view) {
+        // 先取后 getter
+        // 防止死循环
+        if ((v = self.get(attrName)) !== undefined) {
+          cfg[attrName] = v;
+        }
+
+        // setter 不应该有实际操作，仅用于正规化比较好
+        // attrCfg.setter = wrapperViewSetter(attrName);
+        // 不更改attrCfg的定义，可以多个实例公用一份attrCfg
+        /*self.on('after' + BUI.ucfirst(attrName) + 'Change',
+          wrapperViewSetter(attrName));
+        */
+        // 逻辑层读值直接从 view 层读
+        // 那么如果存在默认值也设置在 view 层
+        // 逻辑层不要设置 getter
+        //attrCfg.getter = wrapperViewGetter(attrName);
+      }
+    }
+  }
+  // does not autoRender for view
+  delete cfg.autoRender;
+  cfg.ksComponentCss = getComponentCss(self);
+  return new Render(cfg);
+}
+
+function getComponentCss(self) {
+  var constructor = self.constructor,
+    cls,
+    re = [];
+  while (constructor && constructor !== Controller) {
+    cls = Manager.getXClassByConstructor(constructor);
+    if (cls) {
+      re.push(cls);
+    }
+    constructor = constructor.superclass && constructor.superclass.constructor;
+  }
+  return re.join(' ');
+}
+
+function isMouseEventWithinElement(e, elem) {
+  var relatedTarget = e.relatedTarget;
+  // 在里面或等于自身都不算 mouseenter/leave
+  return relatedTarget &&
+    (relatedTarget === elem[0] || $.contains(elem, relatedTarget));
+}
+
+/**
+ * 可以实例化的控件，作为最顶层的控件类，一切用户控件都继承此控件
+ * xclass: 'controller'.
+ * ** 创建子控件 **
+ * <pre><code>
+ * var Control = Controller.extend([mixin1,mixin2],{ //原型链上的函数
+ *   renderUI : function(){ //创建DOM
+ *
+ *   },
+ *   bindUI : function(){  //绑定事件
+ *
+ *   },
+ *   destructor : funciton(){ //析构函数
+ *
+ *   }
+ * },{
+ *   ATTRS : { //默认的属性
+ *     text : {
+ *
+ *     }
+ *   }
+ * },{
+ *   xclass : 'a' //用于把对象解析成类
+ * });
+ * </code></pre>
+ *
+ * ** 创建对象 **
+ * <pre><code>
+ * var c1 = new Control({
+ *   render : '#t1', //在t1上创建
+ *   text : 'text1',
+ *   children : [{xclass : 'a',text : 'a1'},{xclass : 'b',text : 'b1'}]
+ * });
+ *
+ * c1.render();
+ * </code></pre>
+ * @extends BUI.Component.UIBase
+ * @mixins BUI.Component.UIBase.Tpl
+ * @mixins BUI.Component.UIBase.Decorate
+ * @mixins BUI.Component.UIBase.Depends
+ * @mixins BUI.Component.UIBase.ChildCfg
+ * @class BUI.Component.Controller
+ */
+var Controller = UIBase.extend([UIBase.Decorate, UIBase.Tpl, UIBase.ChildCfg, UIBase.KeyNav, UIBase.Depends], {
+  /**
+   * 是否是控件，标示对象是否是一个UI 控件
+   * @type {Boolean}
+   */
+  isController: true,
+
+  /**
+   * 使用前缀获取类的名字
+   * @param classes {String} class names without prefixCls. Separated by space.
+   * @method
+   * @protected
+   * @return {String} class name with prefixCls
+   */
+  getCssClassWithPrefix: Manager.getCssClassWithPrefix,
+
+  /**
+   * From UIBase, Initialize this component.       *
+   * @protected
+   */
+  initializer: function() {
+    var self = this;
+
+    if (!self.get('id')) {
+      self.set('id', self.getNextUniqueId());
+    }
+    Manager.addComponent(self.get('id'), self);
+    // initialize view
+    var view = constructView(self);
+    self.setInternal('view', view);
+    self.__view = view;
+  },
+
+  /**
+   * 返回新的唯一的Id,结果是 'xclass' + number
+   * @protected
+   * @return {String} 唯一id
+   */
+  getNextUniqueId: function() {
+    var self = this,
+      xclass = Manager.getXClassByConstructor(self.constructor);
+    return BUI.guid(xclass);
+  },
+  /**
+   * From UIBase. Constructor(or get) view object to create ui elements.
+   * @protected
+   *
+   */
+  createDom: function() {
+    var self = this,
+      //el,
+      view = self.get('view');
+    view.create(undefined);
+    //el = view.getKeyEventTarget();
+    /*if (!self.get('allowTextSelection')) {
+      //el.unselectable(undefined);
+    }*/
+  },
+
+  /**
+   * From UIBase. Call view object to render ui elements.
+   * @protected
+   *
+   */
+  renderUI: function() {
+    var self = this,
+      loader = self.get('loader');
+    self.get('view').render();
+    self._initChildren();
+    if (loader) {
+      self.setInternal('loader', loader);
+    }
+    /**/
+
+  },
+  _initChildren: function(children) {
+    var self = this,
+      i,
+      children,
+      child;
+    // then render my children
+    children = children || self.get('children').concat();
+    self.get('children').length = 0;
+    for (i = 0; i < children.length; i++) {
+      child = self.addChild(children[i]);
+      child.render();
+    }
+  },
+  /**
+   * bind ui for box
+   * @private
+   */
+  bindUI: function() {
+    var self = this,
+      events = self.get('events');
+    this.on('afterVisibleChange', function(e) {
+      this.fire(e.newVal ? 'show' : 'hide');
+    });
+    //处理控件事件，设置事件是否冒泡
+    BUI.each(events, function(v, k) {
+      self.publish(k, {
+        bubbles: v
+      });
+    });
+  },
+  /**
+   * 控件是否包含指定的DOM元素,包括根节点
+   * <pre><code>
+   *   var control = new Control();
+   *   $(document).on('click',function(ev){
+   *   var target = ev.target;
+   *
+   *   if(!control.containsElement(elem)){ //未点击在控件内部
+   *     control.hide();
+   *   }
+   *   });
+   * </code></pre>
+   * @param  {HTMLElement} elem DOM 元素
+   * @return {Boolean}  是否包含
+   */
+  containsElement: function(elem) {
+    var _self = this,
+      el = _self.get('el'),
+      children = _self.get('children'),
+      result = false;
+    if (!_self.get('rendered')) {
+      return false;
+    }
+    if ($.contains(el[0], elem) || el[0] === elem) {
+      result = true;
+    } else {
+      BUI.each(children, function(item) {
+        if (item.containsElement(elem)) {
+          result = true;
+          return false;
+        }
+      });
+    }
+    return result;
+  },
+  /**
+   * 是否是子控件的DOM元素
+   * @protected
+   * @return {Boolean} 是否子控件的DOM元素
+   */
+  isChildrenElement: function(elem) {
+    var _self = this,
+      children = _self.get('children'),
+      rst = false;
+    BUI.each(children, function(child) {
+      if (child.containsElement(elem)) {
+        rst = true;
+        return false;
+      }
+    });
+    return rst;
+  },
+  /**
+   * 显示控件
+   */
+  show: function() {
+    var self = this;
+    self.render();
+    self.set('visible', true);
+    return self;
+  },
+
+  /**
+   * 隐藏控件
+   */
+  hide: function() {
+    var self = this;
+    self.set('visible', false);
+    return self;
+  },
+  /**
+   * 交替显示或者隐藏
+   * <pre><code>
+   *  control.show(); //显示
+   *  control.toggle(); //隐藏
+   *  control.toggle(); //显示
+   * </code></pre>
+   */
+  toggle: function() {
+    this.set('visible', !this.get('visible'));
+    return this;
+  },
+  _uiSetFocusable: function(focusable) {
+    var self = this,
+      t,
+      el = self.getKeyEventTarget();
+    if (focusable) {
+      el.attr('tabIndex', 0)
+      // remove smart outline in ie
+      // set outline in style for other standard browser
+      .attr('hideFocus', true)
+        .on('focus', wrapBehavior(self, 'handleFocus'))
+        .on('blur', wrapBehavior(self, 'handleBlur'))
+        .on('keydown', wrapBehavior(self, 'handleKeydown'))
+        .on('keyup', wrapBehavior(self, 'handleKeyUp'));
+    } else {
+      el.removeAttr('tabIndex');
+      if (t = getWrapBehavior(self, 'handleFocus')) {
+        el.off('focus', t);
+      }
+      if (t = getWrapBehavior(self, 'handleBlur')) {
+        el.off('blur', t);
+      }
+      if (t = getWrapBehavior(self, 'handleKeydown')) {
+        el.off('keydown', t);
+      }
+      if (t = getWrapBehavior(self, 'handleKeyUp')) {
+        el.off('keyup', t);
+      }
+    }
+  },
+
+  _uiSetHandleMouseEvents: function(handleMouseEvents) {
+    var self = this,
+      el = self.get('el'),
+      t;
+    if (handleMouseEvents) {
+      el.on('mouseenter', wrapBehavior(self, 'handleMouseEnter'))
+        .on('mouseleave', wrapBehavior(self, 'handleMouseLeave'))
+        .on('contextmenu', wrapBehavior(self, 'handleContextMenu'))
+        .on('mousedown', wrapBehavior(self, 'handleMouseDown'))
+        .on('mouseup', wrapBehavior(self, 'handleMouseUp'))
+        .on('dblclick', wrapBehavior(self, 'handleDblClick'));
+    } else {
+      t = getWrapBehavior(self, 'handleMouseEnter') &&
+        el.off('mouseenter', t);
+      t = getWrapBehavior(self, 'handleMouseLeave') &&
+        el.off('mouseleave', t);
+      t = getWrapBehavior(self, 'handleContextMenu') &&
+        el.off('contextmenu', t);
+      t = getWrapBehavior(self, 'handleMouseDown') &&
+        el.off('mousedown', t);
+      t = getWrapBehavior(self, 'handleMouseUp') &&
+        el.off('mouseup', t);
+      t = getWrapBehavior(self, 'handleDblClick') &&
+        el.off('dblclick', t);
+    }
+  },
+
+  _uiSetFocused: function(v) {
+    if (v) {
+      this.getKeyEventTarget()[0].focus();
+    }
+  },
+  //当使用visiblity显示隐藏时，隐藏时把DOM移除出视图内，显示时回复原位置
+  _uiSetVisible: function(isVisible) {
+    var self = this,
+      el = self.get('el'),
+      visibleMode = self.get('visibleMode');
+    if (visibleMode === 'visibility') {
+      if (isVisible) {
+        var position = self.get('cachePosition');
+        if (position) {
+          self.set('xy', position);
+        }
+      }
+      if (!isVisible) {
+        var position = [
+          self.get('x'), self.get('y')
+        ];
+        self.set('cachePosition', position);
+        self.set('xy', [-999, -999]);
+      }
+    }
+  },
+  //设置children时
+  _uiSetChildren: function(v) {
+    var self = this,
+      children = BUI.cloneObject(v);
+    //self.removeChildren(true);
+    self._initChildren(children);
+  },
+  /**
+   * 使控件可用
+   */
+  enable: function() {
+    this.set('disabled', false);
+    return this;
+  },
+  /**
+   * 使控件不可用，控件不可用时，点击等事件不会触发
+   * <pre><code>
+   *  control.disable(); //禁用
+   *  control.enable(); //解除禁用
+   * </code></pre>
+   */
+  disable: function() {
+    this.set('disabled', true);
+    return this;
+  },
+  /**
+   * 控件获取焦点
+   */
+  focus: function() {
+    if (this.get('focusable')) {
+      this.set('focused', true);
+    }
+  },
+  /**
+   * 子组件将要渲染到的节点，在 render 类上覆盖对应方法
+   * @protected
+   * @ignore
+   */
+  getContentElement: function() {
+    return this.get('view').getContentElement();
+  },
+
+  /**
+   * 焦点所在元素即键盘事件处理元素，在 render 类上覆盖对应方法
+   * @protected
+   * @ignore
+   */
+  getKeyEventTarget: function() {
+    return this.get('view').getKeyEventTarget();
+  },
+
+  /**
+   * 添加控件的子控件，索引值为 0-based
+   * <pre><code>
+   *  control.add(new Control());//添加controller对象
+   *  control.add({xclass : 'a'});//添加xclass 为a 的一个对象
+   *  control.add({xclass : 'b'},2);//插入到第三个位置
+   * </code></pre>
+   * @param {BUI.Component.Controller|Object} c 子控件的实例或者配置项
+   * @param {String} [c.xclass] 如果c为配置项，设置c的xclass
+   * @param {Number} [index]  0-based  如果未指定索引值，则插在控件的最后
+   */
+  addChild: function(c, index) {
+    var self = this,
+      children = self.get('children'),
+      renderBefore;
+    if (index === undefined) {
+      index = children.length;
+    }
+    /**
+     * 添加子控件前触发
+     * @event beforeAddChild
+     * @param {Object} e
+     * @param {Object} e.child 添加子控件时传入的配置项或者子控件
+     * @param {Number} e.index 添加的位置
+     */
+    self.fire('beforeAddChild', {
+      child: c,
+      index: index
+    });
+    renderBefore = children[index] && children[index].get('el') || null;
+    c = initChild(self, c, renderBefore);
+    children.splice(index, 0, c);
+    // 先 create 占位 再 render
+    // 防止 render 逻辑里读 parent.get('children') 不同步
+    // 如果 parent 已经渲染好了子组件也要立即渲染，就 创建 dom ，绑定事件
+    if (self.get('rendered')) {
+      c.render();
+    }
+
+    /**
+     * 添加子控件后触发
+     * @event afterAddChild
+     * @param {Object} e
+     * @param {Object} e.child 添加子控件
+     * @param {Number} e.index 添加的位置
+     */
+    self.fire('afterAddChild', {
+      child: c,
+      index: index
+    });
+    return c;
+  },
+  /**
+   * 将自己从父控件中移除
+   * <pre><code>
+   *  control.remove(); //将控件从父控件中移除，并未删除
+   *  parent.addChild(control); //还可以添加回父控件
+   *
+   *  control.remove(true); //从控件中移除并调用控件的析构函数
+   * </code></pre>
+   * @param  {Boolean} destroy 是否删除DON节点
+   * @return {BUI.Component.Controller} 删除的子对象.
+   */
+  remove: function(destroy) {
+    var self = this,
+      parent = self.get('parent');
+    if (parent) {
+      parent.removeChild(self, destroy);
+    } else if (destroy) {
+      self.destroy();
+    }
+    return self;
+  },
+  /**
+   * 移除子控件，并返回移除的控件
+   *
+   * ** 如果 destroy=true,调用移除控件的 {@link BUI.Component.UIBase#destroy} 方法,
+   * 同时删除对应的DOM **
+   * <pre><code>
+   *  var child = control.getChild(id);
+   *  control.removeChild(child); //仅仅移除
+   *
+   *  control.removeChild(child,true); //移除，并调用析构函数
+   * </code></pre>
+   * @param {BUI.Component.Controller} c 要移除的子控件.
+   * @param {Boolean} [destroy=false] 如果是true,
+   * 调用控件的方法 {@link BUI.Component.UIBase#destroy} .
+   * @return {BUI.Component.Controller} 移除的子控件.
+   */
+  removeChild: function(c, destroy) {
+    var self = this,
+      children = self.get('children'),
+      index = BUI.Array.indexOf(c, children);
+
+    if (index === -1) {
+      return;
+    }
+    /**
+     * 删除子控件前触发
+     * @event beforeRemoveChild
+     * @param {Object} e
+     * @param {Object} e.child 子控件
+     * @param {Boolean} e.destroy 是否清除DOM
+     */
+    self.fire('beforeRemoveChild', {
+      child: c,
+      destroy: destroy
+    });
+
+    if (index !== -1) {
+      children.splice(index, 1);
+    }
+    if (destroy &&
+      // c is still json
+      c.destroy) {
+      c.destroy();
+    }
+    /**
+     * 删除子控件前触发
+     * @event afterRemoveChild
+     * @param {Object} e
+     * @param {Object} e.child 子控件
+     * @param {Boolean} e.destroy 是否清除DOM
+     */
+    self.fire('afterRemoveChild', {
+      child: c,
+      destroy: destroy
+    });
+
+    return c;
+  },
+
+  /**
+   * 删除当前控件的子控件
+   * <pre><code>
+   *   control.removeChildren();//删除所有子控件
+   *   control.removeChildren(true);//删除所有子控件，并调用子控件的析构函数
+   * </code></pre>
+   * @see Component.Controller#removeChild
+   * @param {Boolean} [destroy] 如果设置 true,
+   * 调用子控件的 {@link BUI.Component.UIBase#destroy}方法.
+   */
+  removeChildren: function(destroy) {
+    var self = this,
+      i,
+      t = [].concat(self.get('children'));
+    for (i = 0; i < t.length; i++) {
+      self.removeChild(t[i], destroy);
+    }
+  },
+
+  /**
+   * 根据索引获取子控件
+   * <pre><code>
+   *  control.getChildAt(0);//获取第一个子控件
+   *  control.getChildAt(2); //获取第三个子控件
+   * </code></pre>
+   * @param {Number} index 0-based 索引值.
+   * @return {BUI.Component.Controller} 子控件或者null
+   */
+  getChildAt: function(index) {
+    var children = this.get('children');
+    return children[index] || null;
+  },
+  /**
+   * 根据Id获取子控件
+   * <pre><code>
+   *  control.getChild('id'); //从控件的直接子控件中查找
+   *  control.getChild('id',true);//递归查找所有子控件，包含子控件的子控件
+   * </code></pre>
+   * @param  {String} id 控件编号
+   * @param  {Boolean} deep 是否继续查找在子控件中查找
+   * @return {BUI.Component.Controller} 子控件或者null
+   */
+  getChild: function(id, deep) {
+    return this.getChildBy(function(item) {
+      return item.get('id') === id;
+    }, deep);
+  },
+  /**
+   * 通过匹配函数查找子控件，返回第一个匹配的对象
+   * <pre><code>
+   *  control.getChildBy(function(child){//从控件的直接子控件中查找
+   *  return child.get('id') = '1243';
+   *  });
+   *
+   *  control.getChild(function(child){//递归查找所有子控件，包含子控件的子控件
+   *  return child.get('id') = '1243';
+   *  },true);
+   * </code></pre>
+   * @param  {Function} math 查找的匹配函数
+   * @param  {Boolean} deep 是否继续查找在子控件中查找
+   * @return {BUI.Component.Controller} 子控件或者null
+   */
+  getChildBy: function(math, deep) {
+    return this.getChildrenBy(math, deep)[0] || null;
+  },
+  /**
+   * 获取控件的附加高度 = control.get('el').outerHeight() - control.get('el').height()
+   * @protected
+   * @return {Number} 附加宽度
+   */
+  getAppendHeight: function() {
+    var el = this.get('el');
+    return el.outerHeight() - el.height();
+  },
+  /**
+   * 获取控件的附加宽度 = control.get('el').outerWidth() - control.get('el').width()
+   * @protected
+   * @return {Number} 附加宽度
+   */
+  getAppendWidth: function() {
+    var el = this.get('el');
+    return el.outerWidth() - el.width();
+  },
+  /**
+   * 查找符合条件的子控件
+   * <pre><code>
+   *  control.getChildrenBy(function(child){//从控件的直接子控件中查找
+   *  return child.get('type') = '1';
+   *  });
+   *
+   *  control.getChildrenBy(function(child){//递归查找所有子控件，包含子控件的子控件
+   *  return child.get('type') = '1';
+   *  },true);
+   * </code></pre>
+   * @param  {Function} math 查找的匹配函数
+   * @param  {Boolean} deep 是否继续查找在子控件中查找，如果符合上面的匹配函数，则不再往下查找
+   * @return {BUI.Component.Controller[]} 子控件数组
+   */
+  getChildrenBy: function(math, deep) {
+    var self = this,
+      results = [];
+    if (!math) {
+      return results;
+    }
+
+    self.eachChild(function(child) {
+      if (math(child)) {
+        results.push(child);
+      } else if (deep) {
+
+        results = results.concat(child.getChildrenBy(math, deep));
+      }
+    });
+    return results;
+  },
+  /**
+   * 遍历子元素
+   * <pre><code>
+   *  control.eachChild(function(child,index){ //遍历子控件
+   *
+   *  });
+   * </code></pre>
+   * @param  {Function} func 迭代函数，函数原型function(child,index)
+   */
+  eachChild: function(func) {
+    BUI.each(this.get('children'), func);
+  },
+  /**
+   * Handle dblclick events. By default, this performs its associated action by calling
+   * {@link BUI.Component.Controller#performActionInternal}.
+   * @protected
+   * @param {jQuery.Event} ev DOM event to handle.
+   */
+  handleDblClick: function(ev) {
+    this.performActionInternal(ev);
+    if (!this.isChildrenElement(ev.target)) {
+      this.fire('dblclick', {
+        domTarget: ev.target,
+        domEvent: ev
+      });
+    }
+  },
+
+  /**
+   * Called by it's container component to dispatch mouseenter event.
+   * @private
+   * @param {jQuery.Event} ev DOM event to handle.
+   */
+  handleMouseOver: function(ev) {
+    var self = this,
+      el = self.get('el');
+    if (!isMouseEventWithinElement(ev, el)) {
+      self.handleMouseEnter(ev);
+
+    }
+  },
+
+  /**
+   * Called by it's container component to dispatch mouseleave event.
+   * @private
+   * @param {jQuery.Event} ev DOM event to handle.
+   */
+  handleMouseOut: function(ev) {
+    var self = this,
+      el = self.get('el');
+    if (!isMouseEventWithinElement(ev, el)) {
+      self.handleMouseLeave(ev);
+
+    }
+  },
+
+  /**
+   * Handle mouseenter events. If the component is not disabled, highlights it.
+   * @protected
+   * @param {jQuery.Event} ev DOM event to handle.
+   */
+  handleMouseEnter: function(ev) {
+    var self = this;
+    this.set('highlighted', !!ev);
+    self.fire('mouseenter', {
+      domTarget: ev.target,
+      domEvent: ev
+    });
+  },
+
+  /**
+   * Handle mouseleave events. If the component is not disabled, de-highlights it.
+   * @protected
+   * @param {jQuery.Event} ev DOM event to handle.
+   */
+  handleMouseLeave: function(ev) {
+    var self = this;
+    self.set('active', false);
+    self.set('highlighted', !ev);
+    self.fire('mouseleave', {
+      domTarget: ev.target,
+      domEvent: ev
+    });
+  },
+
+  /**
+   * Handles mousedown events. If the component is not disabled,
+   * If the component is activeable, then activate it.
+   * If the component is focusable, then focus it,
+   * else prevent it from receiving keyboard focus.
+   * @protected
+   * @param {jQuery.Event} ev DOM event to handle.
+   */
+  handleMouseDown: function(ev) {
+    var self = this,
+      n,
+      target = $(ev.target),
+      isMouseActionButton = ev['which'] === 1,
+      el;
+    if (isMouseActionButton) {
+      el = self.getKeyEventTarget();
+      if (self.get('activeable')) {
+        self.set('active', true);
+      }
+      if (self.get('focusable')) {
+        //如果不是input,select,area等可以获取焦点的控件，那么设置此控件的focus
+        /*if(target[0] == el[0] || (!target.is('input,select,area') && !target.attr('tabindex'))){
+          el[0].focus(); 
+          
+        }*/
+        self.setInternal('focused', true);
+      }
+
+      if (!self.get('allowTextSelection')) {
+        // firefox /chrome 不会引起焦点转移
+        n = ev.target.nodeName;
+        n = n && n.toLowerCase();
+        // do not prevent focus when click on editable element
+        if (n !== 'input' && n !== 'textarea') {
+          ev.preventDefault();
+        }
+      }
+      if (!self.isChildrenElement(ev.target)) {
+        self.fire('mousedown', {
+          domTarget: ev.target,
+          domEvent: ev
+        });
+      }
+
+    }
+  },
+
+  /**
+   * Handles mouseup events.
+   * If this component is not disabled, performs its associated action by calling
+   * {@link BUI.Component.Controller#performActionInternal}, then deactivates it.
+   * @protected
+   * @param {jQuery.Event} ev DOM event to handle.
+   */
+  handleMouseUp: function(ev) {
+    var self = this,
+      isChildrenElement = self.isChildrenElement(ev.target);
+    // 左键
+    if (self.get('active') && ev.which === 1) {
+      self.performActionInternal(ev);
+      self.set('active', false);
+      if (!isChildrenElement) {
+        self.fire('click', {
+          domTarget: ev.target,
+          domEvent: ev
+        });
+      }
+    }
+    if (!isChildrenElement) {
+      self.fire('mouseup', {
+        domTarget: ev.target,
+        domEvent: ev
+      });
+    }
+  },
+
+  /**
+   * Handles context menu.
+   * @protected
+   * @param {jQuery.Event} ev DOM event to handle.
+   */
+  handleContextMenu: function(ev) {},
+
+  /**
+   * Handles focus events. Style focused class.
+   * @protected
+   * @param {jQuery.Event} ev DOM event to handle.
+   */
+  handleFocus: function(ev) {
+    this.set('focused', !!ev);
+    this.fire('focus', {
+      domEvent: ev,
+      domTarget: ev.target
+    });
+  },
+
+  /**
+   * Handles blur events. Remove focused class.
+   * @protected
+   * @param {jQuery.Event} ev DOM event to handle.
+   */
+  handleBlur: function(ev) {
+    this.set('focused', !ev);
+    this.fire('blur', {
+      domEvent: ev,
+      domTarget: ev.target
+    });
+  },
+
+  /**
+   * Handle enter keydown event to {@link BUI.Component.Controller#performActionInternal}.
+   * @protected
+   * @param {jQuery.Event} ev DOM event to handle.
+   */
+  handleKeyEventInternal: function(ev) {
+    var self = this,
+      isChildrenElement = self.isChildrenElement(ev.target);
+    if (ev.which === 13) {
+      if (!isChildrenElement) {
+        self.fire('click', {
+          domTarget: ev.target,
+          domEvent: ev
+        });
+      }
+
+      return this.performActionInternal(ev);
+    }
+    if (!isChildrenElement) {
+      self.fire('keydown', {
+        domTarget: ev.target,
+        domEvent: ev
+      });
+    }
+  },
+
+  /**
+   * Handle keydown events.
+   * If the component is not disabled, call {@link BUI.Component.Controller#handleKeyEventInternal}
+   * @protected
+   * @param {jQuery.Event} ev DOM event to handle.
+   */
+  handleKeydown: function(ev) {
+    var self = this;
+    if (self.handleKeyEventInternal(ev)) {
+      ev.halt();
+      return true;
+    }
+  },
+  handleKeyUp: function(ev) {
+    var self = this;
+    if (!self.isChildrenElement(ev.target)) {
+      self.fire('keyup', {
+        domTarget: ev.target,
+        domEvent: ev
+      });
+    }
+  },
+  /**
+   * Performs the appropriate action when this component is activated by the user.
+   * @protected
+   * @param {jQuery.Event} ev DOM event to handle.
+   */
+  performActionInternal: function(ev) {},
+  /**
+   * 析构函数
+   * @protected
+   */
+  destructor: function() {
+    var self = this,
+      id,
+      i,
+      view,
+      children = self.get('children');
+    id = self.get('id');
+    for (i = 0; i < children.length; i++) {
+      children[i].destroy && children[i].destroy();
+    }
+    self.get('view').destroy();
+    Manager.removeComponent(id);
+  },
+  //覆写set方法
+  set: function(name, value, opt) {
+    var _self = this,
+      view = _self.__view,
+      attr = _self.__attrs[name],
+      ucName,
+      ev,
+      m;
+    if (BUI.isObject(name)) {
+      opt = value;
+      BUI.each(name, function(v, k) {
+        _self.set(k, v, opt);
+      });
+    }
+    if (!view || !attr || (opt && opt.silent)) { //未初始化view或者没用定义属性
+      Controller.superclass.set.call(this, name, value, opt);
+      return _self;
+    }
+
+    var prevVal = Controller.superclass.get.call(this, name);
+
+    //如果未改变值不进行修改
+    if (!$.isPlainObject(value) && !BUI.isArray(value) && prevVal === value) {
+      return _self;
+    }
+    ucName = BUI.ucfirst(name);
+    m = '_uiSet' + ucName;
+    //触发before事件
+    _self.fire('before' + ucName + 'Change', {
+      attrName: name,
+      prevVal: prevVal,
+      newVal: value
+    });
+
+    _self.setInternal(name, value);
+
+    value = _self.__attrVals[name];
+    if (view && attr.view) {
+      view.set(name, value);
+      //return _self;
+    }
+    ev = {
+      attrName: name,
+      prevVal: prevVal,
+      newVal: value
+    };
+
+    //触发before事件
+    _self.fire('after' + ucName + 'Change', ev);
+    if (_self.get('binded') && _self[m]) {
+      _self[m](value, ev);
+    }
+    return _self;
+  },
+  //覆写get方法，改变时同时改变view的值
+  get: function(name) {
+    var _self = this,
+      view = _self.__view,
+      attr = _self.__attrs[name],
+      value = Controller.superclass.get.call(this, name);
+    if (value !== undefined) {
+      return value;
+    }
+    if (view && attr && attr.view) {
+      return view.get(name);
+    }
+
+    return value;
+  }
+}, {
+  ATTRS: {
+    /**
+     * 控件的Html 内容
+     * <pre><code>
+     *  new Control({
+     *   content : '内容',
+     *   render : '#c1'
+     *  });
+     * </code></pre>
+     * @cfg {String|jQuery} content
+     */
+    /**
+     * 控件的Html 内容
+     * @type {String|jQuery}
+     */
+    content: {
+      view: 1
+    },
+    /**
+     * 控件根节点使用的标签
+     * <pre><code>
+     *  new Control({
+     *   elTagName : 'ul',
+     *    content : '<li>内容</li>',  //控件的DOM &lt;ul&gt;&lt;li&gt;内容&lt;/li&gt;&lt;/ul&gt;
+     *   render : '#c1'
+     *  });
+     * </code></pre>
+     * @cfg {String} elTagName
+     */
+    elTagName: {
+      // 生成标签名字
+      view: true,
+      value: 'div'
+    },
+    /**
+     * 子元素的默认 xclass,配置child的时候没必要每次都填写xclass
+     * @type {String}
+     */
+    defaultChildClass: {
+
+    },
+    /**
+     * 如果控件未设置 xclass，同时父元素设置了 defaultChildClass，那么
+     * xclass = defaultChildClass + '-' + xtype
+     * <pre><code>
+     *  A.ATTRS = {
+     *  defaultChildClass : {
+     *    value : 'b'
+     *  }
+     *  }
+     *  //类B 的xclass = 'b'类 B1的xclass = 'b-1',类 B2的xclass = 'b-2',那么
+     *  var a = new A({
+     *  children : [
+     *    {content : 'b'}, //B类
+     *    {content : 'b1',xtype:'1'}, //B1类
+     *    {content : 'b2',xtype:'2'}, //B2类
+     *  ]
+     *  });
+     * </code></pre>
+     * @type {String}
+     */
+    xtype: {
+
+    },
+    /**
+     * 标示控件的唯一编号，默认会自动生成
+     * @cfg {String} id
+     */
+    /**
+     * 标示控件的唯一编号，默认会自动生成
+     * @type {String}
+     */
+    id: {
+      view: true
+    },
+    /**
+     * 控件宽度
+     * <pre><code>
+     * new Control({
+     *   width : 200 // 200,'200px','20%'
+     * });
+     * </code></pre>
+     * @cfg {Number|String} width
+     */
+    /**
+     * 控件宽度
+     * <pre><code>
+     *  control.set('width',200);
+     *  control.set('width','200px');
+     *  control.set('width','20%');
+     * </code></pre>
+     * @type {Number|String}
+     */
+    width: {
+      view: 1
+    },
+    /**
+     * 控件宽度
+     * <pre><code>
+     * new Control({
+     *   height : 200 // 200,'200px','20%'
+     * });
+     * </code></pre>
+     * @cfg {Number|String} height
+     */
+    /**
+     * 控件宽度
+     * <pre><code>
+     *  control.set('height',200);
+     *  control.set('height','200px');
+     *  control.set('height','20%');
+     * </code></pre>
+     * @type {Number|String}
+     */
+    height: {
+      view: 1
+    },
+    /**
+     * 控件根节点应用的样式
+     * <pre><code>
+     *  new Control({
+     *   elCls : 'test',
+     *   content : '内容',
+     *   render : '#t1'   //&lt;div id='t1'&gt;&lt;div class="test"&gt;内容&lt;/div&gt;&lt;/div&gt;
+     *  });
+     * </code></pre>
+     * @cfg {String} elCls
+     */
+    /**
+     * 控件根节点应用的样式 css class
+     * @type {String}
+     */
+    elCls: {
+      view: 1
+    },
+    /**
+     * @cfg {Object} elStyle
+     * 控件根节点应用的css属性
+     *  <pre><code>
+     *  var cfg = {elStyle : {width:'100px', height:'200px'}};
+     *  </code></pre>
+     */
+    /**
+     * 控件根节点应用的css属性，以键值对形式
+     * @type {Object}
+     *  <pre><code>
+     *	 control.set('elStyle',	{
+     *		width:'100px',
+     *		height:'200px'
+     *   });
+     *  </code></pre>
+     */
+    elStyle: {
+      view: 1
+    },
+    /**
+     * @cfg {Object} elAttrs
+     * 控件根节点应用的属性，以键值对形式:
+     * <pre><code>
+     *  new Control({
+     *  elAttrs :{title : 'tips'}
+     *  });
+     * </code></pre>
+     */
+    /**
+     * @type {Object}
+     * 控件根节点应用的属性，以键值对形式:
+     * { title : 'tips'}
+     * @ignore
+     */
+    elAttrs: {
+      view: 1
+    },
+    /**
+     * 将控件插入到指定元素前
+     * <pre><code>
+     *  new Control({
+     *    elBefore : '#t1'
+     *  });
+     * </code></pre>
+     * @cfg {jQuery} elBefore
+     */
+    /**
+     * 将控件插入到指定元素前
+     * @type {jQuery}
+     * @ignore
+     */
+    elBefore: {
+      // better named to renderBefore, too late !
+      view: 1
+    },
+
+    /**
+     * 只读属性，根节点DOM
+     * @type {jQuery}
+     */
+    el: {
+      view: 1
+    },
+    /**
+     * 控件支持的事件
+     * @type {Object}
+     * @protected
+     */
+    events: {
+      value: {
+        /**
+         * 点击事件，此事件会冒泡，所以可以在父元素上监听所有子元素的此事件
+         * @event
+         * @param {Object} e 事件对象
+         * @param {BUI.Component.Controller} e.target 触发事件的对象
+         * @param {jQuery.Event} e.domEvent DOM触发的事件
+         * @param {HTMLElement} e.domTarget 触发事件的DOM节点
+         */
+        'click': true,
+        /**
+         * 双击事件，此事件会冒泡，所以可以在父元素上监听所有子元素的此事件
+         * @event
+         * @param {Object} e 事件对象
+         * @param {BUI.Component.Controller} e.target 触发事件的对象
+         * @param {jQuery.Event} e.domEvent DOM触发的事件
+         * @param {HTMLElement} e.domTarget 触发事件的DOM节点
+         */
+        'dblclick': true,
+        /**
+         * 鼠标移入控件
+         * @event
+         * @param {Object} e 事件对象
+         * @param {BUI.Component.Controller} e.target 触发事件的对象
+         * @param {jQuery.Event} e.domEvent DOM触发的事件
+         * @param {HTMLElement} e.domTarget 触发事件的DOM节点
+         */
+        'mouseenter': true,
+        /**
+         * 鼠标移出控件
+         * @event
+         * @param {Object} e 事件对象
+         * @param {BUI.Component.Controller} e.target 触发事件的对象
+         * @param {jQuery.Event} e.domEvent DOM触发的事件
+         * @param {HTMLElement} e.domTarget 触发事件的DOM节点
+         */
+        'mouseleave': true,
+        /**
+         * 键盘按下按键事件，此事件会冒泡，所以可以在父元素上监听所有子元素的此事件
+         * @event
+         * @param {Object} e 事件对象
+         * @param {BUI.Component.Controller} e.target 触发事件的对象
+         * @param {jQuery.Event} e.domEvent DOM触发的事件
+         * @param {HTMLElement} e.domTarget 触发事件的DOM节点
+         */
+        'keydown': true,
+        /**
+         * 键盘按键抬起控件，此事件会冒泡，所以可以在父元素上监听所有子元素的此事件
+         * @event
+         * @param {Object} e 事件对象
+         * @param {BUI.Component.Controller} e.target 触发事件的对象
+         * @param {jQuery.Event} e.domEvent DOM触发的事件
+         * @param {HTMLElement} e.domTarget 触发事件的DOM节点
+         */
+        'keyup': true,
+        /**
+         * 控件获取焦点事件
+         * @event
+         * @param {Object} e 事件对象
+         * @param {BUI.Component.Controller} e.target 触发事件的对象
+         * @param {jQuery.Event} e.domEvent DOM触发的事件
+         * @param {HTMLElement} e.domTarget 触发事件的DOM节点
+         */
+        'focus': false,
+        /**
+         * 控件丢失焦点事件
+         * @event
+         * @param {Object} e 事件对象
+         * @param {BUI.Component.Controller} e.target 触发事件的对象
+         * @param {jQuery.Event} e.domEvent DOM触发的事件
+         * @param {HTMLElement} e.domTarget 触发事件的DOM节点
+         */
+        'blur': false,
+        /**
+         * 鼠标按下控件，此事件会冒泡，所以可以在父元素上监听所有子元素的此事件
+         * @event
+         * @param {Object} e 事件对象
+         * @param {BUI.Component.Controller} e.target 触发事件的对象
+         * @param {jQuery.Event} e.domEvent DOM触发的事件
+         * @param {HTMLElement} e.domTarget 触发事件的DOM节点
+         */
+        'mousedown': true,
+        /**
+         * 鼠标抬起控件，此事件会冒泡，所以可以在父元素上监听所有子元素的此事件
+         * @event
+         * @param {Object} e 事件对象
+         * @param {BUI.Component.Controller} e.target 触发事件的对象
+         * @param {jQuery.Event} e.domEvent DOM触发的事件
+         * @param {HTMLElement} e.domTarget 触发事件的DOM节点
+         */
+        'mouseup': true,
+        /**
+         * 控件显示
+         * @event
+         */
+        'show': false,
+        /**
+         * 控件隐藏
+         * @event
+         */
+        'hide': false
       }
     },
     /**
-     * @private
-     * 加载出错
+     * 指定控件的容器
+     * <pre><code>
+     *  new Control({
+     *  render : '#t1',
+     *  elCls : 'test',
+     *  content : '<span>123</span>'  //&lt;div id="t1"&gt;&lt;div class="test bui-xclass"&gt;&lt;span&gt;123&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+     *  });
+     * </code></pre>
+     * @cfg {jQuery} render
      */
-    onException: function(response, params) {
-      var _self = this,
-        failure = _self.get('failure');
-      if (failure) {
-        failure.call(this, response, params);
+    /**
+     * 指定控件的容器
+     * @type {jQuery}
+     * @ignore
+     */
+    render: {
+      view: 1
+    },
+    /**
+     * ARIA 标准中的role,不要更改此属性
+     * @type {String}
+     * @protected
+     */
+    role: {
+      view: 1
+    },
+    /**
+     * 状态相关的样式,默认情况下会使用 前缀名 + xclass + '-' + 状态名
+     * <ol>
+     *   <li>hover</li>
+     *   <li>focused</li>
+     *   <li>active</li>
+     *   <li>disabled</li>
+     * </ol>
+     * @type {Object}
+     */
+    statusCls: {
+      view: true,
+      value: {
+
       }
+    },
+    /**
+     * 控件的可视方式,值为：
+     *  - 'display'
+     *  - 'visibility'
+     *  <pre><code>
+     *   new Control({
+     *   visibleMode: 'visibility'
+     *   });
+     *  </code></pre>
+     * @cfg {String} [visibleMode = 'display']
+     */
+    /**
+     * 控件的可视方式,使用 css
+     *  - 'display' 或者
+     *  - 'visibility'
+     * <pre><code>
+     *  control.set('visibleMode','display')
+     * </code></pre>
+     * @type {String}
+     */
+    visibleMode: {
+      view: 1,
+      value: 'display'
+    },
+    /**
+     * 控件是否可见
+     * <pre><code>
+     *  new Control({
+     *  visible : false   //隐藏
+     *  });
+     * </code></pre>
+     * @cfg {Boolean} [visible = true]
+     */
+    /**
+     * 控件是否可见
+     * <pre><code>
+     *  control.set('visible',true); //control.show();
+     *  control.set('visible',false); //control.hide();
+     * </code></pre>
+     * @type {Boolean}
+     * @default true
+     */
+    visible: {
+      value: true,
+      view: 1
+    },
+    /**
+     * 是否允许处理鼠标事件
+     * @default true.
+     * @type {Boolean}
+     * @protected
+     */
+    handleMouseEvents: {
+      value: true
+    },
+
+    /**
+     * 控件是否可以获取焦点
+     * @default true.
+     * @protected
+     * @type {Boolean}
+     */
+    focusable: {
+      value: false,
+      view: 1
+    },
+    /**
+     * 一旦使用loader的默认配置
+     * @protected
+     * @type {Object}
+     */
+    defaultLoaderCfg: {
+      value: {
+        property: 'content',
+        autoLoad: true
+      }
+    },
+    /**
+     * 控件内容的加载器
+     * @type {BUI.Component.Loader}
+     */
+    loader: {
+      getter: function(v) {
+        var _self = this,
+          defaultCfg;
+        if (v && !v.isLoader) {
+          v.target = _self;
+          defaultCfg = _self.get('defaultLoaderCfg')
+          v = new Loader(BUI.merge(defaultCfg, v));
+          _self.setInternal('loader', v);
+        }
+        return v;
+      }
+    },
+    /**
+     * 1. Whether allow select this component's text.<br/>
+     * 2. Whether not to lose last component's focus if click current one (set false).
+     *
+     * Defaults to: false.
+     * @type {Boolean}
+     * @property allowTextSelection
+     * @protected
+     */
+    /**
+     * @ignore
+     */
+    allowTextSelection: {
+      // 和 focusable 分离
+      // grid 需求：容器允许选择里面内容
+      value: true
+    },
+
+    /**
+     * 控件是否可以激活
+     * @default true.
+     * @type {Boolean}
+     * @protected
+     */
+    activeable: {
+      value: true
+    },
+
+    /**
+     * 控件是否获取焦点
+     * @type {Boolean}
+     * @readOnly
+     */
+    focused: {
+      view: 1
+    },
+
+    /**
+     * 控件是否处于激活状态，按钮按下还未抬起
+     * @type {Boolean}
+     * @default false
+     * @protected
+     */
+    active: {
+      view: 1
+    },
+    /**
+     * 控件是否高亮
+     * @cfg {Boolean} highlighted
+     * @ignore
+     */
+    /**
+     * 控件是否高亮
+     * @type {Boolean}
+     * @protected
+     */
+    highlighted: {
+      view: 1
+    },
+    /**
+     * 子控件集合
+     * @cfg {BUI.Component.Controller[]} children
+     */
+    /**
+     * 子控件集合
+     * @type {BUI.Component.Controller[]}
+     */
+    children: {
+      sync: false,
+      shared: false,
+      value: [] /**/
+    },
+    /**
+     * 控件的CSS前缀
+     * @cfg {String} [prefixCls = BUI.prefix]
+     */
+    /**
+     * 控件的CSS前缀
+     * @type {String}
+     * @default BUI.prefix
+     */
+    prefixCls: {
+      value: BUI.prefix, // box srcNode need
+      view: 1
+    },
+
+    /**
+     * 父控件
+     * @cfg {BUI.Component.Controller} parent
+     * @ignore
+     */
+    /**
+     * 父控件
+     * @type {BUI.Component.Controller}
+     */
+    parent: {
+      setter: function(p) {
+        // 事件冒泡源
+        this.addTarget(p);
+      }
+    },
+
+    /**
+     * 禁用控件
+     * @cfg {Boolean} [disabled = false]
+     */
+    /**
+     * 禁用控件
+     * <pre><code>
+     *  control.set('disabled',true); //==  control.disable();
+     *  control.set('disabled',false); //==  control.enable();
+     * </code></pre>
+     * @type {Boolean}
+     * @default false
+     */
+    disabled: {
+      view: 1,
+      value: false
+    },
+    /**
+     * 渲染控件的View类.
+     * @protected
+     * @cfg {BUI.Component.View} [xview = BUI.Component.View]
+     */
+    /**
+     * 渲染控件的View类.
+     * @protected
+     * @type {BUI.Component.View}
+     */
+    xview: {
+      value: View
     }
-  });
-  module.exports = Loader;
+  },
+  PARSER: {
+    visible: function(el) {
+      var _self = this,
+        display = el.css('display'),
+
+        visibility = el.css('visibility'),
+        visibleMode = _self.get('visibleMode');
+      if ((display == 'none' && visibleMode == 'display') || (visibility == 'hidden' && visibleMode == 'visibility')) {
+        return false;
+      }
+      return true;
+    },
+    disabled: function(el){
+      var _self = this,
+        cls = _self.get('prefixCls') + _self.get('xclass') + '-disabled';
+      return el.hasClass(cls);
+    }
+  }
+}, {
+  xclass: 'controller',
+  priority: 0
 });
-define("bui/data", ["jquery", "bui/common", "bui/data/sortable", "bui/data/proxy", "bui/data/abstractstore", "bui/data/store", "bui/data/node", "bui/data/treestore"], function(require, exports, module) {
-  /**
-   * @fileOverview Data 命名空间的入口文件
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    Data = BUI.namespace('Data');
-  BUI.mix(Data, {
-    Sortable: require("bui/data/sortable"),
-    Proxy: require("bui/data/proxy"),
-    AbstractStore: require("bui/data/abstractstore"),
-    Store: require("bui/data/store"),
-    Node: require("bui/data/node"),
-    TreeStore: require("bui/data/treestore")
-  });
-  module.exports = Data;
+module.exports = Controller;
+
 });
-define("bui/data/sortable", [], function(require, exports, module) {
+define("bui/common/component/loader", ["jquery"], function(require, exports, module){
+/**
+ * @fileOverview 加载控件内容
+ * @ignore
+ */
+
+'use strict';
+var $ = require('jquery'),
+  BUI = require("bui/common/util"),
+  Base = require("bui/common/base"),
   /**
-   * @fileOverview 可排序扩展类
-   * @ignore
+   * @class BUI.Component.Loader
+   * @extends BUI.Base
+   * ** 控件的默认Loader属性是：**
+   * <pre><code>
+   *
+   *   defaultLoader : {
+   *     value : {
+   *       property : 'content',
+   *       autoLoad : true
+   *     }
+   *   }
+   * </code></pre>
+   * ** 一般的控件默认读取html，作为控件的content值 **
+   * <pre><code>
+   *   var control = new BUI.Component.Controller({
+   *     render : '#c1',
+   *     loader : {
+   *       url : 'data/text.json'
+   *     }
+   *   });
+   *
+   *   control.render();
+   * </code></pre>
+   *
+   * ** 可以修改Loader的默认属性，加载children **
+   * <pre><code>
+   *   var control = new BUI.Component.Controller({
+   *     render : '#c1',
+   *     loader : {
+   *       url : 'data/children.json',
+   *       property : 'children',
+   *       dataType : 'json'
+   *     }
+   *   });
+   *
+   *   control.render();
+   * </code></pre>
+   * 加载控件内容的类，一般不进行实例化
    */
+  Loader = function(config) {
+    Loader.superclass.constructor.call(this, config);
+    this._init();
+  };
+
+Loader.ATTRS = {
+
+  /**
+   * 加载内容的地址
+   * <pre><code>
+   *   var control = new BUI.Component.Controller({
+   *     render : '#c1',
+   *     loader : {
+   *       url : 'data/text.json'
+   *     }
+   *   });
+   *
+   *   control.render();
+   * </code></pre>
+   * @cfg {String} url
+   */
+  url: {
+
+  },
+  /**
+   * 对应的控件，加载完成后设置属性到对应的控件
+   * @readOnly
+   * @type {BUI.Component.Controller}
+   */
+  target: {
+
+  },
+  /**
+   * @private
+   * 是否load 过
+   */
+  hasLoad: {
+    value: false
+  },
+  /**
+   * 是否自动加载数据
+   * <pre><code>
+   *   var control = new BUI.Component.Controller({
+   *     render : '#c1',
+   *     loader : {
+   *       url : 'data/text.json',
+   *       autoLoad : false
+   *     }
+   *   });
+   *
+   *   control.render();
+   * </code></pre>
+   * @cfg {Boolean} [autoLoad = true]
+   */
+  autoLoad: {
+
+  },
+  /**
+   * 延迟加载
+   *
+   *   - event : 触发加载的事件
+   *   - repeat ：是否重复加载
+   * <pre><code>
+   *   var control = new BUI.Component.Controller({
+   *     render : '#c1',
+   *     loader : {
+   *       url : 'data/text.json',
+   *       lazyLoad : {
+   *         event : 'show',
+   *         repeat : true
+   *       }
+   *     }
+   *   });
+   *
+   *   control.render();
+   * </code></pre>
+   * @cfg {Object} [lazyLoad = null]
+   */
+  lazyLoad: {
+
+  },
+  /**
+   * 加载返回的数据作为控件的那个属性
+   * <pre><code>
+   *   var control = new BUI.List.SimpleList({
+   *     render : '#c1',
+   *     loader : {
+   *       url : 'data/text.json',
+   *       dataType : 'json',
+   *       property : 'items'
+   *     }
+   *   });
+   *
+   *   control.render();
+   * </code></pre>
+   * @cfg {String} property
+   */
+  property: {
+
+  },
+  /**
+   * 格式化返回的数据
+   * @cfg {Function} renderer
+   */
+  renderer: {
+    value: function(value) {
+      return value;
+    }
+  },
+  /**
+   * 加载数据时是否显示屏蔽层和加载提示 {@link BUI.Mask.LoadMask}
+   *
+   *  -  loadMask : true时使用loadMask 默认的配置信息
+   *  -  loadMask : {msg : '正在加载，请稍后。。'} LoadMask的配置信息
+   *   <pre><code>
+   *   var control = new BUI.Component.Controller({
+   *     render : '#c1',
+   *     loader : {
+   *       url : 'data/text.json',
+   *       loadMask : true
+   *     }
+   *   });
+   *
+   *   control.render();
+   * </code></pre>
+   * @cfg {Boolean|Object} [loadMask = false]
+   */
+  loadMask: {
+    value: false
+  },
+  /**
+   * ajax 请求返回数据的类型
+   * <pre><code>
+   *   var control = new BUI.Component.Controller({
+   *     render : '#c1',
+   *     loader : {
+   *       url : 'data/text.json',
+   *       dataType : 'json',
+   *       property : 'items'
+   *     }
+   *   });
+   *
+   *   control.render();
+   * </code></pre>
+   * @cfg {String} [dataType = 'text']
+   */
+  dataType: {
+    value: 'text'
+  },
+  /**
+   * Ajax请求的配置项,会覆盖 url,dataType数据
+   * @cfg {Object} ajaxOptions
+   */
+  ajaxOptions: {
+    //shared : false,
+    value: {
+      type: 'get',
+      cache: false
+    }
+  },
+  /**
+   * 初始化的请求参数
+   * <pre><code>
+   *   var control = new BUI.Component.Controller({
+   *     render : '#c1',
+   *     loader : {
+   *       url : 'data/text.json',
+   *       params : {
+   *         a : 'a',
+   *         b : 'b'
+   *       }
+   *     }
+   *   });
+   *
+   *   control.render();
+   * </code></pre>
+   * @cfg {Object} params
+   * @default null
+   */
+  params: {
+
+  },
+  /**
+   * 附加参数，每次请求都带的参数
+   * @cfg {Object} appendParams
+   */
+  appendParams: {
+
+  },
+  /**
+   * 最后一次请求的参数
+   * @readOnly
+   * @private
+   * @type {Object}
+   */
+  lastParams: {
+    shared: false,
+    value: {}
+  },
+  /**
+   * 加载数据，并添加属性到控件后的回调函数
+   *   - data : 加载的数据
+   *   - params : 加载的参数
+   * <pre><code>
+   *   var control = new BUI.Component.Controller({
+   *     render : '#c1',
+   *     loader : {
+   *       url : 'data/text.json',
+   *       callback : function(text){
+   *         var target = this.get('target');//control
+   *         //TO DO
+   *       }
+   *     }
+   *   });
+   *
+   *   control.render();
+   * </code></pre>
+   * @cfg {Function} callback
+   */
+  callback: {
+
+  },
+  /**
+   * 失败的回调函数
+   *   - response : 返回的错误对象
+   *   - params : 加载的参数
+   * @cfg {Function} failure
+   */
+  failure: {
+
+  }
+
+};
+
+BUI.extend(Loader, Base);
+
+BUI.augment(Loader, {
+  /**
+   * @protected
+   * 是否是Loader
+   * @type {Boolean}
+   */
+  isLoader: true,
+  //初始化
+  _init: function() {
+    var _self = this,
+      autoLoad = _self.get('autoLoad'),
+      params = _self.get('params');
+
+    _self._initMask();
+    if (autoLoad) {
+      _self.load(params);
+    } else {
+      _self._initParams();
+      _self._initLazyLoad();
+    }
+  },
+  //初始化延迟加载
+  _initLazyLoad: function() {
+    var _self = this,
+      target = _self.get('target'),
+      lazyLoad = _self.get('lazyLoad');
+
+    if (target && lazyLoad && lazyLoad.event) {
+      target.on(lazyLoad.event, function() {
+        if (!_self.get('hasLoad') || lazyLoad.repeat) {
+          _self.load();
+        }
+      });
+    }
+  },
+  /**
+   * 初始化mask
+   * @private
+   */
+  _initMask: function() {
+    var _self = this,
+      target = _self.get('target'),
+      loadMask = _self.get('loadMask');
+    if (target && loadMask) {
+      require.async('bui/mask', function(Mask) {
+        var cfg = $.isPlainObject(loadMask) ? loadMask : {};
+        loadMask = new Mask.LoadMask(BUI.mix({
+          el: target.get('el')
+        }, cfg));
+        _self.set('loadMask', loadMask);
+      });
+    }
+  },
+  //初始化查询参数
+  _initParams: function() {
+    var _self = this,
+      lastParams = _self.get('lastParams'),
+      params = _self.get('params');
+
+    //初始化 参数
+    BUI.mix(lastParams, params);
+  },
+  /**
+   * 加载内容
+   * @param {Object} params 加载数据的参数
+   */
+  load: function(params) {
+    var _self = this,
+      url = _self.get('url'),
+      ajaxOptions = _self.get('ajaxOptions'),
+      lastParams = _self.get('lastParams'),
+      appendParams = _self.get('appendParams');
+
+    //BUI.mix(true,lastParams,appendParams,params);
+    params = params || lastParams;
+    params = BUI.merge(appendParams, params); //BUI.cloneObject(lastParams);
+    _self.set('lastParams', params);
+    //未提供加载地址，阻止加载
+    if (!url) {
+      return;
+    }
+
+    _self.onBeforeLoad();
+    _self.set('hasLoad', true);
+    $.ajax(BUI.mix({
+      dataType: _self.get('dataType'),
+      data: params,
+      url: url,
+      success: function(data) {
+        _self.onload(data, params);
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        _self.onException({
+          jqXHR: jqXHR,
+          textStatus: textStatus,
+          errorThrown: errorThrown
+        }, params);
+      }
+    }, ajaxOptions));
+  },
+  /**
+   * @private
+   * 加载前
+   */
+  onBeforeLoad: function() {
+    var _self = this,
+      loadMask = _self.get('loadMask');
+    if (loadMask && loadMask.show) {
+      loadMask.show();
+    }
+  },
+  /**
+   * @private
+   * 加载完毕
+   */
+  onload: function(data, params) {
+    var _self = this,
+      loadMask = _self.get('loadMask'),
+      property = _self.get('property'),
+      callback = _self.get('callback'),
+      renderer = _self.get('renderer'),
+      target = _self.get('target');
+
+    if (BUI.isString(data)) {
+      target.set(property, ''); //防止2次返回的数据一样
+    }
+    target.set(property, renderer.call(_self, data));
+
+    /**/
+    if (loadMask && loadMask.hide) {
+      loadMask.hide();
+    }
+    if (callback) {
+      callback.call(this, data, params);
+    }
+  },
+  /**
+   * @private
+   * 加载出错
+   */
+  onException: function(response, params) {
+    var _self = this,
+      failure = _self.get('failure');
+    if (failure) {
+      failure.call(this, response, params);
+    }
+  }
+
+});
+module.exports = Loader;
+
+});
+
+define("bui/data", ["bui/common","jquery"], function(require, exports, module){
+/**
+ * @fileOverview Data 命名空间的入口文件
+ * @ignore
+ */
+  
+var BUI = require("bui/common"),
+  Data = BUI.namespace('Data');
+
+BUI.mix(Data, {
+  Sortable: require("bui/data/sortable"),
+  Proxy: require("bui/data/proxy"),
+  AbstractStore: require("bui/data/abstractstore"),
+  Store: require("bui/data/store"),
+  Node: require("bui/data/node"),
+  TreeStore: require("bui/data/treestore")
+});
+
+module.exports = Data;
+
+});
+define("bui/data/sortable", [], function(require, exports, module){
+/**
+ * @fileOverview 可排序扩展类
+ * @ignore
+ */
+
+
   var ASC = 'ASC',
     DESC = 'DESC';
   /**
@@ -10996,31 +11903,37 @@ define("bui/data/sortable", [], function(require, exports, module) {
    * @class BUI.Data.Sortable
    * @extends BUI.Base
    */
-  var sortable = function() {};
-  sortable.ATTRS = {
+  var sortable = function(){
+
+  };
+
+  sortable.ATTRS = 
+
+  {
     /**
      * 比较函数
      * @cfg {Function} compareFunction
      * 函数原型 function(v1,v2)，比较2个字段是否相等
      * 如果是字符串则按照本地比较算法，否则使用 > ,== 验证
      */
-    compareFunction: {
-      value: function(v1, v2) {
-        if (v1 === undefined) {
+    compareFunction:{
+      value : function(v1,v2){
+        if(v1 === undefined){
           v1 = '';
         }
-        if (v2 === undefined) {
+        if(v2 === undefined){
           v2 = '';
         }
-        if (BUI.isString(v1)) {
+        if(BUI.isString(v1)){
           return v1.localeCompare(v2);
         }
-        if (v1 > v2) {
+
+        if(v1 > v2){
           return 1;
-        } else if (v1 === v2) {
+        }else if(v1 === v2){
           return 0;
-        } else {
-          return -1;
+        }else{
+          return  -1;
         }
       }
     },
@@ -11032,7 +11945,9 @@ define("bui/data/sortable", [], function(require, exports, module) {
      * 排序字段
      * @type {String}
      */
-    sortField: {},
+    sortField : {
+
+    },
     /**
      * 排序方向,'ASC'、'DESC'
      * @cfg {String} [sortDirection = 'ASC']
@@ -11041,8 +11956,8 @@ define("bui/data/sortable", [], function(require, exports, module) {
      * 排序方向,'ASC'、'DESC'
      * @type {String}
      */
-    sortDirection: {
-      value: 'ASC'
+    sortDirection : {
+      value : 'ASC'
     },
     /**
      * 排序信息
@@ -11061,108 +11976,138 @@ define("bui/data/sortable", [], function(require, exports, module) {
      * @type {Object}
      */
     sortInfo: {
-      getter: function() {
+      getter : function(){
         var _self = this,
           field = _self.get('sortField');
+
         return {
-          field: field,
-          direction: _self.get('sortDirection')
+          field : field,
+          direction : _self.get('sortDirection')
         };
       },
-      setter: function(v) {
+      setter: function(v){
         var _self = this;
-        _self.set('sortField', v.field);
-        _self.set('sortDirection', v.direction);
+
+        _self.set('sortField',v.field);
+        _self.set('sortDirection',v.direction);
       }
     }
   };
-  BUI.augment(sortable, {
-    compare: function(obj1, obj2, field, direction) {
+
+  BUI.augment(sortable,
+  {
+    compare : function(obj1,obj2,field,direction){
+
       var _self = this,
         dir;
       field = field || _self.get('sortField');
       direction = direction || _self.get('sortDirection');
       //如果未指定排序字段，或方向，则按照默认顺序
-      if (!field || !direction) {
+      if(!field || !direction){
         return 1;
       }
       dir = direction === ASC ? 1 : -1;
-      return _self.get('compareFunction')(obj1[field], obj2[field]) * dir;
+
+      return _self.get('compareFunction')(obj1[field],obj2[field]) * dir;
     },
     /**
      * 获取排序的集合
      * @protected
      * @return {Array} 排序集合
      */
-    getSortData: function() {},
+    getSortData : function(){
+
+    },
     /**
      * 排序数据
      * @param  {String|Array} field   排序字段或者数组
      * @param  {String} direction 排序方向
      * @param {Array} records 排序
-     * @return {Array}
+     * @return {Array}    
      */
-    sortData: function(field, direction, records) {
+    sortData : function(field,direction,records){
       var _self = this,
         records = records || _self.getSortData();
-      if (BUI.isArray(field)) {
+
+      if(BUI.isArray(field)){
         records = field;
         field = null;
       }
+
       field = field || _self.get('sortField');
       direction = direction || _self.get('sortDirection');
-      _self.set('sortField', field);
-      _self.set('sortDirection', direction);
-      if (!field || !direction) {
+
+      _self.set('sortField',field);
+      _self.set('sortDirection',direction);
+
+      if(!field || !direction){
         return records;
       }
-      records.sort(function(obj1, obj2) {
-        return _self.compare(obj1, obj2, field, direction);
+
+      records.sort(function(obj1,obj2){
+        return _self.compare(obj1,obj2,field,direction);
       });
       return records;
     }
   });
-  module.exports = sortable;
+
+module.exports = sortable;
+
 });
-define("bui/data/proxy", ["jquery", "bui/data/sortable"], function(require, exports, module) {
-  var $ = require("jquery"),
+define("bui/data/proxy", ["jquery"], function(require, exports, module){
+
+
+  var $ = require('jquery'),
     Sortable = require("bui/data/sortable");
+
   /**
    * 数据代理对象，加载数据,
    * 一般不直接使用，在store里面决定使用什么类型的数据代理对象
    * @class BUI.Data.Proxy
    * @extends BUI.Base
-   * @abstract
+   * @abstract 
    */
-  var proxy = function(config) {
-    proxy.superclass.constructor.call(this, config);
+  var proxy = function(config){
+    proxy.superclass.constructor.call(this,config);
   };
-  proxy.ATTRS = {};
+
+  proxy.ATTRS = {
+    
+  };
+
   BUI.extend(proxy, BUI.Base);
-  BUI.augment(proxy, {
+
+  BUI.augment(proxy,
+
+  {
     /**
      * @protected
      * 读取数据的方法，在子类中覆盖
      */
-    _read: function(params, callback) {},
+    _read : function(params,callback){
+
+    },
     /**
      * 读数据
      * @param  {Object} params 键值对形式的参数
      * @param {Function} callback 回调函数，函数原型 function(data){}
      * @param {Object} scope 回调函数的上下文
      */
-    read: function(params, callback, scope) {
+    read : function(params,callback,scope){
       var _self = this;
       scope = scope || _self;
-      _self._read(params, function(data) {
-        callback.call(scope, data);
+
+      _self._read(params,function(data){
+        callback.call(scope,data);
       });
     },
     /**
      * @protected
      * 保存数据的方法，在子类中覆盖
      */
-    _save: function(ype, data, callback) {},
+    _save : function(ype,data,callback){
+
+    },
     /**
      * 保存数据
      * @param {String} type 类型，包括，add,update,remove,all几种类型
@@ -11170,41 +12115,45 @@ define("bui/data/proxy", ["jquery", "bui/data/sortable"], function(require, expo
      * @param {Function} callback 回调函数，函数原型 function(data){}
      * @param {Object} scope 回调函数的上下文
      */
-    save: function(type, saveData, callback, scope) {
+    save : function(type,saveData,callback,scope){
       var _self = this;
       scope = scope || _self;
-      _self._save(type, saveData, function(data) {
-        callback.call(scope, data);
+      _self._save(type,saveData,function(data){
+        callback.call(scope,data);
       });
     }
   });
+
+
   var TYPE_AJAX = {
-    READ: 'read',
-    ADD: 'add',
-    UPDATE: 'update',
-    REMOVE: 'remove',
-    SAVE_ALL: 'all'
+    READ : 'read',
+    ADD : 'add',
+    UPDATE : 'update',
+    REMOVE : 'remove',
+    SAVE_ALL : 'all'
   };
   /**
    * 异步加载数据的代理
    * @class BUI.Data.Proxy.Ajax
    * @extends BUI.Data.Proxy
    */
-  var ajaxProxy = function(config) {
-    ajaxProxy.superclass.constructor.call(this, config);
+  var ajaxProxy = function(config){
+    ajaxProxy.superclass.constructor.call(this,config);
   };
-  ajaxProxy.ATTRS = BUI.mix(true, proxy.ATTRS, {
+
+  ajaxProxy.ATTRS = BUI.mix(true,proxy.ATTRS,
+  {
     /**
      * 限制条数
-     * @cfg {String} [limitParam='limit']
+     * @cfg {String} [limitParam='limit'] 
      */
     /**
      * 限制条数
      * @type {String}
      * @default 'limit'
      */
-    limitParam: {
-      value: 'limit'
+    limitParam : {
+      value : 'limit'
     },
     /**
      * 起始纪录代表的字段
@@ -11214,8 +12163,8 @@ define("bui/data/proxy", ["jquery", "bui/data/sortable"], function(require, expo
      * 起始纪录代表的字段
      * @type {String}
      */
-    startParam: {
-      value: 'start'
+    startParam : {
+      value : 'start'
     },
     /**
      * 页码的字段名
@@ -11226,39 +12175,41 @@ define("bui/data/proxy", ["jquery", "bui/data/sortable"], function(require, expo
      * @type {String}
      * @default 'pageIndex'
      */
-    pageIndexParam: {
-      value: 'pageIndex'
+    pageIndexParam : {
+      value : 'pageIndex'
     },
     /**
      * 保存类型的字段名,如果每种保存类型未设置对应的Url，则附加参数
      * @type {Object}
      */
-    saveTypeParam: {
-      value: 'saveType'
+    saveTypeParam : {
+      value : 'saveType'
     },
     /**
      * 保存数据放到的字段名称
      * @type {String}
      */
-    saveDataParam: {},
+    saveDataParam : {
+
+    },
     /**
      * 传递到后台，分页开始的页码，默认从0开始
      * @type {Number}
      */
-    pageStart: {
-      value: 0
+    pageStart : {
+      value : 0
     },
     /**
-     * 加载数据时，返回的格式,目前只支持"json、jsonp"格式<br>
-     * @cfg {String} [dataType='json']
-     */
-    /**
-     * 加载数据时，返回的格式,目前只支持"json、jsonp"格式<br>
-     * @type {String}
-     * @default "json"
-     */
+    * 加载数据时，返回的格式,目前只支持"json、jsonp"格式<br>
+    * @cfg {String} [dataType='json']
+    */
+   /**
+    * 加载数据时，返回的格式,目前只支持"json、jsonp"格式<br>
+    * @type {String}
+    * @default "json"
+    */
     dataType: {
-      value: 'json'
+      value : 'json'
     },
     /**
      * 获取数据的方式,'GET'或者'POST',默认为'GET'
@@ -11269,33 +12220,37 @@ define("bui/data/proxy", ["jquery", "bui/data/sortable"], function(require, expo
      * @type {String}
      * @default 'GET'
      */
-    method: {
-      value: 'GET'
+    method : {
+      value : 'GET'
     },
     /**
      * 异步请求的所有自定义参数，开放的其他属性用于快捷使用，如果有特殊参数配置，可以使用这个属性,<br>
      * 不要使用success和error的回调函数，会覆盖默认的处理数据的函数
-     * @cfg {Object} ajaxOptions
+     * @cfg {Object} ajaxOptions 
      */
     /**
      * 异步请求的所有自定义参数
      * @type {Object}
      */
-    ajaxOptions: {
-      value: {}
+    ajaxOptions  : {
+      value : {
+
+      }
     },
     /**
      * 是否使用Cache
      * @type {Boolean}
      */
-    cache: {
-      value: false
+    cache : {
+      value : false
     },
     /**
      * 保存数据的配置信息
      * @type {Object}
      */
-    save: {},
+    save : {
+
+    },
     /**
      * 加载数据的链接
      * @cfg {String} url
@@ -11306,58 +12261,68 @@ define("bui/data/proxy", ["jquery", "bui/data/sortable"], function(require, expo
      * @type {String}
      * @required
      */
-    url: {}
+    url :{
+
+    }
+
   });
-  BUI.extend(ajaxProxy, proxy);
-  BUI.augment(ajaxProxy, {
-    _processParams: function(params) {
+  BUI.extend(ajaxProxy,proxy);
+
+  BUI.augment(ajaxProxy,{
+
+    _processParams : function(params){
       var _self = this,
         pageStart = _self.get('pageStart'),
-        arr = ['start', 'limit', 'pageIndex'];
-      if (params.pageIndex != null) {
+        arr = ['start','limit','pageIndex'];
+      if(params.pageIndex != null){
         params.pageIndex = params.pageIndex + pageStart;
       }
-      BUI.each(arr, function(field) {
-        var fieldParam = _self.get(field + 'Param');
-        if (fieldParam !== field) {
+      BUI.each(arr,function(field){
+        var fieldParam = _self.get(field+'Param');
+        if(fieldParam !== field){
           params[fieldParam] = params[field];
           delete params[field];
         }
       });
     },
     //获取异步请求的url
-    _getUrl: function(type) {
+    _getUrl : function(type){
       var _self = this,
         save = _self.get('save'),
         url;
-      if (type === TYPE_AJAX.READ) { //获取数据，直接返回 url
+      if(type === TYPE_AJAX.READ){ //获取数据，直接返回 url
         return _self.get('url');
       }
+      
       //如果不存在保存参数，则返回 url
-      if (!save) {
+      if(!save){
         return _self.get('url')
       }
-      if (BUI.isString(save)) {
+
+      if(BUI.isString(save)){
         return save;
       }
+
       url = save[type + 'Url'];
-      if (!url) {
+      if(!url){
         url = _self.get('url');
       }
+
       return url;
+
     },
     //根据类型附加额外的参数
-    _getAppendParams: function(type) {
+    _getAppendParams : function(type){
       var _self = this,
         save,
         saveTypeParam,
         rst = null;
-      if (type == TYPE_AJAX.READ) {
+      if(type == TYPE_AJAX.READ){
         return rst;
       }
       save = _self.get('save');
       saveTypeParam = _self.get('saveTypeParam');
-      if (save && !save[type + 'Url']) {
+      if(save && !save[type + 'Url']){
         rst = {};
         rst[saveTypeParam] = type;
       }
@@ -11367,87 +12332,100 @@ define("bui/data/proxy", ["jquery", "bui/data/sortable"], function(require, expo
      * @protected
      * @private
      */
-    _read: function(params, callback) {
+    _read : function(params,callback){
       var _self = this,
         cfg;
+
       params = BUI.cloneObject(params);
       _self._processParams(params);
-      cfg = _self._getAjaxOptions(TYPE_AJAX.READ, params);
-      _self._ajax(cfg, callback);
+      cfg = _self._getAjaxOptions(TYPE_AJAX.READ,params);
+
+      _self._ajax(cfg,callback);
     },
     //获取异步请求的选项
-    _getAjaxOptions: function(type, params) {
+    _getAjaxOptions : function(type,params){
       var _self = this,
-        ajaxOptions = _self.get('ajaxOptions'),
+        ajaxOptions  = _self.get('ajaxOptions'),
         url = _self._getUrl(type),
         cfg;
-      BUI.mix(params, _self._getAppendParams(type));
+      BUI.mix(params,_self._getAppendParams(type));
       cfg = BUI.merge({
         url: url,
-        type: _self.get('method'),
+        type : _self.get('method'),
         dataType: _self.get('dataType'),
-        data: params,
-        cache: _self.get('cache')
-      }, ajaxOptions);
+        data : params,
+        cache : _self.get('cache')
+      },ajaxOptions);
+
       return cfg;
     },
     //异步请求
-    _ajax: function(cfg, callback) {
+    _ajax : function(cfg,callback){
       var _self = this,
         success = cfg.success,
         error = cfg.error;
       //复写success
-      cfg.success = function(data) {
+      cfg.success = function(data){
         success && success(data);
         callback(data);
       };
       //复写错误
-      cfg.error = function(jqXHR, textStatus, errorThrown) {
+      cfg.error = function(jqXHR, textStatus, errorThrown){
         error && error(jqXHR, textStatus, errorThrown);
         var result = {
-          exception: {
-            status: textStatus,
-            errorThrown: errorThrown,
-            jqXHR: jqXHR
-          }
-        };
-        callback(result);
+            exception : {
+              status : textStatus,
+              errorThrown: errorThrown,
+              jqXHR : jqXHR
+            }
+          };
+          callback(result);
       }
+
       $.ajax(cfg);
+      
     },
-    _save: function(type, data, callback) {
+    _save : function(type,data,callback){
       var _self = this,
         cfg;
-      cfg = _self._getAjaxOptions(type, data);
-      _self._ajax(cfg, callback);
+
+      cfg = _self._getAjaxOptions(type,data);
+
+      _self._ajax(cfg,callback);
     }
+
   });
+
   /**
    * 读取缓存的代理
    * @class BUI.Data.Proxy.Memery
    * @extends BUI.Data.Proxy
    * @mixins BUI.Data.Sortable
    */
-  var memeryProxy = function(config) {
-    memeryProxy.superclass.constructor.call(this, config);
+  var memeryProxy = function(config){
+    memeryProxy.superclass.constructor.call(this,config);
   };
   memeryProxy.ATTRS = {
     /**
      * 匹配的字段名
      * @type {Array}
      */
-    matchFields: {
-      value: []
+    matchFields : {
+      value : []
     }
   };
+
   BUI.extend(memeryProxy, proxy);
+
   BUI.mixin(memeryProxy, [Sortable]);
-  BUI.augment(memeryProxy, {
+
+  BUI.augment(memeryProxy,{
+
     /**
      * @protected
      * @ignore
      */
-    _read: function(params, callback) {
+    _read : function(params,callback){
       var _self = this,
         pageable = params.pageable,
         start = params.start,
@@ -11455,27 +12433,27 @@ define("bui/data/proxy", ["jquery", "bui/data/sortable"], function(require, expo
         sortDirection = params.sortDirection,
         limit = params.limit,
         data = _self.get('data'),
-        rows = [];
+        rows = []; 
+
       data = _self._getMatches(params);
-      _self.sortData(sortField, sortDirection);
-      if (limit) { //分页时
-        rows = data.slice(start, start + limit);
-        callback({
-          rows: rows,
-          results: data.length
-        });
-      } else { //不分页时
+      _self.sortData(sortField,sortDirection); 
+
+      if(limit){//分页时
+        rows = data.slice(start,start + limit);
+        callback({rows:rows,results:data.length});
+      }else{//不分页时
         rows = data.slice(start);
         callback(rows);
       }
+      
     },
     //获取匹配函数
-    _getMatchFn: function(params, matchFields) {
+    _getMatchFn : function(params, matchFields){
       var _self = this;
-      return function(obj) {
+      return function(obj){
         var result = true;
-        BUI.each(matchFields, function(field) {
-          if (params[field] != null && !(params[field] === obj[field])) {
+        BUI.each(matchFields,function(field){
+          if(params[field] != null && !(params[field] === obj[field])){
             result = false;
             return false;
           }
@@ -11484,14 +12462,14 @@ define("bui/data/proxy", ["jquery", "bui/data/sortable"], function(require, expo
       }
     },
     //获取匹配的值
-    _getMatches: function(params) {
+    _getMatches : function(params){
       var _self = this,
         matchFields = _self.get('matchFields'),
         matchFn,
         data = _self.get('data') || [];
-      if (params && matchFields.length) {
-        matchFn = _self._getMatchFn(params, matchFields);
-        data = BUI.Array.filter(data, matchFn);
+      if(params && matchFields.length){
+        matchFn = _self._getMatchFn(params,matchFields);
+        data = BUI.Array.filter(data,matchFn);
       }
       return data;
     },
@@ -11499,105 +12477,119 @@ define("bui/data/proxy", ["jquery", "bui/data/sortable"], function(require, expo
      * @protected
      * 保存修改的数据
      */
-    _save: function(type, saveData, callback) {
+    _save : function(type,saveData,callback){
       var _self = this,
         data = _self.get('data');
-      if (type == TYPE_AJAX.ADD) {
+
+      if(type == TYPE_AJAX.ADD){
         data.push(saveData);
-      } else if (type == TYPE_AJAX.REMOVE) {
-        BUI.Array.remove(data, saveData);
-      } else if (type == TYPE_AJAX.SAVE_ALL) {
-        BUI.each(saveData.add, function(item) {
+      }else if(type == TYPE_AJAX.REMOVE){
+        BUI.Array.remove(data,saveData);
+      }else if(type == TYPE_AJAX.SAVE_ALL){
+        BUI.each(saveData.add,function(item){
           data.push(item);
         });
-        BUI.each(saveData.remove, function(item) {
-          BUI.Array.remove(data, item);
+
+        BUI.each(saveData.remove,function(item){
+          BUI.Array.remove(data,item);
         });
       }
     }
+
   });
+
   proxy.Ajax = ajaxProxy;
   proxy.Memery = memeryProxy;
+
   module.exports = proxy;
+
 });
-define("bui/data/abstractstore", ["jquery", "bui/common", "bui/data/proxy", "bui/data/sortable"], function(require, exports, module) {
-  /**
-   * @fileOverview 抽象数据缓冲类
-   * @ignore
-   */
+define("bui/data/abstractstore", ["bui/common","jquery"], function(require, exports, module){
+/**
+ * @fileOverview 抽象数据缓冲类
+ * @ignore
+ */
+
   var BUI = require("bui/common"),
     Proxy = require("bui/data/proxy");
+
   /**
    * @class BUI.Data.AbstractStore
    * 数据缓冲抽象类,此类不进行实例化
    * @extends BUI.Base
    */
-  function AbstractStore(config) {
-    AbstractStore.superclass.constructor.call(this, config);
+  function AbstractStore(config){
+    AbstractStore.superclass.constructor.call(this,config);
     this._init();
   }
+
   AbstractStore.ATTRS = {
+
     /**
-     * 创建对象时是否自动加载
-     * <pre><code>
-     *   var store = new Data.Store({
-     *     url : 'data.php',  //设置加载数据的URL
-     *     autoLoad : true    //创建Store时自动加载数据
-     *   });
-     * </code></pre>
-     * @cfg {Boolean} [autoLoad=false]
-     */
+    * 创建对象时是否自动加载
+    * <pre><code>
+    *   var store = new Data.Store({
+    *     url : 'data.php',  //设置加载数据的URL
+    *     autoLoad : true    //创建Store时自动加载数据
+    *   });
+    * </code></pre>
+    * @cfg {Boolean} [autoLoad=false]
+    */
     autoLoad: {
-      value: false
+      value :false 
     },
     /**
      * 是否服务器端过滤数据，如果设置此属性，当调用filter()函数时发送请求
      * @type {Object}
      */
     remoteFilter: {
-      value: false
+        value : false
     },
     /**
      * 上次查询的参数
      * @type {Object}
      * @readOnly
      */
-    lastParams: {
-      shared: false,
-      value: {}
+    lastParams : {
+      shared : false,
+      value : {}
     },
     /**
      * 初始化时查询的参数，在初始化时有效
      * <pre><code>
      * var store = new Data.Store({
-     *     url : 'data.php',  //设置加载数据的URL
-     *     autoLoad : true,    //创建Store时自动加载数据
-     *     params : {         //设置请求时的参数
-     *       id : '1',
-     *       type : '1'
-     *     }
-     *   });
+    *     url : 'data.php',  //设置加载数据的URL
+    *     autoLoad : true,    //创建Store时自动加载数据
+    *     params : {         //设置请求时的参数
+    *       id : '1',
+    *       type : '1'
+    *     }
+    *   });
      * </code></pre>
      * @cfg {Object} params
      */
-    params: {},
+    params : {
+
+    },
     /**
      * 数据代理对象,用于加载数据的ajax配置，{@link BUI.Data.Proxy}
      * <pre><code>
      *   var store = new Data.Store({
-     *     url : 'data.php',  //设置加载数据的URL
-     *     autoLoad : true,    //创建Store时自动加载数据
-     *     proxy : {
-     *       method : 'post',
-     *       dataType : 'jsonp'
-     *     }
-     *   });
+    *     url : 'data.php',  //设置加载数据的URL
+    *     autoLoad : true,    //创建Store时自动加载数据
+    *     proxy : {
+    *       method : 'post',
+    *       dataType : 'jsonp'
+    *     }
+    *   });
      * </code></pre>
      * @cfg {Object|BUI.Data.Proxy} proxy
      */
-    proxy: {
-      shared: false,
-      value: {}
+    proxy : {
+      shared : false,
+      value : {
+        
+      }
     },
     /**
      * 请求数据的地址，通过ajax加载数据，
@@ -11605,24 +12597,24 @@ define("bui/data/abstractstore", ["jquery", "bui/common", "bui/data/proxy", "bui
      * ** 你可以设置在proxy外部 **
      * <pre><code>
      *   var store = new Data.Store({
-     *     url : 'data.php',  //设置加载数据的URL
-     *     autoLoad : true,    //创建Store时自动加载数据
-     *     proxy : {
-     *       method : 'post',
-     *       dataType : 'jsonp'
-     *     }
-     *   });
+    *     url : 'data.php',  //设置加载数据的URL
+    *     autoLoad : true,    //创建Store时自动加载数据
+    *     proxy : {
+    *       method : 'post',
+    *       dataType : 'jsonp'
+    *     }
+    *   });
      * </code></pre>
      * ** 你也可以设置在proxy上 **
      * <pre><code>
      *   var store = new Data.Store({
-     *     autoLoad : true,    //创建Store时自动加载数据
-     *     proxy : {
-     *       url : 'data.php',  //设置加载数据的URL
-     *       method : 'post',
-     *       dataType : 'jsonp'
-     *     }
-     *   });
+    *     autoLoad : true,    //创建Store时自动加载数据
+    *     proxy : {
+    *       url : 'data.php',  //设置加载数据的URL
+    *       method : 'post',
+    *       dataType : 'jsonp'
+    *     }
+    *   });
      * </code></pre>
      * 否则把 {BUI.Data.Store#cfg-data}作为本地缓存数据加载
      * @cfg {String} url
@@ -11635,83 +12627,93 @@ define("bui/data/abstractstore", ["jquery", "bui/common", "bui/data/proxy", "bui
      * </code></pre>
      * @type {String}
      */
-    url: {},
-    events: {
-      value: [
+    url : {
+
+    },
+    events : {
+      value : [
         /**  
-         * 数据接受改变，所有增加、删除、修改的数据记录清空
-         * @name BUI.Data.Store#acceptchanges
-         * @event
-         */
+        * 数据接受改变，所有增加、删除、修改的数据记录清空
+        * @name BUI.Data.Store#acceptchanges
+        * @event  
+        */
         'acceptchanges',
         /**  
-         * 当数据加载完成后
-         * @name BUI.Data.Store#load
-         * @event
-         * @param {jQuery.Event} e  事件对象，包含加载数据时的参数
-         */
+        * 当数据加载完成后
+        * @name BUI.Data.Store#load  
+        * @event  
+        * @param {jQuery.Event} e  事件对象，包含加载数据时的参数
+        */
         'load',
+
         /**  
-         * 当数据加载前
-         * @name BUI.Data.Store#beforeload
-         * @event
-         */
+        * 当数据加载前
+        * @name BUI.Data.Store#beforeload
+        * @event  
+        */
         'beforeload',
+
         /**  
-         * 发生在，beforeload和load中间，数据已经获取完成，但是还未触发load事件，用于获取返回的原始数据
-         * @event
-         * @param {jQuery.Event} e  事件对象
-         * @param {Object} e.data 从服务器端返回的数据
-         */
+        * 发生在，beforeload和load中间，数据已经获取完成，但是还未触发load事件，用于获取返回的原始数据
+        * @event  
+        * @param {jQuery.Event} e  事件对象
+        * @param {Object} e.data 从服务器端返回的数据
+        */
         'beforeprocessload',
+        
         /**  
-         * 当添加数据时触发该事件
-         * @event
-         * @param {jQuery.Event} e  事件对象
-         * @param {Object} e.record 添加的数据
-         */
+        * 当添加数据时触发该事件
+        * @event  
+        * @param {jQuery.Event} e  事件对象
+        * @param {Object} e.record 添加的数据
+        */
         'add',
+
         /**
-         * 加载数据发生异常时触发
-         * @event
-         * @name BUI.Data.Store#exception
-         * @param {jQuery.Event} e 事件对象
-         * @param {String|Object} e.error 加载数据时返回的错误信息或者加载数据失败，浏览器返回的信息（httpResponse 对象 的textStatus）
-         * @param {String} e.responseText 网络或者浏览器加载数据发生错误是返回的httpResponse 对象的responseText
-         */
+        * 加载数据发生异常时触发
+        * @event
+        * @name BUI.Data.Store#exception
+        * @param {jQuery.Event} e 事件对象
+        * @param {String|Object} e.error 加载数据时返回的错误信息或者加载数据失败，浏览器返回的信息（httpResponse 对象 的textStatus）
+        * @param {String} e.responseText 网络或者浏览器加载数据发生错误是返回的httpResponse 对象的responseText
+        */
         'exception',
+
         /**  
-         * 当删除数据是触发该事件
-         * @event
-         * @param {jQuery.Event} e  事件对象
-         * @param {Object} e.data 删除的数据
-         */
+        * 当删除数据是触发该事件
+        * @event  
+        * @param {jQuery.Event} e  事件对象
+        * @param {Object} e.data 删除的数据
+        */
         'remove',
+        
         /**  
-         * 当更新数据指定字段时触发该事件
-         * @event
-         * @param {jQuery.Event} e  事件对象
-         * @param {Object} e.record 更新的数据
-         * @param {Object} e.field 更新的字段
-         * @param {Object} e.value 更新的值
-         */
+        * 当更新数据指定字段时触发该事件 
+        * @event  
+        * @param {jQuery.Event} e  事件对象
+        * @param {Object} e.record 更新的数据
+        * @param {Object} e.field 更新的字段
+        * @param {Object} e.value 更新的值
+        */
         'update',
+
         /**  
-         * 前端发生排序时触发
-         * @name BUI.Data.Store#localsort
-         * @event
-         * @param {jQuery.Event} e  事件对象
-         * @param {Object} e.field 排序的字段
-         * @param {Object} e.direction 排序的方向 'ASC'，'DESC'
-         */
+        * 前端发生排序时触发
+        * @name BUI.Data.Store#localsort
+        * @event  
+        * @param {jQuery.Event} e  事件对象
+        * @param {Object} e.field 排序的字段
+        * @param {Object} e.direction 排序的方向 'ASC'，'DESC'
+        */
         'localsort',
+
         /**  
-         * 前端发生过滤时触发
-         * @event
-         * @param {jQuery.Event} e  事件对象
-         * @param {Array} e.data 过滤完成的数据
-         * @param {Function} e.filter 过滤器
-         */
+        * 前端发生过滤时触发
+        * @event  
+        * @param {jQuery.Event} e  事件对象
+        * @param {Array} e.data 过滤完成的数据
+        * @param {Function} e.filter 过滤器
+        */
         'filtered'
       ]
     },
@@ -11723,33 +12725,36 @@ define("bui/data/abstractstore", ["jquery", "bui/common", "bui/data/proxy", "bui
      * 本地数据源
      * @type {Array}
      */
-    data: {
-      setter: function(data) {
+    data : {
+      setter : function(data){
         var _self = this,
           proxy = _self.get('proxy');
-        if (proxy.set) {
-          proxy.set('data', data);
-        } else {
+        if(proxy.set){
+          proxy.set('data',data);
+        }else{
           proxy.data = data;
         }
         //设置本地数据时，把autoLoad置为true
-        _self.set('autoLoad', true);
+        _self.set('autoLoad',true);
       }
     }
   };
-  BUI.extend(AbstractStore, BUI.Base);
-  BUI.augment(AbstractStore, {
+
+  BUI.extend(AbstractStore,BUI.Base);
+
+  BUI.augment(AbstractStore,{
     /**
      * 是否是数据缓冲对象，用于判断对象
      * @type {Boolean}
      */
-    isStore: true,
+    isStore : true,
     /**
      * @private
      * 初始化
      */
-    _init: function() {
+    _init : function(){
       var _self = this;
+
       _self.beforeInit();
       //初始化结果集
       _self._initParams();
@@ -11760,42 +12765,50 @@ define("bui/data/abstractstore", ["jquery", "bui/common", "bui/data/proxy", "bui
      * @protected
      * 初始化之前
      */
-    beforeInit: function() {},
+    beforeInit : function(){
+
+    },
     //初始化数据,如果默认加载数据，则加载数据
-    _initData: function() {
+    _initData : function(){
       var _self = this,
         autoLoad = _self.get('autoLoad');
-      if (autoLoad) {
+
+      if(autoLoad){
         _self.load();
       }
     },
     //初始化查询参数
-    _initParams: function() {
+    _initParams : function(){
       var _self = this,
         lastParams = _self.get('lastParams'),
         params = _self.get('params');
+
       //初始化 参数
-      BUI.mix(lastParams, params);
+      BUI.mix(lastParams,params);
     },
     /**
      * @protected
      * 初始化数据代理类
      */
-    _initProxy: function() {
+    _initProxy : function(){
       var _self = this,
         url = _self.get('url'),
         proxy = _self.get('proxy');
-      if (!(proxy instanceof Proxy)) {
-        if (url) {
+
+      if(!(proxy instanceof Proxy)){
+
+        if(url){
           proxy.url = url;
         }
+
         //异步请求的代理类
-        if (proxy.type === 'ajax' || proxy.url) {
+        if(proxy.type === 'ajax' || proxy.url){
           proxy = new Proxy.Ajax(proxy);
-        } else {
+        }else{
           proxy = new Proxy.Memery(proxy);
         }
-        _self.set('proxy', proxy);
+
+        _self.set('proxy',proxy);
       }
     },
     /**
@@ -11803,10 +12816,10 @@ define("bui/data/abstractstore", ["jquery", "bui/common", "bui/data/proxy", "bui
      * <pre><code>
      *  //一般调用
      *  store.load(params);
-     *
+     *  
      *  //使用回调函数
      *  store.load(params,function(data){
-     *
+     *  
      *  });
      *
      *  //load有记忆参数的功能
@@ -11817,77 +12830,77 @@ define("bui/data/abstractstore", ["jquery", "bui/common", "bui/data/proxy", "bui
      * @param  {Object} params 参数键值对
      * @param {Function} fn 回调函数，默认为空
      */
-    load: function(params, callback) {
+    load : function(params,callback){
       var _self = this,
         proxy = _self.get('proxy'),
         lastParams = _self.get('lastParams');
-      BUI.mix(lastParams, _self.getAppendParams(), params);
-      _self.fire('beforeload', {
-        params: lastParams
-      });
+
+      BUI.mix(lastParams,_self.getAppendParams(),params);
+
+      _self.fire('beforeload',{params:lastParams});
+
       //防止异步请求未结束，又发送新请求回调参数错误
       params = BUI.cloneObject(lastParams);
-      proxy.read(lastParams, function(data) {
-        _self.onLoad(data, params);
-        if (callback) {
-          callback(data, params);
+      proxy.read(lastParams,function(data){
+        _self.onLoad(data,params);
+        if(callback){
+          callback(data,params);
         }
-      }, _self);
+      },_self);
     },
     /**
      * 触发过滤
      * @protected
      */
-    onFiltered: function(data, filter) {
+    onFiltered : function(data,filter){
       var _self = this;
-      _self.fire('filtered', {
-        data: data,
-        filter: filter
-      });
+      _self.fire('filtered',{data : data,filter : filter});
     },
     /**
      * 加载完数据
      * @protected
      * @template
      */
-    onLoad: function(data, params) {
+    onLoad : function(data,params){
       var _self = this;
-      var processResult = _self.processLoad(data, params);
+
+      var processResult = _self.processLoad(data,params);
       //如果处理成功，返回错误时，不进行后面的处理
-      if (processResult) {
-        _self.afterProcessLoad(data, params);
+      if(processResult){
+        _self.afterProcessLoad(data,params);
       }
     },
     /**
      * 获取当前缓存的纪录
      */
-    getResult: function() {},
+    getResult : function(){
+    },
     /**
      * 过滤数据，此函数的执行同属性 remoteFilter关联密切
      *
      *  - remoteFilter == true时：此函数只接受字符串类型的过滤参数，将{filter : filterStr}参数传输到服务器端
      *  - remoteFilter == false时：此函数接受比对函数，只有当函数返回true时生效
-     *
+     *  
      * @param {Function|String} fn 过滤函数
      * @return {Array} 过滤结果
      */
-    filter: function(filter) {
-      var _self = this,
-        remoteFilter = _self.get('remoteFilter'),
-        result;
-      filter = filter || _self.get('filter');
-      if (remoteFilter) {
-        _self.load({
-          filter: filter
-        });
-      } else if (filter) {
-        _self.set('filter', filter);
-        //如果result有值时才会进行filter
-        if (_self.getResult().length > 0) {
-          result = _self._filterLocal(filter);
-          _self.onFiltered(result, filter);
+    filter : function(filter){
+        var _self = this,
+            remoteFilter = _self.get('remoteFilter'),
+            result;
+
+        filter = filter || _self.get('filter');
+
+        if(remoteFilter){
+            _self.load({filter : filter});
+        }else if(filter){
+            _self.set('filter',filter);
+            //如果result有值时才会进行filter
+            if(_self.getResult().length > 0){
+                result = _self._filterLocal(filter);
+                _self.onFiltered(result,filter);
+            }
         }
-      }
     },
     /**
      * @protected
@@ -11895,52 +12908,55 @@ define("bui/data/abstractstore", ["jquery", "bui/common", "bui/data/proxy", "bui
      * @param  {Function} fn 过滤函数
      * @return {Array} 过滤结果
      */
-    _filterLocal: function(fn) {},
+    _filterLocal : function(fn){
+        
+    },
     /**
      * 获取过滤后的数据，仅当本地过滤(remoteFilter = false)时有效
      * @return {Array} 过滤过的数据
      */
-    getFilterResult: function() {
-      var filter = this.get('filter');
-      if (filter) {
-        return this._filterLocal(filter);
-      } else {
-        return this.getResult();
-      }
+    getFilterResult: function(){
+        var filter = this.get('filter');
+        if(filter) {
+            return this._filterLocal(filter);
+        }
+        else {
+            return this.getResult();
+        }
     },
-    _clearLocalFilter: function() {
-      this.set('filter', null);
+    _clearLocalFilter : function(){
+        this.set('filter', null);
     },
     /**
      * 清理过滤
      */
-    clearFilter: function() {
-      var _self = this,
-        remoteFilter = _self.get('remoteFilter'),
-        result;
-      if (remoteFilter) {
-        _self.load({
-          filter: ''
-        });
-      } else {
-        _self._clearLocalFilter();
-        result = _self.getFilterResult();
-        _self.onFiltered(result, null);
-      }
+    clearFilter : function(){
+        var _self = this,
+            remoteFilter = _self.get('remoteFilter'),
+            result;
+
+        if(remoteFilter){
+            _self.load({filter : ''});
+        }else{
+            _self._clearLocalFilter();
+            result = _self.getFilterResult();
+            _self.onFiltered(result, null);
+        }
     },
     /**
      * @private
      * 加载完数据处理数据
      */
-    processLoad: function(data, params) {
+    processLoad : function(data,params){
       var _self = this,
         hasErrorField = _self.get('hasErrorProperty');
-      _self.fire('beforeprocessload', {
-        data: data
-      });
+
+      _self.fire('beforeprocessload',{data : data});
+    
       //获取的原始数据
-      _self.fire('beforeProcessLoad', data);
-      if (data[hasErrorField] || data.exception) {
+      _self.fire('beforeProcessLoad',data);
+
+      if(data[hasErrorField] || data.exception){
         _self.onException(data);
         return false;
       }
@@ -11951,80 +12967,90 @@ define("bui/data/abstractstore", ["jquery", "bui/common", "bui/data/proxy", "bui
      * @template
      * 处理数据后
      */
-    afterProcessLoad: function(data, params) {},
+    afterProcessLoad : function(data,params){
+
+    },
     /**
      * @protected
      * 处理错误函数
      * @param  {*} data 出错对象
      */
-    onException: function(data) {
+    onException : function(data){
       var _self = this,
         errorProperty = _self.get('errorProperty'),
         obj = {};
       //网络异常、转码错误之类，发生在json获取或转变时
-      if (data.exception) {
+      if(data.exception){
         obj.type = 'exception';
         obj[errorProperty] = data.exception;
-      } else { //用户定义的错误
+      }else{//用户定义的错误
         obj.type = 'error';
         obj[errorProperty] = data[errorProperty];
       }
-      _self.fire('exception', obj);
+      _self.fire('exception',obj);
+
     },
     /**
      * 是否包含数据
-     * @return {Boolean}
+     * @return {Boolean} 
      */
-    hasData: function() {},
+    hasData : function(){
+
+    },
     /**
      * 获取附加的参数
      * @template
      * @protected
      * @return {Object} 附加的参数
      */
-    getAppendParams: function() {
+    getAppendParams : function(){
       return {};
     }
   });
-  module.exports = AbstractStore;
+
+module.exports = AbstractStore;
+
 });
-define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", "bui/data/sortable", "bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview 数据缓冲对象
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require("jquery"),
+define("bui/data/store", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview 数据缓冲对象
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+  
+  var $ = require('jquery'),
     Proxy = require("bui/data/proxy"),
     AbstractStore = require("bui/data/abstractstore"),
     Sortable = require("bui/data/sortable");
+
   //移除数据
-  function removeAt(index, array) {
-    if (index < 0) {
+  function removeAt(index,array){
+    if(index < 0){
       return;
     }
     var records = array,
       record = records[index];
-    records.splice(index, 1);
+    records.splice(index,1);
     return record;
   }
 
-  function removeFrom(record, array) {
-    var index = BUI.Array.indexOf(record, array);
-    if (index >= 0) {
-      removeAt(index, array);
+  function removeFrom(record,array){
+    var index = BUI.Array.indexOf(record,array);   
+    if(index >= 0){
+      removeAt(index,array);
     }
   }
 
-  function contains(record, array) {
-    return BUI.Array.indexOf(record, array) !== -1;
+  function contains(record,array){
+    return BUI.Array.indexOf(record,array) !== -1;
   }
   /**
    * 用于加载数据，缓冲数据的类
    * <p>
    * <img src="../assets/img/class-data.jpg"/>
    * </p>
-   * ** 缓存静态数据 **
+   * ** 缓存静态数据 ** 
    * <pre><code>
    *  var store = new Store({
    *    data : [{},{}]
@@ -12042,22 +13068,24 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
    *    }
    *  });
    * </code></pre>
-   *
+   * 
    * @class BUI.Data.Store
    * @extends BUI.Data.AbstractStore
    * @mixins BUI.Data.Sortable
    */
-  var store = function(config) {
-    store.superclass.constructor.call(this, config);
+  var store = function(config){
+    store.superclass.constructor.call(this,config);
     //this._init();
   };
-  store.ATTRS = {
+
+  store.ATTRS = 
+  {
     /**
      * 保存数据时，是否自动更新数据源的数据，常用于添加、删除、更改数据后重新加载数据。
      * @cfg {Boolean} autoSync
      */
-    autoSync: {
-      value: false
+    autoSync : {
+      value : false
     },
     /**
      * 当前页码
@@ -12070,18 +13098,19 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      * @ignore
      * @readOnly
      */
-    currentPage: {
-      value: 0
+    currentPage:{
+      value : 0
     },
+    
     /**
      * 删除掉的纪录
      * @readOnly
      * @private
      * @type {Array}
      */
-    deletedRecords: {
-      shared: false,
-      value: []
+    deletedRecords : {
+      shared : false,
+      value:[]
     },
     /**
      * 错误字段,包含在返回信息中表示错误信息的字段
@@ -12102,8 +13131,8 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      * @type {String}
      * @ignore
      */
-    errorProperty: {
-      value: 'error'
+    errorProperty : {
+      value : 'error'
     },
     /**
      * 是否存在错误,加载数据时如果返回错误，此字段表示有错误发生
@@ -12125,12 +13154,13 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      * @default 'hasError'
      * @ignore
      */
-    hasErrorProperty: {
-      value: 'hasError'
+    hasErrorProperty : {
+      value : 'hasError'
     },
+
     /**
      * 对比2个对象是否相当，在去重、更新、删除，查找数据时使用此函数
-     * @default
+     * @default  
      * function(obj1,obj2){
      *   return obj1 == obj2;
      * }
@@ -12141,10 +13171,10 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      *   //更新对象时，仅提供改变的字段
      *   return obj1.id == obj2.id;
      * }
-     *
+     * 
      */
-    matchFunction: {
-      value: function(obj1, obj2) {
+    matchFunction : {
+      value : function(obj1,obj2){
         return obj1 == obj2;
       }
     },
@@ -12154,9 +13184,9 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      * @private
      * @readOnly
      */
-    modifiedRecords: {
-      shared: false,
-      value: []
+    modifiedRecords : {
+      shared : false,
+      value:[]
     },
     /**
      * 新添加的纪录集合，只读
@@ -12164,9 +13194,9 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      * @private
      * @readOnly
      */
-    newRecords: {
-      shared: false,
-      value: []
+    newRecords : {
+      shared : false,
+      value : []
     },
     /**
      * 是否远程排序，默认状态下内存排序
@@ -12175,8 +13205,8 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      *   - remoteSort为 false的情况下，仅对当前页的数据进行排序
      * @cfg {Boolean} [remoteSort=false]
      */
-    remoteSort: {
-      value: false
+    remoteSort : {
+      value : false
     },
     /**
      * 缓存的数据，包含以下几个字段
@@ -12188,9 +13218,9 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      * @private
      * @readOnly
      */
-    resultMap: {
-      shared: false,
-      value: {}
+    resultMap : {
+      shared : false,
+      value : {}
     },
     /**
      * 加载数据时，返回数据的根目录
@@ -12207,19 +13237,18 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      *     totalProperty : 'total'     //存放记录总数的字段名(results)
      *   });
      * </code></pre>
-     *
+     *   
      */
-    root: {
-      value: 'rows'
-    },
+    root: { value : 'rows'}, 
+
     /**
      * 当前Store缓存的数据条数
      * @type {Number}
      * @private
      * @readOnly
      */
-    rowCount: {
-      value: 0
+    rowCount :{
+      value : 0
     },
     /**
      * 加载数据时，返回记录的总数的字段，用于分页
@@ -12237,9 +13266,8 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      *   });
      * </code></pre>
      */
-    totalProperty: {
-      value: 'results'
-    },
+    totalProperty: {value :'results'}, 
+
     /**
      * 加载数据的起始位置
      * <pre><code>
@@ -12253,8 +13281,8 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      * </code></pre>
      * @type {Object}
      */
-    start: {
-      value: 0
+    start:{
+      value : 0
     },
     /**
      * 每页多少条记录,默认为null,此时不分页，当指定了此值时分页
@@ -12267,95 +13295,104 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      * </code></pre>
      * @cfg {Number} pageSize
      */
-    pageSize: {}
+    pageSize : {
+
+    }
   };
-  BUI.extend(store, AbstractStore);
-  BUI.mixin(store, [Sortable]);
-  BUI.augment(store, {
+  BUI.extend(store,AbstractStore);
+
+  BUI.mixin(store,[Sortable]);
+
+  BUI.augment(store,
+  {
     /**
-     * 添加记录,默认添加在后面
-     * <pre><code>
-     *  //添加记录
-     *  store.add({id : '2',text: 'new data'});
-     *  //是否去重，重复数据不能添加
-     *  store.add(obj,true); //不能添加重复数据，此时用obj1 === obj2判断
-     *  //使用匹配函去重
-     *  store.add(obj,true,function(obj1,obj2){
-     *    return obj1.id == obj2.id;
-     *  });
-     *
-     * </code></pre>
-     * @param {Array|Object} data 添加的数据，可以是数组，可以是单条记录
-     * @param {Boolean} [noRepeat = false] 是否去重,可以为空，默认： false
-     * @param {Function} [match] 匹配函数，可以为空，
-     * @default 配置项中 matchFunction 属性传入的函数，默认是：<br>
-     *  function(obj1,obj2){
-     *    return obj1 == obj2;
-     *  }
-     *
-     */
-    add: function(data, noRepeat, match) {
+    * 添加记录,默认添加在后面
+    * <pre><code>
+    *  //添加记录
+    *  store.add({id : '2',text: 'new data'});
+    *  //是否去重，重复数据不能添加
+    *  store.add(obj,true); //不能添加重复数据，此时用obj1 === obj2判断
+    *  //使用匹配函去重
+    *  store.add(obj,true,function(obj1,obj2){
+    *    return obj1.id == obj2.id;
+    *  });
+    *  
+    * </code></pre>
+    * @param {Array|Object} data 添加的数据，可以是数组，可以是单条记录
+    * @param {Boolean} [noRepeat = false] 是否去重,可以为空，默认： false 
+    * @param {Function} [match] 匹配函数，可以为空，
+    * @default 配置项中 matchFunction 属性传入的函数，默认是：<br>
+    *  function(obj1,obj2){
+    *    return obj1 == obj2;
+    *  }
+    * 
+    */
+    add :function(data,noRepeat,match){
       var _self = this,
         count = _self.getCount();
-      _self.addAt(data, count, noRepeat, match)
+      _self.addAt(data,count,noRepeat,match)
     },
     /**
-     * 添加记录,指定索引值
-     * <pre><code>
-     *  //使用方式跟类似于add,增加了index参数
-     *  store.add(obj,0);//添加在最前面
-     * </code></pre>
-     * @param {Array|Object} data 添加的数据，可以是数组，可以是单条记录
-     * @param {Number} index 开始添加数据的位置
-     * @param {Boolean} [noRepeat = false] 是否去重,可以为空，默认： false
-     * @param {Function} [match] 匹配函数，可以为空，
+    * 添加记录,指定索引值
+    * <pre><code>
+    *  //使用方式跟类似于add,增加了index参数
+    *  store.add(obj,0);//添加在最前面
+    * </code></pre>
+    * @param {Array|Object} data 添加的数据，可以是数组，可以是单条记录
+    * @param {Number} index 开始添加数据的位置
+    * @param {Boolean} [noRepeat = false] 是否去重,可以为空，默认： false 
+    * @param {Function} [match] 匹配函数，可以为空，
      */
-    addAt: function(data, index, noRepeat, match) {
+    addAt : function(data,index,noRepeat,match){
       var _self = this;
+
       match = match || _self._getDefaultMatch();
-      if (!BUI.isArray(data)) {
+      if(!BUI.isArray(data)){
         data = [data];
       }
-      $.each(data, function(pos, element) {
-        if (!noRepeat || !_self.contains(element, match)) {
-          _self._addRecord(element, pos + index);
+
+      $.each(data,function(pos,element){
+        if(!noRepeat || !_self.contains(element,match)){
+          _self._addRecord(element,pos + index);
+
           _self.get('newRecords').push(element);
-          removeFrom(element, _self.get('deletedRecords'));
-          removeFrom(element, _self.get('modifiedRecords'));
+
+          removeFrom(element,_self.get('deletedRecords'));
+          removeFrom(element,_self.get('modifiedRecords'));
         }
       });
     },
     /**
-     * 验证是否存在指定记录
-     * <pre><code>
-     *  store.contains(obj); //是否包含指定的记录
-     *
-     *  store.contains(obj,function(obj1,obj2){ //使用匹配函数
-     *    return obj1.id == obj2.id;
-     *  });
-     * </code></pre>
-     * @param {Object} record 指定的记录
-     * @param {Function} [match = function(obj1,obj2){return obj1 == obj2}] 默认为比较2个对象是否相同
-     * @return {Boolean}
-     */
-    contains: function(record, match) {
-      return this.findIndexBy(record, match) !== -1;
+    * 验证是否存在指定记录
+    * <pre><code>
+    *  store.contains(obj); //是否包含指定的记录
+    *
+    *  store.contains(obj,function(obj1,obj2){ //使用匹配函数
+    *    return obj1.id == obj2.id;
+    *  });
+    * </code></pre>
+    * @param {Object} record 指定的记录
+    * @param {Function} [match = function(obj1,obj2){return obj1 == obj2}] 默认为比较2个对象是否相同
+    * @return {Boolean}
+    */
+    contains :function(record,match){
+      return this.findIndexBy(record,match)!==-1;
     },
     /**
-     * 查找记录，仅返回第一条
-     * <pre><code>
-     *  var record = store.find('id','123');
-     * </code></pre>
-     * @param {String} field 字段名
-     * @param {String} value 字段值
-     * @return {Object|null}
-     */
-    find: function(field, value) {
+    * 查找记录，仅返回第一条
+    * <pre><code>
+    *  var record = store.find('id','123');
+    * </code></pre>
+    * @param {String} field 字段名
+    * @param {String} value 字段值
+    * @return {Object|null}
+    */
+    find : function(field,value){
       var _self = this,
         result = null,
         records = _self.getResult();
-      $.each(records, function(index, record) {
-        if (record[field] === value) {
+      $.each(records,function(index,record){
+        if(record[field] === value){
           result = record;
           return false;
         }
@@ -12363,59 +13400,59 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
       return result;
     },
     /**
-     * 查找记录，返回所有符合查询条件的记录
-     * <pre><code>
-     *   var records = store.findAll('type','0');
-     * </code></pre>
-     * @param {String} field 字段名
-     * @param {String} value 字段值
-     * @return {Array}
-     */
-    findAll: function(field, value) {
+    * 查找记录，返回所有符合查询条件的记录
+    * <pre><code>
+    *   var records = store.findAll('type','0');
+    * </code></pre>
+    * @param {String} field 字段名
+    * @param {String} value 字段值
+    * @return {Array}
+    */
+    findAll : function(field,value){
       var _self = this,
         result = [],
         records = _self.getResult();
-      $.each(records, function(index, record) {
-        if (record[field] === value) {
+      $.each(records,function(index,record){
+        if(record[field] === value){
           result.push(record);
         }
       });
       return result;
     },
     /**
-     * 根据索引查找记录
-     * <pre><code>
-     *  var record = store.findByIndex(1);
-     * </code></pre>
-     * @param {Number} index 索引
-     * @return {Object} 查找的记录
-     */
-    findByIndex: function(index) {
+    * 根据索引查找记录
+    * <pre><code>
+    *  var record = store.findByIndex(1);
+    * </code></pre>
+    * @param {Number} index 索引
+    * @return {Object} 查找的记录
+    */
+    findByIndex : function(index){
       return this.getResult()[index];
     },
     /**
-     * 查找数据所在的索引位置,若不存在返回-1
-     * <pre><code>
-     *  var index = store.findIndexBy(obj);
-     *
-     *  var index = store.findIndexBy(obj,function(obj1,obj2){
-     *    return obj1.id == obj2.id;
-     *  });
-     * </code></pre>
-     * @param {Object} target 指定的记录
-     * @param {Function} [match = matchFunction] @see {BUI.Data.Store#matchFunction}默认为比较2个对象是否相同
-     * @return {Number}
-     */
-    findIndexBy: function(target, match) {
+    * 查找数据所在的索引位置,若不存在返回-1
+    * <pre><code>
+    *  var index = store.findIndexBy(obj);
+    *
+    *  var index = store.findIndexBy(obj,function(obj1,obj2){
+    *    return obj1.id == obj2.id;
+    *  });
+    * </code></pre>
+    * @param {Object} target 指定的记录
+    * @param {Function} [match = matchFunction] @see {BUI.Data.Store#matchFunction}默认为比较2个对象是否相同
+    * @return {Number}
+    */
+    findIndexBy :function(target,match){
       var _self = this,
         position = -1,
         records = _self.getResult();
       match = match || _self._getDefaultMatch();
-      if (target === null || target === undefined) {
+      if(target === null || target === undefined){
         return -1;
       }
-      $.each(records, function(index, record) {
-        if (match(target, record)) {
+      $.each(records,function(index,record){
+        if(match(target,record)){
           position = index;
           return false;
         }
@@ -12423,21 +13460,22 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
       return position;
     },
     /**
-     * 获取下一条记录
-     * <pre><code>
-     *  var record = store.findNextRecord(obj);
-     * </code></pre>
-     * @param {Object} record 当前记录
-     * @return {Object} 下一条记录
-     */
-    findNextRecord: function(record) {
+    * 获取下一条记录
+    * <pre><code>
+    *  var record = store.findNextRecord(obj);
+    * </code></pre>
+    * @param {Object} record 当前记录
+    * @return {Object} 下一条记录
+    */
+    findNextRecord : function(record){
       var _self = this,
         index = _self.findIndexBy(record);
-      if (index >= 0) {
+      if(index >= 0){
         return _self.findByIndex(index + 1);
       }
       return;
     },
+
     /**
      * 获取缓存的记录数
      * <pre><code>
@@ -12447,7 +13485,7 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      * </code></pre>
      * @return {Number} 记录数
      */
-    getCount: function() {
+    getCount : function(){
       return this.getResult().length;
     },
     /**
@@ -12459,11 +13497,11 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      * </code></pre>
      * @return {Number} 记录的总数
      */
-    getTotalCount: function() {
+    getTotalCount : function(){
       var _self = this,
         resultMap = _self.get('resultMap'),
         total = _self.get('totalProperty');
-      return parseInt(resultMap[total], 10) || 0;
+      return parseInt(resultMap[total],10) || 0;
     },
     /**
      * 获取当前缓存的纪录
@@ -12472,7 +13510,7 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      * </code></pre>
      * @return {Array} 纪录集合
      */
-    getResult: function() {
+    getResult : function(){
       var _self = this,
         resultMap = _self.get('resultMap'),
         root = _self.get('root');
@@ -12480,9 +13518,9 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
     },
     /**
      * 是否包含数据
-     * @return {Boolean}
+     * @return {Boolean} 
      */
-    hasData: function() {
+    hasData : function(){
       return this.getCount() !== 0;
     },
     /**
@@ -12494,177 +13532,176 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      *   store.setResult(data); //重设数据
      * </code></pre>
      */
-    setResult: function(data) {
+    setResult : function(data){
       var _self = this,
         proxy = _self.get('proxy');
-      if (proxy instanceof Proxy.Memery) {
-        _self.set('data', data);
-        _self.load({
-          start: 0
-        });
-      } else {
+      if(proxy instanceof Proxy.Memery){
+        _self.set('data',data);
+        _self.load({start:0});
+      }else{
         _self._setResult(data);
         //如果有filter则进行过滤
-        if (_self.get('filter')) {
+        if(_self.get('filter')){
           _self.filter();
         }
       }
     },
+
     /**
-     * 删除一条或多条记录触发 remove 事件.
-     * <pre><code>
-     *  store.remove(obj);  //删除一条记录
-     *
-     *  store.remove([obj1,obj2...]); //删除多个条记录
-     *
-     *  store.remvoe(obj,funciton(obj1,obj2){ //使用匹配函数
-     *    return obj1.id == obj2.id;
-     *  });
-     * </code></pre>
-     * @param {Array|Object} data 添加的数据，可以是数组，可以是单条记录
-     * @param {Function} [match = function(obj1,obj2){return obj1 == obj2}] 匹配函数，可以为空
-     */
-    remove: function(data, match) {
-      var _self = this,
-        delData = [];
+    * 删除一条或多条记录触发 remove 事件.
+    * <pre><code>
+    *  store.remove(obj);  //删除一条记录
+    *
+    *  store.remove([obj1,obj2...]); //删除多个条记录
+    *
+    *  store.remvoe(obj,funciton(obj1,obj2){ //使用匹配函数
+    *    return obj1.id == obj2.id;
+    *  });
+    * </code></pre>
+    * @param {Array|Object} data 添加的数据，可以是数组，可以是单条记录
+    * @param {Function} [match = function(obj1,obj2){return obj1 == obj2}] 匹配函数，可以为空
+    */
+    remove :function(data,match){
+      var _self =this,
+        delData=[];
       match = match || _self._getDefaultMatch();
-      if (!BUI.isArray(data)) {
+      if(!BUI.isArray(data)){
         data = [data];
       }
-      $.each(data, function(index, element) {
-        var index = _self.findIndexBy(element, match),
-          record = removeAt(index, _self.getResult());
+      $.each(data,function(index,element){
+        var index = _self.findIndexBy(element,match),
+            record = removeAt(index,_self.getResult());
         //添加到已删除队列中,如果是新添加的数据，不计入删除的数据集合中
-        if (!contains(record, _self.get('newRecords')) && !contains(record, _self.get('deletedRecords'))) {
+        if(!contains(record,_self.get('newRecords')) && !contains(record,_self.get('deletedRecords'))){
           _self.get('deletedRecords').push(record);
         }
-        removeFrom(record, _self.get('newRecords'));
-        removeFrom(record, _self.get('modifiedRecords'));
-        _self.fire('remove', {
-          record: record
-        });
-      });
+        removeFrom(record,_self.get('newRecords'));
+        removeFrom(record,_self.get('modifiedRecords'));
+        _self.fire('remove',{record:record});
+      }); 
     },
     /**
      * 保存数据，有几种类型：
-     *
+     * 
      *  - add 保存添加的记录,
      *  - remove 保存删除,
      *  - update 保存更新,
      *  - all 保存store从上次加载到目前更改的记录
      *
-     *
+     * 
      * @param {String} type 保存的类型
      * @param {Object} saveData 数据
      * @param {Function} callback
      */
-    save: function(type, saveData, callback) {
+    save : function(type,saveData,callback){
       var _self = this,
         proxy = _self.get('proxy');
-      if (BUI.isFunction(type)) { //只有回调函数
+
+      if(BUI.isFunction(type)){ //只有回调函数
         callback = type;
         type = undefined;
       }
-      if (BUI.isObject(type)) { //未指定类型
+      if(BUI.isObject(type)){ //未指定类型
         callback = saveData;
         saveData = type;
         type = undefined;
       }
-      if (!type) {
+      if(!type){
         type = _self._getSaveType(saveData);
       }
-      if (type == 'all' && !saveData) { //如果保存全部，同时未提供保存的数据，自动获取
+      if(type == 'all' && !saveData){//如果保存全部，同时未提供保存的数据，自动获取
         saveData = _self._getDirtyData();
       }
-      _self.fire('beforesave', {
-        type: type,
-        saveData: saveData
-      });
-      proxy.save(type, saveData, function(data) {
-        _self.onSave(type, saveData, data);
-        if (callback) {
-          callback(data, saveData);
+
+      _self.fire('beforesave',{type : type,saveData : saveData});
+
+      proxy.save(type,saveData,function(data){
+        _self.onSave(type,saveData,data);
+        if(callback){
+          callback(data,saveData);
         }
-      }, _self);
+      },_self);
+
     },
     //根据保存的数据获取保存的类型
-    _getSaveType: function(saveData) {
+    _getSaveType :function(saveData){
       var _self = this;
-      if (!saveData) {
+      if(!saveData){
         return 'all';
       }
-      if (BUI.Array.contains(saveData, _self.get('newRecords'))) {
+
+      if(BUI.Array.contains(saveData,_self.get('newRecords'))){
         return 'add';
       }
-      if (BUI.Array.contains(saveData, _self.get('modifiedRecords'))) {
+
+      if(BUI.Array.contains(saveData,_self.get('modifiedRecords'))){
         return 'update';
       }
-      if (BUI.Array.contains(saveData, _self.get('deletedRecords'))) {
+
+      if(BUI.Array.contains(saveData,_self.get('deletedRecords'))){
         return 'remove';
       }
       return 'custom';
     },
     //获取未保存的数据
-    _getDirtyData: function() {
+    _getDirtyData : function(){
       var _self = this,
         proxy = _self.get('proxy');
-      if (proxy.get('url')) {
+      if(proxy.get('url')){
         return {
-          add: BUI.JSON.stringify(_self.get('newRecords')),
-          update: BUI.JSON.stringify(_self.get('modifiedRecords')),
-          remove: BUI.JSON.stringify(_self.get('deletedRecords'))
+          add : BUI.JSON.stringify(_self.get('newRecords')),
+          update : BUI.JSON.stringify(_self.get('modifiedRecords')),
+          remove : BUI.JSON.stringify(_self.get('deletedRecords'))
         };
-      } else {
+      }else{
         return {
-          add: _self.get('newRecords'),
-          update: _self.get('modifiedRecords'),
-          remove: _self.get('deletedRecords')
+          add : _self.get('newRecords'),
+          update : _self.get('modifiedRecords'),
+          remove : _self.get('deletedRecords')
         };
       }
+      
     },
     /**
      * 保存完成后
      * @private
      */
-    onSave: function(type, saveData, data) {
+    onSave : function(type,saveData,data){
       var _self = this,
-        hasErrorField = _self.get('hasErrorProperty');
-      if (data[hasErrorField] || data.exception) { //如果失败
+         hasErrorField = _self.get('hasErrorProperty');
+
+      if(data[hasErrorField] || data.exception){ //如果失败
         _self.onException(data);
         return;
       }
-      _self._clearDirty(type, saveData);
-      _self.fire('saved', {
-        type: type,
-        saveData: saveData,
-        data: data
-      });
-      if (_self.get('autoSync')) {
+      _self._clearDirty(type,saveData);
+
+      _self.fire('saved',{type : type,saveData : saveData,data : data});
+      if(_self.get('autoSync')){
         _self.load();
       }
     },
     //清除脏数据
-    _clearDirty: function(type, saveData) {
+    _clearDirty : function(type,saveData){
       var _self = this;
-      switch (type) {
-        case 'all':
+      switch(type){
+        case  'all' : 
           _self._clearChanges();
           break;
-        case 'add':
-          removeFrom(saveData, 'newRecords');
+        case 'add' : 
+          removeFrom(saveData,'newRecords');
           break;
-        case 'update':
-          removeFrom(saveData, 'modifiedRecords');
+        case 'update' : 
+          removeFrom(saveData,'modifiedRecords');
           break;
-        case 'remove':
-          removeFrom(saveData, 'deletedRecords');
+        case 'remove' : 
+          removeFrom(saveData,'deletedRecords');
           break;
-        default:
+        default : 
           break;
       }
-
-      function removeFrom(obj, name) {
-        BUI.Array.remove(_self.get(name), obj);
+      function removeFrom(obj,name){
+        BUI.Array.remove(_self.get(name),obj);
       }
     },
     /**
@@ -12675,14 +13712,15 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      * @param  {String} field     排序字段
      * @param  {String} direction 排序方向
      */
-    sort: function(field, direction) {
+    sort : function(field,direction){
       var _self = this,
         remoteSort = _self.get('remoteSort');
-      if (!remoteSort) {
-        _self._localSort(field, direction);
-      } else {
-        _self.set('sortField', field);
-        _self.set('sortDirection', direction);
+
+      if(!remoteSort){
+        _self._localSort(field,direction);
+      }else{
+        _self.set('sortField',field);
+        _self.set('sortDirection',direction);
         _self.load(_self.get('sortInfo'));
       }
     },
@@ -12695,86 +13733,78 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      * @param  {Array} [data] 计算的集合，默认为Store中的数据集合
      * @return {Number} 汇总和
      */
-    sum: function(field, data) {
-      var _self = this,
+    sum : function(field,data){
+      var  _self = this,
         records = data || _self.getResult(),
         sum = 0;
-      BUI.each(records, function(record) {
+      BUI.each(records,function(record){
         var val = record[field];
-        if (!isNaN(val)) {
+        if(!isNaN(val)){
           sum += parseFloat(val);
         }
       });
       return sum;
     },
     /**
-     * 设置记录的值 ，触发 update 事件
-     * <pre><code>
-     *  store.setValue(obj,'value','new value');
-     * </code></pre>
-     * @param {Object} obj 修改的记录
-     * @param {String} field 修改的字段名
-     * @param {Object} value 修改的值
-     */
-    setValue: function(obj, field, value) {
+    * 设置记录的值 ，触发 update 事件
+    * <pre><code>
+    *  store.setValue(obj,'value','new value');
+    * </code></pre>
+    * @param {Object} obj 修改的记录
+    * @param {String} field 修改的字段名
+    * @param {Object} value 修改的值
+    */
+    setValue : function(obj,field,value){
       var record = obj,
         _self = this;
-      record[field] = value;
-      if (!contains(record, _self.get('newRecords')) && !contains(record, _self.get('modifiedRecords'))) {
-        _self.get('modifiedRecords').push(record);
+
+      record[field]=value;
+      if(!contains(record,_self.get('newRecords')) && !contains(record,_self.get('modifiedRecords'))){
+          _self.get('modifiedRecords').push(record);
       }
-      _self.fire('update', {
-        record: record,
-        field: field,
-        value: value
-      });
+      _self.fire('update',{record:record,field:field,value:value});
     },
     /**
-     * 更新记录 ，触发 update事件
-     * <pre><code>
-     *   var record = store.find('id','12');
-     *   record.value = 'new value';
-     *   record.text = 'new text';
-     *   store.update(record); //触发update事件，引起绑定了store的控件更新
-     * </code></pre>
-     * @param {Object} obj 修改的记录
-     * @param {Boolean} [isMatch = false] 是否需要进行匹配，检测指定的记录是否在集合中
-     * @param {Function} [match = matchFunction] 匹配函数
-     */
-    update: function(obj, isMatch, match) {
+    * 更新记录 ，触发 update事件
+    * <pre><code>
+    *   var record = store.find('id','12');
+    *   record.value = 'new value';
+    *   record.text = 'new text';
+    *   store.update(record); //触发update事件，引起绑定了store的控件更新
+    * </code></pre>
+    * @param {Object} obj 修改的记录
+    * @param {Boolean} [isMatch = false] 是否需要进行匹配，检测指定的记录是否在集合中
+    * @param {Function} [match = matchFunction] 匹配函数
+    */
+    update : function(obj,isMatch,match){
       var record = obj,
         _self = this,
         match = null,
         index = null;
-      if (isMatch) {
+      if(isMatch){
         match = match || _self._getDefaultMatch();
-        index = _self.findIndexBy(obj, match);
-        if (index >= 0) {
+        index = _self.findIndexBy(obj,match);
+        if(index >=0){
           record = _self.getResult()[index];
         }
       }
-      record = BUI.mix(record, obj);
-      if (!contains(record, _self.get('newRecords')) && !contains(record, _self.get('modifiedRecords'))) {
-        _self.get('modifiedRecords').push(record);
+      record = BUI.mix(record,obj);
+      if(!contains(record,_self.get('newRecords')) && !contains(record,_self.get('modifiedRecords'))){
+          _self.get('modifiedRecords').push(record);
       }
-      _self.fire('update', {
-        record: record
-      });
+      _self.fire('update',{record:record});
     },
     //添加纪录
-    _addRecord: function(record, index) {
+    _addRecord :function(record,index){
       var records = this.getResult();
-      if (index == undefined) {
+      if(index == undefined){
         index = records.length;
       }
-      records.splice(index, 0, record);
-      this.fire('add', {
-        record: record,
-        index: index
-      });
+      records.splice(index,0,record);
+      this.fire('add',{record:record,index:index});
     },
     //清除改变的数据记录
-    _clearChanges: function() {
+    _clearChanges : function(){
       var _self = this;
       BUI.Array.empty(_self.get('newRecords'));
       BUI.Array.empty(_self.get('modifiedRecords'));
@@ -12786,130 +13816,145 @@ define("bui/data/store", ["jquery", "bui/data/proxy", "bui/data/abstractstore", 
      * @param  {Function} fn 过滤函数
      * @return {Array} 过滤结果
      */
-    _filterLocal: function(fn, data) {
+    _filterLocal : function(fn,data){
+
       var _self = this,
         rst = [];
       data = data || _self.getResult();
-      if (!fn) { //没有过滤器时直接返回
+      if(!fn){ //没有过滤器时直接返回
         return data;
       }
-      BUI.each(data, function(record) {
-        if (fn(record)) {
+      BUI.each(data,function(record){
+        if(fn(record)){
           rst.push(record);
         }
       });
       return rst;
     },
     //获取默认的匹配函数
-    _getDefaultMatch: function() {
+    _getDefaultMatch :function(){
+
       return this.get('matchFunction');
     },
+
     //获取分页相关的信息
-    _getPageParams: function() {
+    _getPageParams : function(){
       var _self = this,
         sortInfo = _self.get('sortInfo'),
         start = _self.get('start'),
         limit = _self.get('pageSize'),
-        pageIndex = _self.get('pageIndex') || (limit ? start / limit : 0);
-      params = {
-        start: start,
-        limit: limit,
-        pageIndex: pageIndex //一般而言，pageIndex = start/limit
-      };
-      if (_self.get('remoteSort')) {
-        BUI.mix(params, sortInfo);
+        pageIndex = _self.get('pageIndex') || (limit ? start/limit : 0);
+
+        params = {
+          start : start,
+          limit : limit,
+          pageIndex : pageIndex //一般而言，pageIndex = start/limit
+        };
+
+      if(_self.get('remoteSort')){
+        BUI.mix(params,sortInfo);
       }
+
       return params;
     },
-    /**
+     /**
      * 获取附加的参数,分页信息，排序信息
      * @override
      * @protected
      * @return {Object} 附加的参数
      */
-    getAppendParams: function() {
+    getAppendParams : function(){
       return this._getPageParams();
     },
     /**
      * @protected
      * 初始化之前
      */
-    beforeInit: function() {
+    beforeInit : function(){
       //初始化结果集
       this._setResult([]);
     },
     //本地排序
-    _localSort: function(field, direction) {
+    _localSort : function(field,direction){
       var _self = this;
-      _self._sortData(field, direction);
-      _self.fire('localsort', {
-        field: field,
-        direction: direction
-      });
+
+      _self._sortData(field,direction);
+
+      _self.fire('localsort',{field:field,direction:direction});
     },
-    _sortData: function(field, direction, data) {
+    _sortData : function(field,direction,data){
       var _self = this;
       data = data || _self.getResult();
-      _self.sortData(field, direction, data);
+
+      _self.sortData(field,direction,data);
     },
     //处理数据
-    afterProcessLoad: function(data, params) {
+    afterProcessLoad : function(data,params){
       var _self = this,
         root = _self.get('root'),
         start = params.start,
         limit = params.limit,
         totalProperty = _self.get('totalProperty');
-      if (BUI.isArray(data)) {
+
+      if(BUI.isArray(data)){
         _self._setResult(data);
-      } else {
-        _self._setResult(data[root], data[totalProperty]);
+      }else{
+        _self._setResult(data[root],data[totalProperty]);
       }
-      _self.set('start', start);
-      if (limit) {
-        _self.set('pageIndex', start / limit);
+
+      _self.set('start',start);
+
+      if(limit){
+        _self.set('pageIndex',start/limit);
       }
+
       //如果本地排序,则排序
-      if (!_self.get('remoteSort')) {
+      if(!_self.get('remoteSort')){
         _self._sortData();
       }
-      _self.fire('load', {
-        params: params
-      });
+
+      _self.fire('load',{ params : params });
+
       //如果有本地过滤，则本地过滤
-      if (!_self.get('remoteFilter') && _self.get('filter')) {
+      if(!_self.get('remoteFilter') && _self.get('filter')){
         _self.filter(_self.get('filter'));
       }
     },
     //设置结果集
-    _setResult: function(rows, totalCount) {
+    _setResult : function(rows,totalCount){
       var _self = this,
         resultMap = _self.get('resultMap');
+
       totalCount = totalCount || rows.length;
       resultMap[_self.get('root')] = rows;
       resultMap[_self.get('totalProperty')] = totalCount;
+
       //清理之前发生的改变
       _self._clearChanges();
     }
   });
-  module.exports = store;
+
+module.exports = store;
+
 });
-define("bui/data/node", ["jquery", "bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview 树形数据结构的节点类，无法直接使用数据作为节点，所以进行一层封装
-   * 可以直接作为TreeNode控件的配置项
-   * @ignore
-   */
+define("bui/data/node", ["bui/common","jquery"], function(require, exports, module){
+/**
+ * @fileOverview 树形数据结构的节点类，无法直接使用数据作为节点，所以进行一层封装
+ * 可以直接作为TreeNode控件的配置项
+ * @ignore
+ */
+
   var BUI = require("bui/common");
 
-  function mapNode(cfg, map) {
+  function mapNode(cfg,map){
     var rst = {};
-    if (map) {
-      BUI.each(cfg, function(v, k) {
+    if(map){
+      BUI.each(cfg,function(v,k){
         var name = map[k] || k;
         rst[name] = v;
       });
       rst.record = cfg;
-    } else {
+    }else{
       rst = cfg;
     }
     return rst;
@@ -12918,80 +13963,86 @@ define("bui/data/node", ["jquery", "bui/common"], function(require, exports, mod
    * @class BUI.Data.Node
    * 树形数据结构的节点类
    */
-  function Node(cfg, map) {
+  function Node (cfg,map) {
     var _self = this;
-    cfg = mapNode(cfg, map);
-    BUI.mix(this, cfg);
+    cfg = mapNode(cfg,map);
+    BUI.mix(this,cfg);
   }
-  BUI.augment(Node, {
+
+  BUI.augment(Node,{
     /**
      * 是否根节点
      * @type {Boolean}
      */
-    root: false,
+    root : false,
     /**
      * 是否叶子节点
      * @type {Boolean}
      */
-    leaf: null,
+    leaf : null,
     /**
      * 显示节点时显示的文本
      * @type {Object}
      */
-    text: '',
+    text : '',
     /**
      * 代表节点的编号
      * @type {String}
      */
-    id: null,
+    id : null,
     /**
      * 子节点是否已经加载过
      * @type {Boolean}
      */
-    loaded: false,
+    loaded : false,
     /**
      * 从根节点到此节点的路径，id的集合如： ['0','1','12'],
      * 便于快速定位节点
      * @type {Array}
      */
-    path: null,
+    path : null,
     /**
      * 父节点
      * @type {BUI.Data.Node}
      */
-    parent: null,
+    parent : null,
     /**
      * 树节点的等级
      * @type {Number}
      */
-    level: 0,
+    level : 0,
     /**
      * 节点是否由一条记录封装而成
      * @type {Object}
      */
-    record: null,
+    record : null,
     /**
      * 子节点集合
      * @type {BUI.Data.Node[]}
      */
-    children: null,
+    children : null,
     /**
      * 是否是Node对象
      * @type {Object}
      */
-    isNode: true
+    isNode : true
   });
+
   module.exports = Node;
+
 });
-define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data/proxy", "bui/data/abstractstore", "bui/data/sortable"], function(require, exports, module) {
-  /**
-   * @fileOverview 树形对象缓冲类
-   * @ignore
-   */
+define("bui/data/treestore", ["bui/common","jquery"], function(require, exports, module){
+/**
+ * @fileOverview 树形对象缓冲类
+ * @ignore
+ */
+
+
   var BUI = require("bui/common"),
     Node = require("bui/data/node"),
     Proxy = require("bui/data/proxy"),
     AbstractStore = require("bui/data/abstractstore");
+
   /**
    * @class BUI.Data.TreeStore
    * 树形数据缓冲类
@@ -13025,9 +14076,10 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
    * </code></pre>
    * @extends BUI.Data.AbstractStore
    */
-  function TreeStore(config) {
-    TreeStore.superclass.constructor.call(this, config);
+  function TreeStore(config){
+    TreeStore.superclass.constructor.call(this,config);
   }
+
   TreeStore.ATTRS = {
     /**
      * 根节点
@@ -13048,7 +14100,9 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
      * @type {Object}
      * @readOnly
      */
-    root: {},
+    root : {
+
+    },
     /**
      * 数据映射，用于设置的数据跟@see {BUI.Data.Node} 不一致时，进行匹配。
      * 如果此属性为null,那么假设设置的对象是Node对象
@@ -13066,17 +14120,21 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
      *   //此时原始记录会作为对象的 record属性
      *   var node = store.findNode('123'),
      *     record = node.record;
-     * </code></pre>
+     * </code></pre> 
      * **Notes:**
      * 使用数据映射的记录仅做于展示数据，不作为可更改的数据，add,update不会更改数据的原始数据
      * @cfg {Object} map
      */
-    map: {},
+    map : {
+
+    },
     /**
      * 标示父元素id的字段名称
      * @type {String}
      */
-    pidField: {},
+    pidField : {
+      
+    },
     /**
      * 返回数据标示数据的字段<br/>
      * 异步加载数据时，返回数据可以使数组或者对象
@@ -13084,90 +14142,94 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
      * - 如何获取附加信息参看 @see {BUI.Data.AbstractStore-event-beforeprocessload}
      * <pre><code>
      *  //返回数据为数组 [{},{}]，会直接附加到加载的节点后面
-     *
+     *  
      *  var node = store.loadNode('123');
      *  store.loadNode(node);
-     *
+     *  
      * </code></pre>
      * @cfg {Object} [dataProperty = 'nodes']
      */
-    dataProperty: {
-      value: 'nodes'
+    dataProperty : {
+      value : 'nodes'
     },
-    events: {
-      value: [
+    events : {
+      value : [
         /**  
-         * 当添加数据时触发该事件
-         * @event
-         * <pre><code>
-         *  store.on('add',function(ev){
-         *    list.addItem(e.node,index);
-         *  });
-         * </code></pre>
-         * @param {jQuery.Event} e  事件对象
-         * @param {Object} e.node 添加的节点
-         * @param {Number} index 添加的位置
-         */
+        * 当添加数据时触发该事件
+        * @event  
+        * <pre><code>
+        *  store.on('add',function(ev){
+        *    list.addItem(e.node,index);
+        *  });
+        * </code></pre>
+        * @param {jQuery.Event} e  事件对象
+        * @param {Object} e.node 添加的节点
+        * @param {Number} index 添加的位置
+        */
         'add',
         /**  
-         * 当更新数据指定字段时触发该事件
-         * @event
-         * @param {jQuery.Event} e  事件对象
-         * @param {Object} e.node 更新的节点
-         */
+        * 当更新数据指定字段时触发该事件 
+        * @event  
+        * @param {jQuery.Event} e  事件对象
+        * @param {Object} e.node 更新的节点
+        */
         'update',
         /**  
-         * 当删除数据时触发该事件
-         * @event
-         * @param {jQuery.Event} e  事件对象
-         * @param {Object} e.node 删除的节点
-         * @param {Number} index 删除节点的索引
-         */
+        * 当删除数据时触发该事件
+        * @event  
+        * @param {jQuery.Event} e  事件对象
+        * @param {Object} e.node 删除的节点
+        * @param {Number} index 删除节点的索引
+        */
         'remove',
         /**  
-         * 节点加载完毕触发该事件
-         * <pre><code>
-         *   //异步加载节点,此时节点已经附加到加载节点的后面
-         *   store.on('load',function(ev){
-         *     var params = ev.params,
-         *       id = params.id,
-         *       node = store.findNode(id),
-         *       children = node.children;  //节点的id
-         *     //TO DO
-         *   });
-         * </code></pre>
-         *
-         * @event
-         * @param {jQuery.Event} e  事件对象
-         * @param {Object} e.node 加载的节点
-         * @param {Object} e.params 加载节点时的参数
-         */
+        * 节点加载完毕触发该事件
+        * <pre><code>
+        *   //异步加载节点,此时节点已经附加到加载节点的后面
+        *   store.on('load',function(ev){
+        *     var params = ev.params,
+        *       id = params.id,
+        *       node = store.findNode(id),
+        *       children = node.children;  //节点的id
+        *     //TO DO
+        *   });
+        * </code></pre>
+        * 
+        * @event  
+        * @param {jQuery.Event} e  事件对象
+        * @param {Object} e.node 加载的节点
+        * @param {Object} e.params 加载节点时的参数
+        */
         'load'
       ]
     }
   }
-  BUI.extend(TreeStore, AbstractStore);
-  BUI.augment(TreeStore, {
+
+  BUI.extend(TreeStore,AbstractStore);
+
+  BUI.augment(TreeStore,{
     /**
      * @protected
      * @override
      * 初始化前
      */
-    beforeInit: function() {
+    beforeInit:function(){
       this.initRoot();
     },
     //初始化数据,如果默认加载数据，则加载数据
-    _initData: function() {
+    _initData : function(){
       var _self = this,
         autoLoad = _self.get('autoLoad'),
         pidField = _self.get('pidField'),
         proxy = _self.get('proxy'),
         root = _self.get('root');
+
       //添加默认的匹配父元素的字段
-      if (!proxy.get('url') && pidField) {
+      if(!proxy.get('url') && pidField){
         proxy.get('matchFields').push(pidField);
       }
-      if (autoLoad && !root.children) {
+      
+      if(autoLoad && !root.children){
         //params = root.id ? {id : root.id}: {};
         _self.loadNode(root);
       }
@@ -13176,23 +14238,23 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
      * @protected
      * 初始化根节点
      */
-    initRoot: function() {
+    initRoot : function(){
       var _self = this,
         map = _self.get('map'),
         root = _self.get('root');
-      if (!root) {
+      if(!root){
         root = {};
       }
-      if (!root.isNode) {
-        root = new Node(root, map);
+      if(!root.isNode){
+        root = new Node(root,map);
         //root.children= [];
       }
       root.path = [root.id];
       root.level = 0;
-      if (root.children) {
-        _self.setChildren(root, root.children);
+      if(root.children){
+        _self.setChildren(root,root.children);
       }
-      _self.set('root', root);
+      _self.set('root',root);
     },
     /**
      * 添加节点，触发{@link BUI.Data.TreeStore#event-add} 事件
@@ -13211,85 +14273,81 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
      * @param {Number} [index] 添加节点的位置
      * @return {BUI.Data.Node} 添加完成的节点
      */
-    add: function(node, parent, index) {
+    add : function(node,parent,index){
       var _self = this;
-      node = _self._add(node, parent, index);
-      _self.fire('add', {
-        node: node,
-        record: node,
-        index: index
-      });
+
+      node = _self._add(node,parent,index);
+      _self.fire('add',{node : node,record : node,index : index});
       return node;
     },
     //
-    _add: function(node, parent, index) {
-      parent = parent || this.get('root'); //如果未指定父元素，添加到跟节点
+    _add : function(node,parent,index){
+      parent = parent || this.get('root');  //如果未指定父元素，添加到跟节点
       var _self = this,
         map = _self.get('map'),
         nodes = parent.children,
         nodeChildren;
-      if (!node.isNode) {
-        node = new Node(node, map);
+
+      if(!node.isNode){
+        node = new Node(node,map);
       }
+
       nodeChildren = node.children || []
-      if (nodeChildren.length == 0 && node.leaf == null) {
+
+      if(nodeChildren.length == 0 && node.leaf == null){
         node.leaf = true;
       }
-      if (parent) {
+      if(parent){
         parent.leaf = false;
       }
+      
       node.parent = parent;
       node.level = parent.level + 1;
       node.path = parent.path.concat(node.id);
       index = index == null ? parent.children.length : index;
-      BUI.Array.addAt(nodes, node, index);
-      _self.setChildren(node, nodeChildren);
+      BUI.Array.addAt(nodes,node,index);
+
+      _self.setChildren(node,nodeChildren);
       return node;
     },
     /**
      * 移除节点，触发{@link BUI.Data.TreeStore#event-remove} 事件
-     *
+     * 
      * <pre><code>
      *  var node = store.findNode('1'); //根据节点id 获取节点
      *  store.remove(node);
      * </code></pre>
-     *
+     * 
      * @param {BUI.Data.Node} node 节点或者数据对象
      * @return {BUI.Data.Node} 删除的节点
      */
-    remove: function(node) {
+    remove : function(node){
       var parent = node.parent || _self.get('root'),
-        index = BUI.Array.indexOf(node, parent.children);
-      BUI.Array.remove(parent.children, node);
-      if (parent.children.length === 0) {
+        index = BUI.Array.indexOf(node,parent.children) ;
+
+      BUI.Array.remove(parent.children,node);
+      if(parent.children.length === 0){
         parent.leaf = true;
       }
-      this.fire('remove', {
-        node: node,
-        record: node,
-        index: index
-      });
+      this.fire('remove',{node : node ,record : node , index : index});
       node.parent = null;
       return node;
     },
     /**
-     * 设置记录的值 ，触发 update 事件
-     * <pre><code>
-     *  store.setValue(obj,'value','new value');
-     * </code></pre>
-     * @param {Object} obj 修改的记录
-     * @param {String} field 修改的字段名
-     * @param {Object} value 修改的值
-     */
-    setValue: function(node, field, value) {
-      var _self = this;
-      node[field] = value;
-      _self.fire('update', {
-        node: node,
-        record: node,
-        field: field,
-        value: value
-      });
+    * 设置记录的值 ，触发 update 事件
+    * <pre><code>
+    *  store.setValue(obj,'value','new value');
+    * </code></pre>
+    * @param {Object} obj 修改的记录
+    * @param {String} field 修改的字段名
+    * @param {Object} value 修改的值
+    */
+    setValue : function(node,field,value){
+      var 
+        _self = this;
+        node[field] = value;
+
+      _self.fire('update',{node:node,record : node,field:field,value:value});
     },
     /**
      * 更新节点
@@ -13300,11 +14358,8 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
      * </code></pre>
      * @return {BUI.Data.Node} 更新节点
      */
-    update: function(node) {
-      this.fire('update', {
-        node: node,
-        record: node
-      });
+    update : function(node){
+      this.fire('update',{node : node,record : node});
     },
     /**
      * 返回缓存的数据，根节点的直接子节点集合
@@ -13316,35 +14371,33 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
      * </code></pre>
      * @return {Array} 根节点下面的数据
      */
-    getResult: function() {
+    getResult : function(){
       return this.get('root').children;
     },
     /**
      * 设置缓存的数据，设置为根节点的数据
-     *   <pre><code>
-     *     var data = [
-     *       {id : '1',text : '文本1'},
-     *       {id : '2',text : '文本2',children:[
-     *         {id : '21',text : '文本21'}
-     *       ]},
-     *       {id : '3',text : '文本3'}
-     *     ];
-     *     store.setResult(data); //会对数据进行格式化，添加leaf等字段：
-     *                            //[{id : '1',text : '文本1',leaf : true},{id : '2',text : '文本2',leaf : false,children:[...]}....]
-     *   </code></pre>
+    *   <pre><code>
+    *     var data = [
+    *       {id : '1',text : '文本1'},
+    *       {id : '2',text : '文本2',children:[
+    *         {id : '21',text : '文本21'}
+    *       ]},
+    *       {id : '3',text : '文本3'}
+    *     ];
+    *     store.setResult(data); //会对数据进行格式化，添加leaf等字段：
+    *                            //[{id : '1',text : '文本1',leaf : true},{id : '2',text : '文本2',leaf : false,children:[...]}....]
+    *   </code></pre>
      * @param {Array} data 缓存的数据
      */
-    setResult: function(data) {
+    setResult : function(data){
       var _self = this,
         proxy = _self.get('proxy'),
         root = _self.get('root');
-      if (proxy instanceof Proxy.Memery) {
-        _self.set('data', data);
-        _self.load({
-          id: root.id
-        });
-      } else {
-        _self.setChildren(root, data);
+      if(proxy instanceof Proxy.Memery){
+        _self.set('data',data);
+        _self.load({id : root.id});
+      }else{
+        _self.setChildren(root,data);
       }
     },
     /**
@@ -13353,21 +14406,21 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
      * @param {BUI.Data.Node} node  节点
      * @param {Array} children 子节点
      */
-    setChildren: function(node, children) {
+    setChildren : function(node,children){
       var _self = this;
       node.children = [];
-      if (!children.length) {
+      if(!children.length){
         return;
       }
-      BUI.each(children, function(item) {
-        _self._add(item, node);
+      BUI.each(children,function(item){
+        _self._add(item,node);
       });
     },
     /**
      * 查找节点
      * <pre><code>
      *  var node = store.findNode('1');//从根节点开始查找节点
-     *
+     *  
      *  var subNode = store.findNode('123',node); //从指定节点开始查找
      * </code></pre>
      * @param  {String} id 节点Id
@@ -13375,10 +14428,10 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
      * @param {Boolean} [deep = true] 是否递归查找
      * @return {BUI.Data.Node} 节点
      */
-    findNode: function(id, parent, deep) {
-      return this.findNodeBy(function(node) {
+    findNode : function(id,parent,deep){
+      return this.findNodeBy(function(node){
         return node.id === id;
-      }, parent, deep);
+      },parent,deep);
     },
     /**
      * 根据匹配函数查找节点
@@ -13387,25 +14440,25 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
      * @param {Boolean} [deep = true] 是否递归查找
      * @return {BUI.Data.Node} 节点
      */
-    findNodeBy: function(fn, parent, deep) {
+    findNodeBy : function(fn,parent,deep){
       var _self = this;
       deep = deep == null ? true : deep;
-      if (!parent) {
+      if(!parent){
         var root = _self.get('root');
-        if (fn(root)) {
+        if(fn(root)){
           return root;
         }
-        return _self.findNodeBy(fn, root);
+        return _self.findNodeBy(fn,root);
       }
       var children = parent.children,
         rst = null;
-      BUI.each(children, function(item) {
-        if (fn(item)) {
+      BUI.each(children,function(item){
+        if(fn(item)){
           rst = item;
-        } else if (deep) {
-          rst = _self.findNodeBy(fn, item);
+        }else if(deep){
+          rst = _self.findNodeBy(fn,item);
         }
-        if (rst) {
+        if(rst){
           return false;
         }
       });
@@ -13425,19 +14478,22 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
      * @param  {BUI.Data.Node} [parent] 父元素，如果不存在，则从根节点查找
      * @return {Array} 节点数组
      */
-    findNodesBy: function(func, parent) {
+    findNodesBy : function(func,parent){
       var _self = this,
         root,
         rst = [];
-      if (!parent) {
+
+      if(!parent){
         parent = _self.get('root');
       }
-      BUI.each(parent.children, function(item) {
-        if (func(item)) {
+
+      BUI.each(parent.children,function(item){
+        if(func(item)){
           rst.push(item);
         }
-        rst = rst.concat(_self.findNodesBy(func, item));
+        rst = rst.concat(_self.findNodesBy(func,item));
       });
+
       return rst;
     },
     /**
@@ -13445,8 +14501,8 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
      * @return {BUI.Data.Node} 节点
      * @ignore
      */
-    findNodeByPath: function(path) {
-      if (!path) {
+    findNodeByPath : function(path){
+      if(!path){
         return null;
       }
       var _self = this,
@@ -13455,21 +14511,21 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
         node,
         i,
         tempId = pathArr[0];
-      if (!tempId) {
+      if(!tempId){
         return null;
       }
-      if (root.id == tempId) {
+      if(root.id == tempId){
         node = root;
-      } else {
-        node = _self.findNode(tempId, root, false);
+      }else{
+        node = _self.findNode(tempId,root,false);
       }
-      if (!node) {
+      if(!node){
         return;
       }
-      for (i = 1; i < pathArr.length; i = i + 1) {
+      for(i = 1 ; i < pathArr.length ; i = i + 1){
         var tempId = pathArr[i];
-        node = _self.findNode(tempId, node, false);
-        if (!node) {
+        node = _self.findNode(tempId,node,false);
+        if(!node){
           break;
         }
       }
@@ -13486,9 +14542,9 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
      * @param  {BUI.Data.Node} parent 父节点
      * @return {Boolean} 是否包含指定节点
      */
-    contains: function(node, parent) {
+    contains : function(node,parent){
       var _self = this,
-        findNode = _self.findNode(node.id, parent);
+        findNode = _self.findNode(node.id,parent);
       return !!findNode;
     },
     /**
@@ -13496,28 +14552,26 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
      * @protected
      * @override
      */
-    afterProcessLoad: function(data, params) {
+    afterProcessLoad : function(data,params){
       var _self = this,
         pidField = _self.get('pidField'),
         id = params.id || params[pidField],
         dataProperty = _self.get('dataProperty'),
-        node = _self.findNode(id) || _self.get('root'); //如果找不到父元素，则放置在跟节点
-      if (BUI.isArray(data)) {
-        _self.setChildren(node, data);
-      } else {
-        _self.setChildren(node, data[dataProperty]);
+        node = _self.findNode(id) || _self.get('root');//如果找不到父元素，则放置在跟节点
+
+      if(BUI.isArray(data)){
+        _self.setChildren(node,data);
+      }else{
+        _self.setChildren(node,data[dataProperty]);
       }
       node.loaded = true; //标识已经加载过
-      _self.fire('load', {
-        node: node,
-        params: params
-      });
+      _self.fire('load',{node : node,params : params});
     },
     /**
      * 是否包含数据
-     * @return {Boolean}
+     * @return {Boolean} 
      */
-    hasData: function() {
+    hasData : function(){
       //return true;
       return this.get('root').children && this.get('root').children.length !== 0;
     },
@@ -13526,14 +14580,15 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
      * @param   {BUI.Data.Node} node 节点
      * @return {Boolean}  是否加载过
      */
-    isLoaded: function(node) {
+    isLoaded : function(node){
       var root = this.get('root');
-      if (node == root && !root.children) {
+      if(node == root && !root.children){
         return false;
       }
-      if (!this.get('url') && !this.get('pidField')) { //如果不从远程加载数据,默认已经加载
+      if(!this.get('url') && !this.get('pidField')){ //如果不从远程加载数据,默认已经加载
         return true;
       }
+      
       return node.loaded || node.leaf || !!(node.children && node.children.length);
     },
     /**
@@ -13541,53 +14596,51 @@ define("bui/data/treestore", ["jquery", "bui/common", "bui/data/node", "bui/data
      * @param  {BUI.Data.Node} node 节点
      * @param {Boolean} forceLoad 是否强迫重新加载节点，如果设置成true，不判断是否加载过
      */
-    loadNode: function(node, forceLoad) {
+    loadNode : function(node,forceLoad){
       var _self = this,
         pidField = _self.get('pidField'),
         params;
       //如果已经加载过，或者节点是叶子节点
-      if (!forceLoad && _self.isLoaded(node)) {
-        return;
+      if(!forceLoad && _self.isLoaded(node)){
+        return ;
       }
-      params = {
-        id: node.id
-      };
-      if (pidField) {
+      params = {id : node.id};
+      if(pidField){
         params[pidField] = node.id;
       }
-      _self.load(params);
+      _self.load(params);  
     },
     /**
      * 重新加载节点
      * @param  {BUI.Data.Node} node node节点
      */
-    reloadNode: function(node) {
+    reloadNode : function(node){
       var _self = this;
       node = node || _self.get('root');
       node.loaded = false;
       //node.children = [];
-      _self.loadNode(node, true);
+      _self.loadNode(node,true);
     },
     /**
      * 加载节点，根据path
      * @param  {String} path 加载路径
      * @ignore
      */
-    loadPath: function(path) {
+    loadPath : function(path){
       var _self = this,
         arr = path.split(','),
         id = arr[0];
-      if (_self.findNodeByPath(path)) { //加载过
+      if(_self.findNodeByPath(path)){ //加载过
         return;
       }
-      _self.load({
-        id: id,
-        path: path
-      });
+      _self.load({id : id,path : path});
     }
   });
-  module.exports = TreeStore;
+
+module.exports = TreeStore;
+
 });
+
 define("bui/list", ["bui/common","jquery","bui/data"], function(require, exports, module){
 /**
 * @fileOverview 列表模块入口文件
@@ -15424,1078 +16477,1170 @@ module.exports = listbox;
 
 });
 
-define("bui/mask", ["jquery", "bui/common", "bui/mask/mask", "bui/mask/loadmask"], function(require, exports, module) {
-  /**
-   * @fileOverview Mask的入口文件
-   * @ignore
-   */
+define("bui/mask", ["bui/common","jquery"], function(require, exports, module){
+/**
+ * @fileOverview Mask的入口文件
+ * @ignore
+ */
+
   var BUI = require("bui/common"),
     Mask = require("bui/mask/mask");
   Mask.LoadMask = require("bui/mask/loadmask");
+
   module.exports = Mask;
+
 });
-define("bui/mask/mask", ["jquery", "bui/common"], function(require, exports, module) {
+define("bui/mask/mask", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview Mask屏蔽层
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  Mask = BUI.namespace('Mask'),
+  UA = BUI.UA,
+  CLS_MASK = BUI.prefix + 'ext-mask',
+  CLS_MASK_MSG = CLS_MASK + '-msg';
+
+BUI.mix(Mask,
+/**
+* 屏蔽层
+* <pre><code>
+* BUI.use('bui/mask',function(Mask){
+*   Mask.maskElement('#domId'); //屏蔽dom
+*   Mask.unmaskElement('#domId'); //解除DOM屏蔽
+* });
+* </code></pre>
+* @class BUI.Mask
+* @singleton
+*/
+{
   /**
-   * @fileOverview Mask屏蔽层
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    Mask = BUI.namespace('Mask'),
-    UA = BUI.UA,
-    CLS_MASK = BUI.prefix + 'ext-mask',
-    CLS_MASK_MSG = CLS_MASK + '-msg';
-  BUI.mix(Mask,
-    /**
-     * 屏蔽层
-     * <pre><code>
-     * BUI.use('bui/mask',function(Mask){
-     *   Mask.maskElement('#domId'); //屏蔽dom
-     *   Mask.unmaskElement('#domId'); //解除DOM屏蔽
-     * });
-     * </code></pre>
-     * @class BUI.Mask
-     * @singleton
-     */
-    {
-      /**
-       * @description 屏蔽指定元素
-       * @param {String|HTMLElement} element 被屏蔽的元素
-       * @param {String} [msg] 屏蔽元素时显示的文本
-       * @param {String} [msgCls] 显示文本应用的样式
-       * <pre><code>
-       *   BUI.Mask.maskElement('#domId');
-       *   BUI.Mask.maskElement('body'); //屏蔽整个窗口
-       * </code></pre>
-       */
-      maskElement: function(element, msg, msgCls) {
-        var maskedEl = $(element),
-          maskDiv = maskedEl.children('.' + CLS_MASK),
-          tpl = null,
-          msgDiv = null,
-          top = null,
-          left = null;
-        if (!maskDiv.length) {
-          maskDiv = $('<div class="' + CLS_MASK + '"></div>').appendTo(maskedEl);
-          maskedEl.addClass('x-masked-relative x-masked');
-          //屏蔽整个窗口
-          if (element == 'body') {
-            if (UA.ie == 6) {
-              maskDiv.height(BUI.docHeight());
-            } else {
-              maskDiv.css('position', 'fixed');
-            }
-          } else {
-            if (UA.ie === 6) {
-              maskDiv.height(maskedEl.height());
-            }
-          }
-          if (msg) {
-            tpl = ['<div class="' + CLS_MASK_MSG + '"><div>', msg, '</div></div>'].join('');
-            msgDiv = $(tpl).appendTo(maskedEl);
-            if (msgCls) {
-              msgDiv.addClass(msgCls);
-            }
-            try {
-              //屏蔽整个窗口
-              if (element == 'body' && UA.ie != 6) {
-                top = '50%',
-                left = '50%';
-                msgDiv.css('position', 'fixed');
-              } else {
-                top = (maskDiv.height() - msgDiv.height()) / 2;
-                left = (maskDiv.width() - msgDiv.width()) / 2;
-              }
-              msgDiv.css({
-                left: left,
-                top: top
-              });
-            } catch (ex) {
-              BUI.log('mask error occurred');
-            }
-          }
-        }
-        return maskDiv;
-      },
-      /**
-       * @description 解除元素的屏蔽
-       * @param {String|HTMLElement} element 屏蔽的元素
-       * <pre><code>
-       * BUI.Mask.unmaskElement('#domId');
-       * </code></pre>
-       */
-      unmaskElement: function(element) {
-        var maskedEl = $(element),
-          msgEl = maskedEl.children('.' + CLS_MASK_MSG),
-          maskDiv = maskedEl.children('.' + CLS_MASK);
-        if (msgEl) {
-          msgEl.remove();
-        }
-        if (maskDiv) {
-          maskDiv.remove();
-        }
-        maskedEl.removeClass('x-masked-relative x-masked');
-      }
-    });
-  module.exports = Mask;
-});
-define("bui/mask/loadmask", ["jquery", "bui/mask/mask", "bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview 加载数据时屏蔽层
-   * @ignore
-   */
-  var $ = require("jquery"),
-    Mask = require("bui/mask/mask");
-  /**
-   * 屏蔽指定元素，并显示加载信息
+   * @description 屏蔽指定元素
+   * @param {String|HTMLElement} element 被屏蔽的元素
+   * @param {String} [msg] 屏蔽元素时显示的文本
+   * @param {String} [msgCls] 显示文本应用的样式
    * <pre><code>
-   * BUI.use('bui/mask',function(Mask){
+   *   BUI.Mask.maskElement('#domId');
+   *   BUI.Mask.maskElement('body'); //屏蔽整个窗口
+   * </code></pre>
+   */
+  maskElement:function (element, msg, msgCls) {
+    var maskedEl = $(element),
+      maskDiv = maskedEl.children('.' + CLS_MASK),
+      tpl = null,
+      msgDiv = null,
+      top = null,
+      left = null;
+    if (!maskDiv.length) {
+      maskDiv = $('<div class="' + CLS_MASK + '"></div>').appendTo(maskedEl);
+      maskedEl.addClass('x-masked-relative x-masked');
+      //屏蔽整个窗口
+      if(element == 'body'){
+        if(UA.ie == 6){
+        maskDiv.height(BUI.docHeight());
+        }else{
+        maskDiv.css('position','fixed');
+        }
+      }else{
+        if (UA.ie === 6) {
+          maskDiv.height(maskedEl.height());
+        }
+      }
+       
+      if (msg) {
+        tpl = ['<div class="' + CLS_MASK_MSG + '"><div>', msg, '</div></div>'].join('');
+        msgDiv = $(tpl).appendTo(maskedEl);
+        if (msgCls) {
+          msgDiv.addClass(msgCls);
+        }
+
+        try {
+        //屏蔽整个窗口
+        if(element == 'body' && UA.ie != 6){
+          top = '50%',
+          left = '50%';
+          msgDiv.css('position','fixed');
+        }else{
+          top = (maskDiv.height() - msgDiv.height()) / 2;
+          left = (maskDiv.width() - msgDiv.width()) / 2;            
+        }
+        msgDiv.css({ left:left, top:top });
+
+        } catch (ex) {
+        BUI.log('mask error occurred');
+        }
+        
+      }
+    }
+    return maskDiv;
+  },
+  /**
+   * @description 解除元素的屏蔽
+   * @param {String|HTMLElement} element 屏蔽的元素
+   * <pre><code>
+   * BUI.Mask.unmaskElement('#domId');
+   * </code></pre>
+   */
+  unmaskElement:function (element) {
+    var maskedEl = $(element),
+      msgEl = maskedEl.children('.' + CLS_MASK_MSG),
+      maskDiv = maskedEl.children('.' + CLS_MASK);
+    if (msgEl) {
+      msgEl.remove();
+    }
+    if (maskDiv) {
+      maskDiv.remove();
+    }
+    maskedEl.removeClass('x-masked-relative x-masked');
+
+  }
+});
+
+module.exports = Mask;
+
+});
+define("bui/mask/loadmask", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview 加载数据时屏蔽层
+ * @ignore
+ */
+
+  
+var $ = require('jquery'),
+  Mask = require("bui/mask/mask");
+
+ /**
+ * 屏蔽指定元素，并显示加载信息
+ * <pre><code>
+ * BUI.use('bui/mask',function(Mask){
+ *  var loadMask = new Mask.LoadMask({
+ *    el : '#domId',
+ *    msg : 'loading ....'
+ *  });
+ *
+ *  $('#btn').on('click',function(){
+ *    loadMask.show();
+ *  });
+ *
+ *  $('#btn1').on('click',function(){
+ *    loadMask.hide();
+ *  });
+ * });
+ * </code></pre>
+ * @class BUI.Mask.LoadMask
+ * @extends BUI.Base
+ */
+function LoadMask(config) {
+  var _self = this;
+  LoadMask.superclass.constructor.call(_self, config);
+}
+
+BUI.extend(LoadMask, BUI.Base);
+
+LoadMask.ATTRS = {
+  /**
+   * 屏蔽的元素
+   * <pre><code>
+   *  var loadMask = new Mask.LoadMask({
+   *    el : '#domId'
+   *  });
+   * </code></pre>
+   * @cfg {jQuery} el
+   */
+  el : {
+
+  },
+  /**
+   * 加载时显示的加载信息
+   * <pre><code>
    *  var loadMask = new Mask.LoadMask({
    *    el : '#domId',
-   *    msg : 'loading ....'
+   *    msg : '正在加载，请稍后。。。'
    *  });
-   *
-   *  $('#btn').on('click',function(){
-   *    loadMask.show();
-   *  });
-   *
-   *  $('#btn1').on('click',function(){
-   *    loadMask.hide();
-   *  });
-   * });
    * </code></pre>
-   * @class BUI.Mask.LoadMask
-   * @extends BUI.Base
+   * @cfg {String} msg [msg = 'Loading...']
    */
-  function LoadMask(config) {
-    var _self = this;
-    LoadMask.superclass.constructor.call(_self, config);
+  msg:{
+    value : 'Loading...'
+  },
+  /**
+   * 加载时显示的加载信息的样式
+   * <pre><code>
+   *  var loadMask = new Mask.LoadMask({
+   *    el : '#domId',
+   *    msgCls : 'custom-cls'
+   *  });
+   * </code></pre>
+   * @cfg {String} [msgCls = 'x-mask-loading']
+   */
+  msgCls:{
+    value : 'x-mask-loading'
+  },
+  /**
+   * 加载控件是否禁用
+   * @type {Boolean}
+   * @field
+   * @default false
+   * @ignore
+   */
+  disabled:{
+     value : false
   }
-  BUI.extend(LoadMask, BUI.Base);
-  LoadMask.ATTRS = {
-    /**
-     * 屏蔽的元素
-     * <pre><code>
-     *  var loadMask = new Mask.LoadMask({
-     *    el : '#domId'
-     *  });
-     * </code></pre>
-     * @cfg {jQuery} el
-     */
-    el: {},
-    /**
-     * 加载时显示的加载信息
-     * <pre><code>
-     *  var loadMask = new Mask.LoadMask({
-     *    el : '#domId',
-     *    msg : '正在加载，请稍后。。。'
-     *  });
-     * </code></pre>
-     * @cfg {String} msg [msg = 'Loading...']
-     */
-    msg: {
-      value: 'Loading...'
-    },
-    /**
-     * 加载时显示的加载信息的样式
-     * <pre><code>
-     *  var loadMask = new Mask.LoadMask({
-     *    el : '#domId',
-     *    msgCls : 'custom-cls'
-     *  });
-     * </code></pre>
-     * @cfg {String} [msgCls = 'x-mask-loading']
-     */
-    msgCls: {
-      value: 'x-mask-loading'
-    },
-    /**
-     * 加载控件是否禁用
-     * @type {Boolean}
-     * @field
-     * @default false
-     * @ignore
-     */
-    disabled: {
-      value: false
+};
+
+//对象原型
+BUI.augment(LoadMask,
+{
+  
+  /**
+   * 设置控件不可用
+   */
+  disable:function () {
+    this.set('disabled',true);
+  },
+  /**
+   * @private 加载已经完毕，解除屏蔽
+   */
+  onLoad:function () {
+    Mask.unmaskElement(this.get('el'));
+  },
+  /**
+   * @private 开始加载，屏蔽当前元素
+   */
+  onBeforeLoad:function () {
+    var _self = this;
+    if (!_self.get('disabled')) {
+      Mask.maskElement(_self.get('el'), _self.get('msg'), this.get('msgCls'));
     }
-  };
-  //对象原型
-  BUI.augment(LoadMask, {
-    /**
-     * 设置控件不可用
-     */
-    disable: function() {
-      this.set('disabled', true);
-    },
-    /**
-     * @private 加载已经完毕，解除屏蔽
-     */
-    onLoad: function() {
-      Mask.unmaskElement(this.get('el'));
-    },
-    /**
-     * @private 开始加载，屏蔽当前元素
-     */
-    onBeforeLoad: function() {
-      var _self = this;
-      if (!_self.get('disabled')) {
-        Mask.maskElement(_self.get('el'), _self.get('msg'), this.get('msgCls'));
-      }
-    },
-    /**
-     * 显示加载条，并遮盖元素
-     */
-    show: function() {
-      this.onBeforeLoad();
-    },
-    /**
-     * 隐藏加载条，并解除遮盖元素
-     */
-    hide: function() {
-      this.onLoad();
-    },
-    /*
-     * 清理资源
-     */
-    destroy: function() {
-      this.hide();
-      this.clearAttrVals();
-      this.off();
-    }
-  });
-  module.exports = LoadMask;
+  },
+  /**
+   * 显示加载条，并遮盖元素
+   */
+  show:function () {
+    this.onBeforeLoad();
+  },
+
+  /**
+   * 隐藏加载条，并解除遮盖元素
+   */
+  hide:function () {
+    this.onLoad();
+  },
+
+  /*
+   * 清理资源
+   */
+  destroy:function () {
+    this.hide();
+    this.clearAttrVals();
+    this.off();
+  }
 });
-define("bui/overlay", ["jquery", "bui/common", "bui/overlay/overlay", "bui/overlay/dialog", "bui/overlay/message"], function(require, exports, module) {
-  /**
-   * @fileOverview Overlay 模块的入口
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    Overlay = BUI.namespace('Overlay');
-  BUI.mix(Overlay, {
-    Overlay: require("bui/overlay/overlay"),
-    Dialog: require("bui/overlay/dialog"),
-    Message: require("bui/overlay/message")
-  });
-  BUI.mix(Overlay, {
-    OverlayView: Overlay.Overlay.View,
-    DialogView: Overlay.Dialog.View
-  });
-  BUI.Message = BUI.Overlay.Message;
-  module.exports = Overlay;
+
+module.exports = LoadMask;
+
 });
-define("bui/overlay/overlay", ["jquery", "bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview 悬浮层
-   * @ignore
-   */
-  var $ = require("jquery"),
-    BUI = require("bui/common"),
-    Component = BUI.Component,
-    CLS_ARROW = 'x-align-arrow',
-    UIBase = Component.UIBase;
-  /**
-   * 悬浮层的视图类
-   * @class BUI.Overlay.OverlayView
-   * @extends BUI.Component.View
-   * @mixins BUI.Component.UIBase.PositionView
-   * @mixins BUI.Component.UIBase.CloseView
-   * @private
-   */
-  var overlayView = Component.View.extend([
+
+define("bui/overlay", ["bui/common","jquery"], function(require, exports, module){
+/**
+ * @fileOverview Overlay 模块的入口
+ * @ignore
+ */
+
+var BUI = require("bui/common"),
+  Overlay = BUI.namespace('Overlay');
+
+BUI.mix(Overlay, {
+  Overlay : require("bui/overlay/overlay"),
+  Dialog : require("bui/overlay/dialog"),
+  Message : require("bui/overlay/message")
+});
+
+BUI.mix(Overlay,{
+  OverlayView : Overlay.Overlay.View,
+  DialogView : Overlay.Dialog.View
+});
+
+BUI.Message = BUI.Overlay.Message;
+
+module.exports = Overlay;
+
+});
+define("bui/overlay/overlay", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview 悬浮层
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  Component =  BUI.Component,
+  CLS_ARROW = 'x-align-arrow',
+  UIBase = Component.UIBase;
+
+/**
+ * 悬浮层的视图类
+ * @class BUI.Overlay.OverlayView
+ * @extends BUI.Component.View
+ * @mixins BUI.Component.UIBase.PositionView
+ * @mixins BUI.Component.UIBase.CloseView
+ * @private
+ */
+var overlayView = Component.View.extend([
     UIBase.PositionView,
     UIBase.CloseView
   ]);
-  /**
-   * 悬浮层，显示悬浮信息，Message、Dialog的基类
-   * <p>
-   * <img src="../assets/img/class-overlay.jpg"/>
-   * </p>
-   * xclass : 'overlay'
-   * ** 一般来说，overlay的子类，Dialog 、Message、ToolTip已经能够满足日常应用，但是使用overay更适合一些更加灵活的地方 **
-   * ## 简单overlay
-   * <pre><code>
-   *   BUI.use('bui/overlay',function(Overlay){
-   *     //点击#btn，显示overlay
-   *     var overlay = new Overlay.Overlay({
-   *       trigger : '#btn',
-   *       content : '这是内容',
-   *       align : {
-   *         points : ['bl','tl']
-   *       }, //对齐方式
-   *       elCls : 'custom-cls', //自定义样式
-   *       autoHide : true //点击overlay外面，overlay 会自动隐藏
-   *     });
-   *
-   *     overlay.render();
-   *   });
-   * </code></pre>
-   *
-   *
-   * @class BUI.Overlay.Overlay
-   * @extends BUI.Component.Controller
-   * @mixins BUI.Component.UIBase.Position
-   * @mixins BUI.Component.UIBase.Align
-   * @mixins BUI.Component.UIBase.Close
-   * @mixins BUI.Component.UIBase.AutoShow
-   * @mixins BUI.Component.UIBase.AutoHide
-   */
-  var overlay = Component.Controller.extend([UIBase.Position, UIBase.Align, UIBase.Close, UIBase.AutoShow, UIBase.AutoHide], {
-    renderUI: function() {
-      var _self = this,
-        el = _self.get('el'),
-        arrowContainer = _self.get('arrowContainer'),
-        container = arrowContainer ? el.one(arrowContainer) : el;
-      if (_self.get('showArrow')) {
-        $(_self.get('arrowTpl')).appendTo(container);
-      }
-    },
-    show: function() {
-      var _self = this,
-        effectCfg = _self.get('effect'),
-        el = _self.get('el'),
-        visibleMode = _self.get('visibleMode'),
-        effect = effectCfg.effect,
-        duration = effectCfg.duration;
-      //如果还未渲染，则先渲染控件
-      if (!_self.get('rendered')) {
-        _self.set('visible', true);
-        _self.render();
-        _self.set('visible', false);
-        el = _self.get('el');
-      }
-      if (visibleMode === 'visibility') {
-        _self.set('visible', true);
-        el.css({
-          display: 'none'
-        });
-      }
-      switch (effect) {
-        case 'linear':
-          el.show(duration, callback);
-          break;
-        case 'fade':
-          el.fadeIn(duration, callback);
-          break;
-        case 'slide':
-          el.slideDown(duration, callback);
-          break;
-        default:
-          callback();
-          break;
-      }
 
-      function callback() {
-        if (visibleMode === 'visibility') {
-          el.css({
-            display: 'block'
-          });
-        } else {
-          _self.set('visible', true);
-        }
-        if (effectCfg.callback) {
-          effectCfg.callback.call(_self);
-        }
-        //自动隐藏
-        var delay = _self.get('autoHideDelay'),
-          delayHandler = _self.get('delayHandler');
-        if (delay) {
-          delayHandler && clearTimeout(delayHandler);
-          delayHandler = setTimeout(function() {
-            _self.hide();
-            _self.set('delayHandler', null);
-          }, delay);
-          _self.set('delayHandler', delayHandler);
-        }
-      }
-    },
-    hide: function() {
-      var _self = this,
-        effectCfg = _self.get('effect'),
-        el = _self.get('el'),
-        effect = effectCfg.effect,
-        duration = effectCfg.duration;
-      switch (effect) {
-        case 'linear':
-          el.hide(duration, callback);
-          break;
-        case 'fade':
-          el.fadeOut(duration, callback);
-          break;
-        case 'slide':
-          el.slideUp(duration, callback);
-          break;
-        default:
-          callback();
-          break;
-      }
+/**
+ * 悬浮层，显示悬浮信息，Message、Dialog的基类
+ * <p>
+ * <img src="../assets/img/class-overlay.jpg"/>
+ * </p>
+ * xclass : 'overlay'
+ * ** 一般来说，overlay的子类，Dialog 、Message、ToolTip已经能够满足日常应用，但是使用overay更适合一些更加灵活的地方 **
+ * ## 简单overlay
+ * <pre><code>
+ *   BUI.use('bui/overlay',function(Overlay){
+ *     //点击#btn，显示overlay
+ *     var overlay = new Overlay.Overlay({
+ *       trigger : '#btn',
+ *       content : '这是内容',
+ *       align : {
+ *         points : ['bl','tl']
+ *       }, //对齐方式
+ *       elCls : 'custom-cls', //自定义样式
+ *       autoHide : true //点击overlay外面，overlay 会自动隐藏
+ *     });
+ *
+ *     overlay.render();
+ *   });
+ * </code></pre>
+ *
+ * 
+ * @class BUI.Overlay.Overlay
+ * @extends BUI.Component.Controller
+ * @mixins BUI.Component.UIBase.Position
+ * @mixins BUI.Component.UIBase.Align
+ * @mixins BUI.Component.UIBase.Close
+ * @mixins BUI.Component.UIBase.AutoShow
+ * @mixins BUI.Component.UIBase.AutoHide
+ */
+var overlay = Component.Controller.extend([UIBase.Position,UIBase.Align,UIBase.Close,UIBase.AutoShow,UIBase.AutoHide],{
+  renderUI : function(){
+    var _self = this,
+      el = _self.get('el'),
+      arrowContainer = _self.get('arrowContainer'),
+      container = arrowContainer ? el.one(arrowContainer) : el;
+    if(_self.get('showArrow')){
+      $(_self.get('arrowTpl')).appendTo(container);
+    }
+  },
+  show : function(){
+    var _self = this,
+      effectCfg = _self.get('effect'),
+      el = _self.get('el'),
+	    visibleMode = _self.get('visibleMode'),
+      effect = effectCfg.effect,
+      duration = effectCfg.duration;
 
-      function callback() {
-        if (_self.get('visibleMode') === 'visibility') {
-          el.css({
-            display: 'block'
-          });
-        }
-        _self.set('visible', false);
-        if (effectCfg.callback) {
-          effectCfg.callback.call(_self);
-        }
+	  
+    //如果还未渲染，则先渲染控件
+    if(!_self.get('rendered')){
+      _self.set('visible',true);
+      _self.render();
+      _self.set('visible',false);
+      el = _self.get('el');
+    }
+
+    if(visibleMode === 'visibility'){
+      _self.set('visible',true);
+      el.css({display : 'none'});
+    }
+    
+    switch(effect){
+      case  'linear' :
+        el.show(duration,callback);
+        break;
+      case  'fade' :
+        el.fadeIn(duration,callback);
+        break;
+      case  'slide' :
+        el.slideDown(duration,callback);
+        break;
+      default:
+        callback();
+      break;
+    }
+
+    function callback(){
+      if(visibleMode === 'visibility'){
+        el.css({display : 'block'});
+      }else{
+        _self.set('visible',true);
+      }
+      if(effectCfg.callback){
+        effectCfg.callback.call(_self);
+      }
+      //自动隐藏
+      var delay = _self.get('autoHideDelay'),
+        delayHandler = _self.get('delayHandler');
+      if(delay){
+        delayHandler && clearTimeout(delayHandler);
+        delayHandler = setTimeout(function(){
+          _self.hide();
+          _self.set('delayHandler',null);
+        },delay);
+        _self.set('delayHandler',delayHandler);
       }
     }
-  }, {
-    ATTRS: {
-      /**
-       * {Object} - 可选, 显示或隐藏时的特效支持, 对象包含以下配置
-       * <ol>
-       * <li>effect:特效效果，'none(默认无特效)','linear(线性)',fade(渐变)','slide(滑动出现)'</li>
-       * <li>duration:时间间隔 </li>
-       * </ol>
-       * @type {Object}
-       */
-      effect: {
-        value: {
-          effect: 'none',
-          duration: 0,
-          callback: null
-        }
-      },
-      /**
-       * 显示后间隔多少秒自动隐藏
-       * @type {Number}
-       */
-      autoHideDelay: {},
-      /**
-       * whether this component can be closed.
-       * @default false
-       * @type {Boolean}
-       * @protected
-       */
-      closeable: {
-        value: false
-      },
-      /**
-       * 是否显示指向箭头，跟align属性的points相关
-       * @cfg {Boolean} [showArrow = false]
-       */
-      showArrow: {
-        value: false
-      },
-      /**
-       * 箭头放置在的位置，是一个选择器，例如 .arrow-wraper
-       *     new Tip({ //可以设置整个控件的模板
-       *       arrowContainer : '.arrow-wraper',
-       *       tpl : '<div class="arrow-wraper"></div>'
-       *     });
-       *
-       * @cfg {String} arrowContainer
-       */
-      arrowContainer: {
-        view: true
-      },
-      /**
-       * 指向箭头的模板
-       * @cfg {Object} arrowTpl
-       */
-      arrowTpl: {
-        value: '<s class="' + CLS_ARROW + '"><s class="' + CLS_ARROW + '-inner"></s></s>'
-      },
-      visibleMode: {
-        value: 'visibility'
-      },
-      visible: {
-        value: false
-      },
-      xview: {
-        value: overlayView
+
+  },
+  hide : function(){
+    var _self = this,
+      effectCfg = _self.get('effect'),
+      el = _self.get('el'),
+      effect = effectCfg.effect,
+      duration = effectCfg.duration;
+	  
+    switch(effect){
+      case 'linear':
+        el.hide(duration,callback);
+        break;
+      case  'fade' :
+        el.fadeOut(duration,callback);
+        break;
+      case  'slide' :
+        el.slideUp(duration,callback);
+        break;
+      default:
+        callback();
+      break;
+    }
+    function callback(){
+      if(_self.get('visibleMode') === 'visibility'){
+        el.css({display : 'block'});
+      }
+      _self.set('visible',false);
+      if(effectCfg.callback){
+        effectCfg.callback.call(_self);
       }
     }
-  }, {
-    xclass: 'overlay'
-  });
-  overlay.View = overlayView;
-  module.exports = overlay;
+
+  }
+},{
+  ATTRS : 
+{
+    /**
+     * {Object} - 可选, 显示或隐藏时的特效支持, 对象包含以下配置
+     * <ol>
+     * <li>effect:特效效果，'none(默认无特效)','linear(线性)',fade(渐变)','slide(滑动出现)'</li>
+     * <li>duration:时间间隔 </li>
+     * </ol>
+     * @type {Object}
+     */
+    effect:{
+      value : {
+        effect : 'none',
+        duration : 0,
+        callback : null
+      }
+    },
+    /**
+     * 显示后间隔多少秒自动隐藏
+     * @type {Number}
+     */
+    autoHideDelay : {
+
+    },
+    /**
+     * whether this component can be closed.
+     * @default false
+     * @type {Boolean}
+     * @protected
+     */
+    closeable:{
+        value:false
+    },
+    /**
+     * 是否显示指向箭头，跟align属性的points相关
+     * @cfg {Boolean} [showArrow = false]
+     */
+    showArrow : {
+      value : false
+    },
+    /**
+     * 箭头放置在的位置，是一个选择器，例如 .arrow-wraper
+     *     new Tip({ //可以设置整个控件的模板
+     *       arrowContainer : '.arrow-wraper',
+     *       tpl : '<div class="arrow-wraper"></div>'
+     *     });
+     *     
+     * @cfg {String} arrowContainer
+     */
+    arrowContainer : {
+      view : true
+    },
+    /**
+     * 指向箭头的模板
+     * @cfg {Object} arrowTpl
+     */
+    arrowTpl : {
+      value : '<s class="' + CLS_ARROW + '"><s class="' + CLS_ARROW + '-inner"></s></s>'
+    },
+    visibleMode : {
+      value : 'visibility'
+    },
+    visible :{
+      value:false
+    },
+    xview : {
+      value : overlayView
+    }
+  }
+},{
+  xclass:'overlay'
 });
-define("bui/overlay/dialog", ["jquery", "bui/overlay/overlay", "bui/common"], function(require, exports, module) {
+
+overlay.View = overlayView;
+
+module.exports = overlay;
+
+});
+define("bui/overlay/dialog", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview 弹出框
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  Overlay = require("bui/overlay/overlay"),
+  UIBase = BUI.Component.UIBase,
+  CLS_TITLE = 'header-title',
+  PREFIX = BUI.prefix,
+  HEIGHT_PADDING = 20;
+
+/**
+ * dialog的视图类
+ * @class BUI.Overlay.DialogView
+ * @extends BUI.Overlay.OverlayView
+ * @mixins BUI.Component.UIBase.StdModView
+ * @mixins BUI.Component.UIBase.MaskView
+ * @private
+ */
+var dialogView = Overlay.View.extend([UIBase.StdModView,UIBase.MaskView],{
+
   /**
-   * @fileOverview 弹出框
-   * @author dxq613@gmail.com
+   * 子组件将要渲染到的节点，在 render 类上覆盖对应方法
+   * @protected
    * @ignore
    */
-  var $ = require("jquery"),
-    Overlay = require("bui/overlay/overlay"),
-    UIBase = BUI.Component.UIBase,
-    CLS_TITLE = 'header-title',
-    PREFIX = BUI.prefix,
-    HEIGHT_PADDING = 20;
+  getContentElement: function () {
+    return this.get('body');
+  },
+
+  _uiSetTitle:function(v){
+    var _self = this,
+      el = _self.get('el');
+
+    el.find('.' + CLS_TITLE).html(v);
+
+  },
+  _uiSetContentId : function(v){
+    var _self = this,
+      body = _self.get('body'),
+      children = $('#'+v).children();
+
+    children.appendTo(body);
+  },
+  _uiSetHeight : function(v){
+    var _self = this,
+      bodyHeight = v,
+      header = _self.get('header'),
+      body = _self.get('body'),
+      footer = _self.get('footer');
+
+    bodyHeight -= header.outerHeight()+footer.outerHeight();
+    bodyHeight -=HEIGHT_PADDING * 2;
+    body.height(bodyHeight);
+  },
+  _removeContent : function(){
+    var _self = this,
+      body = _self.get('body'),
+      contentId = _self.get('contentId');
+    if(contentId){
+      body.children().appendTo($('#'+contentId));
+    }else {
+      body.children().remove();
+    }
+  }
+
+},{
+  xclass:'dialog-view'
+});
+
+/**
+ * 弹出框 xclass:'dialog'
+ * <p>
+ * <img src="../assets/img/class-overlay.jpg"/>
+ * </p>
+ * ** 普通弹出框 **
+ * <pre><code>
+ *  BUI.use('bui/overlay',function(Overlay){
+ *      var dialog = new Overlay.Dialog({
+ *        title:'非模态窗口',
+ *        width:500,
+ *        height:300,
+ *        mask:false,  //设置是否模态
+ *        buttons:[],
+ *        bodyContent:'<p>这是一个非模态窗口,并且不带按钮</p>'
+ *      });
+ *    dialog.show();
+ *    $('#btnShow').on('click',function () {
+ *      dialog.show();
+ *    });
+ *  });
+ * </code></pre>
+ *
+ * ** 使用现有的html结构 **
+ * <pre><code>
+ *  BUI.use('bui/overlay',function(Overlay){
+ *      var dialog = new Overlay.Dialog({
+ *        title:'配置DOM',
+ *        width:500,
+ *        height:250,
+ *        contentId:'content',//配置DOM容器的编号
+ *        success:function () {
+ *          alert('确认');
+ *          this.hide();
+ *        }
+ *      });
+ *    dialog.show();
+ *    $('#btnShow').on('click',function () {
+ *      dialog.show();
+ *    });
+ *  });
+ * </code></pre>
+ * @class BUI.Overlay.Dialog
+ * @extends BUI.Overlay.Overlay
+ * @mixins BUI.Component.UIBase.StdMod
+ * @mixins BUI.Component.UIBase.Mask
+ * @mixins BUI.Component.UIBase.Drag
+ */
+var dialog = Overlay.extend([UIBase.StdMod,UIBase.Mask,UIBase.Drag],{
+  
+  show:function(){
+    var _self = this;
+    align = _self.get('align');
+    
+    dialog.superclass.show.call(this);
+    _self.set('align',align);
+    
+    
+  },/**/
+  //绑定事件
+  bindUI : function(){
+    var _self = this;
+    _self.on('closeclick',function(){
+      return _self.onCancel();
+    });
+  },
   /**
-   * dialog的视图类
-   * @class BUI.Overlay.DialogView
-   * @extends BUI.Overlay.OverlayView
-   * @mixins BUI.Component.UIBase.StdModView
-   * @mixins BUI.Component.UIBase.MaskView
-   * @private
+   * @protected
+   * 取消
    */
-  var dialogView = Overlay.View.extend([UIBase.StdModView, UIBase.MaskView], {
-    /**
-     * 子组件将要渲染到的节点，在 render 类上覆盖对应方法
-     * @protected
-     * @ignore
-     */
-    getContentElement: function() {
-      return this.get('body');
-    },
-    _uiSetTitle: function(v) {
-      var _self = this,
-        el = _self.get('el');
-      el.find('.' + CLS_TITLE).html(v);
-    },
-    _uiSetContentId: function(v) {
-      var _self = this,
-        body = _self.get('body'),
-        children = $('#' + v).children();
-      children.appendTo(body);
-    },
-    _uiSetHeight: function(v) {
-      var _self = this,
-        bodyHeight = v,
-        header = _self.get('header'),
-        body = _self.get('body'),
-        footer = _self.get('footer');
-      bodyHeight -= header.outerHeight() + footer.outerHeight();
-      bodyHeight -= HEIGHT_PADDING * 2;
-      body.height(bodyHeight);
-    },
-    _removeContent: function() {
-      var _self = this,
-        body = _self.get('body'),
-        contentId = _self.get('contentId');
-      if (contentId) {
-        body.children().appendTo($('#' + contentId));
-      } else {
-        body.children().remove();
+  onCancel : function(){
+    var _self = this,
+      cancel = _self.get('cancel');
+    return cancel.call(this);
+  },
+  //设置按钮
+  _uiSetButtons:function(buttons){
+    var _self = this,
+      footer = _self.get('footer');
+
+    footer.children().remove();
+    BUI.each(buttons,function(conf){
+      _self._createButton(conf,footer);
+    });
+
+  },
+  //创建按钮
+  _createButton : function(conf,parent){
+    var _self = this,
+      temp = '<button class="'+conf.elCls+'">'+conf.text+'</button>',
+      btn = $(temp).appendTo(parent);
+    btn.on('click',function(){
+      conf.handler.call(_self,_self,this);
+    });
+  },
+  destructor : function(){
+    var _self = this,
+      contentId = _self.get('contentId'),
+      body = _self.get('body'),
+      closeAction = _self.get('closeAction');
+    if(closeAction == 'destroy'){
+      _self.hide();
+      if(contentId){
+        body.children().appendTo('#'+contentId);
       }
     }
-  }, {
-    xclass: 'dialog-view'
-  });
-  /**
-   * 弹出框 xclass:'dialog'
-   * <p>
-   * <img src="../assets/img/class-overlay.jpg"/>
-   * </p>
-   * ** 普通弹出框 **
-   * <pre><code>
-   *  BUI.use('bui/overlay',function(Overlay){
-   *      var dialog = new Overlay.Dialog({
-   *        title:'非模态窗口',
-   *        width:500,
-   *        height:300,
-   *        mask:false,  //设置是否模态
-   *        buttons:[],
-   *        bodyContent:'<p>这是一个非模态窗口,并且不带按钮</p>'
-   *      });
-   *    dialog.show();
-   *    $('#btnShow').on('click',function () {
-   *      dialog.show();
-   *    });
-   *  });
-   * </code></pre>
-   *
-   * ** 使用现有的html结构 **
-   * <pre><code>
-   *  BUI.use('bui/overlay',function(Overlay){
-   *      var dialog = new Overlay.Dialog({
-   *        title:'配置DOM',
-   *        width:500,
-   *        height:250,
-   *        contentId:'content',//配置DOM容器的编号
-   *        success:function () {
-   *          alert('确认');
-   *          this.hide();
-   *        }
-   *      });
-   *    dialog.show();
-   *    $('#btnShow').on('click',function () {
-   *      dialog.show();
-   *    });
-   *  });
-   * </code></pre>
-   * @class BUI.Overlay.Dialog
-   * @extends BUI.Overlay.Overlay
-   * @mixins BUI.Component.UIBase.StdMod
-   * @mixins BUI.Component.UIBase.Mask
-   * @mixins BUI.Component.UIBase.Drag
-   */
-  var dialog = Overlay.extend([UIBase.StdMod, UIBase.Mask, UIBase.Drag], {
-    show: function() {
-      var _self = this;
-      align = _self.get('align');
-      dialog.superclass.show.call(this);
-      _self.set('align', align);
+  }
+},{
+
+  ATTRS : 
+  {
+    closeTpl:{
+      view:true,
+      value : '<a tabindex="0" href=javascript:void("关闭") role="button" class="' + PREFIX + 'ext-close" style=""><span class="' + PREFIX + 'ext-close-x x-icon x-icon-normal">×</span></a>'
     },
-    /**/
-    //绑定事件
-    bindUI: function() {
-      var _self = this;
-      _self.on('closeclick', function() {
-        return _self.onCancel();
-      });
-    },
-    /**
-     * @protected
-     * 取消
+   /**
+     * 弹出库的按钮，可以有多个,有3个参数
+     * var dialog = new Overlay.Dialog({
+     *     title:'自定义按钮',
+     *     width:500,
+     *     height:300,
+     *     mask:false,
+     *     buttons:[
+     *       {
+     *         text:'自定义',
+     *         elCls : 'button button-primary',
+     *         handler : function(){
+     *           //do some thing
+     *           this.hide();
+     *         }
+     *       },{
+     *         text:'关闭',
+     *         elCls : 'button',
+     *         handler : function(){
+     *           this.hide();
+     *         }
+     *       }
+     *     ],
+     *     
+     *     bodyContent:'<p>这是一个自定义按钮窗口,可以配置事件和文本样式</p>'
+     *   });
+     *  dialog.show();
+     * <ol>
+     *   <li>text:按钮文本</li>
+     *   <li>elCls:按钮样式</li>
+     *   <li>handler:点击按钮的回调事件</li>
+     * </ol>
+     * @cfg {Array} buttons
+     * @default '确定'、'取消'2个按钮
+     * 
      */
-    onCancel: function() {
-      var _self = this,
-        cancel = _self.get('cancel');
-      return cancel.call(this);
-    },
-    //设置按钮
-    _uiSetButtons: function(buttons) {
-      var _self = this,
-        footer = _self.get('footer');
-      footer.children().remove();
-      BUI.each(buttons, function(conf) {
-        _self._createButton(conf, footer);
-      });
-    },
-    //创建按钮
-    _createButton: function(conf, parent) {
-      var _self = this,
-        temp = '<button class="' + conf.elCls + '">' + conf.text + '</button>',
-        btn = $(temp).appendTo(parent);
-      btn.on('click', function() {
-        conf.handler.call(_self, _self, this);
-      });
-    },
-    destructor: function() {
-      var _self = this,
-        contentId = _self.get('contentId'),
-        body = _self.get('body'),
-        closeAction = _self.get('closeAction');
-      if (closeAction == 'destroy') {
-        _self.hide();
-        if (contentId) {
-          body.children().appendTo('#' + contentId);
-        }
-      }
-    }
-  }, {
-    ATTRS: {
-      closeTpl: {
-        view: true,
-        value: '<a tabindex="0" href=javascript:void("关闭") role="button" class="' + PREFIX + 'ext-close" style=""><span class="' + PREFIX + 'ext-close-x x-icon x-icon-normal">×</span></a>'
-      },
-      /**
-       * 弹出库的按钮，可以有多个,有3个参数
-       * var dialog = new Overlay.Dialog({
-       *     title:'自定义按钮',
-       *     width:500,
-       *     height:300,
-       *     mask:false,
-       *     buttons:[
-       *       {
-       *         text:'自定义',
-       *         elCls : 'button button-primary',
-       *         handler : function(){
-       *           //do some thing
-       *           this.hide();
-       *         }
-       *       },{
-       *         text:'关闭',
-       *         elCls : 'button',
-       *         handler : function(){
-       *           this.hide();
-       *         }
-       *       }
-       *     ],
-       *
-       *     bodyContent:'<p>这是一个自定义按钮窗口,可以配置事件和文本样式</p>'
-       *   });
-       *  dialog.show();
-       * <ol>
-       *   <li>text:按钮文本</li>
-       *   <li>elCls:按钮样式</li>
-       *   <li>handler:点击按钮的回调事件</li>
-       * </ol>
-       * @cfg {Array} buttons
-       * @default '确定'、'取消'2个按钮
-       *
-       */
-      buttons: {
-        value: [{
-          text: '确定',
-          elCls: 'button button-primary',
-          handler: function() {
+    buttons:{
+      value:[
+        {
+          text:'确定',
+          elCls : 'button button-primary',
+          handler : function(){
             var _self = this,
               success = _self.get('success');
-            if (success) {
+            if(success){
               success.call(_self);
             }
           }
-        }, {
-          text: '取消',
-          elCls: 'button button-primary',
-          handler: function(dialog, btn) {
-            if (this.onCancel() !== false) {
+        },{
+          text:'取消',
+          elCls : 'button button-primary',
+          handler : function(dialog,btn){
+            if(this.onCancel() !== false){
               this.close();
             }
           }
-        }]
-      },
-      /**
-       * 弹出框显示内容的DOM容器ID
-       * @cfg {Object} contentId
-       */
-      contentId: {
-        view: true
-      },
-      /**
-       * 点击成功时的回调函数
-       * @cfg {Function} success
-       */
-      success: {
-        value: function() {
-          this.close();
         }
-      },
-      /**
-       * 用户取消时调用，如果return false则阻止窗口关闭
-       * @cfg {Function} cancel
-       */
-      cancel: {
-        value: function() {}
-      },
-      dragNode: {
-        /**
-         * @private
-         */
-        valueFn: function() {
-          return this.get('header');
-        }
-      },
-      /**
-       * 默认的加载控件内容的配置,默认值：
-       * <pre>
-       *  {
-       *    property : 'bodyContent',
-       *    autoLoad : false,
-       *    lazyLoad : {
-       *      event : 'show'
-       *    },
-       *    loadMask : {
-       *      el : _self.get('body')
-       *    }
-       *  }
-       * </pre>
-       * @type {Object}
-       */
-      defaultLoaderCfg: {
-        valueFn: function() {
-          var _self = this;
-          return {
-            property: 'bodyContent',
-            autoLoad: false,
-            lazyLoad: {
-              event: 'show'
-            },
-            loadMask: {
-              el: _self.get('body')
-            }
-          }
-        }
-      },
-      /**
-       * 弹出框标题
-       * @cfg {String} title
-       */
-      /**
-       * 弹出框标题
-       * <pre><code>
-       *  dialog.set('title','new title');
-       * </code></pre>
-       * @type {String}
-       */
-      title: {
-        view: true,
-        value: ''
-      },
-      align: {
-        value: {
-          node: window,
-          points: ['cc', 'cc']
-        }
-      },
-      mask: {
-        value: true
-      },
-      maskShared: {
-        value: false
-      },
-      headerContent: {
-        value: '<div class="' + CLS_TITLE + '">标题</div>'
-      },
-      footerContent: {},
-      closeable: {
-        value: true
-      },
-      xview: {
-        value: dialogView
-      }
-    }
-  }, {
-    xclass: 'dialog'
-  });
-  dialog.View = dialogView;
-  module.exports = dialog;
-});
-define("bui/overlay/message", ["jquery", "bui/overlay/dialog", "bui/overlay/overlay", "bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview 消息框，警告、确认
-   * @author dxq613@gmail.com
-   * @ignore
-   */
-  var $ = require("jquery"),
-    Dialog = require("bui/overlay/dialog"),
-    PREFIX = BUI.prefix,
-    iconText = {
-      info: 'i',
-      error: '×',
-      success: '<i class="icon-ok icon-white"></i>',
-      question: '?',
-      warning: '!'
-    };
-  /**
-   * 消息框类，一般不直接创建对象，而是调用其Alert和Confirm方法
-   * <pre><code>
-   ** BUI.use('bui/overlay',function(overlay){
-   *
-   *    BUI.Message.Alert('这只是简单的提示信息','info');
-   *    BUI.Message.Alert('这只是简单的成功信息','success');
-   *    BUI.Message.Alert('这只是简单的警告信息','warning');
-   *    BUI.Message.Alert('这只是简单的错误信息','error');
-   *    BUI.Message.Alert('这只是简单的询问信息','question');
-   *
-   *    //回调函数
-   *    BUI.Message.Alert('点击触发回调函数',function() {
-   *         alert('执行回调');
-   *       },'error');
-   *
-   *    //复杂的提示信息
-   *    var msg = '&lt;h2&gt;上传失败，请上传10M以内的文件&lt;/h2&gt;'+
-   *       '&lt;p class="auxiliary-text"&gt;如连续上传失败，请及时联系客服热线：0511-23883767834&lt;/p&gt;'+
-   *       '&lt;p&gt;&lt;a href="#"&gt;返回list页面&lt;/a&gt; &lt;a href="#"&gt;查看详情&lt;/a&gt;&lt;/p&gt;';
-   *     BUI.Message.Alert(msg,'error');
-   *    //确认信息
-   *    BUI.Message.Confirm('确认要更改么？',function(){
-   *       alert('确认');
-   *     },'question');
-   * });
-   * </code></pre>
-   * @class BUI.Overlay.Message
-   * @private
-   * @extends BUI.Overlay.Dialog
-   */
-  var message = Dialog.extend({
+      ]
+    },
     /**
-     * @protected
-     * @ignore
+     * 弹出框显示内容的DOM容器ID
+     * @cfg {Object} contentId
      */
-    renderUI: function() {
-      this._setContent();
+    contentId:{
+      view:true
     },
-    bindUI: function() {
-      var _self = this,
-        body = _self.get('body');
-      _self.on('afterVisibleChange', function(ev) {
-        if (ev.newVal) {
-          if (BUI.UA.ie < 8) {
-            /**
-             * fix ie6,7 bug
-             * @ignore
-             */
-            var outerWidth = body.outerWidth();
-            if (BUI.UA.ie == 6) {
-              outerWidth = outerWidth > 350 ? 350 : outerWidth;
-            }
-            _self.get('header').width(outerWidth - 20);
-            _self.get('footer').width(outerWidth);
-          }
-        }
-      });
-    },
-    //根据模版设置内容
-    _setContent: function() {
-      var _self = this,
-        body = _self.get('body'),
-        contentTpl = BUI.substitute(_self.get('contentTpl'), {
-          msg: _self.get('msg'),
-          iconTpl: _self.get('iconTpl')
-        });
-      body.empty();
-      $(contentTpl).appendTo(body);
-    },
-    //设置类型
-    _uiSetIcon: function(v) {
-      if (!this.get('rendered')) {
-        return;
+    /**
+    * 点击成功时的回调函数
+    * @cfg {Function} success
+    */
+    success : {
+      value : function(){
+        this.close();
       }
-      this._setContent();
     },
-    //设置文本
-    _uiSetMsg: function(v) {
-      if (!this.get('rendered')) {
-        return;
+    /**
+     * 用户取消时调用，如果return false则阻止窗口关闭
+     * @cfg {Function} cancel
+     */
+    cancel : {
+      value : function(){
+
       }
-      this._setContent();
-    }
-  }, {
-    ATTRS: {
-      /**
-       * 图标类型
-       * <ol>
-       * <li>提示信息，类型参数<code>info</code></li>
-       * <li>成功信息，类型参数<code>success</code></li>
-       * <li>警告信息，类型参数<code>warning</code></li>
-       * <li>错误信息，类型参数<code>error</code></li>
-       * <li>确认信息，类型参数<code>question</code></li>
-       * </ol>
-       * @type {String}
-       */
-      icon: {},
-      /**
-       * 提示消息，可以是文本或者html
-       * @cfg {String} msg
-       */
-      /**
-       * 提示消息，可以是文本或者html
-       * @type {String}
-       */
-      msg: {},
+    },
+    dragNode : {
       /**
        * @private
        */
-      iconTpl: {
-        /**
-         * @private
-         */
-        getter: function() {
-          var _self = this,
-            type = _self.get('icon');
-          return '<div class="x-icon x-icon-' + type + '">' + iconText[type] + '</div>';
+      valueFn : function(){
+        return this.get('header');
+      }
+    },
+
+    /**
+     * 默认的加载控件内容的配置,默认值：
+     * <pre>
+     *  {
+     *    property : 'bodyContent',
+     *    autoLoad : false,
+     *    lazyLoad : {
+     *      event : 'show'
+     *    },
+     *    loadMask : {
+     *      el : _self.get('body')
+     *    }
+     *  }
+     * </pre>
+     * @type {Object}
+     */
+    defaultLoaderCfg  : {
+      valueFn :function(){
+        var _self = this;
+        return {
+          property : 'bodyContent',
+          autoLoad : false,
+          lazyLoad : {
+            event : 'show'
+          },
+          loadMask : {
+            el : _self.get('body')
+          }
         }
-      },
-      /**
-       * 内容的模版
-       * @type {String}
-       * @protected
-       */
-      contentTpl: {
-        value: '{iconTpl}<div class="' + PREFIX + 'message-content">{msg}</div>'
+      } 
+    },
+    /**
+     * 弹出框标题
+     * @cfg {String} title
+     */
+    /**
+     * 弹出框标题
+     * <pre><code>
+     *  dialog.set('title','new title');
+     * </code></pre>
+     * @type {String}
+     */
+    title : {
+      view:true,
+      value : ''
+    },
+    align : {
+      value : {
+        node : window,
+        points : ['cc','cc']
       }
-    }
-  }, {
-    xclass: 'message',
-    priority: 0
-  });
-  var singlelon;
+    },
+    mask : {
+      value:true
+    },
+    maskShared:{
+      value:false
+    },
+    headerContent:{
+      value:'<div class="' + CLS_TITLE + '">标题</div>'
+    },
+    footerContent:{
 
-  function messageFun(buttons, defaultIcon) {
-    return function(msg, callback, icon) {
-      if (BUI.isString(callback)) {
-        icon = callback;
-        callback = null;
-      }
-      icon = icon || defaultIcon;
-      callback = callback || hide;
-      showMessage({
-        'buttons': buttons,
-        'icon': icon,
-        'msg': msg,
-        'success': callback
-      });
-      return singlelon;
-    };
-  }
-
-  function showMessage(config) {
-    if (!singlelon) {
-      singlelon = new message({
-        icon: 'info',
-        title: ''
-      });
-    }
-    singlelon.set(config);
-    singlelon.show();
-  }
-
-  function success() {
-    var _self = this,
-      success = _self.get('success');
-    if (success) {
-      success.call(_self);
-      _self.hide();
+    },
+    closeable:{
+      value : true
+    },
+    xview:{
+      value:dialogView
     }
   }
-
-  function hide() {
-    this.hide();
-  }
-  var Alert = messageFun([{
-      text: '确定',
-      elCls: 'button button-primary',
-      handler: success
-    }], 'info'),
-    Confirm = messageFun([{
-      text: '确定',
-      elCls: 'button button-primary',
-      handler: success
-    }, {
-      text: '取消',
-      elCls: 'button',
-      handler: hide
-    }], 'question');
-  /**
-   * 提示框静态类
-   * @class BUI.Message
-   */
-  /**
-   * 显示提示信息框
-   * @static
-   * @method
-   * @member BUI.Message
-   * @param  {String}   msg      提示信息
-   * @param  {Function} callback 确定的回调函数
-   * @param  {String}   icon     图标，提供以下几种图标：info,error,success,question,warning
-   */
-  message.Alert = Alert;
-  /**
-   * 显示确认框
-   * <pre><code>
-   * BUI.Message.Confirm('确认要更改么？',function(){
-   *       alert('确认');
-   * },'question');
-   * </code></pre>
-   * @static
-   * @method
-   * @member BUI.Message
-   * @param  {String}   msg      提示信息
-   * @param  {Function} callback 确定的回调函数
-   * @param  {String}   icon     图标，提供以下几种图标：info,error,success,question,warning
-   */
-  message.Confirm = Confirm;
-  /**
-   * 自定义消息框，传入配置信息 {@link BUI.Overlay.Dialog} 和 {@link BUI.Overlay.Message}
-   * @static
-   * @method
-   * @member BUI.Message
-   * @param  {Object}   config  配置信息
-   */
-  message.Show = showMessage;
-  module.exports = message;
+},{
+  xclass : 'dialog'
 });
+
+dialog.View = dialogView;
+
+module.exports = dialog;
+
+});
+define("bui/overlay/message", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview 消息框，警告、确认
+ * @author dxq613@gmail.com
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  Dialog = require("bui/overlay/dialog"),
+  PREFIX = BUI.prefix,
+  iconText ={
+      info : 'i',
+      error : '×',
+      success : '<i class="icon-ok icon-white"></i>',
+      question : '?',
+      warning: '!'
+  };
+
+/**
+ * 消息框类，一般不直接创建对象，而是调用其Alert和Confirm方法
+ * <pre><code>
+ ** BUI.use('bui/overlay',function(overlay){
+ * 
+ *    BUI.Message.Alert('这只是简单的提示信息','info');
+ *    BUI.Message.Alert('这只是简单的成功信息','success');
+ *    BUI.Message.Alert('这只是简单的警告信息','warning');
+ *    BUI.Message.Alert('这只是简单的错误信息','error');
+ *    BUI.Message.Alert('这只是简单的询问信息','question');
+ *
+ *    //回调函数
+ *    BUI.Message.Alert('点击触发回调函数',function() {
+ *         alert('执行回调');
+ *       },'error');
+ *       
+ *    //复杂的提示信息
+ *    var msg = '&lt;h2&gt;上传失败，请上传10M以内的文件&lt;/h2&gt;'+
+ *       '&lt;p class="auxiliary-text"&gt;如连续上传失败，请及时联系客服热线：0511-23883767834&lt;/p&gt;'+
+ *       '&lt;p&gt;&lt;a href="#"&gt;返回list页面&lt;/a&gt; &lt;a href="#"&gt;查看详情&lt;/a&gt;&lt;/p&gt;';
+ *     BUI.Message.Alert(msg,'error');
+ *    //确认信息
+ *    BUI.Message.Confirm('确认要更改么？',function(){
+ *       alert('确认');
+ *     },'question');
+ * });
+ * </code></pre>
+ * @class BUI.Overlay.Message
+ * @private
+ * @extends BUI.Overlay.Dialog
+ */
+var message = Dialog.extend({
+
+  /**
+   * @protected
+   * @ignore
+   */
+  renderUI : function(){
+    this._setContent();
+  },
+  bindUI : function(){
+    var _self = this,
+      body = _self.get('body');
+    _self.on('afterVisibleChange',function(ev){
+      if(ev.newVal){
+        if(BUI.UA.ie < 8){
+         /**
+         * fix ie6,7 bug
+         * @ignore
+         */
+          var outerWidth = body.outerWidth();
+          if(BUI.UA.ie == 6){
+            outerWidth = outerWidth > 350 ? 350 : outerWidth;
+          }
+          _self.get('header').width(outerWidth - 20);
+          _self.get('footer').width(outerWidth);
+        }
+      }
+    });
+  },
+  //根据模版设置内容
+  _setContent : function(){
+    var _self = this,
+      body = _self.get('body'),
+      contentTpl = BUI.substitute(_self.get('contentTpl'),{
+        msg : _self.get('msg'),
+        iconTpl : _self.get('iconTpl')
+      });
+    body.empty();
+
+    $(contentTpl).appendTo(body);
+  },
+  //设置类型
+  _uiSetIcon : function(v){
+     if (!this.get('rendered')) {
+          return;
+      }
+      this._setContent();
+  },
+  //设置文本
+  _uiSetMsg : function(v){
+     if (!this.get('rendered')) {
+          return;
+      }
+      this._setContent();
+  }
+
+},{
+  ATTRS : 
+  {
+    /**
+     * 图标类型
+     * <ol>
+     * <li>提示信息，类型参数<code>info</code></li>
+     * <li>成功信息，类型参数<code>success</code></li>
+     * <li>警告信息，类型参数<code>warning</code></li>
+     * <li>错误信息，类型参数<code>error</code></li>
+     * <li>确认信息，类型参数<code>question</code></li>
+     * </ol>
+     * @type {String}
+     */
+    icon : {
+
+    },
+    /**
+     * 提示消息，可以是文本或者html
+     * @cfg {String} msg
+     */
+    /**
+     * 提示消息，可以是文本或者html
+     * @type {String}
+     */
+    msg : {
+
+    },
+    /**
+     * @private
+     */
+    iconTpl : {
+      /**
+       * @private
+       */
+      getter:function(){
+        var _self = this,
+          type = _self.get('icon');
+        return '<div class="x-icon x-icon-' + type + '">' + iconText[type] + '</div>';
+      }
+    },
+    /**
+     * 内容的模版
+     * @type {String}
+     * @protected
+     */
+    contentTpl : {
+      value : '{iconTpl}<div class="' + PREFIX + 'message-content">{msg}</div>'
+    }
+  }
+},{
+  xclass : 'message',
+  priority : 0
+});
+
+var singlelon;
+    
+function messageFun(buttons,defaultIcon){
+ 
+  return function (msg,callback,icon){
+
+    if(BUI.isString(callback)){
+      icon = callback;
+      callback = null;
+    }
+    icon = icon || defaultIcon;
+    callback = callback || hide;
+    showMessage({
+      'buttons': buttons,
+      'icon':icon,
+      'msg':msg,
+      'success' : callback
+    });
+    return singlelon;
+  };
+}
+
+function showMessage(config){
+  if(!singlelon){
+    singlelon = new message({
+        icon:'info',
+        title:''
+    });
+  }
+  singlelon.set(config);
+    
+  singlelon.show();
+}
+
+function success(){
+ var _self = this,
+    success = _self.get('success');
+  if(success){
+    success.call(_self);
+    _self.hide();
+  }
+}
+
+function hide(){
+   this.hide();
+}
+
+
+var Alert = messageFun([{
+        text:'确定',
+        elCls : 'button button-primary',
+        handler : success
+      }
+    ],'info'),
+  Confirm = messageFun([{
+        text:'确定',
+        elCls : 'button button-primary',
+        handler : success
+      },{
+          text:'取消',
+          elCls : 'button',
+          handler : hide
+        }
+    ],'question');
+
+/**
+ * 提示框静态类
+ * @class BUI.Message
+ */
+
+/**
+ * 显示提示信息框
+ * @static
+ * @method
+ * @member BUI.Message
+ * @param  {String}   msg      提示信息
+ * @param  {Function} callback 确定的回调函数
+ * @param  {String}   icon     图标，提供以下几种图标：info,error,success,question,warning
+ */
+message.Alert = Alert;
+
+/**
+ * 显示确认框
+ * <pre><code>
+ * BUI.Message.Confirm('确认要更改么？',function(){
+ *       alert('确认');
+ * },'question');
+ * </code></pre>
+ * @static
+ * @method
+ * @member BUI.Message
+ * @param  {String}   msg      提示信息
+ * @param  {Function} callback 确定的回调函数
+ * @param  {String}   icon     图标，提供以下几种图标：info,error,success,question,warning
+ */
+message.Confirm = Confirm;
+
+/**
+ * 自定义消息框，传入配置信息 {@link BUI.Overlay.Dialog} 和 {@link BUI.Overlay.Message}
+ * @static
+ * @method
+ * @member BUI.Message
+ * @param  {Object}   config  配置信息
+ */
+message.Show = showMessage;
+
+module.exports = message;
+
+});
+
 define("bui/picker", ["bui/common","jquery","bui/overlay","bui/list","bui/data"], function(require, exports, module){
 /**
  * @fileOverview Picker的入口
@@ -16983,355 +18128,394 @@ module.exports = listPicker;
 
 });
 
-define("bui/toolbar", ["bui/common", "jquery"], function(require, exports, module) {
-  /**
-   * @fileOverview 工具栏命名空间入口
-   * @ignore
-   */
-  var BUI = require("bui/common"),
-    Toolbar = BUI.namespace('Toolbar');
-  BUI.mix(Toolbar, {
-    BarItem: require("bui/toolbar/baritem"),
-    Bar: require("bui/toolbar/bar"),
-    PagingBar: require("bui/toolbar/pagingbar"),
-    NumberPagingBar: require("bui/toolbar/numberpagingbar")
-  });
-  module.exports = Toolbar;
+define("bui/toolbar", ["bui/common","jquery"], function(require, exports, module){
+/**
+ * @fileOverview 工具栏命名空间入口
+ * @ignore
+ */
+
+var BUI = require("bui/common"),
+  Toolbar = BUI.namespace('Toolbar');
+
+BUI.mix(Toolbar,{
+  BarItem : require("bui/toolbar/baritem"),
+  Bar : require("bui/toolbar/bar"),
+  PagingBar : require("bui/toolbar/pagingbar"),
+  NumberPagingBar : require("bui/toolbar/numberpagingbar")
 });
-define("bui/toolbar/baritem", ["jquery", "bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview buttons or controls of toolbar
-   * @author dxq613@gmail.com, yiminghe@gmail.com
-   * @ignore
-   */
-  /**
-   * @name BUI.Toolbar
-   * @namespace 工具栏命名空间
-   * @ignore
-   */
-  var $ = require('jquery'),
-    BUI = require("bui/common"),
-    PREFIX = BUI.prefix,
-    Component = BUI.Component,
-    UIBase = Component.UIBase;
-  /**
-   * barItem的视图类
-   * @class BUI.Toolbar.BarItemView
-   * @extends BUI.Component.View
-   * @mixins BUI.Component.UIBase.ListItemView
-   * @private
-   */
-  var BarItemView = Component.View.extend([UIBase.ListItemView]);
-  /**
+module.exports = Toolbar;
+
+});
+define("bui/toolbar/baritem", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview buttons or controls of toolbar
+ * @author dxq613@gmail.com, yiminghe@gmail.com
+ * @ignore
+ */
+
+/**
+ * @name BUI.Toolbar
+ * @namespace 工具栏命名空间
+ * @ignore
+ */
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  PREFIX = BUI.prefix,
+  Component = BUI.Component,
+  UIBase = Component.UIBase;
+  
+/**
+ * barItem的视图类
+ * @class BUI.Toolbar.BarItemView
+ * @extends BUI.Component.View
+ * @mixins BUI.Component.UIBase.ListItemView
+ * @private
+ */
+var BarItemView = Component.View.extend([UIBase.ListItemView]);
+/**
    * 工具栏的子项，包括按钮、文本、链接和分隔符等
    * @class BUI.Toolbar.BarItem
    * @extends BUI.Component.Controller
    */
-  var BarItem = Component.Controller.extend([UIBase.ListItem], {
-    /**
-     * render baritem 's dom
-     * @protected
-     */
-    renderUI: function() {
+var BarItem = Component.Controller.extend([UIBase.ListItem],{
+  
+  /**
+  * render baritem 's dom
+  * @protected
+  */
+  renderUI:function() {
       var el = this.get('el');
       el.addClass(PREFIX + 'inline-block');
       if (!el.attr('id')) {
-        el.attr('id', this.get('id'));
+          el.attr('id', this.get('id'));
       }
+  }
+},{
+  ATTRS:
+  {
+    elTagName :{
+        view : true,
+        value : 'li'
+    },
+    /**
+     * 是否可选择
+     * <pre><code>
+     * 
+     * </code></pre>
+     * @cfg {Object} [selectable = false]
+     */
+    selectable : {
+      value : false
+    },
+    /**
+    * 是否获取焦点
+    * @default {boolean} false
+    */
+    focusable : {
+      value : false
+    },
+    xview: {
+      value : BarItemView
     }
-  }, {
-    ATTRS: {
-      elTagName: {
-        view: true,
-        value: 'li'
-      },
-      /**
-       * 是否可选择
-       * <pre><code>
-       *
-       * </code></pre>
-       * @cfg {Object} [selectable = false]
-       */
-      selectable: {
-        value: false
-      },
-      /**
-       * 是否获取焦点
-       * @default {boolean} false
-       */
-      focusable: {
-        value: false
-      },
-      xview: {
-        value: BarItemView
-      }
-    }
-  }, {
-    xclass: 'bar-item',
-    priority: 1
-  });
-  /**
+  }
+},{
+  xclass : 'bar-item',
+  priority : 1  
+});
+
+/**
    * 工具栏的子项，添加按钮
    * xclass : 'bar-item-button'
    * @extends  BUI.Toolbar.BarItem
    * @class BUI.Toolbar.BarItem.Button
    */
-  var ButtonBarItem = BarItem.extend({
-    _uiSetDisabled: function(value) {
-      var _self = this,
-        el = _self.get('el'),
-        method = value ? 'addClass' : 'removeClass';
-      el.find('button').attr('disabled', value)[method](PREFIX + 'button-disabled');
-    },
-    _uiSetChecked: function(value) {
-      var _self = this,
-        el = _self.get('el'),
-        method = value ? 'addClass' : 'removeClass';
+var ButtonBarItem = BarItem.extend({
+  
+  _uiSetDisabled : function(value){
+    var _self = this,
+      el = _self.get('el'),
+      method = value ? 'addClass' : 'removeClass';
+    
+    el.find('button').attr('disabled',value)[method](PREFIX + 'button-disabled');
+  },
+  _uiSetChecked: function(value){
+    var _self = this,
+      el = _self.get('el'),
+      method = value ? 'addClass' : 'removeClass';
+
       el.find('button')[method](PREFIX + 'button-checked');
+  },
+  _uiSetText : function(v){
+    var _self = this,
+      el = _self.get('el');
+    el.find('button').text(v);
+  },
+  _uiSetbtnCls : function(v){
+    var _self = this,
+      el = _self.get('el');
+    el.find('button').addClass(v);
+  }
+  
+},{
+  ATTRS:
+  {
+    /**
+     * 是否选中
+     * @type {Boolean}
+     */
+    checked : {
+      value :false
     },
-    _uiSetText: function(v) {
-      var _self = this,
-        el = _self.get('el');
-      el.find('button').text(v);
+    /**
+     * 模板
+     * @type {String}
+     */
+    tpl : {
+      view : true,
+      value : '<button type="button" class="{btnCls}">{text}</button>'
     },
-    _uiSetbtnCls: function(v) {
-      var _self = this,
-        el = _self.get('el');
-      el.find('button').addClass(v);
+    /**
+     * 按钮的样式
+     * @cfg {String} btnCls
+     */
+    /**
+     * 按钮的样式
+     * @type {String}
+     */
+    btnCls:{
+      sync:false
+    },
+    /**
+    * The text to be used as innerHTML (html tags are accepted).
+    * @cfg {String} text
+    */
+    /**
+    * The text to be used as innerHTML (html tags are accepted).
+    * @type {String} 
+    */
+    text : {
+      sync:false,
+      value : ''
     }
-  }, {
-    ATTRS: {
-      /**
-       * 是否选中
-       * @type {Boolean}
-       */
-      checked: {
-        value: false
-      },
-      /**
-       * 模板
-       * @type {String}
-       */
-      tpl: {
-        view: true,
-        value: '<button type="button" class="{btnCls}">{text}</button>'
-      },
-      /**
-       * 按钮的样式
-       * @cfg {String} btnCls
-       */
-      /**
-       * 按钮的样式
-       * @type {String}
-       */
-      btnCls: {
-        sync: false
-      },
-      /**
-       * The text to be used as innerHTML (html tags are accepted).
-       * @cfg {String} text
-       */
-      /**
-       * The text to be used as innerHTML (html tags are accepted).
-       * @type {String}
-       */
-      text: {
-        sync: false,
-        value: ''
-      }
-    }
-  }, {
-    xclass: 'bar-item-button',
-    priority: 2
-  });
-  /**
+  }
+},{
+  xclass : 'bar-item-button',
+  priority : 2  
+});
+
+/**
    * 工具栏项之间的分隔符
    * xclass:'bar-item-separator'
    * @extends  BUI.Toolbar.BarItem
    * @class BUI.Toolbar.BarItem.Separator
    */
-  var SeparatorBarItem = BarItem.extend({
-    /* render separator's dom
-     * @protected
-     *
-     */
-    renderUI: function() {
-      var el = this.get('el');
-      el.attr('role', 'separator');
-    }
-  }, {
-    xclass: 'bar-item-separator',
-    priority: 2
-  });
-  /**
+var SeparatorBarItem = BarItem.extend({
+  /* render separator's dom
+  * @protected
+      *
+  */
+  renderUI:function() {
+          var el = this.get('el');
+          el .attr('role', 'separator');
+      }
+},
+{
+  xclass : 'bar-item-separator',
+  priority : 2  
+});
+
+
+/**
    * 工具栏项之间的空白
    * xclass:'bar-item-spacer'
    * @extends  BUI.Toolbar.BarItem
    * @class BUI.Toolbar.BarItem.Spacer
    */
-  var SpacerBarItem = BarItem.extend({}, {
-    ATTRS: {
-      /**
-       * 空白宽度
-       * @type {Number}
-       */
-      width: {
-        view: true,
-        value: 2
-      }
+var SpacerBarItem = BarItem.extend({
+  
+},{
+  ATTRS:
+  {
+    /**
+    * 空白宽度
+    * @type {Number}
+    */
+    width : {
+      view:true,
+      value : 2
     }
-  }, {
-    xclass: 'bar-item-spacer',
-    priority: 2
-  });
-  /**
+  }
+},{
+  xclass : 'bar-item-spacer',
+  priority : 2  
+});
+
+
+/**
    * 显示文本的工具栏项
    * xclass:'bar-item-text'
    * @extends  BUI.Toolbar.BarItem
    * @class BUI.Toolbar.BarItem.Text
    */
-  var TextBarItem = BarItem.extend({
-    _uiSetText: function(text) {
-      var _self = this,
-        el = _self.get('el');
-      el.html(text);
+var TextBarItem = BarItem.extend({
+  _uiSetText : function(text){
+    var _self = this,
+      el = _self.get('el');
+    el.html(text);
+  }
+},{
+  ATTRS:
+  {
+    
+    /**
+    * 文本用作 innerHTML (html tags are accepted).
+    * @cfg {String} text
+    */
+    /**
+    * 文本用作 innerHTML (html tags are accepted).
+    * @default {String} ""
+    */
+    text : {
+      value : ''
     }
-  }, {
-    ATTRS: {
-      /**
-       * 文本用作 innerHTML (html tags are accepted).
-       * @cfg {String} text
-       */
-      /**
-       * 文本用作 innerHTML (html tags are accepted).
-       * @default {String} ""
-       */
-      text: {
-        value: ''
-      }
-    }
-  }, {
-    xclass: 'bar-item-text',
-    priority: 2
-  });
-  BarItem.types = {
-    'button': ButtonBarItem,
-    'separator': SeparatorBarItem,
-    'spacer': SpacerBarItem,
-    'text': TextBarItem
-  };
-  module.exports = BarItem;
+  }
+},{
+  xclass : 'bar-item-text',
+  priority : 2  
 });
-define("bui/toolbar/bar", ["jquery", "bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview A collection of commonly used function buttons or controls represented in compact visual form.
-   * @author dxq613@gmail.com, yiminghe@gmail.com
-   * @ignore
-   */
-  var $ = require('jquery'),
-    BUI = require("bui/common"),
-    Component = BUI.Component,
-    UIBase = Component.UIBase;
-  /**
-   * bar的视图类
-   * @class BUI.Toolbar.BarView
-   * @extends BUI.Component.View
-   * @private
-   */
-  var barView = Component.View.extend({
-    renderUI: function() {
+
+
+BarItem.types = {
+  'button' : ButtonBarItem,
+  'separator' : SeparatorBarItem,
+  'spacer' : SpacerBarItem,
+  'text'  : TextBarItem
+};
+
+module.exports = BarItem;
+
+});
+define("bui/toolbar/bar", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview A collection of commonly used function buttons or controls represented in compact visual form.
+ * @author dxq613@gmail.com, yiminghe@gmail.com
+ * @ignore
+ */
+
+var $ = require('jquery'),
+  BUI = require("bui/common"),
+  Component = BUI.Component,
+  UIBase = Component.UIBase;
+	
+/**
+ * bar的视图类
+ * @class BUI.Toolbar.BarView
+ * @extends BUI.Component.View
+ * @private
+ */
+var barView = Component.View.extend({
+
+	renderUI:function() {
       var el = this.get('el');
       el.attr('role', 'toolbar');
+         
       if (!el.attr('id')) {
-        el.attr('id', BUI.guid('bar'));
+          el.attr('id', BUI.guid('bar'));
       }
-    }
-  });
-  /**
-   * 工具栏
-   * 可以放置按钮、文本、链接等，是分页栏的基类
-   * xclass : 'bar'
-   * <p>
-   * <img src="../assets/img/class-toolbar.jpg"/>
-   * </p>
-   * ## 按钮组
-   * <pre><code>
-   *   BUI.use('bui/toolbar',function(Toolbar){
-   *     var buttonGroup = new Toolbar.Bar({
-   *       elCls : 'button-group',
-   *       defaultChildCfg : {
-   *         elCls : 'button button-small'
-   *       },
-   *       children : [{content : '增加'},{content : '修改'},{content : '删除'}],
-   *
-   *       render : '#b1'
-   *     });
-   *
-   *     buttonGroup.render();
-   *   });
-   * </code></pre>
-   * @class BUI.Toolbar.Bar
-   * @extends BUI.Component.Controller
-   * @mixins BUI.Component.UIBase.ChildList
-   */
-  var Bar = Component.Controller.extend([UIBase.ChildList], {
-    /**
-     * 通过id 获取项
-     * @param {String|Number} id the id of item
-     * @return {BUI.Toolbar.BarItem}
-     */
-    getItem: function(id) {
-      return this.getChild(id);
-    }
-  }, {
-    ATTRS: {
-      elTagName: {
-        view: true,
-        value: 'ul'
-      },
-      /**
-       * 默认子项的样式
-       * @type {String}
-       * @override
-       */
-      defaultChildClass: {
-        value: 'bar-item'
-      },
-      /**
-       * 获取焦点
-       * @protected
-       * @ignore
-       */
-      focusable: {
-        value: false
-      },
-      /**
-       * @private
-       * @ignore
-       */
-      xview: {
-        value: barView
-      }
-    }
-  }, {
-    xclass: 'bar',
-    priority: 1
-  });
-  module.exports = Bar;
+  }
 });
-define("bui/toolbar/pagingbar", ["jquery", "bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview  a specialized toolbar that is bound to a Grid.Store and provides automatic paging control.
-   * @author dxq613@gmail.com, yiminghe@gmail.com
-   * @ignore
-   */
-  var $ = require('jquery'),
+
+/**
+ * 工具栏
+ * 可以放置按钮、文本、链接等，是分页栏的基类
+ * xclass : 'bar'
+ * <p>
+ * <img src="../assets/img/class-toolbar.jpg"/>
+ * </p>
+ * ## 按钮组
+ * <pre><code>
+ *   BUI.use('bui/toolbar',function(Toolbar){
+ *     var buttonGroup = new Toolbar.Bar({
+ *       elCls : 'button-group',
+ *       defaultChildCfg : {
+ *         elCls : 'button button-small'
+ *       },
+ *       children : [{content : '增加'},{content : '修改'},{content : '删除'}],
+ *       
+ *       render : '#b1'
+ *     });
+ *
+ *     buttonGroup.render();
+ *   });
+ * </code></pre>
+ * @class BUI.Toolbar.Bar
+ * @extends BUI.Component.Controller
+ * @mixins BUI.Component.UIBase.ChildList
+ */
+var Bar = Component.Controller.extend([UIBase.ChildList],	
+{
+	/**
+	* 通过id 获取项
+	* @param {String|Number} id the id of item 
+	* @return {BUI.Toolbar.BarItem}
+	*/
+	getItem : function(id){
+		return this.getChild(id);
+	}
+},{
+	ATTRS:
+	{
+    elTagName :{
+        view : true,
+        value : 'ul'
+    },
+    /**
+     * 默认子项的样式
+     * @type {String}
+     * @override
+     */
+    defaultChildClass: {
+      value : 'bar-item'
+    },
+		/**
+		* 获取焦点
+    * @protected
+    * @ignore
+		*/
+		focusable : {
+			value : false
+		},
+		/**
+		* @private
+    * @ignore
+		*/
+		xview : {
+			value : barView	
+		}
+	}
+},{
+	xclass : 'bar',
+	priority : 1	
+});
+
+module.exports = Bar;
+
+});
+define("bui/toolbar/pagingbar", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview  a specialized toolbar that is bound to a Grid.Store and provides automatic paging control.
+ * @author dxq613@gmail.com, yiminghe@gmail.com
+ * @ignore
+ */
+
+var $ = require('jquery'),
     BUI = require("bui/common"),
     Bar = require("bui/toolbar/bar"),
     Component = BUI.Component,
     Bindable = Component.UIBase.Bindable;
-  var PREFIX = BUI.prefix,
-    ID_FIRST = 'first',
+
+var PREFIX = BUI.prefix,
+	ID_FIRST = 'first',
     ID_PREV = 'prev',
     ID_NEXT = 'next',
     ID_LAST = 'last',
@@ -17340,276 +18524,282 @@ define("bui/toolbar/pagingbar", ["jquery", "bui/common"], function(require, expo
     ID_TOTAL_PAGE = 'totalPage',
     ID_CURRENT_PAGE = 'curPage',
     ID_TOTAL_COUNT = 'totalCount',
-    ID_BUTTONS = [ID_FIRST, ID_PREV, ID_NEXT, ID_LAST, ID_SKIP, ID_REFRESH],
-    ID_TEXTS = [ID_TOTAL_PAGE, ID_CURRENT_PAGE, ID_TOTAL_COUNT];
-  /**
-   * 分页栏
-   * xclass:'pagingbar'
-   * @extends BUI.Toolbar.Bar
-   * @mixins BUI.Component.UIBase.Bindable
-   * @class BUI.Toolbar.PagingBar
-   */
-  var PagingBar = Bar.extend([Bindable], {
-    /**
-     * From Bar, Initialize this paging bar items.
-     *
-     * @protected
-     */
-    initializer: function() {
-      var _self = this,
-        children = _self.get('children'),
-        items = _self.get('items'),
-        store = _self.get('store');
-      if (!items) {
-        items = _self._getItems();
-        BUI.each(items, function(item) {
-          children.push(item); //item
-        });
-      } else {
-        BUI.each(items, function(item, index) { //转换对应的分页栏
-          if (BUI.isString(item)) {
-            if (BUI.Array.contains(item, ID_BUTTONS)) {
-              item = _self._getButtonItem(item);
-            } else if (BUI.Array.contains(item, ID_TEXTS)) {
-              item = _self._getTextItem(item);
-            } else {
-              item = {
-                xtype: item
-              };
+    ID_BUTTONS = [ID_FIRST,ID_PREV,ID_NEXT,ID_LAST,ID_SKIP,ID_REFRESH],
+    ID_TEXTS = [ID_TOTAL_PAGE,ID_CURRENT_PAGE,ID_TOTAL_COUNT];
+
+/**
+ * 分页栏
+ * xclass:'pagingbar'
+ * @extends BUI.Toolbar.Bar
+ * @mixins BUI.Component.UIBase.Bindable
+ * @class BUI.Toolbar.PagingBar
+ */
+var PagingBar = Bar.extend([Bindable],
+    {
+        /**
+         * From Bar, Initialize this paging bar items.
+         *
+         * @protected
+         */
+        initializer:function () {
+            var _self = this,
+                children = _self.get('children'),
+                items = _self.get('items'),
+                store = _self.get('store');
+            if(!items){
+                items = _self._getItems();
+                BUI.each(items, function (item) {
+                    children.push(item);//item
+                });
+            }else{
+                BUI.each(items, function (item,index) { //转换对应的分页栏
+                    if(BUI.isString(item)){
+                        if(BUI.Array.contains(item,ID_BUTTONS)){
+                            item = _self._getButtonItem(item);
+                        }else if(BUI.Array.contains(item,ID_TEXTS)){
+                        
+                            item = _self._getTextItem(item);
+                        }else{
+                            item = {xtype : item};
+                        }
+
+                    }
+                    children.push(item);
+                }); 
             }
-          }
-          children.push(item);
-        });
-      }
-      if (store && store.get('pageSize')) {
-        _self.set('pageSize', store.get('pageSize'));
-      }
-    },
-    /**
-     * bind page change and store events
-     *
-     * @protected
-     */
-    bindUI: function() {
-      var _self = this;
-      _self._bindButtonEvent();
-      //_self._bindStoreEvents();
-    },
-    /**
-     * skip to page
-     * this method can fire "beforepagechange" event,
-     * if you return false in the handler the action will be canceled
-     * @param {Number} page target page
-     */
-    jumpToPage: function(page) {
-      if (page <= 0 || page > this.get('totalPage')) {
-        return;
-      }
-      var _self = this,
-        store = _self.get('store'),
-        pageSize = _self.get('pageSize'),
-        index = page - 1,
-        start = index * pageSize;
-      var result = _self.fire('beforepagechange', {
-        from: _self.get('curPage'),
-        to: page
-      });
-      if (store && result !== false) {
-        store.load({
-          start: start,
-          limit: pageSize,
-          pageIndex: index
-        });
-      }
-    },
-    //after store loaded data,reset the information of paging bar and buttons state
-    _afterStoreLoad: function(store, params) {
-      var _self = this,
-        pageSize = _self.get('pageSize'),
-        start = 0, //页面的起始记录
-        end, //页面的结束记录
-        totalCount, //记录的总数
-        curPage, //当前页
-        totalPage; //总页数;
-      start = store.get('start');
-      //设置加载数据后翻页栏的状态
-      totalCount = store.getTotalCount();
-      end = totalCount - start > pageSize ? start + store.getCount() - 1 : totalCount;
-      totalPage = parseInt((totalCount + pageSize - 1) / pageSize, 10);
-      totalPage = totalPage > 0 ? totalPage : 1;
-      curPage = parseInt(start / pageSize, 10) + 1;
-      _self.set('start', start);
-      _self.set('end', end);
-      _self.set('totalCount', totalCount);
-      _self.set('curPage', curPage);
-      _self.set('totalPage', totalPage);
-      //设置按钮状态
-      _self._setAllButtonsState();
-      _self._setNumberPages();
-    },
-    //bind page change events
-    _bindButtonEvent: function() {
-      var _self = this;
-      //first page handler
-      _self._bindButtonItemEvent(ID_FIRST, function() {
-        _self.jumpToPage(1);
-      });
-      //previous page handler
-      _self._bindButtonItemEvent(ID_PREV, function() {
-        _self.jumpToPage(_self.get('curPage') - 1);
-      });
-      //previous page next
-      _self._bindButtonItemEvent(ID_NEXT, function() {
-        _self.jumpToPage(_self.get('curPage') + 1);
-      });
-      //previous page next
-      _self._bindButtonItemEvent(ID_LAST, function() {
-        _self.jumpToPage(_self.get('totalPage'));
-      });
-      //skip to one page
-      _self._bindButtonItemEvent(ID_SKIP, function() {
-        handleSkip();
-      });
-      //refresh
-      _self._bindButtonItemEvent(ID_REFRESH, function() {
-        _self.jumpToPage(_self.get('curPage'));
-      });
-      //input page number and press key "enter"
-      var curPage = _self.getItem(ID_CURRENT_PAGE);
-      if (curPage) {
-        curPage.get('el').on('keyup', function(event) {
-          event.stopPropagation();
-          if (event.keyCode === 13) {
-            handleSkip();
-          }
-        });
-      }
-      //when click skip button or press key "enter",cause an action of skipping page
-      /**
-       * @private
-       * @ignore
-       */
-      function handleSkip() {
-        var value = parseInt(_self._getCurrentPageValue(), 10);
-        if (_self._isPageAllowRedirect(value)) {
-          _self.jumpToPage(value);
-        } else {
-          _self._setCurrentPageValue(_self.get('curPage'));
-        }
-      }
-    },
-    // bind button item event
-    _bindButtonItemEvent: function(id, func) {
-      var _self = this,
-        item = _self.getItem(id);
-      if (item) {
-        item.on('click', func);
-      }
-    },
-    onLoad: function(params) {
-      var _self = this,
-        store = _self.get('store');
-      _self._afterStoreLoad(store, params);
-    },
-    //get the items of paging bar
-    _getItems: function() {
-      var _self = this,
-        items = _self.get('items');
-      if (items && items.length) {
-        return items;
-      }
-      //default items
-      items = [];
-      //first item
-      items.push(_self._getButtonItem(ID_FIRST));
-      //previous item
-      items.push(_self._getButtonItem(ID_PREV));
-      //separator item
-      items.push(_self._getSeparator());
-      //total page of store
-      items.push(_self._getTextItem(ID_TOTAL_PAGE));
-      //current page of store
-      items.push(_self._getTextItem(ID_CURRENT_PAGE));
-      //button for skip to
-      items.push(_self._getButtonItem(ID_SKIP));
-      //separator item
-      items.push(_self._getSeparator());
-      //next item
-      items.push(_self._getButtonItem(ID_NEXT));
-      //last item
-      items.push(_self._getButtonItem(ID_LAST));
-      //separator item
-      items.push(_self._getSeparator());
-      //current page of store
-      items.push(_self._getTextItem(ID_TOTAL_COUNT));
-      return items;
-    },
-    //get item which the xclass is button
-    _getButtonItem: function(id) {
-      var _self = this;
-      return {
-        id: id,
-        xclass: 'bar-item-button',
-        text: _self.get(id + 'Text'),
-        disabled: true,
-        elCls: _self.get(id + 'Cls')
-      };
-    },
-    //get separator item
-    _getSeparator: function() {
-      return {
-        xclass: 'bar-item-separator'
-      };
-    },
-    //get text item
-    _getTextItem: function(id) {
-      var _self = this;
-      return {
-        id: id,
-        xclass: 'bar-item-text',
-        text: _self._getTextItemTpl(id)
-      };
-    },
-    //get text item's template
-    _getTextItemTpl: function(id) {
-      var _self = this,
-        obj = _self.getAttrVals();
-      return BUI.substitute(this.get(id + 'Tpl'), obj);
-    },
-    //Whether to allow jump, if it had been in the current page or not within the scope of effective page, not allowed to jump
-    _isPageAllowRedirect: function(value) {
-      var _self = this;
-      return value && value > 0 && value <= _self.get('totalPage') && value !== _self.get('curPage');
-    },
-    //when page changed, reset all buttons state
-    _setAllButtonsState: function() {
-      var _self = this,
-        store = _self.get('store');
-      if (store) {
-        _self._setButtonsState([ID_PREV, ID_NEXT, ID_FIRST, ID_LAST, ID_SKIP], true);
-      }
-      if (_self.get('curPage') === 1) {
-        _self._setButtonsState([ID_PREV, ID_FIRST], false);
-      }
-      if (_self.get('curPage') === _self.get('totalPage')) {
-        _self._setButtonsState([ID_NEXT, ID_LAST], false);
-      }
-    },
-    //if button id in the param buttons,set the button state
-    _setButtonsState: function(buttons, enable) {
-      var _self = this,
-        children = _self.get('children');
-      BUI.each(children, function(child) {
-        if (BUI.Array.indexOf(child.get('id'), buttons) !== -1) {
-          child.set('disabled', !enable);
-        }
-      });
-    },
-    //show the information of current page , total count of pages and total count of records
-    _setNumberPages: function() {
-      var _self = this,
-        items = _self.getItems();
-      /*,
+            
+            if (store && store.get('pageSize')) {
+                _self.set('pageSize', store.get('pageSize'));
+            }
+        },
+        /**
+         * bind page change and store events
+         *
+         * @protected
+         */
+        bindUI:function () {
+            var _self = this;
+            _self._bindButtonEvent();
+            //_self._bindStoreEvents();
+
+        },
+        /**
+         * skip to page
+         * this method can fire "beforepagechange" event,
+         * if you return false in the handler the action will be canceled
+         * @param {Number} page target page
+         */
+        jumpToPage:function (page) {
+            if (page <= 0 || page > this.get('totalPage')) {
+                return;
+            }
+            var _self = this,
+                store = _self.get('store'),
+                pageSize = _self.get('pageSize'),
+                index = page - 1,
+                start = index * pageSize;
+            var result = _self.fire('beforepagechange', {from:_self.get('curPage'), to:page});
+            if (store && result !== false) {
+                store.load({ start:start, limit:pageSize, pageIndex:index });
+            }
+        },
+        //after store loaded data,reset the information of paging bar and buttons state
+        _afterStoreLoad:function (store, params) {
+            var _self = this,
+                pageSize = _self.get('pageSize'),
+                start = 0, //页面的起始记录
+                end, //页面的结束记录
+                totalCount, //记录的总数
+                curPage, //当前页
+                totalPage;//总页数;
+
+            start = store.get('start');
+            
+            //设置加载数据后翻页栏的状态
+            totalCount = store.getTotalCount();
+            end = totalCount - start > pageSize ? start + store.getCount() - 1: totalCount;
+            totalPage = parseInt((totalCount + pageSize - 1) / pageSize, 10);
+            totalPage = totalPage > 0 ? totalPage : 1;
+            curPage = parseInt(start / pageSize, 10) + 1;
+
+            _self.set('start', start);
+            _self.set('end', end);
+            _self.set('totalCount', totalCount);
+            _self.set('curPage', curPage);
+            _self.set('totalPage', totalPage);
+
+            //设置按钮状态
+            _self._setAllButtonsState();
+            _self._setNumberPages();
+        },
+
+        //bind page change events
+        _bindButtonEvent:function () {
+            var _self = this;
+
+            //first page handler
+            _self._bindButtonItemEvent(ID_FIRST, function () {
+                _self.jumpToPage(1);
+            });
+
+            //previous page handler
+            _self._bindButtonItemEvent(ID_PREV, function () {
+                _self.jumpToPage(_self.get('curPage') - 1);
+            });
+
+            //previous page next
+            _self._bindButtonItemEvent(ID_NEXT, function () {
+                _self.jumpToPage(_self.get('curPage') + 1);
+            });
+
+            //previous page next
+            _self._bindButtonItemEvent(ID_LAST, function () {
+                _self.jumpToPage(_self.get('totalPage'));
+            });
+            //skip to one page
+            _self._bindButtonItemEvent(ID_SKIP, function () {
+                handleSkip();
+            });
+
+            //refresh
+            _self._bindButtonItemEvent(ID_REFRESH, function () {
+                _self.jumpToPage(_self.get('curPage'));
+            });
+            //input page number and press key "enter"
+            var curPage = _self.getItem(ID_CURRENT_PAGE);
+            if(curPage){
+                curPage.get('el').on('keyup', function (event) {
+                    event.stopPropagation();
+                    if (event.keyCode === 13) {
+                        handleSkip();
+                    }
+                });
+            }
+            
+            //when click skip button or press key "enter",cause an action of skipping page
+            /**
+             * @private
+             * @ignore
+             */
+            function handleSkip() {
+                var value = parseInt(_self._getCurrentPageValue(), 10);
+                if (_self._isPageAllowRedirect(value)) {
+                    _self.jumpToPage(value);
+                } else {
+                    _self._setCurrentPageValue(_self.get('curPage'));
+                }
+            }
+        },
+        // bind button item event
+        _bindButtonItemEvent:function (id, func) {
+            var _self = this,
+                item = _self.getItem(id);
+            if (item) {
+                item.on('click', func);
+            }
+        },
+        onLoad:function (params) {
+            var _self = this,
+                store = _self.get('store');
+            _self._afterStoreLoad(store, params);
+        },
+        //get the items of paging bar
+        _getItems:function () {
+            var _self = this,
+                items = _self.get('items');
+            if (items && items.length) {
+                return items;
+            }
+            //default items
+            items = [];
+            //first item
+            items.push(_self._getButtonItem(ID_FIRST));
+            //previous item
+            items.push(_self._getButtonItem(ID_PREV));
+            //separator item
+            items.push(_self._getSeparator());
+            //total page of store
+            items.push(_self._getTextItem(ID_TOTAL_PAGE));
+            //current page of store
+            items.push(_self._getTextItem(ID_CURRENT_PAGE));
+            //button for skip to
+            items.push(_self._getButtonItem(ID_SKIP));
+            //separator item
+            items.push(_self._getSeparator());
+            //next item
+            items.push(_self._getButtonItem(ID_NEXT));
+            //last item
+            items.push(_self._getButtonItem(ID_LAST));
+            //separator item
+            items.push(_self._getSeparator());
+            //current page of store
+            items.push(_self._getTextItem(ID_TOTAL_COUNT));
+            return items;
+        },
+        //get item which the xclass is button
+        _getButtonItem:function (id) {
+            var _self = this;
+            return {
+                id:id,
+                xclass:'bar-item-button',
+                text:_self.get(id + 'Text'),
+                disabled:true,
+                elCls:_self.get(id + 'Cls')
+            };
+        },
+        //get separator item
+        _getSeparator:function () {
+            return {xclass:'bar-item-separator'};
+        },
+        //get text item
+        _getTextItem:function (id) {
+            var _self = this;
+            return {
+                id:id,
+                xclass:'bar-item-text',
+                text:_self._getTextItemTpl(id)
+            };
+        },
+        //get text item's template
+        _getTextItemTpl:function (id) {
+            var _self = this,
+                obj = _self.getAttrVals();
+            return BUI.substitute(this.get(id + 'Tpl'), obj);
+        },
+        //Whether to allow jump, if it had been in the current page or not within the scope of effective page, not allowed to jump
+        _isPageAllowRedirect:function (value) {
+            var _self = this;
+            return value && value > 0 && value <= _self.get('totalPage') && value !== _self.get('curPage');
+        },
+        //when page changed, reset all buttons state
+        _setAllButtonsState:function () {
+            var _self = this,
+                store = _self.get('store');
+            if (store) {
+                _self._setButtonsState([ID_PREV, ID_NEXT, ID_FIRST, ID_LAST, ID_SKIP], true);
+            }
+
+            if (_self.get('curPage') === 1) {
+                _self._setButtonsState([ID_PREV, ID_FIRST], false);
+            }
+            if (_self.get('curPage') === _self.get('totalPage')) {
+                _self._setButtonsState([ID_NEXT, ID_LAST], false);
+            }
+        },
+        //if button id in the param buttons,set the button state
+        _setButtonsState:function (buttons, enable) {
+            var _self = this,
+                children = _self.get('children');
+            BUI.each(children, function (child) {
+                if (BUI.Array.indexOf(child.get('id'), buttons) !== -1) {
+                    child.set('disabled', !enable);
+                }
+            });
+        },
+        //show the information of current page , total count of pages and total count of records
+        _setNumberPages:function () {
+            var _self = this,
+                items = _self.getItems();/*,
                 totalPageItem = _self.getItem(ID_TOTAL_PAGE),
                 totalCountItem = _self.getItem(ID_TOTAL_COUNT);
             if (totalPageItem) {
@@ -17619,389 +18809,417 @@ define("bui/toolbar/pagingbar", ["jquery", "bui/common"], function(require, expo
             if (totalCountItem) {
                 totalCountItem.set('content', _self._getTextItemTpl(ID_TOTAL_COUNT));
             }*/
-      BUI.each(items, function(item) {
-        if (item.__xclass === 'bar-item-text') {
-          item.set('content', _self._getTextItemTpl(item.get('id')));
+            BUI.each(items,function(item){
+                if(item.__xclass === 'bar-item-text'){
+                    item.set('content', _self._getTextItemTpl(item.get('id')));
+                }
+            });
+
+        },
+        _getCurrentPageValue:function (curItem) {
+            var _self = this;
+            curItem = curItem || _self.getItem(ID_CURRENT_PAGE);
+            if(curItem){
+                var textEl = curItem.get('el').find('input');
+                return textEl.val();
+            }
+            
+        },
+        //show current page in textbox
+        _setCurrentPageValue:function (value, curItem) {
+            var _self = this;
+            curItem = curItem || _self.getItem(ID_CURRENT_PAGE);
+            if(curItem){
+                var textEl = curItem.get('el').find('input');
+                textEl.val(value);
+            }
+            
         }
-      });
-    },
-    _getCurrentPageValue: function(curItem) {
-      var _self = this;
-      curItem = curItem || _self.getItem(ID_CURRENT_PAGE);
-      if (curItem) {
-        var textEl = curItem.get('el').find('input');
-        return textEl.val();
-      }
-    },
-    //show current page in textbox
-    _setCurrentPageValue: function(value, curItem) {
-      var _self = this;
-      curItem = curItem || _self.getItem(ID_CURRENT_PAGE);
-      if (curItem) {
-        var textEl = curItem.get('el').find('input');
-        textEl.val(value);
-      }
-    }
-  }, {
-    ATTRS: {
-      /**
-       * the text of button for first page
-       * @default {String} "首 页"
-       */
-      firstText: {
-        value: '首 页'
-      },
-      /**
-       * the cls of button for first page
-       * @default {String} "bui-pb-first"
-       */
-      firstCls: {
-        value: PREFIX + 'pb-first'
-      },
-      /**
-       * the text for previous page button
-       * @default {String} "前一页"
-       */
-      prevText: {
-        value: '上一页'
-      },
-      /**
-       * the cls for previous page button
-       * @default {String} "bui-pb-prev"
-       */
-      prevCls: {
-        value: PREFIX + 'pb-prev'
-      },
-      /**
-       * the text for next page button
-       * @default {String} "下一页"
-       */
-      nextText: {
-        value: '下一页'
-      },
-      /**
-       * the cls for next page button
-       * @default {String} "bui-pb-next"
-       */
-      nextCls: {
-        value: PREFIX + 'pb-next'
-      },
-      /**
-       * the text for last page button
-       * @default {String} "末 页"
-       */
-      lastText: {
-        value: '末 页'
-      },
-      /**
-       * the cls for last page button
-       * @default {String} "bui-pb-last"
-       */
-      lastCls: {
-        value: PREFIX + 'pb-last'
-      },
-      /**
-       * the text for skip page button
-       * @default {String} "跳 转"
-       */
-      skipText: {
-        value: '确定'
-      },
-      /**
-       * the cls for skip page button
-       * @default {String} "bui-pb-last"
-       */
-      skipCls: {
-        value: PREFIX + 'pb-skip'
-      },
-      refreshText: {
-        value: '刷新'
-      },
-      refreshCls: {
-        value: PREFIX + 'pb-refresh'
-      },
-      /**
-       * the template of total page info
-       * @default {String} '共 {totalPage} 页'
-       */
-      totalPageTpl: {
-        value: '共 {totalPage} 页'
-      },
-      /**
-       * the template of current page info
-       * @default {String} '第 &lt;input type="text" autocomplete="off" class="bui-pb-page" size="20" name="inputItem"&gt; 页'
-       */
-      curPageTpl: {
-        value: '第 <input type="text" ' + 'autocomplete="off" class="' + PREFIX + 'pb-page" size="20" value="{curPage}" name="inputItem"> 页'
-      },
-      /**
-       * the template of total count info
-       * @default {String} '共{totalCount}条记录'
-       */
-      totalCountTpl: {
-        value: '共{totalCount}条记录'
-      },
-      autoInitItems: {
-        value: false
-      },
-      /**
-       * current page of the paging bar
-       * @private
-       * @default {Number} 0
-       */
-      curPage: {
-        value: 0
-      },
-      /**
-       * total page of the paging bar
-       * @private
-       * @default {Number} 0
-       */
-      totalPage: {
-        value: 0
-      },
-      /**
-       * total count of the store that the paging bar bind to
-       * @private
-       * @default {Number} 0
-       */
-      totalCount: {
-        value: 0
-      },
-      /**
-       * The number of records considered to form a 'page'.
-       * if store set the property ,override this value by store's pageSize
-       * @private
-       */
-      pageSize: {
-        value: 30
-      },
-      /**
-       * The {@link BUI.Data.Store} the paging toolbar should use as its data source.
-       * @protected
-       */
-      store: {}
-    },
-    ID_FIRST: ID_FIRST,
-    ID_PREV: ID_PREV,
-    ID_NEXT: ID_NEXT,
-    ID_LAST: ID_LAST,
-    ID_SKIP: ID_SKIP,
-    ID_REFRESH: ID_REFRESH,
-    ID_TOTAL_PAGE: ID_TOTAL_PAGE,
-    ID_CURRENT_PAGE: ID_CURRENT_PAGE,
-    ID_TOTAL_COUNT: ID_TOTAL_COUNT
-  }, {
-    xclass: 'pagingbar',
-    priority: 2
-  });
-  module.exports = PagingBar;
+    }, {
+        ATTRS:
+ 
+        {
+           
+            /**
+             * the text of button for first page
+             * @default {String} "首 页"
+             */
+            firstText:{
+                value:'首 页'
+            },
+            /**
+             * the cls of button for first page
+             * @default {String} "bui-pb-first"
+             */
+            firstCls:{
+                value:PREFIX + 'pb-first'
+            },
+            /**
+             * the text for previous page button
+             * @default {String} "前一页"
+             */
+            prevText:{
+                value:'上一页'
+            },
+            /**
+             * the cls for previous page button
+             * @default {String} "bui-pb-prev"
+             */
+            prevCls:{
+                value: PREFIX + 'pb-prev'
+            },
+            /**
+             * the text for next page button
+             * @default {String} "下一页"
+             */
+            nextText:{
+                value:'下一页'
+            },
+            /**
+             * the cls for next page button
+             * @default {String} "bui-pb-next"
+             */
+            nextCls:{
+                value: PREFIX + 'pb-next'
+            },
+            /**
+             * the text for last page button
+             * @default {String} "末 页"
+             */
+            lastText:{
+                value:'末 页'
+            },
+            /**
+             * the cls for last page button
+             * @default {String} "bui-pb-last"
+             */
+            lastCls:{
+                value:PREFIX + 'pb-last'
+            },
+            /**
+             * the text for skip page button
+             * @default {String} "跳 转"
+             */
+            skipText:{
+                value:'确定'
+            },
+            /**
+             * the cls for skip page button
+             * @default {String} "bui-pb-last"
+             */
+            skipCls:{
+                value:PREFIX + 'pb-skip'
+            },
+            refreshText : {
+                value : '刷新'
+            },
+            refreshCls : {
+                value:PREFIX + 'pb-refresh'
+            },
+            /**
+             * the template of total page info
+             * @default {String} '共 {totalPage} 页'
+             */
+            totalPageTpl:{
+                value:'共 {totalPage} 页'
+            },
+            /**
+             * the template of current page info
+             * @default {String} '第 &lt;input type="text" autocomplete="off" class="bui-pb-page" size="20" name="inputItem"&gt; 页'
+             */
+            curPageTpl:{
+                value:'第 <input type="text" '+
+                    'autocomplete="off" class="'+PREFIX+'pb-page" size="20" value="{curPage}" name="inputItem"> 页'
+            },
+            /**
+             * the template of total count info
+             * @default {String} '共{totalCount}条记录'
+             */
+            totalCountTpl:{
+                value:'共{totalCount}条记录'
+            },
+            autoInitItems : {
+                value : false
+            },
+            /**
+             * current page of the paging bar
+             * @private
+             * @default {Number} 0
+             */
+            curPage:{
+                value:0
+            },
+            /**
+             * total page of the paging bar
+             * @private
+             * @default {Number} 0
+             */
+            totalPage:{
+                value:0
+            },
+            /**
+             * total count of the store that the paging bar bind to
+             * @private
+             * @default {Number} 0
+             */
+            totalCount:{
+                value:0
+            },
+            /**
+             * The number of records considered to form a 'page'.
+             * if store set the property ,override this value by store's pageSize
+             * @private
+             */
+            pageSize:{
+                value:30
+            },
+            /**
+             * The {@link BUI.Data.Store} the paging toolbar should use as its data source.
+             * @protected
+             */
+            store:{
+
+            }
+        },
+        ID_FIRST:ID_FIRST,
+        ID_PREV:ID_PREV,
+        ID_NEXT:ID_NEXT,
+        ID_LAST:ID_LAST,
+        ID_SKIP:ID_SKIP,
+        ID_REFRESH: ID_REFRESH,
+        ID_TOTAL_PAGE:ID_TOTAL_PAGE,
+        ID_CURRENT_PAGE:ID_CURRENT_PAGE,
+        ID_TOTAL_COUNT:ID_TOTAL_COUNT
+    }, {
+        xclass:'pagingbar',
+        priority:2
+    });
+module.exports = PagingBar;
+
 });
-define("bui/toolbar/numberpagingbar", ["jquery", "bui/common"], function(require, exports, module) {
-  /**
-   * @fileOverview  a specialized toolbar that is bound to a Grid.Store and provides automatic paging control.
-   * @author
-   * @ignore
-   */
-  var $ = require('jquery'),
+define("bui/toolbar/numberpagingbar", ["jquery","bui/common"], function(require, exports, module){
+/**
+ * @fileOverview  a specialized toolbar that is bound to a Grid.Store and provides automatic paging control.
+ * @author 
+ * @ignore
+ */
+
+var $ = require('jquery'),
     BUI = require("bui/common"),
     Component = BUI.Component,
     PBar = require("bui/toolbar/pagingbar");
-  var PREFIX = BUI.prefix,
+
+var PREFIX = BUI.prefix,
     NUMBER_CONTAINER = 'numberContainer',
     CLS_NUMBER_BUTTON = PREFIX + 'button-number';
-  /**
-   * 数字分页栏
-   * xclass:'pagingbar-number'
-   * @extends BUI.Toolbar.PagingBar
-   * @class BUI.Toolbar.NumberPagingBar
-   */
-  var NumberPagingBar = PBar.extend({
+
+/**
+ * 数字分页栏
+ * xclass:'pagingbar-number'
+ * @extends BUI.Toolbar.PagingBar
+ * @class BUI.Toolbar.NumberPagingBar
+ */
+var NumberPagingBar = PBar.extend(
+    {
     /**
-     * get the initial items of paging bar
-     * @protected
-     *
-     */
-    _getItems: function() {
-      var _self = this,
-        items = _self.get('items');
-      if (items) {
+    * get the initial items of paging bar
+    * @protected
+    *
+    */
+    _getItems : function(){
+        var _self = this,
+            items = _self.get('items');
+
+        if(items){
+            return items;
+        }
+        //default items
+        items = [];
+        //previous item
+        items.push(_self._getButtonItem(PBar.ID_PREV));
+        //next item
+        items.push(_self._getButtonItem(PBar.ID_NEXT));
         return items;
-      }
-      //default items
-      items = [];
-      //previous item
-      items.push(_self._getButtonItem(PBar.ID_PREV));
-      //next item
-      items.push(_self._getButtonItem(PBar.ID_NEXT));
-      return items;
     },
-    _getButtonItem: function(id) {
+    _getButtonItem : function(id){
       var _self = this;
+
       return {
-        id: id,
-        content: '<a href="javascript:;">' + _self.get(id + 'Text') + '</a>',
-        disabled: true
+          id:id,
+          content:'<a href="javascript:;">'+_self.get(id + 'Text')+'</a>',
+          disabled:true
       };
     },
     /**
-     * bind buttons event
-     * @protected
-     *
-     */
-    _bindButtonEvent: function() {
-      var _self = this,
-        cls = _self.get('numberButtonCls');
-      NumberPagingBar.superclass._bindButtonEvent.call(this);
-      _self.get('el').delegate('a', 'click', function(ev) {
-        ev.preventDefault();
-      });
-      _self.on('click', function(ev) {
-        var item = ev.target;
-        if (item && item.get('el').hasClass(cls)) {
-          var page = item.get('id');
-          _self.jumpToPage(page);
-        }
-      });
+    * bind buttons event
+    * @protected
+    *
+    */
+    _bindButtonEvent : function(){
+        var _self = this,
+            cls = _self.get('numberButtonCls');
+        NumberPagingBar.superclass._bindButtonEvent.call(this);
+        _self.get('el').delegate('a','click',function(ev){
+          ev.preventDefault();
+        });
+        _self.on('click',function(ev){
+          var item = ev.target;
+          if(item && item.get('el').hasClass(cls)){
+            var page = item.get('id');
+            _self.jumpToPage(page);
+          }
+        });
     },
     //设置页码信息，设置 页数 按钮
-    _setNumberPages: function() {
-      var _self = this;
-      _self._setNumberButtons();
+    _setNumberPages : function(){
+        var _self = this;
+
+        _self._setNumberButtons();
     },
     //设置 页数 按钮
-    _setNumberButtons: function() {
-      var _self = this,
-        curPage = _self.get('curPage'),
-        totalPage = _self.get('totalPage'),
-        numberItems = _self._getNumberItems(curPage, totalPage),
-        curItem;
-      _self._clearNumberButtons();
-      BUI.each(numberItems, function(item) {
-        _self._appendNumberButton(item);
-      });
-      curItem = _self.getItem(curPage);
-      if (curItem) {
-        curItem.set('selected', true);
-      }
+    _setNumberButtons : function(){
+        var _self = this,
+            curPage = _self.get('curPage'),
+            totalPage = _self.get('totalPage'),
+            numberItems = _self._getNumberItems(curPage,totalPage),
+            curItem;
+
+        _self._clearNumberButtons();
+
+        BUI.each(numberItems,function(item){
+            _self._appendNumberButton(item);
+        });
+        curItem = _self.getItem(curPage);
+        if(curItem){
+            curItem.set('selected',true);
+        }
+           
     },
-    _appendNumberButton: function(cfg) {
+    _appendNumberButton : function(cfg){
       var _self = this,
         count = _self.getItemCount();
-      var item = _self.addItemAt(cfg, count - 1);
+      var item = _self.addItemAt(cfg,count - 1);
     },
-    _clearNumberButtons: function() {
+    _clearNumberButtons : function(){
       var _self = this,
         items = _self.getItems(),
         count = _self.getItemCount();
-      while (count > 2) {
-        _self.removeItemAt(count - 2);
-        count = _self.getItemCount();
+
+      while(count > 2){
+        _self.removeItemAt(count-2);  
+        count = _self.getItemCount();          
       }
     },
     //获取所有页码按钮的配置项
-    _getNumberItems: function(curPage, totalPage) {
-      var _self = this,
-        result = [],
-        maxLimitCount = _self.get('maxLimitCount'),
-        showRangeCount = _self.get('showRangeCount'),
-        maxPage;
+    _getNumberItems : function(curPage, totalPage){
+        var _self = this,
+            result = [],
+            maxLimitCount = _self.get('maxLimitCount'),
+            showRangeCount = _self.get('showRangeCount'),
+            maxPage;
 
-      function addNumberItem(from, to) {
-        for (var i = from; i <= to; i++) {
-          result.push(_self._getNumberItem(i));
+        function addNumberItem(from,to){
+            for(var i = from ;i<=to;i++){
+                result.push(_self._getNumberItem(i));
+            }
         }
-      }
 
-      function addEllipsis() {
-        result.push(_self._getEllipsisItem());
-      }
-      if (totalPage < maxLimitCount) {
-        maxPage = totalPage;
-        addNumberItem(1, totalPage);
-      } else {
-        var startNum = (curPage <= maxLimitCount) ? 1 : (curPage - showRangeCount),
-          lastLimit = curPage + showRangeCount,
-          endNum = lastLimit < totalPage ? (lastLimit > maxLimitCount ? lastLimit : maxLimitCount) : totalPage;
-        if (startNum > 1) {
-          addNumberItem(1, 1);
-          if (startNum > 2) {
-            addEllipsis();
-          }
+        function addEllipsis(){
+            result.push(_self._getEllipsisItem());
         }
-        maxPage = endNum;
-        addNumberItem(startNum, endNum);
-      }
-      if (maxPage < totalPage) {
-        if (maxPage < totalPage - 1) {
-          addEllipsis();
+
+        if(totalPage < maxLimitCount){
+            maxPage = totalPage;
+            addNumberItem(1,totalPage);
+        }else{
+            var startNum = (curPage <= maxLimitCount) ? 1 : (curPage - showRangeCount),
+                lastLimit = curPage + showRangeCount,
+                endNum = lastLimit < totalPage ? (lastLimit > maxLimitCount ? lastLimit : maxLimitCount) : totalPage;
+            if (startNum > 1) {
+                addNumberItem(1, 1);
+                if(startNum > 2){
+                    addEllipsis();
+                }
+            }
+            maxPage = endNum;
+            addNumberItem(startNum, endNum);
         }
-        addNumberItem(totalPage, totalPage);
-      }
-      return result;
+
+        if (maxPage < totalPage) {
+            if(maxPage < totalPage -1){
+                addEllipsis();
+            }
+            addNumberItem(totalPage, totalPage);
+        }
+
+        return result;
     },
     //获取省略号
-    _getEllipsisItem: function() {
-      var _self = this;
-      return {
-        disabled: true,
-        content: _self.get('ellipsisTpl')
-      };
+    _getEllipsisItem : function(){
+        var _self = this;
+        return {
+            disabled: true,           
+            content : _self.get('ellipsisTpl')
+        };
     },
     //生成页面按钮配置项
-    _getNumberItem: function(page) {
-      var _self = this;
-      return {
-        id: page,
-        elCls: _self.get('numberButtonCls')
-      };
+    _getNumberItem : function(page){
+        var _self = this;
+        return {
+            id : page,
+            elCls : _self.get('numberButtonCls')
+        };
     }
-  }, {
-    ATTRS: {
-      itemStatusCls: {
-        value: {
-          selected: 'active',
-          disabled: 'disabled'
+    
+},{
+    ATTRS:{
+        itemStatusCls : {
+          value : {
+            selected : 'active',
+            disabled : 'disabled'
+          }
+        },
+        itemTpl : {
+          value : '<a href="">{id}</a>'
+        },
+        prevText : {
+          value : '<<'
+        },
+        nextText : {
+          value : '>>'
+        },
+        /**
+        * 当页码超过该设置页码时候显示省略号
+        * @default {Number} 4
+        */
+        maxLimitCount : {
+            value : 4
+        },
+        showRangeCount : {
+            value : 1   
+        },
+        /**
+        * the css used on number button
+        */
+        numberButtonCls:{
+            value : CLS_NUMBER_BUTTON
+        },
+        /**
+        * the template of ellipsis which represent the omitted pages number
+        */
+        ellipsisTpl : {
+            value : '<a href="#">...</a>'
         }
-      },
-      itemTpl: {
-        value: '<a href="">{id}</a>'
-      },
-      prevText: {
-        value: '<<'
-      },
-      nextText: {
-        value: '>>'
-      },
-      /**
-       * 当页码超过该设置页码时候显示省略号
-       * @default {Number} 4
-       */
-      maxLimitCount: {
-        value: 4
-      },
-      showRangeCount: {
-        value: 1
-      },
-      /**
-       * the css used on number button
-       */
-      numberButtonCls: {
-        value: CLS_NUMBER_BUTTON
-      },
-      /**
-       * the template of ellipsis which represent the omitted pages number
-       */
-      ellipsisTpl: {
-        value: '<a href="#">...</a>'
-      }
     }
-  }, {
-    xclass: 'pagingbar-number',
-    priority: 3
-  });
-  module.exports = NumberPagingBar;
+},{
+    xclass : 'pagingbar-number',
+    priority : 3    
 });
+
+module.exports = NumberPagingBar;
+
+});
+
 define("bui/calendar", ["bui/common","jquery","bui/picker","bui/overlay","bui/list","bui/data","bui/toolbar"], function(require, exports, module){
 /**
  * @fileOverview 日历命名空间入口

@@ -332,7 +332,7 @@ Mixin.ATTRS = {
    * @type {Boolean}
    */
   ignoreInputFields: {
-    value :true
+    value :false
   },
   /**
    * 内部控件的代表Value的字段

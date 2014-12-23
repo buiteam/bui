@@ -1,4 +1,4 @@
-define("bui/menu", ["bui/common","jquery/1.9.1/jquery"], function(require, exports, module){
+define("bui/menu", ["bui/common","jquery"], function(require, exports, module){
 /**
  * @fileOverview 菜单命名空间入口文件
  * @ignore
@@ -20,7 +20,7 @@ define("bui/menu", ["bui/common","jquery/1.9.1/jquery"], function(require, expor
   module.exports = Menu;
 
 });
-define("bui/menu/menu", ["bui/common","jquery/1.9.1/jquery"], function(require, exports, module){
+define("bui/menu/menu", ["bui/common","jquery"], function(require, exports, module){
 /**
  * @fileOverview 菜单基类
  * @author dxq613@gmail.com
@@ -169,13 +169,13 @@ var Menu = Component.Controller.extend([UIBase.ChildList],{
 module.exports = Menu;
 
 });
-define("bui/menu/menuitem", ["jquery/1.9.1/jquery","bui/common"], function(require, exports, module){
+define("bui/menu/menuitem", ["jquery","bui/common"], function(require, exports, module){
 /**
  * @fileOverview 菜单项
  * @ignore
  */
 
-var $ = require("jquery/1.9.1/jquery"),
+var $ = require('jquery'),
   BUI = require("bui/common"),
   Component =  BUI.Component,
   UIBase = Component.UIBase,
@@ -459,7 +459,7 @@ menuItem.Separator = separator;
 module.exports = menuItem;
 
 });
-define("bui/menu/contextmenu", ["bui/common","jquery/1.9.1/jquery"], function(require, exports, module){
+define("bui/menu/contextmenu", ["bui/common","jquery"], function(require, exports, module){
 /**
  * @fileOverview 弹出菜单，一般用于右键菜单
  * @author dxq613@gmail.com
@@ -560,7 +560,7 @@ contextMenu.Item = contextMenuItem;
 module.exports = contextMenu;
 
 });
-define("bui/menu/popmenu", ["bui/common","jquery/1.9.1/jquery"], function(require, exports, module){
+define("bui/menu/popmenu", ["bui/common","jquery"], function(require, exports, module){
 /**
  * @fileOverview 下拉菜单，一般用于下拉显示菜单
  * @author dxq613@gmail.com
@@ -628,14 +628,14 @@ var popMenu =  Menu.extend([UIBase.Position,UIBase.Align,UIBase.AutoShow,UIBase.
 module.exports = popMenu;
 
 });
-define("bui/menu/sidemenu", ["jquery/1.9.1/jquery","bui/common"], function(require, exports, module){
+define("bui/menu/sidemenu", ["jquery","bui/common"], function(require, exports, module){
 /**
  * @fileOverview 侧边栏菜单
  * @author dxq613@gmail.com
  * @ignore
  */
 
-var $ = require("jquery/1.9.1/jquery"),
+var $ = require('jquery'),
   BUI = require("bui/common"),
   Menu = require("bui/menu/menu"),
   Component =  BUI.Component,

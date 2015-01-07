@@ -51,6 +51,7 @@
       "bui-tooltip": "~1.1.0",
       "bui-slider": "~1.1.0",
       "bui-layout": "~1.1.0",
+      "bui-graphic": "~1.1.0",
       "bui-imgview": "~1.1.0",
       "bui-extensions": "~1.1.0",
       "bui-editor": "~1.1.0",

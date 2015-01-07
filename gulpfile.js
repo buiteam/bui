@@ -11,13 +11,14 @@ var exec = require('child_process').exec;
 var replace = require('gulp-replace');
 var uglify = require('gulp-uglify');
 var fs = require('fs');
+var distDir = "./spm_modules";
 
 
 var dependencies = require('./package.json').spm.dependencies;
 
 // 获取包文件的路径
 function getPackagePath(name) {
-  var path = './spm_modules/' + name + '/';
+  var path = distDir+'/' + name + '/';
 
   var subDirs = fs.readdirSync(path);
   var version = subDirs[subDirs.length -1];
@@ -57,7 +58,7 @@ function renameFile() {
 gulp.task('clean', function() {
   return gulp.src([
       './build',
-      './spm_modules'
+      distDir
     ], {read: false})
     .pipe(clean());
 });
@@ -89,7 +90,7 @@ gulp.task('package', function(){
 
 gulp.task('seed.js', ['package'], function() {
   return gulp.src([
-      './spm_modules/seajs/' + dependencies.seajs + '/dist/sea-debug.js',
+      distDir + '/seajs/' + dependencies.seajs + '/dist/sea-debug.js',
       './build/config.js',
       './build/common.js'
     ])
@@ -99,7 +100,7 @@ gulp.task('seed.js', ['package'], function() {
 
 gulp.task('bui.js', ['package'], function() {
   return gulp.src([
-      './spm_modules/seajs/' + dependencies.seajs + '/dist/sea-debug.js',
+      distDir + '/seajs/' + dependencies.seajs + '/dist/sea-debug.js',
       './build/config.js',
       './build/common.js',
       './build/data.js',
@@ -119,7 +120,7 @@ gulp.task('bui.js', ['package'], function() {
 // 适配kissy的js
 gulp.task('adapter.js', ['package'], function() {
   return gulp.src([
-      './spm_modules/bui-adapter/' + dependencies['bui-adapter'] + '/dist/adapter-debug.js',
+      distDir + '/bui-adapter/' + dependencies['bui-adapter'] + '/dist/adapter-debug.js',
     ])
     .pipe(rename(function (path) {
         var basename = path.basename;
@@ -128,7 +129,7 @@ gulp.task('adapter.js', ['package'], function() {
     .pipe(gulp.dest('./build'));
 });
 
-gulp.task('script', ['seed.js', 'bui.js', 'adapter.js'], function() {
+gulp.task('script', ['seed.js', 'bui.js', 'adapter.js'/**/], function() {
   return gulp.src([
       './build/**/*.js'
     ])
@@ -159,7 +160,7 @@ gulp.task('assets', function() {
     .pipe(gulp.dest('./build'))
 });
 
-gulp.task('default', ['prepare'], function() {
+gulp.task('default',['prepare'], /**/ function() {
   return gulp.start('package', 'script', 'css', 'assets');
 });
 

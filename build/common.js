@@ -612,6 +612,76 @@ $.extend(BUI, {
    */
   getControl: function(id) {
     return BUI.Component.Manager.getComponent(id);
+  },
+  /**
+   * 设置对象的属性，支持深度设置属性值
+   *
+   *   @example
+   *   BUI.setValue(obj,'a.b.c',value) //obj.a.b.c = value;
+   * @param {Object} obj   对象
+   * @param {String} name  名称
+   * @param {String} value 值
+   */
+  setValue: function(obj,name,value){
+    if(!obj && !name){
+      return obj;
+    }
+    var arr = name.split('.'),
+      curObj = obj,
+      len = arr.length;
+
+    for (var i = 0; i < len; i++){
+      if(!curObj || !BUI.isObject(curObj)){
+        break;
+      }
+      var subName = arr[i];
+      if (i === len - 1){
+        curObj[subName] = value;
+        break;
+      }
+      if (!curObj[subName]) {
+        curObj[subName] = {};
+      }
+      curObj = curObj[subName];
+    }
+
+    return obj;
+  },
+  /**
+   * 设置对象的属性，支持深度设置属性值
+   *
+   *   @example
+   *   BUI.getValue(obj,'a.b.c') //return obj.a.b.c;
+   * @param {Object} obj   对象
+   * @param {String} name  名称
+   * @param {String} value 值
+   */
+  getValue: function(obj,name){
+    if(!obj && !name){
+      return null;
+    }
+
+    var arr = name.split('.'),
+      curObj = obj,
+      len = arr.length,
+      value = null;
+
+    for (var i = 0; i < len; i++){
+      if(!curObj || !BUI.isObject(curObj)){
+        break;
+      }
+      var subName = arr[i];
+      if (i === len - 1){
+        value = curObj[subName];
+        break;
+      }
+      if (!curObj[subName]) {
+        break;
+      }
+      curObj = curObj[subName];
+    }
+
+    return value;
   }
 
 });

@@ -703,6 +703,51 @@ define("bui/data/abstractstore", ["bui/common","jquery"], function(require, expo
 
     },
     /**
+     * 错误字段,包含在返回信息中表示错误信息的字段
+     * <pre><code>
+     *   //可以修改接收的后台参数的含义
+     *   var store = new Store({
+     *     url : 'data.json',
+     *     errorProperty : 'errorMsg', //存放错误信息的字段(error)
+     *     hasErrorProperty : 'isError', //是否错误的字段（hasError)
+     *     root : 'data',               //存放数据的字段名(rows)
+     *     totalProperty : 'total'     //存放记录总数的字段名(results)
+     *   });
+     * </code></pre>
+     * @cfg {String} [errorProperty='error']
+     */
+    /**
+     * 错误字段
+     * @type {String}
+     * @ignore
+     */
+    errorProperty : {
+      value : 'error'
+    },
+    /**
+     * 是否存在错误,加载数据时如果返回错误，此字段表示有错误发生
+     * <pre><code>
+     *   //可以修改接收的后台参数的含义
+     *   var store = new Store({
+     *     url : 'data.json',
+     *     errorProperty : 'errorMsg', //存放错误信息的字段(error)
+     *     hasErrorProperty : 'isError', //是否错误的字段（hasError)
+     *     root : 'data',               //存放数据的字段名(rows)
+     *     totalProperty : 'total'     //存放记录总数的字段名(results)
+     *   });
+     * </code></pre>
+     * @cfg {String} [hasErrorProperty='hasError']
+     */
+    /**
+     * 是否存在错误
+     * @type {String}
+     * @default 'hasError'
+     * @ignore
+     */
+    hasErrorProperty : {
+      value : 'hasError'
+    },
+    /**
      * 数据代理对象,用于加载数据的ajax配置，{@link BUI.Data.Proxy}
      * <pre><code>
      *   var store = new Data.Store({
@@ -1087,7 +1132,7 @@ define("bui/data/abstractstore", ["bui/common","jquery"], function(require, expo
       //获取的原始数据
       _self.fire('beforeProcessLoad',data);
 
-      if(data[hasErrorField] || data.exception){
+      if(BUI.getValue(data,hasErrorField) || data.exception){
         _self.onException(data);
         return false;
       }
@@ -1113,10 +1158,10 @@ define("bui/data/abstractstore", ["bui/common","jquery"], function(require, expo
       //网络异常、转码错误之类，发生在json获取或转变时
       if(data.exception){
         obj.type = 'exception';
-        obj[errorProperty] = data.exception;
+        obj.error = data.exception;
       }else{//用户定义的错误
         obj.type = 'error';
-        obj[errorProperty] = data[errorProperty];
+        obj.error = BUI.getValue(data,errorProperty);
       }
       _self.fire('exception',obj);
 
@@ -1243,51 +1288,7 @@ define("bui/data/store", ["jquery","bui/common"], function(require, exports, mod
       shared : false,
       value:[]
     },
-    /**
-     * 错误字段,包含在返回信息中表示错误信息的字段
-     * <pre><code>
-     *   //可以修改接收的后台参数的含义
-     *   var store = new Store({
-     *     url : 'data.json',
-     *     errorProperty : 'errorMsg', //存放错误信息的字段(error)
-     *     hasErrorProperty : 'isError', //是否错误的字段（hasError)
-     *     root : 'data',               //存放数据的字段名(rows)
-     *     totalProperty : 'total'     //存放记录总数的字段名(results)
-     *   });
-     * </code></pre>
-     * @cfg {String} [errorProperty='error']
-     */
-    /**
-     * 错误字段
-     * @type {String}
-     * @ignore
-     */
-    errorProperty : {
-      value : 'error'
-    },
-    /**
-     * 是否存在错误,加载数据时如果返回错误，此字段表示有错误发生
-     * <pre><code>
-     *   //可以修改接收的后台参数的含义
-     *   var store = new Store({
-     *     url : 'data.json',
-     *     errorProperty : 'errorMsg', //存放错误信息的字段(error)
-     *     hasErrorProperty : 'isError', //是否错误的字段（hasError)
-     *     root : 'data',               //存放数据的字段名(rows)
-     *     totalProperty : 'total'     //存放记录总数的字段名(results)
-     *   });
-     * </code></pre>
-     * @cfg {String} [hasErrorProperty='hasError']
-     */
-    /**
-     * 是否存在错误
-     * @type {String}
-     * @default 'hasError'
-     * @ignore
-     */
-    hasErrorProperty : {
-      value : 'hasError'
-    },
+    
 
     /**
      * 对比2个对象是否相当，在去重、更新、删除，查找数据时使用此函数
@@ -1631,8 +1632,9 @@ define("bui/data/store", ["jquery","bui/common"], function(require, exports, mod
     getTotalCount : function(){
       var _self = this,
         resultMap = _self.get('resultMap'),
-        total = _self.get('totalProperty');
-      return parseInt(resultMap[total],10) || 0;
+        total = _self.get('totalProperty'),
+        totalVal = BUI.getValue(resultMap,total); 
+      return parseInt(totalVal,10) || 0;
     },
     /**
      * 获取当前缓存的纪录
@@ -1645,7 +1647,7 @@ define("bui/data/store", ["jquery","bui/common"], function(require, exports, mod
       var _self = this,
         resultMap = _self.get('resultMap'),
         root = _self.get('root');
-      return resultMap[root];
+      return BUI.getValue(resultMap,root);
     },
     /**
      * 是否包含数据
@@ -1801,7 +1803,7 @@ define("bui/data/store", ["jquery","bui/common"], function(require, exports, mod
       var _self = this,
          hasErrorField = _self.get('hasErrorProperty');
 
-      if(data[hasErrorField] || data.exception){ //如果失败
+      if (BUI.getValue(data,hasErrorField) || data.exception){ //如果失败
         _self.onException(data);
         return;
       }
@@ -2030,7 +2032,7 @@ define("bui/data/store", ["jquery","bui/common"], function(require, exports, mod
       if(BUI.isArray(data)){
         _self._setResult(data);
       }else{
-        _self._setResult(data[root],data[totalProperty]);
+        _self._setResult(BUI.getValue(data,root), BUI.getValue(data,totalProperty));
       }
 
       _self.set('start',start);
@@ -2057,8 +2059,9 @@ define("bui/data/store", ["jquery","bui/common"], function(require, exports, mod
         resultMap = _self.get('resultMap');
 
       totalCount = totalCount || rows.length;
-      resultMap[_self.get('root')] = rows;
-      resultMap[_self.get('totalProperty')] = totalCount;
+
+      BUI.setValue(resultMap,_self.get('root'),rows);
+      BUI.setValue(resultMap,_self.get('totalProperty'),totalCount);
 
       //清理之前发生的改变
       _self._clearChanges();
@@ -2693,7 +2696,7 @@ define("bui/data/treestore", ["bui/common","jquery"], function(require, exports,
       if(BUI.isArray(data)){
         _self.setChildren(node,data);
       }else{
-        _self.setChildren(node,data[dataProperty]);
+        _self.setChildren(node, BUI.getValue(data, dataProperty));
       }
       node.loaded = true; //标识已经加载过
       _self.fire('load',{node : node,params : params});

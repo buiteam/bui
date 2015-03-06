@@ -750,10 +750,10 @@ var FormHelper = {
   setField: function(form, fieldName, value) {
     var fields = form.elements[fieldName];
     if (fields && fields.type) {
-      formHelper._setFieldValue(fields, value);
+      FormHelper._setFieldValue(fields, value);
     } else if (BUI.isArray(fields) || (fields && fields.length)) {
       BUI.each(fields, function(field) {
-        formHelper._setFieldValue(field, value);
+        FormHelper._setFieldValue(field, value);
       });
     }
   },

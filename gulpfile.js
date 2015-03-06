@@ -11,7 +11,7 @@ var exec = require('child_process').exec;
 var replace = require('gulp-replace');
 var uglify = require('gulp-uglify');
 var fs = require('fs');
-var distDir = "./spm_modules";
+var distDir = "./dist";
 
 
 var dependencies = require('./package.json').spm.dependencies;
@@ -22,7 +22,7 @@ function getPackagePath(name) {
 
   var subDirs = fs.readdirSync(path);
   var version = subDirs[subDirs.length -1];
-  return  path + version +'/dist/' + name + '/' + version + '/';
+  return  path + version + '/';
 }
 
 /**
@@ -33,12 +33,10 @@ function renameFile() {
   var stream = through.obj(function(file, enc, callback) {
 
     
-
     var filepath = file.path.split(path.sep),
       module = filepath.slice(filepath.lastIndexOf('dist') + 1), // => [bui-{package}, version, [path,] {main.js}]
       packageName = module[0].split('-')[1],
       filename;
-
     if (module.length === 3) {
       filename = packageName + '.js';
     }
@@ -64,7 +62,8 @@ gulp.task('clean', function() {
 });
 //获取依赖的package
 gulp.task('prepare', ['clean'], function(cb){
-  exec('./node_modules/spm/bin/spm install', function (err, stdout, stderr) {
+
+  exec('./node_modules/spm/bin/spm install && ./node_modules/spm/bin/spm build --with-deps && cd ./spm_modules/bui-config/*\.*\.* && ../../../node_modules/spm/bin/spm build -O ../../../dist --with-deps --include standalone', function (err, stdout, stderr) {
     cb(stderr);
   });
 });
@@ -74,7 +73,9 @@ gulp.task('prepare', ['clean'], function(cb){
 gulp.task('package', function(){
   var files = [];
   for(var name in dependencies){
-    files.push(getPackagePath(name, dependencies[name]) + '**/*-debug.js');
+    if(name != 'seajs'){
+      files.push(getPackagePath(name, dependencies[name]) + '**/*-debug.js');
+    }
   }
   return gulp.src(files)
     // 重命名包文件的js名
@@ -89,8 +90,9 @@ gulp.task('package', function(){
 });
 
 gulp.task('seed.js', ['package'], function() {
+  var tmp_distDir = './spm_modules';
   return gulp.src([
-      distDir + '/seajs/' + dependencies.seajs + '/dist/sea-debug.js',
+      tmp_distDir + '/seajs/' + dependencies.seajs + '/dist/sea-debug.js',
       './build/config.js',
       './build/common.js'
     ])
@@ -99,8 +101,9 @@ gulp.task('seed.js', ['package'], function() {
 });
 
 gulp.task('bui.js', ['package'], function() {
+  var tmp_distDir = './spm_modules';
   return gulp.src([
-      distDir + '/seajs/' + dependencies.seajs + '/dist/sea-debug.js',
+      tmp_distDir + '/seajs/' + dependencies.seajs + '/dist/sea-debug.js',
       './build/config.js',
       './build/common.js',
       './build/data.js',
@@ -119,8 +122,9 @@ gulp.task('bui.js', ['package'], function() {
 
 // 适配kissy的js
 gulp.task('adapter.js', ['package'], function() {
+  var tmp_distDir = './spm_modules';
   return gulp.src([
-      distDir + '/bui-adapter/' + dependencies['bui-adapter'] + '/dist/adapter-debug.js',
+      tmp_distDir + '/bui-adapter/' + dependencies['bui-adapter'] + '/dist/adapter-debug.js',
     ])
     .pipe(rename(function (path) {
         var basename = path.basename;
@@ -146,12 +150,27 @@ gulp.task('css', ['package'], function() {
   // gulp.src([
   //   ])
   // .pipe('')
+  var files = [];
+  for(var name in dependencies){
+    files.push(getPackagePath(name, dependencies[name]) + '**/*.css');
+  }
+  return gulp.src(files)
+    .pipe(rename(function(path){
+      var basename = path.basename;
+      if(!(/-debug$/.test(basename))){
+        path.basename = basename + '-min';
+      }
+    }))
+    .pipe(rename(function(path){
+      path.basename = path.basename.replace(/-debug$/, '');
+    }))
+    .pipe(gulp.dest('./build'));
 });
 
 // 图片以及一些其他静态资源
 gulp.task('assets', function() {
   var files = [
-    '!**/*.js'
+    '!**/*.js','!**/*.css'
   ];
   for(var name in dependencies){
     files.push(getPackagePath(name, dependencies[name]) + '**/*.*');

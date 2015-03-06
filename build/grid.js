@@ -3436,7 +3436,7 @@ BUI.augment(cascade,
     cascadeEl = cascadeEl || $(row).find('.'+CLS_CASCADE);
     cascadeEl.removeClass(CLS_CASCADE_EXPAND);
 
-    if(cascadeRow || !cascadeRow.length){
+    if(cascadeRow && cascadeRow.length){
       $(cascadeRow).addClass(CLS_CASCADE_ROW_COLLAPSE);
       _self.fire('collapse',{record : record,row : cascadeRow[0]});
     }

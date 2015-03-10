@@ -1767,11 +1767,12 @@ BUI.augment(Table,{
 		var _self = this,
 			control = _self.get('control'),
 			count = _self.get('rows'),
+			cols = _self.get('columns'),
 			height = control.get('height'),
 			width = control.get('width'),
 			append = _self._getItemAppend(),
 			avgHeight = (height - append.height * count) / count,
-			avgWidth = (width - append.width * count) / count;
+			avgWidth = (width - append.width * cols) / cols;
 
 		return {
 			append : append,

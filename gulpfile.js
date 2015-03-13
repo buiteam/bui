@@ -108,13 +108,19 @@ gulp.task('bui.js', ['package'], function() {
       './build/common.js',
       './build/data.js',
       './build/list.js',
+      './build/menu.js',
+      './build/tab.js',
       './build/mask.js',
       './build/overlay.js',
       './build/picker.js',
       './build/toolbar.js',
       './build/calendar.js',
       './build/select.js',
-      './build/form.js'
+      './build/form.js',
+      './build/editor.js',
+      './build/tooltip.js',
+      './build/grid.js',
+      'all.js'
     ])
     .pipe(concat('bui.js'))
     .pipe(gulp.dest('./build'));

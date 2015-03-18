@@ -1,1 +1,3 @@
-define("bui/extensions", [], function(require, exports, module) {});
+define("bui/extensions", [], function(require, exports, module){
+
+});

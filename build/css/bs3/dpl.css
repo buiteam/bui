@@ -183,6 +183,11 @@ th {
   -moz-box-sizing: initial;
   box-sizing: initial;
 }
+select {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
 h1,
 h2,
 h3,
@@ -3435,29 +3440,34 @@ textarea {
   height: 60px;
 }
 input,
-select,
 textarea,
 select {
   font-family: "ff-tisa-web-pro-1", "ff-tisa-web-pro-2", "Lucida Grande", "Helvetica Neue", Helvetica, Arial, "Hiragino Sans GB", "Hiragino Sans GB W3", "WenQuanYi Micro Hei", sans-serif;
   line-height: 20px;
 }
 input.input-normal,
-select.input-normal,
 textarea.input-normal,
 select.input-normal {
   width: 140px;
 }
 input.input-small,
-select.input-small,
 textarea.input-small,
 select.input-small {
   width: 80px;
 }
 input.input-large,
-select.input-large,
 textarea.input-large,
 select.input-large {
   width: 300px;
+}
+select.input-normal {
+  width: 166px;
+}
+select.input-small {
+  width: 106px;
+}
+select.input-large {
+  width: 326px;
 }
 input.calendar {
   width: 85px;
@@ -3596,9 +3606,11 @@ input.calendar-time {
   -moz-border-radius: 4px;
   border-radius: 4px;
 }
-.form-panel input,
-.form-panel select {
+.form-panel input {
   width: 100px;
+}
+.form-panel select {
+  width: 126px;
 }
 .form-panel .panel-title {
   background-color: #e8e9ef;

@@ -213,6 +213,7 @@ var Uploader = Component.Controller.extend({
 
     button.on('change', function(ev) {
       var files = ev.files;
+      _self.fire('beforechange', {items: files});
       //对添加的文件添加状态
       queue.addItems(files);
       _self.fire('change', {items: files});
@@ -950,7 +951,7 @@ var Queue = SimpleList.extend({
         var itemContainer = $(ev.target).parents('.bui-queue-item'),
           item = _self.getItemByElement(itemContainer);
 
-      if(_self.fire('beforeremove', {item: item}) !== false) {
+      if(_self.fire('beforeremove', {item: item, target: ev.target}) !== false) {
         _self.removeItem(item);
       }
     });
@@ -1527,7 +1528,11 @@ var $ = require("jquery"),
 
 function getBaseUrl(){
   if(window.seajs){
-    return seajs.pluginSDK ? seajs.pluginSDK.util.loaderDir : seajs.data.paths['bui'];
+    if (seajs.pluginSDK && seajs.pluginSDK.util && seajs.pluginSDK.util.loaderDir) {
+      return seajs.pluginSDK.util.loaderDir;
+    } else {
+      return seajs.data.paths['bui'];
+    }
   }
   else if(window.KISSY){
     return KISSY.Config.packages['bui'].base;
@@ -1633,7 +1638,7 @@ var SwfButton = ButtonBase.extend({
      * @type {String} url
      */
     flashUrl:{
-      value: baseUrl + 'uploader.swf'
+      value: baseUrl + '/uploader.swf'
     },
     /**
      * flash的配置参数，一般不需要修改

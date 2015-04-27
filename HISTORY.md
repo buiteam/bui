@@ -13,3 +13,7 @@
 ## 1.1.16
 
 [fix] 修复bui-grid、bui-dpl中的bug
+
+## 1.1.17
+
+[fix] 修复bui-uploader

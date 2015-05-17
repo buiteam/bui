@@ -600,7 +600,7 @@ function stringAttr(key, value) {
 }
 
 
-return SWF;
+module.exports = SWF;
 /**
  * NOTES:
  * 20130903 从kissy1.3.1移植成BUI的模块（索丘修改）
@@ -713,7 +713,7 @@ function fpvGTE(ver, force) {
     return getNumberVersion(fpv(force)) >= getNumberVersion(ver);
 }
 
-return {
+module.exports = {
     fpv: fpv,
     fpvGTE: fpvGTE
 };

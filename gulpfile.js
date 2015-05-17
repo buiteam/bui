@@ -10,6 +10,7 @@ var path = require('path');
 var exec = require('child_process').exec;
 var replace = require('gulp-replace');
 var uglify = require('gulp-uglify');
+var shell = require('gulp-shell')
 var fs = require('fs');
 var distDir = "./dist";
 
@@ -56,6 +57,7 @@ function renameFile() {
 gulp.task('clean', function() {
   return gulp.src([
       './build',
+      './spm_modules',
       distDir
     ], {read: false})
     .pipe(clean());
@@ -63,9 +65,17 @@ gulp.task('clean', function() {
 //获取依赖的package
 gulp.task('prepare', ['clean'], function(cb){
 
-  exec('./node_modules/spm/bin/spm install && ./node_modules/spm/bin/spm build --with-deps && cd ./spm_modules/bui-config/*\.*\.* && ../../../node_modules/spm/bin/spm build -O ../../../dist --with-deps --include standalone', function (err, stdout, stderr) {
-    cb(stderr);
-  });
+  // exec('./node_modules/spm/bin/spm install && ./node_modules/spm/bin/spm build --with-deps && cd ./spm_modules/bui-config/*\.*\.* && ../../../node_modules/spm/bin/spm build -O ../../../dist --with-deps --include standalone', function (err, stdout, stderr) {
+  //   cb(stderr);
+  // });
+  // 
+  return gulp.src([
+      './spm_modules/*/*/'
+    ], {read: false})
+    .pipe(shell([
+      'cd <%=file.path %> && spm install && spm build -O ../../../dist'
+    ]))
+  
 });
 
 

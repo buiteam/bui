@@ -1,1 +1,1 @@
-define("bui/extensions",[],function(){});
+define("bui/extensions",[],function(n,e,i){});

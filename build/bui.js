@@ -21795,7 +21795,7 @@ var calendar = Component.Controller.extend({
     }
 
     header.on('monthchange',function(e){
-      _self.get('header')._setYearMonth(e.year,e.month);
+      _self.get('header').setMonth(e.year,e.month);
     });
 
     header.on('headerclick',function(){
@@ -22524,7 +22524,7 @@ var Res = {
 		cancel : "取消"
 	},
 	en: {
-		yearMonthMask: "MM yyyy",
+		yearMonthMask: "MMM yyyy",
 		months : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sept','Oct','Nov','Dec'],
 		weekDays : ['Su','Mo','Tu','We','Th','Fr','Sa'],
 		today : "today",
@@ -22629,21 +22629,28 @@ var header = Component.Controller.extend({
   },
   _uiSetYear : function(v){
     var _self = this;
-    _self.get('el').find('.' + CLS_TEXT_YEAR).text(v);
+    var month = _self.get('month');
+    if (!isNaN(month)){
+      _self._setYearMonth(v,month);
+    }
   },
   _uiSetMonth : function(v){
     var _self = this;
-    _self.get('el').find('.' + CLS_TEXT_MONTH).text(v+1);
+    var year = _self.get('year');
+    if (!isNaN(year)){
+      _self._setYearMonth(year,v);
+    }
   },
   _setYearMonth: function(year,month) {
     var _self = this;
     var date = new Date(year,month);
     var str = DateUtil.format(date,Resource.yearMonthMask);
-    if (str.indexOf('00') !== -1) {
+    if (str.indexOf('000') !== -1) {
       var months = Resource.months;
-      str = str.replace('00',months[month]);
+      str = str.replace('000',months[month]);
     }
-    _self.get('el').find('.' + PREFIX + 'year-month-text').text(str);
+    //_self.get('el').find('.' + PREFIX + 'year-month-text').empty();
+    _self.get('el').find('.' + PREFIX + 'year-month-text').html(str);
 
   }
 
@@ -22654,21 +22661,19 @@ var header = Component.Controller.extend({
      * @type {Number}
      */
     year:{
-      sync:false
+      sync:true
     },
     /**
      * 月
      * @type {Number}
      */
     month:{
-      sync:false,
+      sync:true,
       setter:function(v){
         this.set('monthText',v+1);
       }
     },
-    yearMonth:{
-      sync:false
-    },
+    
     /**
      * @private
      * @type {Object}
@@ -22682,8 +22687,8 @@ var header = Component.Controller.extend({
         return '<div class="'+CLS_ARROW+' ' + CLS_PREV + '"><span class="icon icon-white icon-caret  icon-caret-left"></span></div>'+
         '<div class="x-datepicker-month">'+
           '<div class="month-text-container">'+
-          '<span class="' + PREFIX + 'year-month-text "><span class="year-text">{year}</span><span class="yearStr">'+Resource.yearStr+'</span> <span class="month-text">{monthText}</span><span class="monthStr>"'+Resource.monthStr+'</span></span>'+
-             //'<span class="' + PREFIX + 'year-month-text ">{yearMonth}</span>',
+            '<span class="' + PREFIX + 'year-month-text ">'+
+            '</span>'+
             '<span class="' + PREFIX + 'caret ' + PREFIX + 'caret-down"></span>'+
           '</div>'+
         '</div>' +

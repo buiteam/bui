@@ -21655,7 +21655,8 @@ define("bui/calendar", ["bui/common","jquery","bui/picker","bui/overlay","bui/li
   BUI.mix(Calendar, {
     Calendar: require("bui/calendar/calendar"),
     MonthPicker: require("bui/calendar/monthpicker"),
-    DatePicker: require("bui/calendar/datepicker")
+    DatePicker: require("bui/calendar/datepicker"),
+    Resource : require("bui/calendar/resource")
   });
 
   module.exports = Calendar;
@@ -21682,7 +21683,8 @@ var BUI = require("bui/common"),
   Panel = require("bui/calendar/panel"),
   Toolbar = require("bui/toolbar"),
   Component = BUI.Component,
-  DateUtil = BUI.Date;
+  DateUtil = BUI.Date,
+  Resource = require("bui/calendar/resource");
 
 function today(){
   var now = new Date();
@@ -21793,7 +21795,7 @@ var calendar = Component.Controller.extend({
     }
 
     header.on('monthchange',function(e){
-      _self._setYearMonth(e.year,e.month);
+      _self.get('header')._setYearMonth(e.year,e.month);
     });
 
     header.on('headerclick',function(){
@@ -21914,7 +21916,7 @@ var calendar = Component.Controller.extend({
       });
       items.push({
         xclass:'bar-item-button',
-        text:'确定',
+        text:Resource.submit,
         btnCls: 'button button-small button-primary',
         listeners:{
           click:function(){
@@ -21925,7 +21927,7 @@ var calendar = Component.Controller.extend({
     }else{
       items.push({
         xclass:'bar-item-button',
-        text:'今天',
+        text:Resource.today,
         btnCls: 'button button-small',
 	      id:'todayBtn',
         listeners:{
@@ -21938,7 +21940,7 @@ var calendar = Component.Controller.extend({
       });
       items.push({
         xclass:'bar-item-button',
-        text:'清除',
+        text:Resource.clean,
         btnCls: 'button button-small',
         id:'clsBtn',
         listeners:{
@@ -22183,10 +22185,10 @@ var $ = require("jquery"),
   CLS_YEAR_NAV = 'x-monthpicker-yearnav',
   CLS_SELECTED = 'x-monthpicker-selected',
   CLS_ITEM = 'x-monthpicker-item',
-  months = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+  Resource = require("bui/calendar/resource");
 
 function getMonths(){
-  return $.map(months,function(month,index){
+  return $.map(Resource.months,function(month,index){
     return {text:month,value:index};
   });
 }
@@ -22214,7 +22216,10 @@ var MonthPanel = List.extend({
     },
     items:{
       view:true,
-      value:getMonths()
+      valueFn: function(){
+        return getMonths();
+      }
+      
     },
     elCls : {
       view:true,
@@ -22404,14 +22409,14 @@ var monthPicker = Overlay.extend({
         children:[
           {
             xclass:'bar-item-button',
-            text:'确定',
+            text:Resource.submit,
             btnCls: 'button button-small button-primary',
             handler:function(){
               _self._successCall();
             }
           },{
             xclass:'bar-item-button',
-            text:'取消',
+            text:Resource.cancel,
             btnCls:'button button-small last',
             handler:function(){
               var callback = _self.get('cancel');
@@ -22503,6 +22508,42 @@ var monthPicker = Overlay.extend({
 module.exports = monthPicker;
 
 });
+define("bui/calendar/resource", ["bui/common","jquery"], function(require, exports, module){
+
+var BUI = require("bui/common");
+
+var Res = {
+
+	'zh-CN': {
+		yearMonthMask: 'yyyy 年 mm 月',
+		months : ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
+		weekDays : ['日','一','二','三','四','五','六'],
+		today : "今天",
+		clean : "清除",
+		submit : "确定",
+		cancel : "取消"
+	},
+	en: {
+		yearMonthMask: "MM yyyy",
+		months : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sept','Oct','Nov','Dec'],
+		weekDays : ['Su','Mo','Tu','We','Th','Fr','Sa'],
+		today : "today",
+		clean : "clean",
+		submit : "submit",
+		cancel : "cancel"
+	},
+
+	setLanguage: function  (type) {
+	   if (Res[type]) {
+	   	 BUI.mix(this,Res[type]);
+	   }
+	}
+	
+};
+
+Res.setLanguage('zh-CN');
+module.exports = Res;
+});
 define("bui/calendar/header", ["jquery","bui/common"], function(require, exports, module){
 /**
  * @fileOverview 日期控件来选择年月的部分
@@ -22510,14 +22551,17 @@ define("bui/calendar/header", ["jquery","bui/common"], function(require, exports
  */
 
   
-var $ = require("jquery"),BUI = require("bui/common"),
+var $ = require("jquery"),
+  BUI = require("bui/common"),
   PREFIX = BUI.prefix,
   Component = BUI.Component,
   CLS_TEXT_YEAR = 'year-text',
   CLS_TEXT_MONTH = 'month-text',
   CLS_ARROW = 'x-datepicker-arrow',
   CLS_PREV = 'x-datepicker-prev',
-  CLS_NEXT = 'x-datepicker-next';
+  CLS_NEXT = 'x-datepicker-next',
+  Resource = require("bui/calendar/resource"),
+  DateUtil = BUI.Date;
     
 /**
  * 日历控件显示选择年月
@@ -22588,8 +22632,19 @@ var header = Component.Controller.extend({
     _self.get('el').find('.' + CLS_TEXT_YEAR).text(v);
   },
   _uiSetMonth : function(v){
-      var _self = this;
+    var _self = this;
     _self.get('el').find('.' + CLS_TEXT_MONTH).text(v+1);
+  },
+  _setYearMonth: function(year,month) {
+    var _self = this;
+    var date = new Date(year,month);
+    var str = DateUtil.format(date,Resource.yearMonthMask);
+    if (str.indexOf('00') !== -1) {
+      var months = Resource.months;
+      str = str.replace('00',months[month]);
+    }
+    _self.get('el').find('.' + PREFIX + 'year-month-text').text(str);
+
   }
 
 },{
@@ -22611,6 +22666,9 @@ var header = Component.Controller.extend({
         this.set('monthText',v+1);
       }
     },
+    yearMonth:{
+      sync:false
+    },
     /**
      * @private
      * @type {Object}
@@ -22620,16 +22678,19 @@ var header = Component.Controller.extend({
     },
     tpl:{
       view:true,
-      value:'<div class="'+CLS_ARROW+' ' + CLS_PREV + '"><span class="icon icon-white icon-caret  icon-caret-left"></span></div>'+
+      valueFn: function  () {
+        return '<div class="'+CLS_ARROW+' ' + CLS_PREV + '"><span class="icon icon-white icon-caret  icon-caret-left"></span></div>'+
         '<div class="x-datepicker-month">'+
           '<div class="month-text-container">'+
-            '<span><span class="year-text">{year}</span>年 <span class="month-text">{monthText}</span>月</span>'+
+          '<span class="' + PREFIX + 'year-month-text "><span class="year-text">{year}</span><span class="yearStr">'+Resource.yearStr+'</span> <span class="month-text">{monthText}</span><span class="monthStr>"'+Resource.monthStr+'</span></span>'+
+             //'<span class="' + PREFIX + 'year-month-text ">{yearMonth}</span>',
             '<span class="' + PREFIX + 'caret ' + PREFIX + 'caret-down"></span>'+
           '</div>'+
         '</div>' +
-        '<div class="'+CLS_ARROW+' ' + CLS_NEXT + '"><span class="icon icon-white icon-caret  icon-caret-right"></span></div>'
-    },
-    elCls:{
+        '<div class="'+CLS_ARROW+' ' + CLS_NEXT + '"><span class="icon icon-white icon-caret  icon-caret-right"></span></div>';
+      }
+    }, 
+   elCls:{
       view:true,
       value:'x-datepicker-header'
     },
@@ -22677,6 +22738,8 @@ var $ = require("jquery"),
     active : 'active',
     disabled : 'disabled'
   },
+  resource = require("bui/calendar/resource"),
+ // currentWeekDays = resource.weekDays,
   weekDays = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
 /**
@@ -23017,21 +23080,23 @@ var panel = Component.Controller.extend(
     },
     tpl:{
       view:true,
-      value:'<table class="x-datepicker-inner" cellspacing="0">' +
+      valueFn: function  () {
+        return '<table class="x-datepicker-inner" cellspacing="0">' +
               '<thead>' +
                  '<tr>' +
-                  '<th  title="Sunday"><span>日</span></th>' +
-                  '<th  title="Monday"><span>一</span></th>' +
-                  '<th  title="Tuesday"><span>二</span></th>' +
-                  '<th  title="Wednesday"><span>三</span></th>' +
-                  '<th  title="Thursday"><span>四</span></th>' +
-                  '<th  title="Friday"><span>五</span></th>' +
-                  '<th  title="Saturday"><span>六</span></th>' +
+                  '<th  title="Sunday"><span>'+resource.weekDays[0]+'</span></th>' +
+                  '<th  title="Monday"><span>'+resource.weekDays[1]+'</span></th>' +
+                  '<th  title="Tuesday"><span>'+resource.weekDays[2]+'</span></th>' +
+                  '<th  title="Wednesday"><span>'+resource.weekDays[3]+'</span></th>' +
+                  '<th  title="Thursday"><span>'+resource.weekDays[4]+'</span></th>' +
+                  '<th  title="Friday"><span>'+resource.weekDays[5]+'</span></th>' +
+                  '<th  title="Saturday"><span>'+resource.weekDays[6]+'</span></th>' +
                 '</tr>' +
               '</thead>' +
               '<tbody class="x-datepicker-body">' +
               '</tbody>' +
             '</table>'
+      }
     },
     xview : {value : panelView}
   }

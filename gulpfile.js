@@ -65,17 +65,17 @@ gulp.task('clean', function() {
 //获取依赖的package
 gulp.task('prepare', ['clean'], function(cb){
 
-  // exec('./node_modules/spm/bin/spm install && ./node_modules/spm/bin/spm build --with-deps && cd ./spm_modules/bui-config/*\.*\.* && ../../../node_modules/spm/bin/spm build -O ../../../dist --with-deps --include standalone', function (err, stdout, stderr) {
-  //   cb(stderr);
-  // });
-  // 
-  return gulp.src([
-      './spm_modules/*/*/'
+exec('./node_modules/spm/bin/spm install && ./node_modules/spm/bin/spm build --with-deps && cd ./spm_modules/bui-config/*\.*\.* && ../../../node_modules/spm/bin/spm build -O ../../../dist --with-deps --include standalone', function (err, stdout, stderr) {
+  cb(stderr);
+});
+
+  /*return gulp.src([
+      './spm_modules'
     ], {read: false})
     .pipe(shell([
       'cd <%=file.path %> && spm install && spm build -O ../../../dist'
     ]))
-  
+  */
 });
 
 

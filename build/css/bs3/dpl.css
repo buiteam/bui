@@ -179,9 +179,9 @@ th {
   padding: 0;
 }
 * {
-  -webkit-box-sizing: initial;
-  -moz-box-sizing: initial;
-  box-sizing: initial;
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
 }
 select {
   -webkit-box-sizing: border-box;

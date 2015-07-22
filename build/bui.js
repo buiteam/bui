@@ -21795,7 +21795,8 @@ var calendar = Component.Controller.extend({
     }
 
     header.on('monthchange',function(e){
-      _self.get('header').setMonth(e.year,e.month);
+      //_self.get('header').setMonth(e.year,e.month);
+      _self._setYearMonth(e.year,e.month);
     });
 
     header.on('headerclick',function(){

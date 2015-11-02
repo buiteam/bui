@@ -1,3 +1,28 @@
+# 使用BUI
+
+* 引入样式文件
+
+```html
+<head>
+  <!-- some elements here -->
+  <link href="http://g.alicdn.com/bui/bui/1.1.15/css/bs3/dpl.css" rel="stylesheet">
+  <link href="http://g.alicdn.com/bui/bui/1.1.15/css/bs3/bui.css" rel="stylesheet">
+</head>
+```
+* 引入jQuery、seajs、bui配置文件
+
+```html
+<body>
+  <!-- some elements here -->
+  <script type="text/javascript" chartset="utf-8" src="http://g.alicdn.com/fi/bui/jquery-1.8.1.min.js"></script>
+  <script type="text/javascript" chartset="utf-8" src="http://g.alicdn.com/bui/seajs/2.3.0/sea.js"></script>
+  <script type="text/javascript" chartset="utf-8" src="http://g.alicdn.com/bui/bui/1.1.15/config-min.js"></script>
+</body>
+```
+
+`1.1.15为BUI版本，随着版本升级，引用地址可能会发生变化`
+
+
 # bui [![Build Status](https://api.travis-ci.org/buiteam/bui.png)](https://api.travis-ci.org/buiteam/bui)
 
 基于jQuery的富客户端控件库

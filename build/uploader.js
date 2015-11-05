@@ -2133,7 +2133,7 @@ var LOG_PREFIX = '[uploader-Flash]:';
 
 //获取链接绝对路径正则
 var URI_SPLIT_REG = new RegExp('^([^?#]+)?(?:\\?([^#]*))?(?:#(.*))?$'),
-    HOSTNAME_SPLIT_REG = new RegExp('^(?:([\\w\\d+.-]+):)?(?://([\\w\\d\\-\\u0100-\\uffff.+%]*))?.*$');
+    HOSTNAME_SPLIT_REG = new RegExp('^(?:([\\w\\d+.-]+):)?(?://([\\w\\d\\-\\u0100-\\uffff.+%]*))?(:[\\d]*)?.*$');
 
 /**
  * @class BUI.Uploader.UploadType.Flash
@@ -2241,12 +2241,13 @@ BUI.extend(FlashType, UploadType, {
             url = _self.get('url').match(HOSTNAME_SPLIT_REG) || [],
             flashUrl = _self.get('swfUploader').get('src').match(HOSTNAME_SPLIT_REG) || [],
             urlDomain = url[2],
-            flashUrlDomain = flashUrl[2];
+            flashUrlDomain = flashUrl[2],
+            port = url[3] || '';
 
         //不同域时才去校验crossdomain
         if(urlDomain && flashUrlDomain && urlDomain !== flashUrlDomain){
             $.ajax({
-                url: url[1] + '://' + urlDomain + '/crossdomain.xml',
+                url: url[1] + '://' + urlDomain + port + '/crossdomain.xml',
                 dataType:"xml",
                 error:function(){
                    BUI.log('缺少crossdomain.xml文件或该文件不合法！');
@@ -3658,7 +3659,7 @@ var LOG_PREFIX = '[uploader-Flash]:';
 
 //获取链接绝对路径正则
 var URI_SPLIT_REG = new RegExp('^([^?#]+)?(?:\\?([^#]*))?(?:#(.*))?$'),
-    HOSTNAME_SPLIT_REG = new RegExp('^(?:([\\w\\d+.-]+):)?(?://([\\w\\d\\-\\u0100-\\uffff.+%]*))?.*$');
+    HOSTNAME_SPLIT_REG = new RegExp('^(?:([\\w\\d+.-]+):)?(?://([\\w\\d\\-\\u0100-\\uffff.+%]*))?(:[\\d]*)?.*$');
 
 /**
  * @class BUI.Uploader.UploadType.Flash
@@ -3752,12 +3753,13 @@ BUI.extend(FlashType, UploadType, {
             url = _self.get('url').match(HOSTNAME_SPLIT_REG) || [],
             flashUrl = _self.get('swfUploader').get('src').match(HOSTNAME_SPLIT_REG) || [],
             urlDomain = url[2],
-            flashUrlDomain = flashUrl[2];
+            flashUrlDomain = flashUrl[2],
+            port = url[3] || '';
 
         //不同域时才去校验crossdomain
         if(urlDomain && flashUrlDomain && urlDomain !== flashUrlDomain){
             $.ajax({
-                url: url[1] + '://' + urlDomain + '/crossdomain.xml',
+                url: url[1] + '://' + urlDomain + port + '/crossdomain.xml',
                 dataType:"xml",
                 error:function(){
                    BUI.log('缺少crossdomain.xml文件或该文件不合法！');

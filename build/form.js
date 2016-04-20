@@ -5048,7 +5048,7 @@ Select.addType = function(name,cfg){
 
 Select.addType('city',{
   proxy : {
-    url : 'http://lp.taobao.com/go/rgn/citydistrictdata.php',
+    url : '//lp.taobao.com/go/rgn/citydistrictdata.php',
     dataType : 'jsonp'
   },
   map : {
